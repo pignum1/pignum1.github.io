@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="spring cloud,config,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="分布式配置中心（Dalston版本）传统作法​    通常在生产环境，Config Server与服务注册中心一样，我们也需要将其扩展为高可用的集群。在之前实现的config-server基础上来实现高可用非常简单，不需要我们为这些服务端做任何额外的配置，只需要遵守一个配置规则：将所有的Config Server都指向同一个Git仓库，这样所有的配置内容就通过统一的共享文件系统来维护，而客户端在指">
+<meta name="keywords" content="spring cloud,config">
+<meta property="og:type" content="article">
+<meta property="og:title" content="spring-cloud 分布式配置中心">
+<meta property="og:url" content="http://yoursite.com/2019/11/12/spring-cloud-分布式配置中心/index.html">
+<meta property="og:site_name" content="放空">
+<meta property="og:description" content="分布式配置中心（Dalston版本）传统作法​    通常在生产环境，Config Server与服务注册中心一样，我们也需要将其扩展为高可用的集群。在之前实现的config-server基础上来实现高可用非常简单，不需要我们为这些服务端做任何额外的配置，只需要遵守一个配置规则：将所有的Config Server都指向同一个Git仓库，这样所有的配置内容就通过统一的共享文件系统来维护，而客户端在指">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://yoursite.com/2019/11/12/spring-cloud-分布式配置中心/config.png">
+<meta property="og:image" content="http://yoursite.com/2019/11/12/spring-cloud-分布式配置中心/console.png">
+<meta property="og:updated_time" content="2019-11-25T17:09:32.304Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="spring-cloud 分布式配置中心">
+<meta name="twitter:description" content="分布式配置中心（Dalston版本）传统作法​    通常在生产环境，Config Server与服务注册中心一样，我们也需要将其扩展为高可用的集群。在之前实现的config-server基础上来实现高可用非常简单，不需要我们为这些服务端做任何额外的配置，只需要遵守一个配置规则：将所有的Config Server都指向同一个Git仓库，这样所有的配置内容就通过统一的共享文件系统来维护，而客户端在指">
+<meta name="twitter:image" content="http://yoursite.com/2019/11/12/spring-cloud-分布式配置中心/config.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":true,"scrollpercent":true,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2019/11/12/spring-cloud-分布式配置中心/">
+
+
+
+
+
+  <title>spring-cloud 分布式配置中心 | 放空</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+	<a href="https://github.com/pignum1/pignum1.github.io.git"><img style="position: absolute; top: 0; right: 0;border: 0;" src="https://github.blog/wp-content/uploads/2008/12/forkme_right_darkblue_121621.png?resize=149%2C149" class="attachment-full size-full" alt="Fork me on GitHub" data-recalc-dims="1"></a>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">放空</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-categories" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/11/12/spring-cloud-分布式配置中心/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="wei xy">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/sliver.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="放空">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">spring-cloud 分布式配置中心</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-11-12T22:40:35+08:00">
+                2019-11-12
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/spring-cloud/" itemprop="url" rel="index">
+                    <span itemprop="name">spring cloud</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="分布式配置中心（Dalston版本）"><a href="#分布式配置中心（Dalston版本）" class="headerlink" title="分布式配置中心（Dalston版本）"></a>分布式配置中心（Dalston版本）</h1><h2 id="传统作法"><a href="#传统作法" class="headerlink" title="传统作法"></a>传统作法</h2><p>​    通常在生产环境，Config Server与服务注册中心一样，我们也需要将其扩展为高可用的集群。在之前实现的config-server基础上来实现高可用非常简单，不需要我们为这些服务端做任何额外的配置，只需要遵守一个配置规则：将所有的Config Server都指向同一个Git仓库，这样所有的配置内容就通过统一的共享文件系统来维护，而客户端在指定Config Server位置时，只要配置Config Server外的均衡负载即可，就像如下图所示的结构：</p>
+<p><img src="/2019/11/12/spring-cloud-分布式配置中心/config.png" alt></p>
+<h2 id="服务端-config-server"><a href="#服务端-config-server" class="headerlink" title="服务端 config-server"></a>服务端 config-server</h2><p>首先需要准备一个<a href="https://github.com/pignum1/config.git" target="_blank" rel="noopener">git仓库</a>，作为分布式配置的管理</p>
+<p>创建idea的配置服务端,引入服务端的配置依赖</p>
+<figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">implementation <span class="string">'org.springframework.cloud:spring-cloud-config-server'</span></span><br><span class="line">#刷新配置</span><br><span class="line">implementation <span class="string">'org.springframework.boot:spring-boot-starter-actuator'</span></span><br></pre></td></tr></table></figure>
+<p>在application.properties种添加配置文件和Git的地址，</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">#服务端口</span><br><span class="line">server.port=9876</span><br><span class="line">#服务名称</span><br><span class="line">spring.application.name=myConfigServer</span><br><span class="line">#服务注册中心</span><br><span class="line"></span><br><span class="line">eureka.client.service-url.defaultZone=http://localhost:5678/eureka/</span><br><span class="line">#服务的git仓库地址</span><br><span class="line">spring.cloud.config.server.git.uri=https://github.com/pignum1/config.git</span><br><span class="line">#配置文件所在的目录</span><br><span class="line">spring.cloud.config.server.git.search-paths=/order</span><br><span class="line">#配置文件所在的分支</span><br><span class="line">spring.cloud.config.label=master</span><br><span class="line"></span><br><span class="line">#spring cloud2.x刷新配置需要开启</span><br><span class="line">management.endpoints.web.exposure.include=refresh,health,info</span><br></pre></td></tr></table></figure>
+<p>在启动类商添加注解</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">@EnableConfigServer</span><br><span class="line">@SpringBootApplication</span><br><span class="line">@ResponseBody</span><br><span class="line">public class ConfigServerApplication &#123;</span><br><span class="line">	public static void main(String[] args) &#123;</span><br><span class="line">		SpringApplication.run(ConfigServerApplication.class, args);</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p> 启动服务后，按照配置文件的访问路径规则去请求</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">/&#123;application&#125;/&#123;profile&#125;[/&#123;label&#125;]</span><br><span class="line">/&#123;application&#125;-&#123;profile&#125;.yml</span><br><span class="line">/&#123;label&#125;/&#123;application&#125;-&#123;profile&#125;.yml</span><br><span class="line">/&#123;application&#125;-&#123;profile&#125;.properties</span><br><span class="line">/&#123;label&#125;/&#123;application&#125;-&#123;profile&#125;.properties</span><br></pre></td></tr></table></figure>
+<p>​        启动服务后访问 <a href="http://localhost:9876/order/a/master" target="_blank" rel="noopener">http://localhost:9876/order/a/master</a> ，访问order文件下的order-a.properties文件，可以得到返回的数据</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  &quot;name&quot;: &quot;order&quot;,</span><br><span class="line">  &quot;profiles&quot;: [</span><br><span class="line">    &quot;a&quot;</span><br><span class="line">  ],</span><br><span class="line">  &quot;label&quot;: &quot;master&quot;,</span><br><span class="line">  &quot;version&quot;: &quot;ab1b5e0ba15605570591d632977d8debcf7f77a9&quot;,</span><br><span class="line">  &quot;state&quot;: null,</span><br><span class="line">  &quot;propertySources&quot;: [</span><br><span class="line">    &#123;</span><br><span class="line">      &quot;name&quot;: &quot;https://github.com/pignum1/config.git/order/order-a.properties&quot;,</span><br><span class="line">      &quot;source&quot;: &#123;</span><br><span class="line">        &quot;from&quot;: &quot;123&quot;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这里的道德JSON字符串是因为我移除了spring cloud 默认的xml格式转换消息器 ,</p>
+<p>在配置类中移除依赖</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">/**</span><br><span class="line"> * 删除xml格式转换消息器</span><br><span class="line"> */</span><br><span class="line">configurations &#123;</span><br><span class="line">	all*.exclude group: &apos;com.fasterxml.jackson.dataformat&apos;, module: &apos;jackson-dataformat-xml&apos;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="客户端-config-client"><a href="#客户端-config-client" class="headerlink" title="客户端 config-client"></a>客户端 config-client</h2><p>同样创建一个spring cloud 项目，在依赖管理添加客户端的依赖</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">//客户端依赖</span><br><span class="line">implementation &apos;org.springframework.cloud:spring-cloud-starter-config&apos;</span><br><span class="line">//mvc</span><br><span class="line">implementation &apos;org.springframework.boot:spring-boot-starter-web&apos;</span><br><span class="line">#刷新配置</span><br><span class="line">implementation &apos;org.springframework.boot:spring-boot-starter-actuator&apos;</span><br><span class="line">#注册中心依赖</span><br><span class="line">implementation &apos;org.springframework.cloud:spring-cloud-starter-netflix-eureka-client&apos;</span><br></pre></td></tr></table></figure>
+<p>在resources下新建 bootstrap . yml文件，因为spring cloud的配置先读取的是bootstrap 文件。读取的顺序是bootstrap &gt;连接config获取的配置文件&gt; application 文件。否则启动时服务端拉数据的默认端口是8888</p>
+<p>bootstrap . yml配置</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">eureka:</span><br><span class="line">  client:</span><br><span class="line">    serviceUrl:</span><br><span class="line">      defaultZone: http://localhost:5678/eureka/</span><br><span class="line">spring:</span><br><span class="line">  application:</span><br><span class="line">    name: order</span><br><span class="line">  cloud:</span><br><span class="line">    config:</span><br><span class="line">      uri: http://localhost:9876</span><br><span class="line">      profile: a</span><br><span class="line">      label: master</span><br><span class="line"></span><br><span class="line">server:</span><br><span class="line">  port: 8030</span><br><span class="line"></span><br><span class="line">management:</span><br><span class="line">  endpoints:</span><br><span class="line">    web:</span><br><span class="line">      exposure:</span><br><span class="line">        include: refresh</span><br></pre></td></tr></table></figure>
+<p>此时启动客户端，控制台会打印下面的信息</p>
+<p><img src="/2019/11/12/spring-cloud-分布式配置中心/console.png" alt></p>
+<p>创建测试controller，这个</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">@RefreshScope</span><br><span class="line">@RestController</span><br><span class="line">public class TestController &#123;</span><br><span class="line"></span><br><span class="line">    @Value(&quot;$&#123;from&#125;&quot;)</span><br><span class="line">    private String from;</span><br><span class="line"></span><br><span class="line">    @RequestMapping(&quot;/service&quot;)</span><br><span class="line">    public String from() &#123;</span><br><span class="line"></span><br><span class="line">        return this.from;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public void setFrom(String from) &#123;</span><br><span class="line">        this.from = from;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public String getFrom() &#123;</span><br><span class="line">        return from;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>请求 <a href="http://localhost:8030/service" target="_blank" rel="noopener">http://localhost:8030/service</a> ，页面上显示值为 123</p>
+<p>如果这个时候修改order-a.properties 文件里面的from值为321，再次发起请求时页面仍未123，这时只要使用post方法请求  <a href="http://localhost:8030/actuator/refresh" target="_blank" rel="noopener">http://localhost:8030/actuator/refresh</a>  刷新配置，再次请求<a href="http://localhost:8030/service" target="_blank" rel="noopener">http://localhost:8030/service</a> ，页面上显示的值就成了321 。</p>
+<h2 id="添加重试机制"><a href="#添加重试机制" class="headerlink" title="添加重试机制"></a>添加重试机制</h2><p>当该方法有很多服务，需要一个一个去刷新，一般使用 MQ+spring-could-bus 消息总线模式来批量更新配置信息。  还有一个附加的，就是在服务端在从配置中心获取配置信息时，如果出现了网络波动，导致项目启动时无法获取信息的话，可以使用如下配置来规避。<br>还是在config-client项目上进行扩展 依赖</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">#重试机制的依赖</span><br><span class="line">implementation &apos;org.springframework.retry:spring-retry&apos;</span><br><span class="line">implementation &apos;org.springframework.boot:spring-boot-starter-aop&apos;</span><br></pre></td></tr></table></figure>
+<p>在config的客户端  application.properties 添加配置</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">#retry</span><br><span class="line">#和重试机制相关的配置有如下四个：</span><br><span class="line"># 配置重试次数，默认为6</span><br><span class="line">spring.cloud.config.retry.max-attempts=6</span><br><span class="line"># 间隔乘数，默认1.1</span><br><span class="line">spring.cloud.config.retry.multiplier=1.1</span><br><span class="line"># 初始重试间隔时间，默认1000ms</span><br><span class="line">spring.cloud.config.retry.initial-interval=1000</span><br><span class="line"># 最大间隔时间，默认2000ms</span><br><span class="line">spring.cloud.config.retry.max-interval=2000</span><br></pre></td></tr></table></figure>
+<p>在bootstrap .yml添加配置</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">#启动失败时能够快速响应</span><br><span class="line">#spring:</span><br><span class="line">		cloud:</span><br><span class="line">			config:</span><br><span class="line">				fail-fast=true</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/spring-cloud/" rel="tag"># spring cloud</a>
+          
+            <a href="/tags/config/" rel="tag"># config</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/11/12/springcloud-hystrix/" rel="next" title="spring-cloud-hystrix">
+                <i class="fa fa-chevron-left"></i> spring-cloud-hystrix
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/11/20/spring-boot创建webService/" rel="prev" title="spring-boot创建webService">
+                spring-boot创建webService <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  <div>
+    
+    <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:14px;">------ 本文结束------</div>
+    
+</div>
+    
+ </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/sliver.jpg" alt="wei xy">
+            
+              <p class="site-author-name" itemprop="name">wei xy</p>
+              <p class="site-description motion-element" itemprop="description">一步一步似爪牙</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">34</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">9</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">29</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+		  <iframe frameborder="no" border="0" marginwidth="0" marginheight="0" width="330" height="86" src="//music.163.com/outchain/player?type=2&id=28285910&auto=1&height=66"></iframe>
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#分布式配置中心（Dalston版本）"><span class="nav-number">1.</span> <span class="nav-text">分布式配置中心（Dalston版本）</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#传统作法"><span class="nav-number">1.1.</span> <span class="nav-text">传统作法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#服务端-config-server"><span class="nav-number">1.2.</span> <span class="nav-text">服务端 config-server</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#客户端-config-client"><span class="nav-number">1.3.</span> <span class="nav-text">客户端 config-client</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#添加重试机制"><span class="nav-number">1.4.</span> <span class="nav-text">添加重试机制</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+        <div class="back-to-top">
+          <i class="fa fa-arrow-up"></i>
+          
+            <span id="scrollpercent"><span>0</span>%</span>
+          
+        </div>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        
+<div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">wei xy</span>
+
+  
+</div>
+
+<!-- 
+  <div class="powered-by">由  强力驱动</div>
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash;  v5.1.4</div>
+
+-->
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  <!--动态标题-->
+<script type="text/javascript" src="/js/src/dytitle.js"></script>
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"model":{"jsonPath":"live2d-widget-model-miku"},"display":{"position":"right","width":150,"height":300},"mobile":{"show":false,"symbols_count_time":null},"symbols":true,"time":true,"total_symbols":true,"total_time":true,"log":false});</script></body>
+</html>
+<!-- 页面点击小红心 -->
+<script type="text/javascript" src="/js/src/love.js"></script>

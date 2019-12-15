@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="java基础,io/nio,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="一、同步和异步&amp;ensp;&amp;ensp;&amp;ensp;&amp;ensp;同步：同步方法一旦开始，必须等到方法执行完毕，才能继续执行后面的行为，比如java中的synchronized关键字的使用。&amp;ensp;&amp;ensp;&amp;ensp;&amp;ensp;异步：异步方法开始之后，调用者不必等待返回结果，可以继续执行下一步。&amp;ensp;&amp;ensp;&amp;ensp;&amp;ensp;同步一般在执行的过程中使整个流程暂停等待，而异步的">
+<meta name="keywords" content="java基础,io&#x2F;nio">
+<meta property="og:type" content="article">
+<meta property="og:title" content="java  IO模型">
+<meta property="og:url" content="http://yoursite.com/2019/04/15/javaIO模型/index.html">
+<meta property="og:site_name" content="放空">
+<meta property="og:description" content="一、同步和异步&amp;ensp;&amp;ensp;&amp;ensp;&amp;ensp;同步：同步方法一旦开始，必须等到方法执行完毕，才能继续执行后面的行为，比如java中的synchronized关键字的使用。&amp;ensp;&amp;ensp;&amp;ensp;&amp;ensp;异步：异步方法开始之后，调用者不必等待返回结果，可以继续执行下一步。&amp;ensp;&amp;ensp;&amp;ensp;&amp;ensp;同步一般在执行的过程中使整个流程暂停等待，而异步的">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://yoursite.com/2019/04/15/javaIO模型/manyThread.jpg">
+<meta property="og:image" content="http://yoursite.com/2019/04/15/javaIO模型/react.jpg">
+<meta property="og:updated_time" content="2019-04-17T16:21:05.403Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="java  IO模型">
+<meta name="twitter:description" content="一、同步和异步&amp;ensp;&amp;ensp;&amp;ensp;&amp;ensp;同步：同步方法一旦开始，必须等到方法执行完毕，才能继续执行后面的行为，比如java中的synchronized关键字的使用。&amp;ensp;&amp;ensp;&amp;ensp;&amp;ensp;异步：异步方法开始之后，调用者不必等待返回结果，可以继续执行下一步。&amp;ensp;&amp;ensp;&amp;ensp;&amp;ensp;同步一般在执行的过程中使整个流程暂停等待，而异步的">
+<meta name="twitter:image" content="http://yoursite.com/2019/04/15/javaIO模型/manyThread.jpg">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":true,"scrollpercent":true,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2019/04/15/javaIO模型/">
+
+
+
+
+
+  <title>java  IO模型 | 放空</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+	<a href="https://github.com/pignum1/pignum1.github.io.git"><img style="position: absolute; top: 0; right: 0;border: 0;" src="https://github.blog/wp-content/uploads/2008/12/forkme_right_darkblue_121621.png?resize=149%2C149" class="attachment-full size-full" alt="Fork me on GitHub" data-recalc-dims="1"></a>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">放空</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-categories" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/04/15/javaIO模型/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="wei xy">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/sliver.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="放空">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">java  IO模型</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-04-15T22:59:34+08:00">
+                2019-04-15
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/java-NIO/" itemprop="url" rel="index">
+                    <span itemprop="name">java NIO</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="一、同步和异步"><a href="#一、同步和异步" class="headerlink" title="一、同步和异步"></a>一、同步和异步</h1><p>&ensp;&ensp;&ensp;&ensp;<strong>同步</strong>：同步方法一旦开始，必须等到方法执行完毕，才能继续执行后面的行为，比如java中的synchronized关键字的使用。<br>&ensp;&ensp;&ensp;&ensp;<strong>异步</strong>：异步方法开始之后，调用者不必等待返回结果，可以继续执行下一步。<br>&ensp;&ensp;&ensp;&ensp;同步一般在执行的过程中使整个流程暂停等待，而异步的方法则在执行的时候不影响其他线程，所以异步一般是通过多线程来实现的。<br>&ensp;&ensp;&ensp;&ensp;事实上，同步和异步是一个非常广的概念，它们的重点在于多个任务和事件发生时，一个事件的发生或执行是否会导致整个流程的暂时等待。我觉得可以将同步和异步与Java中的synchronized关键字联系起来进行类比。当多个线</p>
+<h1 id="二、阻塞和非阻塞"><a href="#二、阻塞和非阻塞" class="headerlink" title="二、阻塞和非阻塞"></a>二、阻塞和非阻塞</h1><p>&ensp;&ensp;&ensp;&ensp;介绍了同步和异步的区别，来看一下阻塞和非阻塞的区别。<br>&ensp;&ensp;&ensp;&ensp;<strong>阻塞</strong>就是：当某个事件或者任务在执行过程中，它发出一个请求操作，但是由于该请求操作需要的条件不满足，那么就会一直在那等待，直至条件满足；<br>&ensp;&ensp;&ensp;&ensp;<strong>非阻塞</strong>就是：当某个事件或者任务在执行过程中，它发出一个请求操作，如果该请求操作需要的条件不满足，会立即返回一个标志信息告知条件不满足，不会一直在那等待。<br>这就是阻塞和非阻塞的区别。也就是说阻塞和非阻塞的区别关键在于当发出请求一个操作时，如果条件不满足，是会一直等待还是返回一个标志信息。<br>同步和异步着重点在于多个任务的执行过程中，一个任务的执行是否会导致整个流程的暂时等待；<br>而阻塞和非阻塞着重点在于发出一个请求操作时，如果进行操作的条件不满足是否会返会一个标志信息告知条件不满足。<br>理解阻塞和非阻塞可以同线程阻塞类比地理解，当一个线程进行一个请求操作时，如果条件不满足，则会被阻塞，即在那等待条件满足。</p>
+<h1 id="三、阻塞IO与非阻塞IO"><a href="#三、阻塞IO与非阻塞IO" class="headerlink" title="三、阻塞IO与非阻塞IO"></a>三、阻塞IO与非阻塞IO</h1><p>在了解阻塞IO和非阻塞IO之前，先看下一个具体的IO操作过程是怎么进行的。<br>通常来说，IO操作包括：对硬盘的读写、对socket的读写以及外设的读写。<br>当用户线程发起一个IO请求操作（本文以读请求操作为例），内核会去查看要读取的数据是否就绪，对于阻塞IO来说，如果数据没有就绪，则会一直在那等待，直到数据就绪；对于非阻塞IO来说，如果数据没有就绪，则会返回一个标志信息告知用户线程当前要读的数据没有就绪。当数据就绪之后，便将数据拷贝到用户线程，这样才完成了一个完整的IO读请求操作，也就是说一个完整的IO读请求操作包括两个阶段：<br>&ensp;&ensp;&ensp;&ensp;1）查看数据是否就绪；<br>&ensp;&ensp;&ensp;&ensp;2）进行数据拷贝（内核将数据拷贝到用户线程）。<br>&ensp;&ensp;&ensp;&ensp;那么阻塞（blocking IO）和非阻塞（non-blocking IO）的区别就在于第一个阶段，如果数据没有就绪，在查看数据是否就绪的过程中是一直等待，还是直接返回一个标志信息。<br>&ensp;&ensp;&ensp;&ensp;Java中传统的IO都是阻塞IO，比如通过socket来读数据，调用read()方法之后，如果数据没有就绪，当前线程就会一直阻塞在read方法调用那里，直到有数据才返回；而如果是非阻塞IO的话，当数据没有就绪，read()方法应该返回一个标志信息，告知当前线程数据没有就绪，而不是一直在那里等待。</p>
+<h1 id="四、同步IO与异步IO"><a href="#四、同步IO与异步IO" class="headerlink" title="四、同步IO与异步IO"></a>四、同步IO与异步IO</h1><p>我们先来看一下同步IO和异步IO的定义，在《Unix网络编程》一书中对同步IO和异步IO的定义是这样的：<br>A synchronous I/O operation causes the requesting process to be blocked until that I/O operation completes.<br>An asynchronous I/O operation does not cause the requesting process to be blocked.<br>从字面的意思可以看出：同步IO即 如果一个线程请求进行IO操作，在IO操作完成之前，该线程会被阻塞；<br>而异步IO为 如果一个线程请求进行IO操作，IO操作不会导致请求线程被阻塞。<br>事实上，同步IO和异步IO模型是针对用户线程和内核的交互来说的：<br>对于同步IO：当用户发出IO请求操作之后，如果数据没有就绪，需要通过用户线程或者内核不断地去轮询数据是否就绪，当数据就绪时，再将数据从内核拷贝到用户线程；<br>而异步IO：只有IO请求操作的发出是由用户线程来进行的，IO操作的两个阶段都是由内核自动完成，然后发送通知告知用户线程IO操作已经完成。也就是说在异步IO中，不会对用户线程产生任何阻塞。<br>这是同步IO和异步IO关键区别所在，同步IO和异步IO的关键区别反映在数据拷贝阶段是由用户线程完成还是内核完成。所以说异步IO必须要有操作系统的底层支持。<br>阻塞IO和非阻塞IO是反映在当用户请求IO操作时，如果数据没有就绪，是用户线程一直等待数据就绪，还是会收到一个标志信息这一点上面的。也就是说，阻塞IO和非阻塞IO是反映在IO操作的第一个阶段，在查看数据是否就绪时是如何处理的。</p>
+<h1 id="五、五种IO模型"><a href="#五、五种IO模型" class="headerlink" title="五、五种IO模型"></a>五、五种IO模型</h1><p>在《Unix网络编程》一书中提到了五种IO模型，分别是：阻塞IO、非阻塞IO、多路复用IO、信号驱动IO以及异步IO</p>
+<h2 id="1、阻塞IO模型"><a href="#1、阻塞IO模型" class="headerlink" title="1、阻塞IO模型"></a>1、阻塞IO模型</h2><p>典型的IO模型例子，就是在读/写操作中阻塞<br>当用户线程发出IO请求之后，内核会去查看数据是否就绪，如果没有就绪就会等待数据就绪，而用户线程就会处于阻塞状态，用户线程交出CPU，当数据就绪后，内核将数据拷贝到用户线程，此时用户线程解除LOCK的状态。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">data = socket.read();</span><br></pre></td></tr></table></figure></p>
+<p>如果数据一直没准备好，线程就会一直阻塞在read()</p>
+<h2 id="2、非阻塞IO模型"><a href="#2、非阻塞IO模型" class="headerlink" title="2、非阻塞IO模型"></a>2、非阻塞IO模型</h2><p>当用户线程发起一个read操作后，并不需要等待，而是马上就得到了一个结果。如果结果是一个error时，它就知道数据还没有准备好，于是它可以再次发送read操作。一旦内核中的数据准备好了，并且又再次收到了用户线程的请求，那么它马上就将数据拷贝到了用户线程，然后返回。<br>所以事实上，在非阻塞IO模型中，用户线程需要不断地询问内核数据是否就绪，也就说非阻塞IO不会交出CPU，而会一直占用CPU。典型的非阻塞IO模型一般如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">while(true)&#123; </span><br><span class="line">    data = socket.read(); </span><br><span class="line">    if(data!= error)&#123; </span><br><span class="line">        处理数据 </span><br><span class="line">        break; </span><br><span class="line">    &#125; </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h2 id="3、多路复用IO模型"><a href="#3、多路复用IO模型" class="headerlink" title="3、多路复用IO模型"></a>3、多路复用IO模型</h2><p>&ensp;&ensp;&ensp;&ensp;多路复用IO模型是目前使用得比较多的模型。Java NIO实际上就是多路复用IO。<br>在多路复用IO模型中，会有一个线程不断去轮询多个socket的状态，只有当socket真正有读写事件时，才真正调用实际的IO读写操作。因为在多路复用IO模型中，只需要使用一个线程就可以管理多个socket，系统不需要建立新的进程或者线程，也不必维护这些线程和进程，并且只有在真正有socket读写事件进行时，才会使用IO资源，所以它大大减少了资源占用。<br>在Java NIO中，是通过selector.select()去查询每个通道是否有到达事件，如果没有事件，则一直阻塞在那里，因此这种方式会导致用户线程的阻塞。<br>多路复用IO模式，通过一个线程就可以管理多个socket，只有当socket真正有读写事件发生才会占用资源来进行实际的读写操作。因此，多路复用IO比较适合连接数比较多的情况。<br>另外多路复用IO为何比非阻塞IO模型的效率高是因为在非阻塞IO中，不断地询问socket状态是通过用户线程去进行的，而在多路复用IO中，轮询每个socket状态是内核在进行的，这个效率要比用户线程要高的多。<br>不过要注意的是，多路复用IO模型是通过轮询的方式来检测是否有事件到达，并且对到达的事件逐一进行响应。因此对于多路复用IO模型来说，一旦事件响应体很大，那么就会导致后续的事件迟迟得不到处理，并且会影响新的事件轮询</p>
+<h2 id="4、信号驱动IO模型"><a href="#4、信号驱动IO模型" class="headerlink" title="4、信号驱动IO模型"></a>4、信号驱动IO模型</h2><p>&ensp;&ensp;&ensp;&ensp;在信号驱动IO模型中，当用户线程发起一个IO请求操作，会给对应的socket注册一个信号函数，然后用户线程会继续执行，当内核数据就绪时会发送一个信号给用户线程，用户线程接收到信号之后，便在信号函数中调用IO读写操作来进行实际的IO请求操作。</p>
+<h2 id="5、异步的IO模型"><a href="#5、异步的IO模型" class="headerlink" title="5、异步的IO模型"></a>5、异步的IO模型</h2><p>&ensp;&ensp;&ensp;&ensp;异步IO模型才是最理想的IO模型，在异步IO模型中，当用户线程发起read操作之后，立刻就可以开始去做其它的事。而另一方面，从内核的角度，当它收到一个asynchronous read之后，它会立刻返回，说明read请求已经成功发起了，因此不会对用户线程产生任何block。然后，内核会等待数据准备完成，然后将数据拷贝到用户线程，当这一切都完成之后，内核会给用户线程发送一个信号，告诉它read操作完成了。也就说用户线程完全不需要知道实际的整个IO操作是如何进行的，只需要先发起一个请求，当接收内核返回的成功信号时表示IO操作已经完成，可以直接去使用数据了。<br>&ensp;&ensp;&ensp;&ensp;也就说在异步IO模型中，IO操作的两个阶段都不会阻塞用户线程，这两个阶段都是由内核自动完成，然后发送一个信号告知用户线程操作已完成。用户线程中不需要再次调用IO函数进行具体的读写。这点是和信号驱动模型有所不同的，在信号驱动模型中，当用户线程接收到信号表示数据已经就绪，然后需要用户线程调用IO函数进行实际的读写操作；而在异步IO模型中，收到信号表示IO操作已经完成，不需要再在用户线程中调用iO函数进行实际的读写操作。<br>&ensp;&ensp;&ensp;&ensp;注意，异步IO是需要操作系统的底层支持，在Java 7中，提供了Asynchronous IO。</p>
+<h1 id="六、高性能的IO设计"><a href="#六、高性能的IO设计" class="headerlink" title="六、高性能的IO设计"></a>六、高性能的IO设计</h1><p>&ensp;&ensp;&ensp;&ensp;在传统的网络服务设计模式中，有两种比较经典的模式：一种是 多线程，一种是线程池。对于多线程模式，也就说来了client，服务器就会新建一个线程来处理该client的读写事件，如下图所示：<br><img src="/2019/04/15/javaIO模型/manyThread.jpg" alt><br>&ensp;&ensp;&ensp;&ensp;因此，为了解决这种一个线程对应一个客户端模式带来的问题，提出了采用线程池的方式，也就说创建一个固定大小的线程池，来一个客户端，就从线程池取一个空闲线程来处理，当客户端处理完读写操作之后，就交出对线程的占用。因此这样就避免为每一个客户端都要创建线程带来的资源浪费，使得线程可以重用<br>&ensp;&ensp;&ensp;&ensp;在Reactor模式中，会先对每个client注册感兴趣的事件，然后有一个线程专门去轮询每个client是否有事件发生，当有事件发生时，便顺序处理每个事件，当所有事件处理完之后，便再转去继续轮询，如下图所示：<br><img src="/2019/04/15/javaIO模型/react.jpg" alt><br>&ensp;&ensp;&ensp;&ensp;从这里可以看出，上面的五种IO模型中的多路复用IO就是采用Reactor模式。注意，上面的图中展示的 是顺序处理每个事件，当然为了提高事件处理速度，可以通过多线程或者线程池的方式来处理事件</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/java基础/" rel="tag"># java基础</a>
+          
+            <a href="/tags/io-nio/" rel="tag"># io/nio</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/04/15/java-IOandNIO（一）/" rel="next" title="java IO与NIO的区别（一）">
+                <i class="fa fa-chevron-left"></i> java IO与NIO的区别（一）
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/04/17/java-IOandNIO（二）/" rel="prev" title="java-IOandNIO（二）">
+                java-IOandNIO（二） <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  <div>
+    
+    <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:14px;">------ 本文结束------</div>
+    
+</div>
+    
+ </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/sliver.jpg" alt="wei xy">
+            
+              <p class="site-author-name" itemprop="name">wei xy</p>
+              <p class="site-description motion-element" itemprop="description">一步一步似爪牙</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">34</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">9</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">29</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+		  <iframe frameborder="no" border="0" marginwidth="0" marginheight="0" width="330" height="86" src="//music.163.com/outchain/player?type=2&id=28285910&auto=1&height=66"></iframe>
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#一、同步和异步"><span class="nav-number">1.</span> <span class="nav-text">一、同步和异步</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#二、阻塞和非阻塞"><span class="nav-number">2.</span> <span class="nav-text">二、阻塞和非阻塞</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#三、阻塞IO与非阻塞IO"><span class="nav-number">3.</span> <span class="nav-text">三、阻塞IO与非阻塞IO</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#四、同步IO与异步IO"><span class="nav-number">4.</span> <span class="nav-text">四、同步IO与异步IO</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#五、五种IO模型"><span class="nav-number">5.</span> <span class="nav-text">五、五种IO模型</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1、阻塞IO模型"><span class="nav-number">5.1.</span> <span class="nav-text">1、阻塞IO模型</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2、非阻塞IO模型"><span class="nav-number">5.2.</span> <span class="nav-text">2、非阻塞IO模型</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3、多路复用IO模型"><span class="nav-number">5.3.</span> <span class="nav-text">3、多路复用IO模型</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4、信号驱动IO模型"><span class="nav-number">5.4.</span> <span class="nav-text">4、信号驱动IO模型</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5、异步的IO模型"><span class="nav-number">5.5.</span> <span class="nav-text">5、异步的IO模型</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#六、高性能的IO设计"><span class="nav-number">6.</span> <span class="nav-text">六、高性能的IO设计</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+        <div class="back-to-top">
+          <i class="fa fa-arrow-up"></i>
+          
+            <span id="scrollpercent"><span>0</span>%</span>
+          
+        </div>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        
+<div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">wei xy</span>
+
+  
+</div>
+
+<!-- 
+  <div class="powered-by">由  强力驱动</div>
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash;  v5.1.4</div>
+
+-->
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  <!--动态标题-->
+<script type="text/javascript" src="/js/src/dytitle.js"></script>
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"model":{"jsonPath":"live2d-widget-model-miku"},"display":{"position":"right","width":150,"height":300},"mobile":{"show":false,"symbols_count_time":null},"symbols":true,"time":true,"total_symbols":true,"total_time":true,"log":false});</script></body>
+</html>
+<!-- 页面点击小红心 -->
+<script type="text/javascript" src="/js/src/love.js"></script>

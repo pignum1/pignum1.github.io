@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="redis,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="redis&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;Springboot整合Redis有两种方式，分别是Jedis和RedisTemplate,Jedis是Redis官方推荐的面向Java的操作Redis的客户端，而RedisTemplate是SpringDataRedis中对JedisApi的高度封装。其实在Springboot的官网上我们也能看到，官方现在推荐的是SpringDataRe">
+<meta name="keywords" content="redis">
+<meta property="og:type" content="article">
+<meta property="og:title" content="spring-boot redis">
+<meta property="og:url" content="http://yoursite.com/2019/08/10/spring-boot-redis/index.html">
+<meta property="og:site_name" content="放空">
+<meta property="og:description" content="redis&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;Springboot整合Redis有两种方式，分别是Jedis和RedisTemplate,Jedis是Redis官方推荐的面向Java的操作Redis的客户端，而RedisTemplate是SpringDataRedis中对JedisApi的高度封装。其实在Springboot的官网上我们也能看到，官方现在推荐的是SpringDataRe">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://yoursite.com/2019/08/10/spring-boot-redis/aaa.png">
+<meta property="og:image" content="http://yoursite.com/2019/08/10/spring-boot-redis/bbb.png">
+<meta property="og:updated_time" content="2019-08-13T10:07:43.965Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="spring-boot redis">
+<meta name="twitter:description" content="redis&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;Springboot整合Redis有两种方式，分别是Jedis和RedisTemplate,Jedis是Redis官方推荐的面向Java的操作Redis的客户端，而RedisTemplate是SpringDataRedis中对JedisApi的高度封装。其实在Springboot的官网上我们也能看到，官方现在推荐的是SpringDataRe">
+<meta name="twitter:image" content="http://yoursite.com/2019/08/10/spring-boot-redis/aaa.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":true,"scrollpercent":true,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2019/08/10/spring-boot-redis/">
+
+
+
+
+
+  <title>spring-boot redis | 放空</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+	<a href="https://github.com/pignum1/pignum1.github.io.git"><img style="position: absolute; top: 0; right: 0;border: 0;" src="https://github.blog/wp-content/uploads/2008/12/forkme_right_darkblue_121621.png?resize=149%2C149" class="attachment-full size-full" alt="Fork me on GitHub" data-recalc-dims="1"></a>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">放空</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-categories" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/08/10/spring-boot-redis/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="wei xy">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/sliver.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="放空">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">spring-boot redis</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-08-10T20:23:05+08:00">
+                2019-08-10
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/spring-boot/" itemprop="url" rel="index">
+                    <span itemprop="name">spring boot</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="redis"><a href="#redis" class="headerlink" title="redis"></a>redis</h1><p>&nbsp;&nbsp;&nbsp;&nbsp;Springboot整合Redis有两种方式，分别是Jedis和RedisTemplate,Jedis是Redis官方推荐的面向Java的操作Redis的客户端，而RedisTemplate是SpringDataRedis中对JedisApi的高度封装。其实在Springboot的官网上我们也能看到，官方现在推荐的是SpringDataRedis形式，相对于Jedis来说可以方便地更换Redis的Java客户端，其比Jedis多了自动管理连接池的特性，方便与其他Spring框架进行搭配使用如：SpringCache。<br>我的spring boot 版本是1.4.5，所以和spring boot 2.x可能会有些不一样</p>
+<h1 id="spring-boot-1-x-引入redis连接"><a href="#spring-boot-1-x-引入redis连接" class="headerlink" title="spring boot 1.x 引入redis连接"></a>spring boot 1.x 引入redis连接</h1><p>首先引入redis的依赖<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">//redis</span><br><span class="line">      compile group: &apos;org.springframework.data&apos;, name: &apos;spring-data-redis&apos;, version: &apos;1.7.2.RELEASE&apos;</span><br><span class="line">      // jedis</span><br><span class="line">      compile group: &apos;redis.clients&apos;, name: &apos;jedis&apos;, version: &apos;2.9.0&apos;</span><br></pre></td></tr></table></figure></p>
+<p>在application。properties中配置redis的设置和链接地址<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"># REDIS (RedisProperties)</span><br><span class="line"># Redis数据库索引（默认为0）</span><br><span class="line">spring.redis.database=0</span><br><span class="line"># Redis服务器地址</span><br><span class="line">spring.redis.host=xx.xxx.xx.xx</span><br><span class="line"># Redis服务器连接端口</span><br><span class="line">spring.redis.port=6379</span><br><span class="line">#客户端超时时间单位是毫秒 默认是2000</span><br><span class="line">spring.redis.timeout=10000</span><br><span class="line">#最大空闲数</span><br><span class="line">spring.redis.maxIdle=300</span><br><span class="line">#连接池的最大数据库连接数。设为0表示无限制,如果是jedis 2.4以后用redis.maxTotal</span><br><span class="line">#redis.maxActive=600</span><br><span class="line">#控制一个pool可分配多少个jedis实例,用来替换上面的redis.maxActive,如果是jedis 2.4以后用该属性</span><br><span class="line">spring.redis.maxTotal=1000</span><br><span class="line">#最大建立连接等待时间。如果超过此时间将接到异常。设为-1表示无限制。</span><br><span class="line">spring.redis.maxWaitMillis=1000</span><br><span class="line">#连接的最小空闲时间 默认1800000毫秒(30分钟)</span><br><span class="line">spring.redis.minEvictableIdleTimeMillis=300000</span><br><span class="line">#每次释放连接的最大数目,默认3</span><br><span class="line">spring.redis.numTestsPerEvictionRun=1024</span><br><span class="line">#逐出扫描的时间间隔(毫秒) 如果为负数,则不运行逐出线程, 默认-1</span><br><span class="line">spring.redis.timeBetweenEvictionRunsMillis=30000</span><br><span class="line">#是否在从池中取出连接前进行检验,如果检验失败,则从池中去除连接并尝试取出另一个</span><br><span class="line">spring.redis.testOnBorrow=true</span><br><span class="line">#在空闲时检查有效性, 默认false</span><br></pre></td></tr></table></figure></p>
+<p>在spring b00t 1.0中，编写简单的测试用例<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">@Autowired</span><br><span class="line">	private StringRedisTemplate stringRedisTemplate;</span><br><span class="line"></span><br><span class="line">	@Test</span><br><span class="line">	public void test() throws Exception &#123;</span><br><span class="line">		// 保存字符串</span><br><span class="line">		stringRedisTemplate.opsForValue().set(&quot;aaa&quot;, &quot;111&quot;);</span><br><span class="line">		Assert.assertEquas(&quot;111&quot;, stringRedisTemplate.opsForValue().get(&quot;aaa&quot;));</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure></p>
+<p>用redisDesktopManager打开redis就会看见redis中存入了一个key-value的数据<br><img src="/2019/08/10/spring-boot-redis/aaa.png" alt><br>通过上面这段极为简单的测试案例演示了如何通过自动配置的StringRedisTemplate对象进行Redis的读写操作，该对象从命名中就可注意到支持的是String类型。如果有使用过spring-data-redis的开发者一定熟悉RedisTemplate&lt;K, V&gt;接口，StringRedisTemplate就相当于RedisTemplate&lt;String, String&gt;的实现。</p>
+<h2 id="redis存放对象RedisTemplate"><a href="#redis存放对象RedisTemplate" class="headerlink" title="redis存放对象RedisTemplate"></a>redis存放对象RedisTemplate</h2><p>除了String类型，实经常会在Redis中存储对象，这时候我们就会想是否可以使用类似RedisTemplate&lt;String, User&gt;来初始化并进行操作。但是Spring Boot并不支持直接使用，需要我们自己实现RedisSerializer<t>接口来对传入对象进行序列化和反序列化<br>所以序列化和反序列化的方法需要我们重写,首先创建一个需要存储的对象，这里我就直接使用User这个对象<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">public class User extends BaseEntity implements Serializable &#123;</span><br><span class="line">    @Column</span><br><span class="line">    private String username;</span><br><span class="line">    @Column</span><br><span class="line">    private String password;</span><br><span class="line">//get set 省略</span><br></pre></td></tr></table></figure></t></p>
+<p>这个配置类非必要，如过出现了jedis connect refused，排除了redis 配置的 #bind 127.0.0.1 等配置问题仍然无效, 这个配置可能有用，这个是指定jedis的链接地址和端口，默认的是连接本地的127.0.0.1：6379<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">@Configuration</span><br><span class="line">@PropertySource(value = &quot;classpath:/application.properties&quot;)</span><br><span class="line">public class JedisRedisConfig &#123;</span><br><span class="line"></span><br><span class="line">    @Value(&quot;&amp;&#123;spring.redis.host&#125;&quot;)</span><br><span class="line">    private  String host;</span><br><span class="line">    @Value(&quot;&amp;&#123;spring.redis.password&#125;&quot;)</span><br><span class="line">    private  String password;</span><br><span class="line">    @Value(&quot;&amp;&#123;spring.redis.port&#125;&quot;)</span><br><span class="line">    private  int port;</span><br><span class="line">    @Value(&quot;&amp;&#123;spring.redis.timeout&#125;&quot;)</span><br><span class="line">    private  int timeout;</span><br><span class="line">    @Bean</span><br><span class="line">    JedisConnectionFactory jedisConnectionFactory() &#123;</span><br><span class="line">        JedisConnectionFactory factory = new JedisConnectionFactory();</span><br><span class="line">        factory.setHostName(host);</span><br><span class="line">        factory.setPort(port);</span><br><span class="line">        factory.setTimeout(timeout); //设置连接超时时间</span><br><span class="line">        return factory;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>自定义redis的对象序列化和反序列化方法RedisObjectSerializer<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line">public class RedisObjectSerializer implements RedisSerializer&lt;Object&gt; &#123;</span><br><span class="line">    private Converter&lt;Object, byte[]&gt; serializer = new SerializingConverter();</span><br><span class="line">    private Converter&lt;byte[], Object&gt; deserializer = new DeserializingConverter();</span><br><span class="line"></span><br><span class="line">    static final byte[] EMPTY_ARRAY = new byte[0];</span><br><span class="line"></span><br><span class="line">    public Object deserialize(byte[] bytes) &#123;</span><br><span class="line">        if (isEmpty(bytes)) &#123;</span><br><span class="line">            return null;</span><br><span class="line">        &#125;</span><br><span class="line">        try &#123;</span><br><span class="line">            return deserializer.convert(bytes);</span><br><span class="line">        &#125; catch (Exception ex) &#123;</span><br><span class="line">            throw new SerializationException(&quot;Cannot deserialize&quot;, ex);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public byte[] serialize(Object object) &#123;</span><br><span class="line">        if (object == null) &#123;</span><br><span class="line">            return EMPTY_ARRAY;</span><br><span class="line">        &#125;</span><br><span class="line">        try &#123;</span><br><span class="line">            return serializer.convert(object);</span><br><span class="line">        &#125; catch (Exception ex) &#123;</span><br><span class="line">            return EMPTY_ARRAY;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    private boolean isEmpty(byte[] data) &#123;</span><br><span class="line">        return (data == null || data.length == 0);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>最后是RedisTemplate实例方法<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">@Configuration</span><br><span class="line">public class RedisConfig &#123;</span><br><span class="line">    @Bean</span><br><span class="line">    JedisConnectionFactory jedisConnectionFactory() &#123;</span><br><span class="line">        return new JedisConnectionFactory();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    @Bean</span><br><span class="line">    public RedisTemplate&lt;String, Object&gt; redisTemplate(RedisConnectionFactory factory) &#123;</span><br><span class="line">        RedisTemplate&lt;String, Object&gt; template = new RedisTemplate&lt;String, Object&gt;();</span><br><span class="line">        template.setConnectionFactory(jedisConnectionFactory());</span><br><span class="line">        template.setKeySerializer(new StringRedisSerializer());</span><br><span class="line">        template.setValueSerializer(new RedisObjectSerializer());</span><br><span class="line">        return template;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>最后运行测试用例实现redis的存储，(这里我遇见了一个问题，默认的序列化后对象在redis中是乱码的,因为我们项目中的对象是以JSON的格式存储到redis中的，等我继续研究哦)<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">@Autowired(required = true)</span><br><span class="line">   private RedisTemplate redisTemplate;</span><br><span class="line">   @Test</span><br><span class="line">   public void testSave()&#123;</span><br><span class="line">// 保存对象</span><br><span class="line">       User user = new User();</span><br><span class="line">       user.setUsername(&quot;1&quot;);</span><br><span class="line">       user.setPassword(&quot;2&quot;);</span><br><span class="line">       redisTemplate.opsForValue().set(user.getUsername(), user);</span><br><span class="line">	//获取对象并发现返回的对象结果正确</span><br><span class="line">       Object object = redisTemplate.opsForValue().get( &quot;1&quot; );</span><br><span class="line">       System.out.println(object.toString());</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure></p>
+<p>emmm,我有了一个猥琐的想法，可以使用fastjson将对象转成JSON,在使用stringRedisTemplate将json存放到redis中，想到就试了试<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">@Autowired</span><br><span class="line">   private StringRedisTemplate stringRedisTemplate;</span><br><span class="line"></span><br><span class="line"> @Test</span><br><span class="line">   public void testString()&#123;</span><br><span class="line">       User user = new User();</span><br><span class="line">       user.setUsername(&quot;1&quot;);</span><br><span class="line">       user.setPassword(&quot;2&quot;);</span><br><span class="line">       stringRedisTemplate.opsForValue().set( user.getUsername(),user.toString() );</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure></p>
+<p>这个时候的确redis内存放的是JSON字符<br><img src="/2019/08/10/spring-boot-redis/bbb.png" alt><br>but…..,然后发现了在redis的序列化的时候其实是可以指定序列化的方式的,所以如果不需要自定义特殊的序列化方式，就直接使用jackson,对了配置文件也只写着一个就行了。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">@Bean</span><br><span class="line">   public RedisTemplate&lt;String, Object&gt; redisTemplate(RedisConnectionFactory factory) &#123;</span><br><span class="line">       RedisTemplate&lt;String, Object&gt; template = new RedisTemplate&lt;String, Object&gt;();</span><br><span class="line">       template.setConnectionFactory(jedisConnectionFactory());</span><br><span class="line"></span><br><span class="line">       //jackson的序列方式</span><br><span class="line">       Jackson2JsonRedisSerializer jackson2JsonRedisSerializer = new Jackson2JsonRedisSerializer(Object.class);</span><br><span class="line">       ObjectMapper om = new ObjectMapper();</span><br><span class="line">       om.setVisibility( PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY);</span><br><span class="line">       om.enableDefaultTyping(ObjectMapper.DefaultTyping.NON_FINAL);</span><br><span class="line">       jackson2JsonRedisSerializer.setObjectMapper(om);</span><br><span class="line">       //string的序列方式</span><br><span class="line">       StringRedisSerializer stringRedisSerializer = new StringRedisSerializer();</span><br><span class="line">       //key值按String的方式</span><br><span class="line">       template.setKeySerializer(stringRedisSerializer);</span><br><span class="line">       //value 以json的方式</span><br><span class="line">       template.setValueSerializer(jackson2JsonRedisSerializer);</span><br><span class="line">       template.afterPropertiesSet();</span><br><span class="line">       return template;</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure></p>
+<h1 id="spring-boot-1-x-redis-的注解使用"><a href="#spring-boot-1-x-redis-的注解使用" class="headerlink" title="spring boot 1.x  redis 的注解使用"></a>spring boot 1.x  redis 的注解使用</h1><p>spring boot 使用注解的方式开启缓存，首先是配置缓存的配置文件类<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line">@Configuration</span><br><span class="line">@EnableCaching</span><br><span class="line">public class CacheConfig extends CachingConfigurerSupport &#123;</span><br><span class="line"></span><br><span class="line">    @SuppressWarnings(&quot;rawtypes&quot;)</span><br><span class="line">    @Bean</span><br><span class="line">    public CacheManager cacheManager(RedisTemplate redisTemplate) &#123;</span><br><span class="line">        RedisCacheManager rcm = new RedisCacheManager( redisTemplate );</span><br><span class="line">        // 多个缓存的名称,目前只定义了一个</span><br><span class="line">        rcm.setCacheNames( Arrays.asList( &quot;thisredis&quot; ) );</span><br><span class="line">        //设置缓存过期时间(秒)</span><br><span class="line">        rcm.setDefaultExpiration( 600 );</span><br><span class="line">        return rcm;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    @Bean</span><br><span class="line">    public RedisTemplate&lt;String, String&gt; redisTemplate(RedisConnectionFactory factory) &#123;</span><br><span class="line">        StringRedisTemplate template = new StringRedisTemplate( factory );</span><br><span class="line">        Jackson2JsonRedisSerializer jackson2JsonRedisSerializer = new Jackson2JsonRedisSerializer( Object.class );</span><br><span class="line">        ObjectMapper om = new ObjectMapper();</span><br><span class="line">        om.setVisibility( PropertyAccessor.ALL,JsonAutoDetect.Visibility.ANY );</span><br><span class="line">        om.enableDefaultTyping( ObjectMapper.DefaultTyping.NON_FINAL );</span><br><span class="line">        jackson2JsonRedisSerializer.setObjectMapper( om );</span><br><span class="line">        template.setValueSerializer( jackson2JsonRedisSerializer );</span><br><span class="line">        template.afterPropertiesSet();</span><br><span class="line">        return template;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">//这个是因为默认的JedisConnectionFactory是本地的redis,我链接的是我服务器上的配置，所以要手动配置一下</span><br><span class="line">    @Bean</span><br><span class="line">    JedisConnectionFactory jedisConnectionFactory() &#123;</span><br><span class="line">        JedisConnectionFactory factory = new JedisConnectionFactory();</span><br><span class="line">        factory.setHostName(&quot;xx.xxx.xx.xx&quot;);</span><br><span class="line">        factory.setPort(6379);</span><br><span class="line">        factory.setTimeout(0); //设置连接超时时间</span><br><span class="line">        return factory;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>这个时候启动服务就没有问题，接下来就编写缓存的方法还有测试类,这个方法指定了缓存名称，key是自定义的key值，condition 是配置当id不为3的时候将方法放入缓存中。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">@Cacheable(value = &quot;thisredis&quot;,key=&quot;&apos;users_&apos;+#id&quot;，condition=&quot;#id!=3&quot;)</span><br><span class="line">   public String getUser(int id) &#123;</span><br><span class="line">       System.out.println( &quot;Method executed..&quot; );</span><br><span class="line">       if (id == 1) &#123;</span><br><span class="line">           return &quot;User 1&quot;;</span><br><span class="line">       &#125; else &#123;</span><br><span class="line">           return &quot;User 2&quot;;</span><br><span class="line">       &#125;</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">@CacheEvict(value=&quot;thisredis&quot;, key=&quot;&apos;users_&apos;+#id&quot;,condition=&quot;#id!=1&quot;)</span><br><span class="line">   @PostMapping(&quot;/delUser&quot;)</span><br><span class="line">   public void delUser(Integer id) &#123;</span><br><span class="line">       // 删除user</span><br><span class="line">	System.out.pringln(&quot;缓存删除&quot;)；</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure></p>
+<table>
+<thead>
+<tr>
+<th>属性名称</th>
+<th style="text-align:left">描述</th>
+<th style="text-align:center">示例</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>methodName</td>
+<td style="text-align:left">当前方法名</td>
+<td style="text-align:center">#root.methodName</td>
+</tr>
+<tr>
+<td>targetClass</td>
+<td style="text-align:left">当前被调用的对象的class</td>
+<td style="text-align:center">#root.targetClass</td>
+</tr>
+<tr>
+<td>caches</td>
+<td style="text-align:left">当前被调用的方法使用的Cache</td>
+<td style="text-align:center">#root.caches[0].name</td>
+</tr>
+</tbody>
+</table>
+<p>编写测试用例<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">public static void main(String[] args) &#123;</span><br><span class="line">       AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext();</span><br><span class="line">       ctx.register( CacheConfig.class );</span><br><span class="line">       ctx.refresh();</span><br><span class="line">       User user = ctx.getBean(User.class);</span><br><span class="line">       System.out.println(user.getUser( 1 ));</span><br><span class="line">       System.out.println(user.getUser( 1 ));</span><br><span class="line">       System.out.println(user.getUser( 2 ));</span><br><span class="line">       ctx.close();</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure></p>
+<p>在getUser方面里面添加断点，可以发现在第二次调用user.getUser( 1 )时没有进入断点，而在调用user.getUser( 2 )进入了断点，因为在第二次user.getUser( 1) 的时候数据是从缓存中取出的，而调用delUser的时候会删除缓存区中key相同的数据</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/redis/" rel="tag"># redis</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/08/08/linuz-redis-安装/" rel="next" title="linux redis 安装">
+                <i class="fa fa-chevron-left"></i> linux redis 安装
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/08/18/spring-boot连接mongodb/" rel="prev" title="spring-boot连接mongodb">
+                spring-boot连接mongodb <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  <div>
+    
+    <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:14px;">------ 本文结束------</div>
+    
+</div>
+    
+ </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/sliver.jpg" alt="wei xy">
+            
+              <p class="site-author-name" itemprop="name">wei xy</p>
+              <p class="site-description motion-element" itemprop="description">一步一步似爪牙</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">34</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">9</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">29</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+		  <iframe frameborder="no" border="0" marginwidth="0" marginheight="0" width="330" height="86" src="//music.163.com/outchain/player?type=2&id=28285910&auto=1&height=66"></iframe>
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#redis"><span class="nav-number">1.</span> <span class="nav-text">redis</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#spring-boot-1-x-引入redis连接"><span class="nav-number">2.</span> <span class="nav-text">spring boot 1.x 引入redis连接</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#redis存放对象RedisTemplate"><span class="nav-number">2.1.</span> <span class="nav-text">redis存放对象RedisTemplate</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#spring-boot-1-x-redis-的注解使用"><span class="nav-number">3.</span> <span class="nav-text">spring boot 1.x  redis 的注解使用</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+        <div class="back-to-top">
+          <i class="fa fa-arrow-up"></i>
+          
+            <span id="scrollpercent"><span>0</span>%</span>
+          
+        </div>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        
+<div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">wei xy</span>
+
+  
+</div>
+
+<!-- 
+  <div class="powered-by">由  强力驱动</div>
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash;  v5.1.4</div>
+
+-->
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  <!--动态标题-->
+<script type="text/javascript" src="/js/src/dytitle.js"></script>
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"model":{"jsonPath":"live2d-widget-model-miku"},"display":{"position":"right","width":150,"height":300},"mobile":{"show":false,"symbols_count_time":null},"symbols":true,"time":true,"total_symbols":true,"total_time":true,"log":false});</script></body>
+</html>
+<!-- 页面点击小红心 -->
+<script type="text/javascript" src="/js/src/love.js"></script>

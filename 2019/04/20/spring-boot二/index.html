@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="spring boot,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="spring boot 模板引擎&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;在我们开发Web应用的时候，需要引用大量的js、css、图片等静态资源。在动态HTML实现上Spring Boot依然可以完美胜任，并且提供了多种模板引擎的默认配置支持，所以在推荐的模板引擎下，我们可以很快的上手开发动态网站。Spring Boot提供了默认配置的模板引擎主要有以下几种：&amp;nbsp;&amp;nbsp;&amp;nbs">
+<meta name="keywords" content="spring boot">
+<meta property="og:type" content="article">
+<meta property="og:title" content="spring-boot web模板引擎和统一异常处理">
+<meta property="og:url" content="http://yoursite.com/2019/04/20/spring-boot二/index.html">
+<meta property="og:site_name" content="放空">
+<meta property="og:description" content="spring boot 模板引擎&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;在我们开发Web应用的时候，需要引用大量的js、css、图片等静态资源。在动态HTML实现上Spring Boot依然可以完美胜任，并且提供了多种模板引擎的默认配置支持，所以在推荐的模板引擎下，我们可以很快的上手开发动态网站。Spring Boot提供了默认配置的模板引擎主要有以下几种：&amp;nbsp;&amp;nbsp;&amp;nbs">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2019-11-25T17:09:09.812Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="spring-boot web模板引擎和统一异常处理">
+<meta name="twitter:description" content="spring boot 模板引擎&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;在我们开发Web应用的时候，需要引用大量的js、css、图片等静态资源。在动态HTML实现上Spring Boot依然可以完美胜任，并且提供了多种模板引擎的默认配置支持，所以在推荐的模板引擎下，我们可以很快的上手开发动态网站。Spring Boot提供了默认配置的模板引擎主要有以下几种：&amp;nbsp;&amp;nbsp;&amp;nbs">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":true,"scrollpercent":true,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2019/04/20/spring-boot二/">
+
+
+
+
+
+  <title>spring-boot web模板引擎和统一异常处理 | 放空</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+	<a href="https://github.com/pignum1/pignum1.github.io.git"><img style="position: absolute; top: 0; right: 0;border: 0;" src="https://github.blog/wp-content/uploads/2008/12/forkme_right_darkblue_121621.png?resize=149%2C149" class="attachment-full size-full" alt="Fork me on GitHub" data-recalc-dims="1"></a>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">放空</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-categories" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/04/20/spring-boot二/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="wei xy">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/sliver.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="放空">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">spring-boot web模板引擎和统一异常处理</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-04-20T23:45:53+08:00">
+                2019-04-20
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/spring-boot/" itemprop="url" rel="index">
+                    <span itemprop="name">spring boot</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="spring-boot-模板引擎"><a href="#spring-boot-模板引擎" class="headerlink" title="spring boot 模板引擎"></a>spring boot 模板引擎</h1><p>&nbsp;&nbsp;&nbsp;&nbsp;在我们开发Web应用的时候，需要引用大量的js、css、图片等静态资源。在动态HTML实现上Spring Boot依然可以完美胜任，并且提供了多种模板引擎的默认配置支持，所以在推荐的模板引擎下，我们可以很快的上手开发动态网站。<br>Spring Boot提供了默认配置的模板引擎主要有以下几种：<br>&nbsp;&nbsp;&nbsp;&nbsp;ymeleaf<br>&nbsp;&nbsp;&nbsp;&nbsp;FreeMarker<br>&nbsp;&nbsp;&nbsp;&nbsp;Velocity<br>&nbsp;&nbsp;&nbsp;&nbsp;Groovy<br>&nbsp;&nbsp;&nbsp;&nbsp;Mustache<br>当你使用上述模板引擎中的任何一个，它们默认的模板配置路径为：src/main/resources/templates。当然也可以修改这个路径，具体如何修改，可在后续各模板引擎的配置属性中查询并修改。</p>
+<h2 id="使用Thymeleaf的示例"><a href="#使用Thymeleaf的示例" class="headerlink" title="使用Thymeleaf的示例"></a>使用Thymeleaf的示例</h2><p>&nbsp;&nbsp;&nbsp;&nbsp;Thymeleaf是一个XML/XHTML/HTML5模板引擎，可用于Web与非Web环境中的应用开发。它是一个开源的Java库，基于Apache License 2.0许可，由Daniel Fernández创建，该作者还是Java加密库Jasypt的作者。<br>&nbsp;&nbsp;&nbsp;&nbsp;Thymeleaf提供了一个用于整合Spring MVC的可选模块，在应用开发中，你可以使用Thymeleaf来完全代替JSP或其他模板引擎，如Velocity、FreeMarker等。Thymeleaf的主要目标在于提供一种可被浏览器正确显示的、格式良好的模板创建方式，因此也可以用作静态建模。你可以使用它创建经过验证的XML与HTML模板。相对于编写逻辑或代码，开发者只需将标签属性添加到模板中即可。接下来，这些标签属性就会在DOM（文档对象模型）上执行预先制定好的逻辑。<br>&nbsp;&nbsp;&nbsp;&nbsp;在Spring Boot中使用Thymeleaf，只需要引入下面依赖，并在默认的模板路径src/main/resources/templates下编写模板文件<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">compile group: &apos;org.springframework.boot&apos;, name: &apos;spring-boot-starter-thymeleaf&apos;, version: &apos;2.0.6.RELEASE&apos;</span><br></pre></td></tr></table></figure></p>
+<p>在完成配置之后，举一个简单的例子，在快速入门工程的基础上，举一个简单的示例来通过Thymeleaf渲染一个页面。使用的是@Controller而不是@RestController 因为@RestController是@ReponseBody和@Controller，发布会的结果默认是JSON格式<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">@Controller</span><br><span class="line">public class HelloController &#123;</span><br><span class="line">    @RequestMapping(&quot;/&quot;)</span><br><span class="line">    public String index(ModelMap map) &#123;</span><br><span class="line">        // 加入一个属性，用来在模板中读取</span><br><span class="line">        map.addAttribute(&quot;host&quot;, &quot;  应该替换成的文字&quot;);</span><br><span class="line">        // return模板文件的名称，对应src/main/resources/templates/index.html</span><br><span class="line">        return &quot;index&quot;;  </span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>在templates下创建一个 index.html文件<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">&lt;!DOCTYPE html&gt;</span><br><span class="line">&lt;html&gt;</span><br><span class="line">&lt;head lang=&quot;en&quot;&gt;</span><br><span class="line">    &lt;meta charset=&quot;UTF-8&quot; /&gt;</span><br><span class="line">    &lt;title&gt;&lt;/title&gt;</span><br><span class="line">&lt;/head&gt;</span><br><span class="line">&lt;body&gt;</span><br><span class="line">&lt;h1 th:text=&quot;$&#123;host&#125;&quot;&gt;为被替换的文字&lt;/h1&gt;</span><br><span class="line">&lt;/body&gt;</span><br><span class="line">&lt;/html&gt;</span><br></pre></td></tr></table></figure></p>
+<p>springboot的默认配置<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">#thymeleaf的默认配置</span><br><span class="line"># Enable template caching.</span><br><span class="line">spring.thymeleaf.cache=true</span><br><span class="line"># Check that the templates location exists.</span><br><span class="line">spring.thymeleaf.check-template-location=true</span><br><span class="line"># Content-Type value.</span><br><span class="line">spring.thymeleaf.content-type=text/html</span><br><span class="line"># Enable MVC Thymeleaf view resolution.</span><br><span class="line">spring.thymeleaf.enabled=true</span><br><span class="line"># Template encoding.</span><br><span class="line">spring.thymeleaf.encoding=UTF-8 </span><br><span class="line"># Comma-separated list of view names that should be excluded from resolution.</span><br><span class="line">spring.thymeleaf.excluded-view-names=</span><br><span class="line"># Template mode to be applied to templates. See also StandardTemplateModeHandlers.</span><br><span class="line">spring.thymeleaf.mode=HTML5</span><br><span class="line"># Prefix that gets prepended to view names when building a URL.</span><br><span class="line">spring.thymeleaf.prefix=classpath:/templates/</span><br><span class="line"># Suffix that gets appended to view names when building a URL.</span><br><span class="line">spring.thymeleaf.suffix=.html</span><br><span class="line">#spring.thymeleaf.template-resolver-order= # Order of the template resolver in the chain. spring.thymeleaf.view-names= # Comma-separated list of view names that can be resolved.</span><br></pre></td></tr></table></figure></p>
+<p>这个时候运行成功后访问localhost:port  就可以看见页面上的内容</p>
+<h1 id="自定义异常"><a href="#自定义异常" class="headerlink" title="自定义异常"></a>自定义异常</h1><p>自定义异常<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">public class MyException extends Exception &#123;</span><br><span class="line">    public MyException(String message) &#123;</span><br><span class="line">        super(message);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>创建全局异常处理类：通过使用@ControllerAdvice定义统一的异常处理类，而不是在每个Controller中逐个定义。@ExceptionHandler用来定义函数针对的异常类型，最后将Exception对象和请求URL映射到error.html中<br>船舰异常的处理类，@ExceptionHandler是标识这个方法是处理什么类型的异常<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">@ControllerAdvice</span><br><span class="line">class GlobalExceptionHandler &#123;</span><br><span class="line"></span><br><span class="line">    public static final String DEFAULT_ERROR_VIEW = &quot;error&quot;;</span><br><span class="line"></span><br><span class="line">    @ExceptionHandler(value = NullPointerException.class)</span><br><span class="line">    public ModelAndView defaultErrorHandler(HttpServletRequest req, Exception e) throws Exception &#123;</span><br><span class="line">        ModelAndView mav = new ModelAndView();</span><br><span class="line">        mav.addObject(&quot;exception&quot;, e);</span><br><span class="line">        mav.addObject(&quot;url&quot;, req.getRequestURL());</span><br><span class="line">        mav.setViewName(DEFAULT_ERROR_VIEW);</span><br><span class="line">        return mav;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>实现error.html页面展示：在templates目录下创建error.html，将请求的URL和Exception对象的message输出。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">&lt;!DOCTYPE html&gt;</span><br><span class="line">&lt;html xmlns:th=&quot;http://www.w3.org/1999/xhtml&quot;&gt;</span><br><span class="line">&lt;head lang=&quot;en&quot; xmlns:th=&quot;http://www.thymeleaf.org&quot;&gt;</span><br><span class="line">    &lt;meta charset=&quot;UTF-8&quot; /&gt;</span><br><span class="line">    &lt;title&gt;统一异常处理&lt;/title&gt;</span><br><span class="line">&lt;/head&gt;</span><br><span class="line">&lt;body&gt;</span><br><span class="line">&lt;h1&gt;Error Handler&lt;/h1&gt;</span><br><span class="line"></span><br><span class="line">&lt;h3&gt;url: $&#123;url&#125;&lt;/h3&gt;</span><br><span class="line">&lt;h3&gt;message:$&#123;exception&#125;&lt;/h3&gt;</span><br><span class="line">&lt;/body&gt;</span><br><span class="line">&lt;/html&gt;</span><br></pre></td></tr></table></figure></p>
+<p>创建一个抛出异常的请求<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">@RequestMapping(&quot;/json&quot;)</span><br><span class="line">   public String  json() throws MyException &#123;</span><br><span class="line">       throw new MyException(&quot;发生错误2&quot;);</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure></p>
+<p>这个时候请求/json方法，就会返回error界面，并显示出错误的请求路径和错误信息<br>如果需要返回的是JSON类型的格式，只需要返回的加上@ReponseBody注解<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">异常信息类</span><br><span class="line">public class ErrorInfo&lt;T&gt; &#123;</span><br><span class="line">    public static final Integer OK = 0;</span><br><span class="line">    public static final Integer ERROR = 100;</span><br><span class="line">    private Integer code;</span><br><span class="line">    private String message;</span><br><span class="line">    private String url;</span><br><span class="line">    private T data;</span><br><span class="line">    // 省略getter和setter</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>在异常处理方法中改写为<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">@ExceptionHandler(value = MyException.class)</span><br><span class="line">@ResponseBody  //这个注解是返回JSON格式</span><br><span class="line">public ErrorInfo&lt;String&gt; defaultErrorHandler(HttpServletRequest req,MyException e) throws Exception &#123;</span><br><span class="line">    ErrorInfo&lt;String&gt; r = new ErrorInfo&lt;&gt;();</span><br><span class="line">    r.setMessage(e.getMessage());</span><br><span class="line">    r.setCode(ErrorInfo.ERROR);</span><br><span class="line">    r.setData(&quot;Some Data&quot;);</span><br><span class="line">    r.setUrl(req.getRequestURL().toString());</span><br><span class="line">    return r;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/spring-boot/" rel="tag"># spring boot</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/04/20/spring-boot三/" rel="next" title="spring-boot localDate等时间序列化异常">
+                <i class="fa fa-chevron-left"></i> spring-boot localDate等时间序列化异常
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/04/20/spring-boort-一/" rel="prev" title="spring-boot 发送邮件">
+                spring-boot 发送邮件 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  <div>
+    
+    <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:14px;">------ 本文结束------</div>
+    
+</div>
+    
+ </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/sliver.jpg" alt="wei xy">
+            
+              <p class="site-author-name" itemprop="name">wei xy</p>
+              <p class="site-description motion-element" itemprop="description">一步一步似爪牙</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">34</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">9</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">29</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+		  <iframe frameborder="no" border="0" marginwidth="0" marginheight="0" width="330" height="86" src="//music.163.com/outchain/player?type=2&id=28285910&auto=1&height=66"></iframe>
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#spring-boot-模板引擎"><span class="nav-number">1.</span> <span class="nav-text">spring boot 模板引擎</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#使用Thymeleaf的示例"><span class="nav-number">1.1.</span> <span class="nav-text">使用Thymeleaf的示例</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#自定义异常"><span class="nav-number">2.</span> <span class="nav-text">自定义异常</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+        <div class="back-to-top">
+          <i class="fa fa-arrow-up"></i>
+          
+            <span id="scrollpercent"><span>0</span>%</span>
+          
+        </div>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        
+<div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">wei xy</span>
+
+  
+</div>
+
+<!-- 
+  <div class="powered-by">由  强力驱动</div>
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash;  v5.1.4</div>
+
+-->
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  <!--动态标题-->
+<script type="text/javascript" src="/js/src/dytitle.js"></script>
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"model":{"jsonPath":"live2d-widget-model-miku"},"display":{"position":"right","width":150,"height":300},"mobile":{"show":false,"symbols_count_time":null},"symbols":true,"time":true,"total_symbols":true,"total_time":true,"log":false});</script></body>
+</html>
+<!-- 页面点击小红心 -->
+<script type="text/javascript" src="/js/src/love.js"></script>
