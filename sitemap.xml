@@ -2,6 +2,20 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>http://yoursite.com/2019/12/15/spring-cloud-%E9%9B%86%E6%88%90%E7%BB%83%E4%B9%A0%E9%A1%B9%E7%9B%AE/</loc>
+    
+    <lastmod>2020-02-03T17:39:11.953Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://yoursite.com/2020/01/13/gradle-%E6%89%93%E5%8C%85/</loc>
+    
+    <lastmod>2020-01-13T05:54:54.930Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>http://yoursite.com/2019/12/08/spring-cloud-ali-sentinel%E6%8E%A5%E5%8F%A3%E9%99%90%E6%B5%81/</loc>
     
     <lastmod>2019-12-08T16:54:54.127Z</lastmod>
