@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="java,面试,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="java基础基本概念private的问题private修饰的方法属性可以通过反射访问，那么private的意义是什么？ 简单来说，private并不是解决“安全”问题的。 安全是指不让代码被非法看到/访问。但是只要人能拿到代码，总会有办法去查看和改变代码。可以用SecurityManager来防止private被访问，但是任然有其他各种方式拿到java的bytecode，并做任意修改。比如有asm">
+<meta name="keywords" content="java,面试">
+<meta property="og:type" content="article">
+<meta property="og:title" content="面试题整理">
+<meta property="og:url" content="http://yoursite.com/2020/02/15/面试题整理/index.html">
+<meta property="og:site_name" content="放空">
+<meta property="og:description" content="java基础基本概念private的问题private修饰的方法属性可以通过反射访问，那么private的意义是什么？ 简单来说，private并不是解决“安全”问题的。 安全是指不让代码被非法看到/访问。但是只要人能拿到代码，总会有办法去查看和改变代码。可以用SecurityManager来防止private被访问，但是任然有其他各种方式拿到java的bytecode，并做任意修改。比如有asm">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2020-03-23T12:22:34.923Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="面试题整理">
+<meta name="twitter:description" content="java基础基本概念private的问题private修饰的方法属性可以通过反射访问，那么private的意义是什么？ 简单来说，private并不是解决“安全”问题的。 安全是指不让代码被非法看到/访问。但是只要人能拿到代码，总会有办法去查看和改变代码。可以用SecurityManager来防止private被访问，但是任然有其他各种方式拿到java的bytecode，并做任意修改。比如有asm">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":true,"scrollpercent":true,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2020/02/15/面试题整理/">
+
+
+
+
+
+  <title>面试题整理 | 放空</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+	<a href="https://github.com/pignum1/pignum1.github.io.git"><img style="position: absolute; top: 0; right: 0;border: 0;" src="https://github.blog/wp-content/uploads/2008/12/forkme_right_darkblue_121621.png?resize=149%2C149" class="attachment-full size-full" alt="Fork me on GitHub" data-recalc-dims="1"></a>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">放空</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-categories" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/02/15/面试题整理/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="wei xy">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/sliver.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="放空">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">面试题整理</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-02-15T23:13:15+08:00">
+                2020-02-15
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/java面试/" itemprop="url" rel="index">
+                    <span itemprop="name">java面试</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="java基础"><a href="#java基础" class="headerlink" title="java基础"></a>java基础</h1><h2 id="基本概念"><a href="#基本概念" class="headerlink" title="基本概念"></a>基本概念</h2><h3 id="private的问题"><a href="#private的问题" class="headerlink" title="private的问题"></a>private的问题</h3><p>private修饰的方法属性可以通过反射访问，那么private的意义是什么？</p>
+<p>简单来说，private并不是解决“安全”问题的。 安全是指不让代码被非法看到/访问。但是只要人能拿到代码，总会有办法去查看和改变代码。可以用SecurityManager来防止private被访问，但是任然有其他各种方式拿到java的bytecode，并做任意修改。比如有asm这样的lib，也有instrument api这种东西。c++这种语言还能通过指针跳过private</p>
+<p>回答：1：private并不是保证安全性的关键字。 是对开发的一种约束，强调的是OOP的封装概念，</p>
+<p>​            2：从外部对对象进行常规调用时，不能够看到清晰的类结构和属性。</p>
+<h3 id="类初始化顺序"><a href="#类初始化顺序" class="headerlink" title="类初始化顺序"></a>类初始化顺序</h3><p>类的初始化顺序，我以前只知道先初始化基类在初始化派生类，忽略了代码块儿的问题，正确的顺序应该是</p>
+<p>基类的静态：正确的顺序是</p>
+<p>基类静态代码块，基类静态成员字段（并列优先级，按照代码中出现的先后顺序执行，且只有第一次加载时执行）——&gt;派生类静态代码块，派生类静态成员字段（并列优先级，按照代码中出现的先后顺序执行，且只有第一次加载时执行）——&gt;基类普通代码块，基类普通成员字段（并列优点级，按代码中出现先后顺序执行）——&gt;基类构造函数——&gt;派生类普通代码块，派生类普通成员字段（并列优点级，按代码中出现先后顺序执行）——&gt;派生类构造函数</p>
+<p>基本上写个例子就可以测试出结果</p>
+<h3 id="clone方法"><a href="#clone方法" class="headerlink" title="clone方法"></a>clone方法</h3><p>基本数据类型(char ,short,int,long,float,double,byte,boolean)在传递的时候是按值传递，对象类型是按引用传递，（java在new 语句之后返回的是对象的指引用）,实际过程中经常会遇见复制一个已有的对象A到另一个具有相同状态的对象B,而且对B的修改不影响A。实现clone方法的实体需要继承Cloneable接口。深拷贝和浅拷贝最根本的区别在于是否真正获取一个对象的复制实体，而不是引用。假设B复制了A，修改A的时候，看B是否发生变化：</p>
+<p>如果B跟着也变了，说明是浅拷贝，拿人手短！（修改堆内存中的同一个值）</p>
+<p>如果B没有改变，说明是深拷贝，自食其力！（修改堆内存中的不同的值）</p>
+<h3 id="反射机制"><a href="#反射机制" class="headerlink" title="反射机制"></a>反射机制</h3><p>反射及智能在运行时对类进行装载，能够增加程序的灵活性，反射主要用来得到一个对象所属的类，获取类的成员方法和变量，在运行时创建对象，调用对象的方法。java创建对象的方法  new,反射，clone,反序列化</p>
+<h3 id="函数指针"><a href="#函数指针" class="headerlink" title="函数指针"></a>函数指针</h3><p>在C++中有一个概念-函数指针，其中最重要的功能是函数回调，利用函数的回调函数来编写程序，传递一个函数的指针参数来调用下一个函数，java中没有指针的概念，但是可以通过接口和类实现相同 的功能。在接口参数接受一个interface参数，来执行回调方法。</p>
+<h2 id="面向对象"><a href="#面向对象" class="headerlink" title="面向对象"></a>面向对象</h2><p>面向对象是将数据和对数据的操作方法集中放在一起，作为一个相互依赖的整体，即对象，对象通过接口与外部发生交流。</p>
+<p>面向对象主要有三个特征，继承、封装、多态</p>
+<p>封装是将数据和方法抽象成 类，在对自身的数据方法进行保护，可以把自己的数据和方法让可信的类或对象进行操作，对不可信的数据方法进行隐藏。</p>
+<p>继承是一种联结类的层次模型，允许和鼓励类的重用，提供了明确的表达共性的方法。派生类可以从基类中获取继承的方法和变量 </p>
+<p>多态 允许不同类的对象对统一消息做出响应，包含参数化多态和包含多态。</p>
+<h3 id="多态的实现机制"><a href="#多态的实现机制" class="headerlink" title="多态的实现机制"></a>多态的实现机制</h3><p>编译时多态和运行时多态。编译时通过方法的重载实现，运行时多态是通过方法的覆盖，继承方法是重写</p>
+<h1 id="多线程"><a href="#多线程" class="headerlink" title="多线程"></a>多线程</h1><h2 id="什么是线程"><a href="#什么是线程" class="headerlink" title="什么是线程"></a>什么是线程</h2><p>线程是指程序在运行过程中，能够执行代码的一个执行单元。进程是一段正在执行程序的抽象。 java中线程的状态：<em>就绪、运行、挂起、结束</em></p>
+<h2 id="java-实现线程的方式"><a href="#java-实现线程的方式" class="headerlink" title="java 实现线程的方式"></a>java 实现线程的方式</h2><p>1：类继承Thread  2：实现Runnable接口  3.继承Callable<t>接口</t></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ThreadTest3</span> <span class="keyword">implements</span> <span class="title">Callable</span>&lt;<span class="title">String</span>&gt;</span>&#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">call</span><span class="params">()</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="string">"有返回值的线程"</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            ExecutorService threadPool = Executors.newSingleThreadExecutor();</span><br><span class="line">            Future&lt;String&gt; future = threadPool.submit(<span class="keyword">new</span> ThreadTest3());</span><br><span class="line">            System.out.println(future.get());</span><br><span class="line">        &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="run-与start-方法的区别"><a href="#run-与start-方法的区别" class="headerlink" title="run()与start()方法的区别"></a>run()与start()方法的区别</h2><p>一般系统通过调用start()方法来启用一个线程，此时该线程处于就绪的状态，而非运行状态，此时这个线程可以被JVM调用，调用的时候在通过run()方法来完成实际的操作。方法结束后该线程终止。</p>
+<p>如果直接调用run()方法，这会被当成普通函数调用，程序中仍然只有主线程。程序是同步的，达不到多线程的目的。</p>
+<h2 id="多线程同步的方法"><a href="#多线程同步的方法" class="headerlink" title="多线程同步的方法"></a>多线程同步的方法</h2><p>在多线程环境中，访问数据是一个很危险的事情，很容易出现数据的安全问题。因此java提供了几种实现同步机制的方法。</p>
+<h3 id="1synchronzied关键字"><a href="#1synchronzied关键字" class="headerlink" title="1synchronzied关键字"></a>1synchronzied关键字</h3><p>主要有两种用法 synchronzied方法和synchronzied代码块</p>
+<p>java中synchronzied的实现与Monitor相关，java中的所有对象都拥有一个私有线程锁或则成为Monitor锁，Monitor中的Owner字段表明该对象是否被线程拥有Monitor record。</p>
+<h3 id="notify-与wait-方法"><a href="#notify-与wait-方法" class="headerlink" title="notify()与wait()方法"></a>notify()与wait()方法</h3><p>synchronzied锁住某个对象或者资源的时候，线程A1在执行synchronzied代码，线程A2也在执行synchronzied代码，线程A2要等待A1执行完成之后才能执行，这种情况下就可以使用wait()和notif()。synchronzied在执行期间，可以使用wait()方法释放对象锁，进入等待状态，并可以调用notif()提醒其他等待的线程。fei</p>
+<h3 id="2重入锁ReentrantLock"><a href="#2重入锁ReentrantLock" class="headerlink" title="2重入锁ReentrantLock"></a>2重入锁ReentrantLock</h3><p>jdk 5添加了Lock接口和她的实现类，Lock也可以用来实现同步。</p>
+<p>Lock()方法。以阻塞的方式获取锁，如果获取到锁，立刻返回，没有获取锁则继续等待。</p>
+<p>tryLock()非阻塞的方式获取锁，获取到锁立刻返回true,未获取到锁返回false</p>
+<p>lockInterruptibly() 如果获取到了锁，立刻返回，没有获取到锁，当前线程处于休眠状态，直到获取到锁，或者当前线程被别的线程中断。</p>
+<h3 id="sleep-和wait-方法的区别"><a href="#sleep-和wait-方法的区别" class="headerlink" title="sleep()和wait()方法的区别"></a>sleep()和wait()方法的区别</h3><p>sleep()方法是Thread类的静态方法，是线程用来控制自身的，他会使线程暂停一段时间，等时间一到，该线程会自动苏醒。而wwait()方法是Object类的方法，这个方法会使拥有该对象锁的进程等待，知道其他线程调用notify()方法来唤醒</p>
+<p>对锁的处理机制不同：sleep()方法的主要作用是线程暂停一段时间，时间到了会自动恢复，所以sleep()不会释放锁，而wait()主要应用于线程间的通信，当线程调用wait()方法后，线程会释放掉他拥有的锁。</p>
+<h2 id="终止线程的方法"><a href="#终止线程的方法" class="headerlink" title="终止线程的方法"></a>终止线程的方法</h2><p>java语言中可以使用stop()和suspend()方法来终止线程的执行。stop()方法会释放已经锁定的所有监视资源。</p>
+<p>而suspend()方法不会释放锁，这就会导致，如果使用suspend()挂起一个线程，那么在锁恢复之前不会被释放，这就很容易导致死锁。所以Java语言不建议上述两种方法来终止线程。一般建议是让线程自行结束进入Dead，即执行完Run()方法。提供某种方式能使线程跑完run()方法。例如可以通过interrupt()等异常</p>
+<h2 id="synchronized和lock"><a href="#synchronized和lock" class="headerlink" title="synchronized和lock"></a>synchronized和lock</h2><p>用法不同：在需要同步的对象中加入synchronized控制，既可以加在方法上，也可以加在代码块儿中,而Lock需要显示的指定起始位置和结束位置。</p>
+<p>性能不同：synchronized在资源竞争不激烈的时候，性能优于ReetrantLock,竞争激烈的时候，synchronized的性能下降的非常快，而ReetrantLock的性能基本保持不变</p>
+<p>锁机制不同：synchronized获取锁和释放都在块结构中。获取多个锁时，必须以相反的顺序释放，而且是自动释放，而Lock需要开发人员手动释放，一般在finally里卖弄释放，否则可能会引起死锁 的问题。</p>
+<p>当一个线程进入了synchronized方法里面，其他线程能否访问其他方法取决于这个方法。如果访问的其他方法是非synchronized的，其他线程可以访问。如果其他方法是静态的synchronized方法，静态synchronized方法仍然可以被调用。</p>
+<h2 id="join-方法的作用"><a href="#join-方法的作用" class="headerlink" title="join()方法的作用"></a>join()方法的作用</h2><p>join()方法是让调用该方法的线程在执行完run()方法滞后，再执行join()方法，主要用于线程同步。或者使用该线程的join(2000)方法来等待该线程，设置等待时间。</p>
+<h1 id="消息队列"><a href="#消息队列" class="headerlink" title="消息队列"></a>消息队列</h1><h1 id="虚拟机（JVM）"><a href="#虚拟机（JVM）" class="headerlink" title="虚拟机（JVM）"></a>虚拟机（JVM）</h1><h2 id="方法区和永久区的理解"><a href="#方法区和永久区的理解" class="headerlink" title="方法区和永久区的理解"></a>方法区和永久区的理解</h2><h1 id="spring-IOC和AOP"><a href="#spring-IOC和AOP" class="headerlink" title="spring IOC和AOP"></a>spring IOC和AOP</h1><p>先解释一下IOC和AOP, </p>
+<h2 id="IOC"><a href="#IOC" class="headerlink" title="IOC"></a>IOC</h2><p>许多应用都是通过彼此间的相互合作来实现业务逻辑的，如类A要调用类B的方法，以前我们都是在类A中，通过自身<strong><em>new</em></strong>一个类B，然后在调用类B的方法，现在我们把new类B的事情交给spring来做，在我们调用的时候，容器会为我们实例化。 IOC容器的初始化过程资源定位，即定义bean的xml——-》载入——–》IOC容器注册，注册beanDefinition,现在的常用方式是基于注解，bean的创建方式是通过<strong>工厂模式</strong>，数据通过<strong>反射</strong>的方式注入</p>
+<h2 id="AOP"><a href="#AOP" class="headerlink" title="AOP"></a>AOP</h2><p> 面向切面编程，在我们的应用中，经常需要做一些事情，但是这些事情与核心业务无关，比如，要记录所有update*方法的执行时间时间，操作人等等信息。AOP的实现原理就代理方式 有两只，动态代理和静态代理</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/java/" rel="tag"># java</a>
+          
+            <a href="/tags/面试/" rel="tag"># 面试</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2020/01/13/gradle-打包/" rel="next" title="gradle 打包">
+                <i class="fa fa-chevron-left"></i> gradle 打包
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  <div>
+    
+    <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:14px;">------ 本文结束------</div>
+    
+</div>
+    
+ </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/sliver.jpg" alt="wei xy">
+            
+              <p class="site-author-name" itemprop="name">wei xy</p>
+              <p class="site-description motion-element" itemprop="description">一步一步似爪牙</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">37</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">10</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">31</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+		  <iframe frameborder="no" border="0" marginwidth="0" marginheight="0" width="330" height="86" src="//music.163.com/outchain/player?type=2&id=28285910&auto=1&height=66"></iframe>
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#java基础"><span class="nav-number">1.</span> <span class="nav-text">java基础</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#基本概念"><span class="nav-number">1.1.</span> <span class="nav-text">基本概念</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#private的问题"><span class="nav-number">1.1.1.</span> <span class="nav-text">private的问题</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#类初始化顺序"><span class="nav-number">1.1.2.</span> <span class="nav-text">类初始化顺序</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#clone方法"><span class="nav-number">1.1.3.</span> <span class="nav-text">clone方法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#反射机制"><span class="nav-number">1.1.4.</span> <span class="nav-text">反射机制</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#函数指针"><span class="nav-number">1.1.5.</span> <span class="nav-text">函数指针</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#面向对象"><span class="nav-number">1.2.</span> <span class="nav-text">面向对象</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#多态的实现机制"><span class="nav-number">1.2.1.</span> <span class="nav-text">多态的实现机制</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#多线程"><span class="nav-number">2.</span> <span class="nav-text">多线程</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#什么是线程"><span class="nav-number">2.1.</span> <span class="nav-text">什么是线程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#java-实现线程的方式"><span class="nav-number">2.2.</span> <span class="nav-text">java 实现线程的方式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#run-与start-方法的区别"><span class="nav-number">2.3.</span> <span class="nav-text">run()与start()方法的区别</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#多线程同步的方法"><span class="nav-number">2.4.</span> <span class="nav-text">多线程同步的方法</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1synchronzied关键字"><span class="nav-number">2.4.1.</span> <span class="nav-text">1synchronzied关键字</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#notify-与wait-方法"><span class="nav-number">2.4.2.</span> <span class="nav-text">notify()与wait()方法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2重入锁ReentrantLock"><span class="nav-number">2.4.3.</span> <span class="nav-text">2重入锁ReentrantLock</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#sleep-和wait-方法的区别"><span class="nav-number">2.4.4.</span> <span class="nav-text">sleep()和wait()方法的区别</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#终止线程的方法"><span class="nav-number">2.5.</span> <span class="nav-text">终止线程的方法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#synchronized和lock"><span class="nav-number">2.6.</span> <span class="nav-text">synchronized和lock</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#join-方法的作用"><span class="nav-number">2.7.</span> <span class="nav-text">join()方法的作用</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#消息队列"><span class="nav-number">3.</span> <span class="nav-text">消息队列</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#虚拟机（JVM）"><span class="nav-number">4.</span> <span class="nav-text">虚拟机（JVM）</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#方法区和永久区的理解"><span class="nav-number">4.1.</span> <span class="nav-text">方法区和永久区的理解</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#spring-IOC和AOP"><span class="nav-number">5.</span> <span class="nav-text">spring IOC和AOP</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#IOC"><span class="nav-number">5.1.</span> <span class="nav-text">IOC</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#AOP"><span class="nav-number">5.2.</span> <span class="nav-text">AOP</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+        <div class="back-to-top">
+          <i class="fa fa-arrow-up"></i>
+          
+            <span id="scrollpercent"><span>0</span>%</span>
+          
+        </div>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        
+<div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">wei xy</span>
+
+  
+</div>
+
+<!-- 
+  <div class="powered-by">由  强力驱动</div>
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash;  v5.1.4</div>
+
+-->
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  <!--动态标题-->
+<script type="text/javascript" src="/js/src/dytitle.js"></script>
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"model":{"jsonPath":"live2d-widget-model-miku"},"display":{"position":"right","width":150,"height":300},"mobile":{"show":false,"symbols_count_time":null},"symbols":true,"time":true,"total_symbols":true,"total_time":true,"log":false});</script></body>
+</html>
+<!-- 页面点击小红心 -->
+<script type="text/javascript" src="/js/src/love.js"></script>

@@ -1,6 +1,62 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title>面试题整理</title>
+    <url>/2020/02/15/%E9%9D%A2%E8%AF%95%E9%A2%98%E6%95%B4%E7%90%86/</url>
+    <content><![CDATA[<h1 id="java基础"><a href="#java基础" class="headerlink" title="java基础"></a>java基础</h1><h2 id="基本概念"><a href="#基本概念" class="headerlink" title="基本概念"></a>基本概念</h2><h3 id="private的问题"><a href="#private的问题" class="headerlink" title="private的问题"></a>private的问题</h3><p>private修饰的方法属性可以通过反射访问，那么private的意义是什么？</p>
+<p>简单来说，private并不是解决“安全”问题的。 安全是指不让代码被非法看到/访问。但是只要人能拿到代码，总会有办法去查看和改变代码。可以用SecurityManager来防止private被访问，但是任然有其他各种方式拿到java的bytecode，并做任意修改。比如有asm这样的lib，也有instrument api这种东西。c++这种语言还能通过指针跳过private</p>
+<p>回答：1：private并不是保证安全性的关键字。 是对开发的一种约束，强调的是OOP的封装概念，</p>
+<p>​            2：从外部对对象进行常规调用时，不能够看到清晰的类结构和属性。</p>
+<h3 id="类初始化顺序"><a href="#类初始化顺序" class="headerlink" title="类初始化顺序"></a>类初始化顺序</h3><p>类的初始化顺序，我以前只知道先初始化基类在初始化派生类，忽略了代码块儿的问题，正确的顺序应该是</p>
+<p>基类的静态：正确的顺序是</p>
+<p>基类静态代码块，基类静态成员字段（并列优先级，按照代码中出现的先后顺序执行，且只有第一次加载时执行）——&gt;派生类静态代码块，派生类静态成员字段（并列优先级，按照代码中出现的先后顺序执行，且只有第一次加载时执行）——&gt;基类普通代码块，基类普通成员字段（并列优点级，按代码中出现先后顺序执行）——&gt;基类构造函数——&gt;派生类普通代码块，派生类普通成员字段（并列优点级，按代码中出现先后顺序执行）——&gt;派生类构造函数</p>
+<p>基本上写个例子就可以测试出结果</p>
+<h3 id="clone方法"><a href="#clone方法" class="headerlink" title="clone方法"></a>clone方法</h3><p>基本数据类型(char ,short,int,long,float,double,byte,boolean)在传递的时候是按值传递，对象类型是按引用传递，（java在new 语句之后返回的是对象的指引用）,实际过程中经常会遇见复制一个已有的对象A到另一个具有相同状态的对象B,而且对B的修改不影响A。实现clone方法的实体需要继承Cloneable接口。深拷贝和浅拷贝最根本的区别在于是否真正获取一个对象的复制实体，而不是引用。假设B复制了A，修改A的时候，看B是否发生变化：</p>
+<p>如果B跟着也变了，说明是浅拷贝，拿人手短！（修改堆内存中的同一个值）</p>
+<p>如果B没有改变，说明是深拷贝，自食其力！（修改堆内存中的不同的值）</p>
+<h3 id="反射机制"><a href="#反射机制" class="headerlink" title="反射机制"></a>反射机制</h3><p>反射及智能在运行时对类进行装载，能够增加程序的灵活性，反射主要用来得到一个对象所属的类，获取类的成员方法和变量，在运行时创建对象，调用对象的方法。java创建对象的方法  new,反射，clone,反序列化</p>
+<h3 id="函数指针"><a href="#函数指针" class="headerlink" title="函数指针"></a>函数指针</h3><p>在C++中有一个概念-函数指针，其中最重要的功能是函数回调，利用函数的回调函数来编写程序，传递一个函数的指针参数来调用下一个函数，java中没有指针的概念，但是可以通过接口和类实现相同 的功能。在接口参数接受一个interface参数，来执行回调方法。</p>
+<h2 id="面向对象"><a href="#面向对象" class="headerlink" title="面向对象"></a>面向对象</h2><p>面向对象是将数据和对数据的操作方法集中放在一起，作为一个相互依赖的整体，即对象，对象通过接口与外部发生交流。</p>
+<p>面向对象主要有三个特征，继承、封装、多态</p>
+<p>封装是将数据和方法抽象成 类，在对自身的数据方法进行保护，可以把自己的数据和方法让可信的类或对象进行操作，对不可信的数据方法进行隐藏。</p>
+<p>继承是一种联结类的层次模型，允许和鼓励类的重用，提供了明确的表达共性的方法。派生类可以从基类中获取继承的方法和变量 </p>
+<p>多态 允许不同类的对象对统一消息做出响应，包含参数化多态和包含多态。</p>
+<h3 id="多态的实现机制"><a href="#多态的实现机制" class="headerlink" title="多态的实现机制"></a>多态的实现机制</h3><p>编译时多态和运行时多态。编译时通过方法的重载实现，运行时多态是通过方法的覆盖，继承方法是重写</p>
+<h1 id="多线程"><a href="#多线程" class="headerlink" title="多线程"></a>多线程</h1><h2 id="什么是线程"><a href="#什么是线程" class="headerlink" title="什么是线程"></a>什么是线程</h2><p>线程是指程序在运行过程中，能够执行代码的一个执行单元。进程是一段正在执行程序的抽象。 java中线程的状态：<em>就绪、运行、挂起、结束</em></p>
+<h2 id="java-实现线程的方式"><a href="#java-实现线程的方式" class="headerlink" title="java 实现线程的方式"></a>java 实现线程的方式</h2><p>1：类继承Thread  2：实现Runnable接口  3.继承Callable<t>接口</t></p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ThreadTest3</span> <span class="keyword">implements</span> <span class="title">Callable</span>&lt;<span class="title">String</span>&gt;</span>&#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">call</span><span class="params">()</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="string">"有返回值的线程"</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            ExecutorService threadPool = Executors.newSingleThreadExecutor();</span><br><span class="line">            Future&lt;String&gt; future = threadPool.submit(<span class="keyword">new</span> ThreadTest3());</span><br><span class="line">            System.out.println(future.get());</span><br><span class="line">        &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="run-与start-方法的区别"><a href="#run-与start-方法的区别" class="headerlink" title="run()与start()方法的区别"></a>run()与start()方法的区别</h2><p>一般系统通过调用start()方法来启用一个线程，此时该线程处于就绪的状态，而非运行状态，此时这个线程可以被JVM调用，调用的时候在通过run()方法来完成实际的操作。方法结束后该线程终止。</p>
+<p>如果直接调用run()方法，这会被当成普通函数调用，程序中仍然只有主线程。程序是同步的，达不到多线程的目的。</p>
+<h2 id="多线程同步的方法"><a href="#多线程同步的方法" class="headerlink" title="多线程同步的方法"></a>多线程同步的方法</h2><p>在多线程环境中，访问数据是一个很危险的事情，很容易出现数据的安全问题。因此java提供了几种实现同步机制的方法。</p>
+<h3 id="1synchronzied关键字"><a href="#1synchronzied关键字" class="headerlink" title="1synchronzied关键字"></a>1synchronzied关键字</h3><p>主要有两种用法 synchronzied方法和synchronzied代码块</p>
+<p>java中synchronzied的实现与Monitor相关，java中的所有对象都拥有一个私有线程锁或则成为Monitor锁，Monitor中的Owner字段表明该对象是否被线程拥有Monitor record。</p>
+<h3 id="notify-与wait-方法"><a href="#notify-与wait-方法" class="headerlink" title="notify()与wait()方法"></a>notify()与wait()方法</h3><p>synchronzied锁住某个对象或者资源的时候，线程A1在执行synchronzied代码，线程A2也在执行synchronzied代码，线程A2要等待A1执行完成之后才能执行，这种情况下就可以使用wait()和notif()。synchronzied在执行期间，可以使用wait()方法释放对象锁，进入等待状态，并可以调用notif()提醒其他等待的线程。fei</p>
+<h3 id="2重入锁ReentrantLock"><a href="#2重入锁ReentrantLock" class="headerlink" title="2重入锁ReentrantLock"></a>2重入锁ReentrantLock</h3><p>jdk 5添加了Lock接口和她的实现类，Lock也可以用来实现同步。</p>
+<p>Lock()方法。以阻塞的方式获取锁，如果获取到锁，立刻返回，没有获取锁则继续等待。</p>
+<p>tryLock()非阻塞的方式获取锁，获取到锁立刻返回true,未获取到锁返回false</p>
+<p>lockInterruptibly() 如果获取到了锁，立刻返回，没有获取到锁，当前线程处于休眠状态，直到获取到锁，或者当前线程被别的线程中断。</p>
+<h3 id="sleep-和wait-方法的区别"><a href="#sleep-和wait-方法的区别" class="headerlink" title="sleep()和wait()方法的区别"></a>sleep()和wait()方法的区别</h3><p>sleep()方法是Thread类的静态方法，是线程用来控制自身的，他会使线程暂停一段时间，等时间一到，该线程会自动苏醒。而wwait()方法是Object类的方法，这个方法会使拥有该对象锁的进程等待，知道其他线程调用notify()方法来唤醒</p>
+<p>对锁的处理机制不同：sleep()方法的主要作用是线程暂停一段时间，时间到了会自动恢复，所以sleep()不会释放锁，而wait()主要应用于线程间的通信，当线程调用wait()方法后，线程会释放掉他拥有的锁。</p>
+<h2 id="终止线程的方法"><a href="#终止线程的方法" class="headerlink" title="终止线程的方法"></a>终止线程的方法</h2><p>java语言中可以使用stop()和suspend()方法来终止线程的执行。stop()方法会释放已经锁定的所有监视资源。</p>
+<p>而suspend()方法不会释放锁，这就会导致，如果使用suspend()挂起一个线程，那么在锁恢复之前不会被释放，这就很容易导致死锁。所以Java语言不建议上述两种方法来终止线程。一般建议是让线程自行结束进入Dead，即执行完Run()方法。提供某种方式能使线程跑完run()方法。例如可以通过interrupt()等异常</p>
+<h2 id="synchronized和lock"><a href="#synchronized和lock" class="headerlink" title="synchronized和lock"></a>synchronized和lock</h2><p>用法不同：在需要同步的对象中加入synchronized控制，既可以加在方法上，也可以加在代码块儿中,而Lock需要显示的指定起始位置和结束位置。</p>
+<p>性能不同：synchronized在资源竞争不激烈的时候，性能优于ReetrantLock,竞争激烈的时候，synchronized的性能下降的非常快，而ReetrantLock的性能基本保持不变</p>
+<p>锁机制不同：synchronized获取锁和释放都在块结构中。获取多个锁时，必须以相反的顺序释放，而且是自动释放，而Lock需要开发人员手动释放，一般在finally里卖弄释放，否则可能会引起死锁 的问题。</p>
+<p>当一个线程进入了synchronized方法里面，其他线程能否访问其他方法取决于这个方法。如果访问的其他方法是非synchronized的，其他线程可以访问。如果其他方法是静态的synchronized方法，静态synchronized方法仍然可以被调用。</p>
+<h2 id="join-方法的作用"><a href="#join-方法的作用" class="headerlink" title="join()方法的作用"></a>join()方法的作用</h2><p>join()方法是让调用该方法的线程在执行完run()方法滞后，再执行join()方法，主要用于线程同步。或者使用该线程的join(2000)方法来等待该线程，设置等待时间。</p>
+<h1 id="消息队列"><a href="#消息队列" class="headerlink" title="消息队列"></a>消息队列</h1><h1 id="虚拟机（JVM）"><a href="#虚拟机（JVM）" class="headerlink" title="虚拟机（JVM）"></a>虚拟机（JVM）</h1><h2 id="方法区和永久区的理解"><a href="#方法区和永久区的理解" class="headerlink" title="方法区和永久区的理解"></a>方法区和永久区的理解</h2><h1 id="spring-IOC和AOP"><a href="#spring-IOC和AOP" class="headerlink" title="spring IOC和AOP"></a>spring IOC和AOP</h1><p>先解释一下IOC和AOP, </p>
+<h2 id="IOC"><a href="#IOC" class="headerlink" title="IOC"></a>IOC</h2><p>许多应用都是通过彼此间的相互合作来实现业务逻辑的，如类A要调用类B的方法，以前我们都是在类A中，通过自身<strong><em>new</em></strong>一个类B，然后在调用类B的方法，现在我们把new类B的事情交给spring来做，在我们调用的时候，容器会为我们实例化。 IOC容器的初始化过程资源定位，即定义bean的xml——-》载入——–》IOC容器注册，注册beanDefinition,现在的常用方式是基于注解，bean的创建方式是通过<strong>工厂模式</strong>，数据通过<strong>反射</strong>的方式注入</p>
+<h2 id="AOP"><a href="#AOP" class="headerlink" title="AOP"></a>AOP</h2><p> 面向切面编程，在我们的应用中，经常需要做一些事情，但是这些事情与核心业务无关，比如，要记录所有update*方法的执行时间时间，操作人等等信息。AOP的实现原理就代理方式 有两只，动态代理和静态代理</p>
+]]></content>
+      <categories>
+        <category>java面试</category>
+      </categories>
+      <tags>
+        <tag>java</tag>
+        <tag>面试</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>gradle 打包</title>
     <url>/2020/01/13/gradle-%E6%89%93%E5%8C%85/</url>
     <content><![CDATA[<figure class="highlight groovy"><table><tr><td class="code"><pre><span class="line">	apply <span class="string">plugin:</span> <span class="string">"java"</span></span><br><span class="line">	<span class="comment">//打包插件，不含第三方依赖jar</span></span><br><span class="line">    apply <span class="string">plugin:</span> <span class="string">"maven-publish"</span></span><br><span class="line">    apply <span class="string">plugin:</span> <span class="string">'idea'</span></span><br><span class="line"></span><br><span class="line">    version = <span class="string">'1.0.0'</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// JVM 版本号要求</span></span><br><span class="line">    sourceCompatibility = <span class="number">1.8</span></span><br><span class="line">    targetCompatibility = <span class="number">1.8</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// java编译的时候缺省状态下会因为中文字符而失败</span></span><br><span class="line">    [compileJava, compileTestJava, javadoc]*.options*.encoding = <span class="string">'UTF-8'</span></span><br><span class="line"></span><br><span class="line">    repositories &#123;</span><br><span class="line">        mavenLocal()</span><br><span class="line">        maven &#123; url <span class="string">"http://maven.aliyun.com/nexus/content/groups/public"</span> &#125;</span><br><span class="line">        mavenCentral()</span><br><span class="line">        jcenter()</span><br><span class="line">        maven &#123; url <span class="string">"http://repo.spring.io/snapshot"</span> &#125;</span><br><span class="line">        maven &#123; url <span class="string">"http://repo.spring.io/milestone"</span> &#125;</span><br><span class="line">        maven &#123; url <span class="string">'http://maven.springframework.org/release'</span> &#125;</span><br><span class="line">        maven &#123; url <span class="string">'http://maven.springframework.org/milestone'</span> &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    jar &#123;</span><br><span class="line">        manifest &#123;</span><br><span class="line">            attributes(<span class="string">"Implementation-Title"</span>: <span class="string">"Gradle"</span>)</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 显示当前项目下所有用于 compile 的 jar.</span></span><br><span class="line">    task listJars(<span class="string">description:</span> <span class="string">'Display all compile jars.'</span>) &lt;&lt; &#123;</span><br><span class="line">        configurations.compile.each &#123; File file -&gt; println file.name &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    gradle.projectsEvaluated &#123;</span><br><span class="line">        tasks.withType(JavaCompile) &#123;</span><br><span class="line">            options.compilerArgs &lt;&lt; <span class="string">"-Xlint:unchecked"</span> &lt;&lt; <span class="string">"-Xlint:deprecation"</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    task <span class="string">"create-dirs"</span> &lt;&lt; &#123;</span><br><span class="line">        sourceSets*.java.srcDirs*.each &#123;</span><br><span class="line">            it.mkdirs()</span><br><span class="line">        &#125;</span><br><span class="line">        sourceSets*.resources.srcDirs*.each&#123;</span><br><span class="line">            it.mkdirs()</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    ext &#123;</span><br><span class="line">        set(<span class="string">'springCloudVersion'</span>, <span class="string">"Dalston.SR5"</span>)</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    dependencies &#123;</span><br><span class="line"><span class="comment">//        compile group: 'org.springframework.boot', name: 'spring-boot-starter-data-jpa', version: '2.1.4.RELEASE'</span></span><br><span class="line">        compile <span class="string">group:</span> <span class="string">'org.springframework.boot'</span>, <span class="string">name:</span> <span class="string">'spring-boot-starter-data-jpa'</span>, <span class="string">version:</span> <span class="string">'2.2.2.RELEASE'</span></span><br><span class="line">        compile <span class="string">group:</span> <span class="string">'org.springframework.boot'</span>, <span class="string">name:</span> <span class="string">'spring-boot-starter-web'</span>, <span class="string">version:</span> <span class="string">'2.2.2.RELEASE'</span></span><br><span class="line">        <span class="comment">// https://mvnrepository.com/artifact/org.projectlombok/lombok</span></span><br><span class="line">        compile <span class="string">group:</span> <span class="string">'org.projectlombok'</span>, <span class="string">name:</span> <span class="string">'lombok'</span>, <span class="string">version:</span> <span class="string">'1.18.8'</span></span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//设置动态属性</span></span><br><span class="line">    ext &#123;</span><br><span class="line">        <span class="comment">//发布到仓库用户名</span></span><br><span class="line">        publishUserName = <span class="string">"dawei"</span></span><br><span class="line">        <span class="comment">//发布到仓库地址</span></span><br><span class="line">        publishUserPassword = <span class="string">"qq1235789"</span></span><br><span class="line">        <span class="comment">//仓库地址</span></span><br><span class="line">        publishURL = <span class="string">"http://47.102.99.93:8081/repository/panghu/"</span></span><br><span class="line"></span><br><span class="line">        apiBaseJarName = <span class="string">"base"</span></span><br><span class="line">        apiBaseJarVersion = <span class="string">'0.0.1'</span></span><br><span class="line">        builtBy = <span class="string">"gradle 1.9"</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//jar包名称组成：[baseName]-[appendix]-[version]-[classifier].[extension]</span></span><br><span class="line"><span class="comment">//打包class文件</span></span><br><span class="line">    task apiBaseJar(<span class="string">type:</span>Jar)&#123;</span><br><span class="line">        version apiBaseJarVersion</span><br><span class="line">        baseName apiBaseJarName</span><br><span class="line">        from sourceSets.main.output</span><br><span class="line">        destinationDir file(<span class="string">"$buildDir/api-libs"</span>)</span><br><span class="line">        includes [<span class="string">'com/example/**'</span>]</span><br><span class="line">        manifest &#123;</span><br><span class="line">            attributes <span class="string">'packageName'</span>: apiBaseJarName, <span class="string">'Built-By'</span>: builtBy,<span class="string">'Built-date'</span>: <span class="keyword">new</span> Date().format(<span class="string">'yyyy-MM-dd HH:mm:ss'</span>),<span class="string">'Manifest-Version'</span>:version</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"><span class="comment">//打包源码</span></span><br><span class="line">    task apiBaseSourceJar(<span class="string">type:</span>Jar)&#123;</span><br><span class="line">        version apiBaseJarVersion</span><br><span class="line">        baseName apiBaseJarName</span><br><span class="line">        classifier <span class="string">"sources"</span></span><br><span class="line">        from sourceSets.main.allSource</span><br><span class="line">        destinationDir file(<span class="string">"$buildDir/api-libs"</span>)</span><br><span class="line">        includes [<span class="string">'com/example/**'</span>]</span><br><span class="line">        manifest &#123;</span><br><span class="line">            attributes <span class="string">'packageName'</span>: apiBaseJarName+<span class="string">'-sources'</span>, <span class="string">'Built-By'</span>: builtBy,<span class="string">'Built-date'</span>: <span class="keyword">new</span> Date().format(<span class="string">'yyyy-MM-dd HH:mm:ss'</span>),<span class="string">'Manifest-Version'</span>:version</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"><span class="comment">//上传jar包</span></span><br><span class="line">    publishing &#123;</span><br><span class="line">        publications &#123;</span><br><span class="line">            publishing.publications.create(<span class="string">'apiBase'</span>, MavenPublication) &#123;</span><br><span class="line">                groupId <span class="string">'base-core'</span></span><br><span class="line">                artifactId apiBaseJarName</span><br><span class="line">                version apiBaseJarVersion</span><br><span class="line">                <span class="comment">//同时上传class包和源码包</span></span><br><span class="line">                artifacts = [apiBaseJar, apiBaseSourceJar]</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        repositories &#123;</span><br><span class="line">            maven &#123;</span><br><span class="line">                url publishURL</span><br><span class="line">                credentials &#123;</span><br><span class="line">                    username = publishUserName</span><br><span class="line">                    password = publishUserPassword</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
@@ -122,8 +178,8 @@
         <category>spring cloud alibaba</category>
       </categories>
       <tags>
-        <tag>sentinel</tag>
         <tag>spring cloud alibaba</tag>
+        <tag>sentinel</tag>
       </tags>
   </entry>
   <entry>
@@ -277,8 +333,8 @@
         <category>spring cloud alibaba</category>
       </categories>
       <tags>
-        <tag>spring cloud alibaba</tag>
         <tag>nacos</tag>
+        <tag>spring cloud alibaba</tag>
       </tags>
   </entry>
   <entry>
@@ -803,8 +859,8 @@
         <category>spring boot</category>
       </categories>
       <tags>
-        <tag>flyway</tag>
         <tag>spring boot</tag>
+        <tag>flyway</tag>
       </tags>
   </entry>
   <entry>
@@ -1109,6 +1165,20 @@
       </tags>
   </entry>
   <entry>
+    <title>spring-boot localDate等时间序列化异常</title>
+    <url>/2019/04/20/spring-boot%E4%B8%89/</url>
+    <content><![CDATA[<h1 id="普通时间的序列化"><a href="#普通时间的序列化" class="headerlink" title="普通时间的序列化"></a>普通时间的序列化</h1><p>@nbsp;@nbsp;@nbsp;@nbsp;LocalDate、LocalTime、LocalDateTime是Java 8开始提供的时间日期API，然而我们在使用Spring Boot或使用Spring Cloud Feign的时候会出现各种问题<br>以前使用的Date只需要添加注解下面的注解，就能够在前后端以JSON格式传输<br><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">@JsonFormat(pattern = &quot;yyyy-MM-dd&quot;)</span><br><span class="line">@DateTimeFormat(pattern = &quot;yyyy-MM-dd&quot;)</span><br><span class="line">private Date date ;</span><br></pre></td></tr></table></figure></p>
+<p>如果使用了LocalDate等类型，在传输数据就会报错JSON parse error: Can not construct instance of java.time.LocalDate<br>因为默认情况下Spring MVC对于LocalDate序列化成了一个数组类型，而Feign在调用的时候，还是按照ArrayList来处理，所以自然无法反序列化为LocalDate对象了。<br><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&quot;date&quot;:[2019,1,1]</span><br></pre></td></tr></table></figure></p>
+<p>解决办法：<br>先引入jackson-datatype-jsr310依赖，再在启动类中加入<br><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">//      依赖中加入localDate时间转化依赖</span><br><span class="line">compile group: &apos;com.fasterxml.jackson.datatype&apos;, name: &apos;jackson-datatype-jsr310&apos;, version: &apos;2.9.8&apos;</span><br><span class="line">		</span><br><span class="line">		</span><br><span class="line">//		在启动类中添加</span><br><span class="line">@Bean</span><br><span class="line">public ObjectMapper serializingObjectMapper() &#123;</span><br><span class="line">    ObjectMapper objectMapper = new ObjectMapper();</span><br><span class="line">    objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);</span><br><span class="line">    objectMapper.registerModule(new JavaTimeModule());</span><br><span class="line">    return objectMapper;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+]]></content>
+      <categories>
+        <category>spring boot</category>
+      </categories>
+      <tags>
+        <tag>spring boot</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>spring-boot web模板引擎和统一异常处理</title>
     <url>/2019/04/20/spring-boot%E4%BA%8C/</url>
     <content><![CDATA[<h1 id="spring-boot-模板引擎"><a href="#spring-boot-模板引擎" class="headerlink" title="spring boot 模板引擎"></a>spring boot 模板引擎</h1><p>&nbsp;&nbsp;&nbsp;&nbsp;在我们开发Web应用的时候，需要引用大量的js、css、图片等静态资源。在动态HTML实现上Spring Boot依然可以完美胜任，并且提供了多种模板引擎的默认配置支持，所以在推荐的模板引擎下，我们可以很快的上手开发动态网站。<br>Spring Boot提供了默认配置的模板引擎主要有以下几种：<br>&nbsp;&nbsp;&nbsp;&nbsp;ymeleaf<br>&nbsp;&nbsp;&nbsp;&nbsp;FreeMarker<br>&nbsp;&nbsp;&nbsp;&nbsp;Velocity<br>&nbsp;&nbsp;&nbsp;&nbsp;Groovy<br>&nbsp;&nbsp;&nbsp;&nbsp;Mustache<br>当你使用上述模板引擎中的任何一个，它们默认的模板配置路径为：src/main/resources/templates。当然也可以修改这个路径，具体如何修改，可在后续各模板引擎的配置属性中查询并修改。</p>
@@ -1123,20 +1193,6 @@
 <p>创建一个抛出异常的请求<br><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">@RequestMapping(&quot;/json&quot;)</span><br><span class="line">   public String  json() throws MyException &#123;</span><br><span class="line">       throw new MyException(&quot;发生错误2&quot;);</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure></p>
 <p>这个时候请求/json方法，就会返回error界面，并显示出错误的请求路径和错误信息<br>如果需要返回的是JSON类型的格式，只需要返回的加上@ReponseBody注解<br><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">异常信息类</span><br><span class="line">public class ErrorInfo&lt;T&gt; &#123;</span><br><span class="line">    public static final Integer OK = 0;</span><br><span class="line">    public static final Integer ERROR = 100;</span><br><span class="line">    private Integer code;</span><br><span class="line">    private String message;</span><br><span class="line">    private String url;</span><br><span class="line">    private T data;</span><br><span class="line">    // 省略getter和setter</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
 <p>在异常处理方法中改写为<br><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">@ExceptionHandler(value = MyException.class)</span><br><span class="line">@ResponseBody  //这个注解是返回JSON格式</span><br><span class="line">public ErrorInfo&lt;String&gt; defaultErrorHandler(HttpServletRequest req,MyException e) throws Exception &#123;</span><br><span class="line">    ErrorInfo&lt;String&gt; r = new ErrorInfo&lt;&gt;();</span><br><span class="line">    r.setMessage(e.getMessage());</span><br><span class="line">    r.setCode(ErrorInfo.ERROR);</span><br><span class="line">    r.setData(&quot;Some Data&quot;);</span><br><span class="line">    r.setUrl(req.getRequestURL().toString());</span><br><span class="line">    return r;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-]]></content>
-      <categories>
-        <category>spring boot</category>
-      </categories>
-      <tags>
-        <tag>spring boot</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>spring-boot localDate等时间序列化异常</title>
-    <url>/2019/04/20/spring-boot%E4%B8%89/</url>
-    <content><![CDATA[<h1 id="普通时间的序列化"><a href="#普通时间的序列化" class="headerlink" title="普通时间的序列化"></a>普通时间的序列化</h1><p>@nbsp;@nbsp;@nbsp;@nbsp;LocalDate、LocalTime、LocalDateTime是Java 8开始提供的时间日期API，然而我们在使用Spring Boot或使用Spring Cloud Feign的时候会出现各种问题<br>以前使用的Date只需要添加注解下面的注解，就能够在前后端以JSON格式传输<br><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">@JsonFormat(pattern = &quot;yyyy-MM-dd&quot;)</span><br><span class="line">@DateTimeFormat(pattern = &quot;yyyy-MM-dd&quot;)</span><br><span class="line">private Date date ;</span><br></pre></td></tr></table></figure></p>
-<p>如果使用了LocalDate等类型，在传输数据就会报错JSON parse error: Can not construct instance of java.time.LocalDate<br>因为默认情况下Spring MVC对于LocalDate序列化成了一个数组类型，而Feign在调用的时候，还是按照ArrayList来处理，所以自然无法反序列化为LocalDate对象了。<br><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&quot;date&quot;:[2019,1,1]</span><br></pre></td></tr></table></figure></p>
-<p>解决办法：<br>先引入jackson-datatype-jsr310依赖，再在启动类中加入<br><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">//      依赖中加入localDate时间转化依赖</span><br><span class="line">compile group: &apos;com.fasterxml.jackson.datatype&apos;, name: &apos;jackson-datatype-jsr310&apos;, version: &apos;2.9.8&apos;</span><br><span class="line">		</span><br><span class="line">		</span><br><span class="line">//		在启动类中添加</span><br><span class="line">@Bean</span><br><span class="line">public ObjectMapper serializingObjectMapper() &#123;</span><br><span class="line">    ObjectMapper objectMapper = new ObjectMapper();</span><br><span class="line">    objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);</span><br><span class="line">    objectMapper.registerModule(new JavaTimeModule());</span><br><span class="line">    return objectMapper;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
 ]]></content>
       <categories>
         <category>spring boot</category>
