@@ -94,7 +94,7 @@
 <meta property="og:image" content="http://yoursite.com/2020/03/31/jvm内存模型/锁流程.png">
 <meta property="og:image" content="http://yoursite.com/2020/03/31/jvm内存模型/句柄访问.png">
 <meta property="og:image" content="http://yoursite.com/2020/03/31/jvm内存模型/直接指针.png">
-<meta property="og:updated_time" content="2020-04-04T15:48:22.373Z">
+<meta property="og:updated_time" content="2020-04-06T05:01:16.145Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="jvm内存模型">
 <meta name="twitter:description" content="java虚拟机内存区域 1、程序计数器​    程序计数器是一块很小的内存空间，它是线程私有的，可以认作为当前线程的行号指示器。我们知道对于一个处理器(如果是多核cpu那就是一核)，在一个确定的时刻都只会执行一条线程中的指令，一条线程中有多个指令，为了线程切换可以恢复到正确执行位置，每个线程都需有独立的一个程序计数器，不同线程之间的程序计数器互不影响，独立存储。 如果线程执行的是个java方法，那">
@@ -402,6 +402,40 @@
 <h3 id="直接指针"><a href="#直接指针" class="headerlink" title="直接指针"></a>直接指针</h3><p>与句柄访问不同的是，ref中直接存储的就是对象的实例数据,但是类型数据跟句柄访问方式一样。</p>
 <p>优点:优势很明显，就是速度快，<strong>相比于句柄访问少了一次指针定位的开销时间</strong>。【可能是出于Java中对象的访问时十分频繁的,平时我们常用的JVM HotSpot采用此种方式】</p>
 <p><img src="/2020/03/31/jvm内存模型/直接指针.png" width="500" height="500" alt="直接指针" align="center"></p>
+<h1 id="GC简介"><a href="#GC简介" class="headerlink" title="GC简介"></a>GC简介</h1><p>java GC泛指java的垃圾回收机制，该机制是java与C/C++的主要区别之一，我们在日常写java代码的时候，一般都不需要编写内存回收或者垃圾清理的代码，也不需要像C/C++那样做类似delete/free的操作。</p>
+<p>没必要深入到GC的底层实现，但是要学会看懂gc及定位一些内存泄漏问题。</p>
+<h2 id="那些内存需要回收"><a href="#那些内存需要回收" class="headerlink" title="那些内存需要回收"></a>那些内存需要回收</h2><p>上面中JVM中程序计数器、虚拟机栈、本地方法栈都是线程私有，随线程存活死亡，而其中的栈帧随着方法的执行顺序执行入栈和出栈操作，一个栈帧需要多少内存取决于具体的虚拟机实现并且在编译期间确定，当方法执行完，内存就会回收。</p>
+<p>而<code>Java堆</code>、<code>方法区</code>则不一样。方法区存放着类加载信息，但是一个接口中多个实现类需要的内存可能不太一样，一个方法中多个分支需要的内存也可能不一样【只有在运行期间才可知道这个方法创建了哪些对象没需要多少内存】，这部分内存的分配和回收都是动态的，gc关注的也正是这部分的内存。</p>
+<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="selector-tag">Java</span>堆是<span class="selector-tag">GC</span>回收的“重点区域”。堆中基本存放着所有对象实例，<span class="selector-tag">gc</span>进行回收前，第一件事就是确认哪些对象存活，哪些死去</span><br></pre></td></tr></table></figure>
+<h2 id="堆的回收区域"><a href="#堆的回收区域" class="headerlink" title="堆的回收区域"></a>堆的回收区域</h2><figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">为了高效的回收，<span class="selector-tag">jvm</span>将堆分为三个区域</span><br><span class="line">1.新生代（<span class="selector-tag">Young</span> <span class="selector-tag">Generation</span>）<span class="selector-tag">NewSize</span>和<span class="selector-tag">MaxNewSize</span>分别可以控制年轻代的初始大小和最大的大小</span><br><span class="line">2.老年代（<span class="selector-tag">Old</span> <span class="selector-tag">Generation</span>）</span><br><span class="line">3.永久代（<span class="selector-tag">Permanent</span> <span class="selector-tag">Generation</span>）【1<span class="selector-class">.8</span>以后采用元空间，就不在堆中了】</span><br></pre></td></tr></table></figure>
+<h2 id="判断对象是否存活算法"><a href="#判断对象是否存活算法" class="headerlink" title="判断对象是否存活算法"></a>判断对象是否存活算法</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">1.引用计数算法</span><br><span class="line">早期判断对象是否存活大多都是以这种算法，这种算法判断很简单，简单来说就是给对象添加一个引用计数器，每当对象被引用一次就加1，引用失效时就减1。当为0的时候就判断对象不会再被引用。</span><br><span class="line">优点:实现简单效率高，被广泛使用与如python何游戏脚本语言上。</span><br><span class="line">缺点:难以解决循环引用的问题，就是假如两个对象互相引用已经不会再被其它其它引用，导致一直不会为0就无法进行回收。</span><br><span class="line"></span><br><span class="line">2.可达性分析算法</span><br><span class="line">目前主流的商用语言[如java、c<span class="comment">#]采用的是可达性分析算法判断对象是否存活。这个算法有效解决了循环利用的弊端。</span></span><br><span class="line">它的基本思路是通过一个称为“GC Roots”的对象为起始点，搜索所经过的路径称为引用链，当一个对象到GC Roots没有任何引用跟它连接则证明对象是不可用的。</span><br></pre></td></tr></table></figure>
+<h2 id="垃圾收集算法"><a href="#垃圾收集算法" class="headerlink" title="垃圾收集算法"></a>垃圾收集算法</h2><p>jvm中，可达性分析算法帮我们解决了哪些对象可以回收的问题，垃圾收集算法则关心怎么回收。</p>
+<h3 id="三大垃圾收集算法"><a href="#三大垃圾收集算法" class="headerlink" title="三大垃圾收集算法"></a>三大垃圾收集算法</h3><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">1.</span>标记/清除算法【最基础】</span><br><span class="line"><span class="number">2.</span>复制算法</span><br><span class="line"><span class="number">3.</span>标记/整理算法</span><br><span class="line">jvm采用<span class="string">`分代收集算法`</span>对不同区域采用不同的回收算法。</span><br></pre></td></tr></table></figure>
+<p><strong>新生代采用复制算法</strong></p>
+<p>新生代中因为对象都是”朝生夕死的”，【深入理解JVM虚拟机上说98%的对象,不知道是不是这么多，总之就是存活率很低】，适用于复制算法【复制算法比较适合用于存活率低的内存区域】。它优化了标记/清除算法的效率和内存碎片问题，且JVM不以5:5分配内存【由于存活率低，不需要复制保留那么大的区域造成空间上的浪费，因此不需要按1:1【原有区域:保留空间】划分内存区域，而是将内存分为一块Eden空间和From Survivor、To Survivor【保留空间】，三者默认比例为8:1:1，优先使用Eden区，若Eden区满，则将对象复制到第二块内存区上。但是不能保证每次回收都只有不多于10%的对象存货，所以Survivor区不够的话，则会依赖老年代年存进行分配】</p>
+<p>GC开始时，对象只会存于Eden和From Survivor区域，To Survivor【保留空间】为空。</p>
+<p>GC进行时，Eden区所有存活的对象都被复制到To Survivor区，而From Survivor区中，仍存活的对象会根据它们的年龄值决定去向，年龄值达到年龄阈值(默认15是因为对象头中年龄战4bit，新生代每熬过一次垃圾回收，年龄+1)，则移到老年代，没有达到则复制到To Survivor。</p>
+<p><strong>老年代采用<code>标记/清除算法</code>或<code>标记/整理算法</code></strong></p>
+<p>由于老年代存活率高，没有额外空间给他做担保，必须使用这两种算法。</p>
+<h3 id="枚举根节点算法"><a href="#枚举根节点算法" class="headerlink" title="枚举根节点算法"></a>枚举根节点算法</h3><p>可作为GC Roos的节点主要是在一些全局引用【如常量或静态属性】、执行上下文【如栈帧中本地变量表】中。那么如何在这么多全局变量和本地变量表找到【枚举】根节点将是个问题。</p>
+<p>可达性分析算法需考虑</p>
+<p>1.如果方法区几百兆，一个个检查里面的引用，将耗费大量资源。</p>
+<p>2.在分析时，需保证这个对象引用关系不再变化，否则结果将不准确。【因此GC进行时需停掉其它所有java执行线程(Sun把这种行为称为‘Stop the World’)，即使是号称几乎不会停顿的CMS收集器，枚举根节点时也需停掉线程】</p>
+<h2 id="垃圾收集器"><a href="#垃圾收集器" class="headerlink" title="垃圾收集器"></a>垃圾收集器</h2><figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">年轻代收集器</span><br><span class="line"><span class="selector-tag">Serial</span>、<span class="selector-tag">ParNew</span>、<span class="selector-tag">Parallel</span> <span class="selector-tag">Scavenge</span></span><br><span class="line">老年代收集器</span><br><span class="line"><span class="selector-tag">Serial</span> <span class="selector-tag">Old</span>、<span class="selector-tag">Parallel</span> <span class="selector-tag">Old</span>、<span class="selector-tag">CMS</span>收集器</span><br><span class="line">特殊收集器</span><br><span class="line"><span class="selector-tag">G1</span>收集器<span class="selector-attr">[新型，不在年轻、老年代范畴内]</span></span><br></pre></td></tr></table></figure>
+<h2 id="Minor-GC、Major-GC、FULL-GC、mixed-gc"><a href="#Minor-GC、Major-GC、FULL-GC、mixed-gc" class="headerlink" title="Minor GC、Major GC、FULL GC、mixed gc"></a>Minor GC、Major GC、FULL GC、mixed gc</h2><h3 id="Minor-GC"><a href="#Minor-GC" class="headerlink" title="Minor GC"></a>Minor GC</h3><blockquote>
+<p>在年轻代<code>Young space</code>(包括Eden区和Survivor区)中的垃圾回收称之为 Minor GC,Minor GC只会清理年轻代.</p>
+</blockquote>
+<h3 id="Major-GC"><a href="#Major-GC" class="headerlink" title="Major GC"></a>Major GC</h3><blockquote>
+<p>Major GC清理老年代(old GC)，但是通常也可以指和Full GC是等价，因为收集老年代的时候往往也会伴随着升级年轻代，收集整个Java堆。所以有人问的时候需问清楚它指的是full GC还是old GC。</p>
+</blockquote>
+<h3 id="Full-GC"><a href="#Full-GC" class="headerlink" title="Full GC"></a>Full GC</h3><blockquote>
+<p>full gc是对新生代、老年代、永久代【jdk1.8后没有这个概念了】统一的回收。</p>
+<p>【知乎R大的回答:收集整个堆，包括young gen、old gen、perm gen（如果存在的话)、元空间(1.8及以上)等所有部分的模式】</p>
+</blockquote>
+<h3 id="mixed-GC【g1特有】"><a href="#mixed-GC【g1特有】" class="headerlink" title="mixed GC【g1特有】"></a>mixed GC【g1特有】</h3><blockquote>
+<p>混合GC</p>
+<p>收集整个young gen以及部分old gen的GC。只有G1有这个模式</p>
+</blockquote>
 
       
     </div>
@@ -441,6 +475,10 @@
           <span class="post-nav-divider"></span>
 
           <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2020/04/15/二叉树/" rel="prev" title="二叉树">
+                二叉树 <i class="fa fa-chevron-right"></i>
+              </a>
             
           </div>
         </div>
@@ -528,7 +566,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">40</span>
+                  <span class="site-state-item-count">41</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -539,7 +577,7 @@
               
               <div class="site-state-item site-state-categories">
                 <a href="/categories/index.html">
-                  <span class="site-state-item-count">13</span>
+                  <span class="site-state-item-count">14</span>
                   <span class="site-state-item-name">分类</span>
                 </a>
               </div>
@@ -550,7 +588,7 @@
               
               <div class="site-state-item site-state-tags">
                 <a href="/tags/index.html">
-                  <span class="site-state-item-count">33</span>
+                  <span class="site-state-item-count">35</span>
                   <span class="site-state-item-name">标签</span>
                 </a>
               </div>
@@ -583,7 +621,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#java虚拟机内存区域"><span class="nav-number">1.</span> <span class="nav-text">java虚拟机内存区域</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1、程序计数器"><span class="nav-number">1.1.</span> <span class="nav-text">1、程序计数器</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2、java栈（虚拟机栈）"><span class="nav-number">1.2.</span> <span class="nav-text">2、java栈（虚拟机栈）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3、本地方法栈"><span class="nav-number">1.3.</span> <span class="nav-text">3、本地方法栈</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4、堆"><span class="nav-number">1.4.</span> <span class="nav-text">4、堆</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5、方法区"><span class="nav-number">1.5.</span> <span class="nav-text">5、方法区</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Java对象的内存布局"><span class="nav-number">2.</span> <span class="nav-text">Java对象的内存布局</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#对象头【markword】"><span class="nav-number">2.1.</span> <span class="nav-text">对象头【markword】</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#实例数据"><span class="nav-number">2.2.</span> <span class="nav-text">实例数据</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#对齐填充"><span class="nav-number">2.3.</span> <span class="nav-text">对齐填充</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#对象的访问定位"><span class="nav-number">2.4.</span> <span class="nav-text">对象的访问定位</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#句柄访问"><span class="nav-number">2.4.1.</span> <span class="nav-text">句柄访问</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#直接指针"><span class="nav-number">2.4.2.</span> <span class="nav-text">直接指针</span></a></li></ol></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#java虚拟机内存区域"><span class="nav-number">1.</span> <span class="nav-text">java虚拟机内存区域</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1、程序计数器"><span class="nav-number">1.1.</span> <span class="nav-text">1、程序计数器</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2、java栈（虚拟机栈）"><span class="nav-number">1.2.</span> <span class="nav-text">2、java栈（虚拟机栈）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3、本地方法栈"><span class="nav-number">1.3.</span> <span class="nav-text">3、本地方法栈</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4、堆"><span class="nav-number">1.4.</span> <span class="nav-text">4、堆</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5、方法区"><span class="nav-number">1.5.</span> <span class="nav-text">5、方法区</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Java对象的内存布局"><span class="nav-number">2.</span> <span class="nav-text">Java对象的内存布局</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#对象头【markword】"><span class="nav-number">2.1.</span> <span class="nav-text">对象头【markword】</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#实例数据"><span class="nav-number">2.2.</span> <span class="nav-text">实例数据</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#对齐填充"><span class="nav-number">2.3.</span> <span class="nav-text">对齐填充</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#对象的访问定位"><span class="nav-number">2.4.</span> <span class="nav-text">对象的访问定位</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#句柄访问"><span class="nav-number">2.4.1.</span> <span class="nav-text">句柄访问</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#直接指针"><span class="nav-number">2.4.2.</span> <span class="nav-text">直接指针</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#GC简介"><span class="nav-number">3.</span> <span class="nav-text">GC简介</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#那些内存需要回收"><span class="nav-number">3.1.</span> <span class="nav-text">那些内存需要回收</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#堆的回收区域"><span class="nav-number">3.2.</span> <span class="nav-text">堆的回收区域</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#判断对象是否存活算法"><span class="nav-number">3.3.</span> <span class="nav-text">判断对象是否存活算法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#垃圾收集算法"><span class="nav-number">3.4.</span> <span class="nav-text">垃圾收集算法</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#三大垃圾收集算法"><span class="nav-number">3.4.1.</span> <span class="nav-text">三大垃圾收集算法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#枚举根节点算法"><span class="nav-number">3.4.2.</span> <span class="nav-text">枚举根节点算法</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#垃圾收集器"><span class="nav-number">3.5.</span> <span class="nav-text">垃圾收集器</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Minor-GC、Major-GC、FULL-GC、mixed-gc"><span class="nav-number">3.6.</span> <span class="nav-text">Minor GC、Major GC、FULL GC、mixed gc</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Minor-GC"><span class="nav-number">3.6.1.</span> <span class="nav-text">Minor GC</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Major-GC"><span class="nav-number">3.6.2.</span> <span class="nav-text">Major GC</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Full-GC"><span class="nav-number">3.6.3.</span> <span class="nav-text">Full GC</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#mixed-GC【g1特有】"><span class="nav-number">3.6.4.</span> <span class="nav-text">mixed GC【g1特有】</span></a></li></ol></li></ol></li></ol></div>
             
 
           </div>
