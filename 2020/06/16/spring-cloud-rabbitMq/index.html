@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="rabbitMq,spring cloud,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="通道根据消息内容分发不同的消费逻辑同一通道中的消息处理，会通过判断头信息或者消息内容来做一些差异化处理，比如：可能在消息头信息中带入消息版本号或其他信息 @StreamListener注解中提供了一个不错的属性condition，可以用来优化这样的处理结构。 生产者 123456@GetMapping(&amp;quot;/sendMessage&amp;quot;)public String messageWi">
+<meta name="keywords" content="rabbitMq,spring cloud">
+<meta property="og:type" content="article">
+<meta property="og:title" content="spring-cloud rabbitMq">
+<meta property="og:url" content="http://yoursite.com/2020/06/16/spring-cloud-rabbitMq/index.html">
+<meta property="og:site_name" content="放空">
+<meta property="og:description" content="通道根据消息内容分发不同的消费逻辑同一通道中的消息处理，会通过判断头信息或者消息内容来做一些差异化处理，比如：可能在消息头信息中带入消息版本号或其他信息 @StreamListener注解中提供了一个不错的属性condition，可以用来优化这样的处理结构。 生产者 123456@GetMapping(&amp;quot;/sendMessage&amp;quot;)public String messageWi">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://yoursite.com/2020/06/16/spring-cloud-rabbitMq/delay.png">
+<meta property="og:image" content="http://yoursite.com/2020/06/16/spring-cloud-rabbitMq/replay.png">
+<meta property="og:image" content="http://yoursite.com/2020/06/16/spring-cloud-rabbitMq/delay.png">
+<meta property="og:updated_time" content="2020-06-24T02:40:17.630Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="spring-cloud rabbitMq">
+<meta name="twitter:description" content="通道根据消息内容分发不同的消费逻辑同一通道中的消息处理，会通过判断头信息或者消息内容来做一些差异化处理，比如：可能在消息头信息中带入消息版本号或其他信息 @StreamListener注解中提供了一个不错的属性condition，可以用来优化这样的处理结构。 生产者 123456@GetMapping(&amp;quot;/sendMessage&amp;quot;)public String messageWi">
+<meta name="twitter:image" content="http://yoursite.com/2020/06/16/spring-cloud-rabbitMq/delay.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":true,"scrollpercent":true,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2020/06/16/spring-cloud-rabbitMq/">
+
+
+
+
+
+  <title>spring-cloud rabbitMq | 放空</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+	<a href="https://github.com/pignum1/pignum1.github.io.git"><img style="position: absolute; top: 0; right: 0;border: 0;" src="https://github.blog/wp-content/uploads/2008/12/forkme_right_darkblue_121621.png?resize=149%2C149" class="attachment-full size-full" alt="Fork me on GitHub" data-recalc-dims="1"></a>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">放空</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-categories" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/06/16/spring-cloud-rabbitMq/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="wei xy">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/sliver.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="放空">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">spring-cloud rabbitMq</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-06-16T09:14:20+08:00">
+                2020-06-16
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/spring-cloud/" itemprop="url" rel="index">
+                    <span itemprop="name">spring cloud</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="通道根据消息内容分发不同的消费逻辑"><a href="#通道根据消息内容分发不同的消费逻辑" class="headerlink" title="通道根据消息内容分发不同的消费逻辑"></a>通道根据消息内容分发不同的消费逻辑</h1><p>同一通道中的消息处理，会通过判断头信息或者消息内容来做一些差异化处理，比如：可能在消息头信息中带入消息版本号或其他信息</p>
+<p><code>@StreamListener</code>注解中提供了一个不错的属性<code>condition</code>，可以用来优化这样的处理结构。</p>
+<p>生产者</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">@GetMapping(&quot;/sendMessage&quot;)</span><br><span class="line">public String messageWithMQ(@RequestParam String message,@RequestParam String version) &#123;</span><br><span class="line">    log.info(&quot;Send: &quot; + message);</span><br><span class="line">    testTopic.output().send(MessageBuilder.withPayload(message+new Date()).setHeader(&quot;x-delay&quot;, 5000).setHeader(&quot;version&quot;,version).build());</span><br><span class="line">    return &quot;ok&quot;;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>消费者</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">@StreamListener(TestTopic.INPUT)</span><br><span class="line">public void receive(String payload) &#123;</span><br><span class="line">    log.info(&quot;Received: &quot; + payload+&quot;，接收时间为：&quot;+new Date());</span><br><span class="line">    System.out.println(&quot;Received: &quot; + payload);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">@StreamListener(value = TestTopic.INPUT, condition = &quot;headers[&apos;version&apos;]==&apos;1.0&apos;&quot;)</span><br><span class="line">public void receiveV1(String payload, @Header(&quot;version&quot;) String version) &#123;</span><br><span class="line">    log.info(&quot;Received v1 : &quot; + payload + &quot;, &quot; + version);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">@StreamListener(value = TestTopic.INPUT, condition = &quot;headers[&apos;version&apos;]==&apos;2.0&apos;&quot;)</span><br><span class="line">public void receiveV2(String payload, @Header(&quot;version&quot;) String version) &#123;</span><br><span class="line">    log.info(&quot;Received v2 : &quot; + payload + &quot;, &quot; + version);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>使用postman 发送不同的版本号，会有不同的消费者接收消息，receive方法因为没有限制，一直都能消费信息。</p>
+<h1 id="消息发送失败重新入队"><a href="#消息发送失败重新入队" class="headerlink" title="消息发送失败重新入队"></a>消息发送失败重新入队</h1><p>在消费者逻辑时添加抛出的异常</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">private int count = 1;</span><br><span class="line"></span><br><span class="line">@StreamListener(TestTopic.INPUT)</span><br><span class="line">public void receive(String payload) &#123;</span><br><span class="line">    log.info(&quot;Received: &quot; + payload+&quot;，接收时间为：&quot;+new Date());</span><br><span class="line">    System.out.println(&quot;Received: &quot; + payload+&quot;cout:&quot;+(count++));</span><br><span class="line">    throw new AmqpRejectAndDontRequeueException(&quot;time out&quot;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在配置文件中修改重新入队的配置</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">#消息消费者配置</span><br><span class="line">#spring.cloud.stream.bindings.example-topic-input.binder=local_rabbit</span><br><span class="line">spring.cloud.stream.bindings.example-topic-input.destination=top</span><br><span class="line">spring.cloud.stream.bindings.example-topic-input.group=logMessageConsumers</span><br><span class="line">#spring.cloud.stream.rabbit.bindings.example-topic-input.consumer.delayed-exchange=true</span><br><span class="line">#最大重试次数</span><br><span class="line">spring.cloud.stream.bindings.example-topic-input.consumer.max-attempts=3</span><br><span class="line"></span><br><span class="line">#消费失败重新入队</span><br><span class="line">spring.cloud.stream.rabbit.bindings.example-topic-input.consumer.requeue-rejected=true</span><br><span class="line">#消息队列中的最大存活时间，超过该时间放入死信队列</span><br><span class="line">spring.cloud.stream.rabbit.bindings.packetUplinkInput.consumer.ttl=200000</span><br><span class="line">##开启消费者的死信队列</span><br><span class="line">spring.cloud.stream.rabbit.bindings.example-topic-input.consumer.autoBindDlq=true</span><br><span class="line"></span><br><span class="line">#生产者配置</span><br><span class="line">#spring.cloud.stream.bindings.example-topic-output.binder=local_rabbit</span><br><span class="line">spring.cloud.stream.bindings.example-topic-output.destination=top</span><br></pre></td></tr></table></figure>
+<p>主要添加了三个配置</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">#最大重试次数。默认值为3，为1时是为不开启重入队列</span><br><span class="line">spring.cloud.stream.bindings.example-topic-input.consumer.max-attempts=3</span><br><span class="line">##配置消费者的失败自动重新入队功能，并自动将死信队列绑定到dlx</span><br><span class="line">spring.cloud.stream.rabbit.bindings.example-topic-input.consumer.autoBindDlq=true</span><br><span class="line">spring.cloud.stream.rabbit.bindings.example-topic-input.consumer.requeue-rejected=true</span><br></pre></td></tr></table></figure>
+<p>现在发起请求，可以在控制台上打印出请求的记录，只在最后一次的重新请求完成后才会抛出异常，发送失败的消息被存储在dlq死心队列中，异常的信息可以在绑定的dlq中获取到。下面的图片就是结果图</p>
+<p><img src="/2020/06/16/spring-cloud-rabbitMq/delay.png" alt>]</p>
+<p>在死信队列的数据可以再重新发送到其他的队列里面</p>
+<p><img src="/2020/06/16/spring-cloud-rabbitMq/replay.png" alt>]</p>
+<p>大部分的消息在业务上存在时效性，进入死信队列之后，过一段时间再处理已经没有意义，可以通过设置死信队列的存在时间，超过配置的时间之后，该消息就会自动从DLQ中删除。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">  spring.cloud.stream.rabbit.bindings.example-topic-input.consumer.dlq-ttl=10000</span><br><span class="line">#在dql的消息头中添加错误信息，默认为true</span><br><span class="line">spring.cloud.stream.rabbit.bindings.example-topic-input.consumer.republish-to-dlq=true</span><br></pre></td></tr></table></figure>
+<h1 id="消息失败时自定义错误逻辑"><a href="#消息失败时自定义错误逻辑" class="headerlink" title="消息失败时自定义错误逻辑"></a>消息失败时自定义错误逻辑</h1><p>修改逻辑代码</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">@StreamListener(TestTopic.INPUT)</span><br><span class="line">public void receive(String payload) &#123;</span><br><span class="line">    log.info(&quot;Received: &quot; + payload+&quot;，接收时间为：&quot;+new Date());</span><br><span class="line">    System.out.println(&quot;Received: &quot; + payload+&quot;cout:&quot;+(count++));</span><br><span class="line">    throw new AmqpRejectAndDontRequeueException(&quot;time out&quot;);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">/**</span><br><span class="line"> * 消息消费失败的降级处理逻辑</span><br><span class="line"> *</span><br><span class="line"> * @param message</span><br><span class="line"> */</span><br><span class="line">@ServiceActivator(inputChannel = &quot;top.delayConsumer.errors&quot;)</span><br><span class="line">public void error(Message&lt;?&gt; message) &#123;</span><br><span class="line">    log.info(&quot;Message consumer failed, call fallback!&quot;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>@ServiceActivator的注解</p>
+<p>取值为 top取的是消息通道对应的目标（destination，即：<code>spring.cloud.stream.bindings.example-topic-input.destination</code>的配置）</p>
+<p>delay取值为消息通道对应的消费组（group，即：<code>spring.cloud.stream.bindings.example-topic-input.group</code>的配置）</p>
+<p>测试的时候延迟消息类型的数据并不能处理这种异常…</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">spring.cloud.stream.bindings.example-topic-input.destination=top</span><br><span class="line">spring.cloud.stream.bindings.example-topic-output.destination=top</span><br></pre></td></tr></table></figure>
+<h1 id="处理重复的消息"><a href="#处理重复的消息" class="headerlink" title="处理重复的消息"></a>处理重复的消息</h1><p>定义一个生产端，两个消费端</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">//生产</span><br><span class="line">public interface AnotherOutput &#123;</span><br><span class="line"></span><br><span class="line">    String NAME = &quot;another-topic-input&quot;;</span><br><span class="line"></span><br><span class="line">    @Output(NAME)</span><br><span class="line">    SubscribableChannel output();</span><br><span class="line">&#125;</span><br><span class="line">//消费者</span><br><span class="line">public interface AnotherInput &#123;</span><br><span class="line">    String NAME = &quot;another-topic-input&quot;;</span><br><span class="line"></span><br><span class="line">    @Input(NAME)</span><br><span class="line">    SubscribableChannel input();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>生产者代码</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">@Autowired</span><br><span class="line">private AnotherOutput anotherOutput;</span><br><span class="line"></span><br><span class="line">@GetMapping(&quot;/anotherSendMessage&quot;)</span><br><span class="line">public String anotherSendMessage(@RequestParam String message, @RequestParam String version) &#123;</span><br><span class="line">    log.info(&quot;Send: &quot; + message);</span><br><span class="line">    anotherOutput.output().send(MessageBuilder.withPayload(message + new Date()).build());</span><br><span class="line">    return &quot;ok&quot;;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>定义监听的代码</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">@EnableBinding(&#123;AnotherInput.class&#125;)</span><br><span class="line">public class AnotherReceive &#123;</span><br><span class="line"></span><br><span class="line">    private static Logger logger = LoggerFactory.getLogger(AnotherReceive.class);</span><br><span class="line"></span><br><span class="line">    @StreamListener(AnotherInput.NAME)</span><br><span class="line">    public void receive1(String payload) &#123;</span><br><span class="line">        logger.info(&quot;AnotherReceive Received: &quot; + payload);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>添加通道的配置,这里只定义到destination</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">spring.cloud.stream.bindings.another-topic-input.destination=top</span><br><span class="line">spring.cloud.stream.bindings.another-topic-output.destination=top</span><br></pre></td></tr></table></figure>
+<p>启动两个实例，并用生产者发送一次消息以后,可以看到两个控制台都打印出消费的信息</p>
+<p>在定义了输入和输出通道以后，一个生产端发送的消息会被多个消费组重复消费，为了避免消息的重复发送，可以定义消费组。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">spring.cloud.stream.bindings.another-topic-output.group=consumerTest</span><br><span class="line">spring.cloud.stream.bindings.another-topic-input.group=consumerTest</span><br></pre></td></tr></table></figure>
+<p>这是因为当我们指定了某个绑定所指向的消费组之后，往当前主题发送的消息在每个订阅消费组中，只会有一个订阅者接收和消费，从而实现了对消息的负载均衡。只所以之前会出现重复消费的问题，是由于默认情况下，任何订阅都会产生一个匿名消费组，所以每个订阅实例都会有自己的消费组，从而当有消息发送的时候，就形成了广播的模式。</p>
+<h1 id="消息分区"><a href="#消息分区" class="headerlink" title="消息分区"></a>消息分区</h1><p>修改配置信息</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">#topic  消息</span><br><span class="line"></span><br><span class="line">#该参数指定了当前消费者的总实例数量；</span><br><span class="line">spring.cloud.stream.instanceCount=2</span><br><span class="line">#该参数设置当前实例的索引号，从0开始，最大值为spring.cloud.stream.instanceCount参数 - 1。我们试验的时#候需要启动多个实例，可以通过运行参数来为不同实例设置不同的索引值</span><br><span class="line">spring.cloud.stream.instanceIndex=1</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">spring.cloud.stream.bindings.another-topic-input.destination=top</span><br><span class="line">spring.cloud.stream.bindings.another-topic-input.group=consumerTest</span><br><span class="line">#通过该参数开启消费者分区功能；</span><br><span class="line">spring.cloud.stream.bindings.another-topic-input.consumer.partitioned=true</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">spring.cloud.stream.bindings.another-topic-output.destination=top</span><br><span class="line">spring.cloud.stream.bindings.another-topic-output.group=consumerTest</span><br><span class="line"></span><br><span class="line">#通过该参数指定了分区键的表达式规则，我们可以根据实际的输出消息规则来配置SpEL来生成合适的分区键；</span><br><span class="line">spring.cloud.stream.bindings.another-topic-output.producer.partitionKeyExpression=payload</span><br><span class="line">#该参数指定了消息分区的数量。</span><br><span class="line">spring.cloud.stream.bindings.another-topic-output.producer.partitionCount=2</span><br></pre></td></tr></table></figure>
+<p>  partition-key-expression通过该参数指定了分区键的表达式规则,分区key的值是基于partitionKeyExpression计算得出的,用于每个消息被发送至对应分区的输出channel。</p>
+<pre><code>该表达式作用于传递给MessageChannel的send方法的参数，该参数是实现 org.springframework.messaging.Message接口的类,GenericMessage类是Spring为我们提供的一个实现Message接口的类，我们封装的信息将会放在payload属性上。
+</code></pre><p>例如在发送消息时设置header信息，并设置分区的表达式。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">	Message&lt;String&gt; message = MessageBuilder.withPayload(&quot;From timerMessageSource&quot;).setHeader(&quot;partitionKey&quot;, 1).build();</span><br><span class="line">	</span><br><span class="line">//配置中修改</span><br><span class="line">partition-key-expression: headers[&apos;partitionKey&apos;]</span><br></pre></td></tr></table></figure>
+<p>这样就能指定分区的某个实例消费信息。</p>
+<p>还可以按照实体的某个属性来指定分区实例的消费者。如下</p>
+<p>创建通用的消息实体和发送的数据</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">@Data</span><br><span class="line">@ToString</span><br><span class="line">public class GeneralOutputMessage &#123;</span><br><span class="line">    private String operationType;</span><br><span class="line">    private List&lt;String&gt; affectedFields;</span><br><span class="line">    private Object data;</span><br><span class="line">    private String eventId;</span><br><span class="line">    private String eventName;</span><br><span class="line">    private String partitionKey;//用来分区的主键</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">@Data</span><br><span class="line">@EqualsAndHashCode(callSuper=true)</span><br><span class="line">@ToString(callSuper=true)</span><br><span class="line">public class TransactionResponse extends GeneralOutputMessage&#123;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在发送消息时</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">@GetMapping(&quot;/anotherSendMessage&quot;)</span><br><span class="line">public String anotherSendMessage(GeneralOutputMessage generalOutputMessage) &#123;</span><br><span class="line">    TransactionResponse transactionResponse = new TransactionResponse();</span><br><span class="line">    BeanUtils.copyProperties(generalOutputMessage,transactionResponse);</span><br><span class="line">    anotherOutput.output().send(MessageBuilder.withPayload(transactionResponse.getPartitionKey()).build());</span><br><span class="line">    return &quot;ok&quot;;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>修改分区键的表达式规则</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">spring.cloud.stream.bindings.another-topic-output.producer.partitionKeyExpression=payload.partitionKey</span><br></pre></td></tr></table></figure>
+<h1 id="rabbitMQ-延迟消息插件"><a href="#rabbitMQ-延迟消息插件" class="headerlink" title="rabbitMQ 延迟消息插件"></a>rabbitMQ 延迟消息插件</h1><p>在<a href="http://www.rabbitmq.com/community-plugins.html" target="_blank" rel="noopener">http://www.rabbitmq.com/community-plugins.html</a> 中找到<code>rabbitmq_delayed_message_exchange</code>插件</p>
+<p>在下载好之后，解压得到<code>.ez</code>结尾的插件包，将其复制到RabbitMQ安装目录下的<code>plugins</code>文件夹。</p>
+<p>然后通过命令行启用该插件：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">rabbitmq-plugins enable rabbitmq_delayed_message_exchange</span><br></pre></td></tr></table></figure>
+<p>创建延迟队列交换机</p>
+<p><img src="/2020/06/16/spring-cloud-rabbitMq/delay.png" alt></p>
+<h1 id="spring-cloud-stream-使用延迟消息实现定时任务"><a href="#spring-cloud-stream-使用延迟消息实现定时任务" class="headerlink" title="spring cloud stream 使用延迟消息实现定时任务"></a>spring cloud stream 使用延迟消息实现定时任务</h1><p>引入依赖stream-rabbit依赖</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">compile group: &apos;org.springframework.cloud&apos;, name: &apos;spring-cloud-starter-stream-rabbit&apos;, version: &apos;3.0.5.RELEASE&apos;</span><br><span class="line">compile group: &apos;org.springframework.cloud&apos;, name: &apos;spring-cloud-starter-bus-amqp&apos;, version: &apos;2.2.2.RELEASE&apos;</span><br></pre></td></tr></table></figure>
+<p>自定义消息管道</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">public interface TestTopic &#123;</span><br><span class="line"></span><br><span class="line">    String OUTPUT = &quot;example-topic-output&quot;;</span><br><span class="line">    String INPUT = &quot;example-topic-input&quot;;</span><br><span class="line"></span><br><span class="line">    @Output(OUTPUT)</span><br><span class="line">    MessageChannel output();</span><br><span class="line"></span><br><span class="line">    @Input(INPUT)</span><br><span class="line">    SubscribableChannel input();</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>创建消息接收类</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">@Slf4j</span><br><span class="line">@Component</span><br><span class="line">public class TestListener &#123;</span><br><span class="line"></span><br><span class="line">    private static Logger log = LoggerFactory.getLogger(TestListener.class);</span><br><span class="line"></span><br><span class="line">    @StreamListener(TestTopic.INPUT)</span><br><span class="line">    public void receive(String payload) &#123;</span><br><span class="line">        log.info(&quot;Received: &quot; + payload);</span><br><span class="line">        System.out.println(&quot;Received: &quot; + payload);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>创建消息发送类</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">@EnableBinding(TestTopic.class)</span><br><span class="line">@RestController</span><br><span class="line">public class StreamHello &#123;</span><br><span class="line"></span><br><span class="line">    private static Logger log = LoggerFactory.getLogger(StreamHello.class);</span><br><span class="line"></span><br><span class="line">    @Autowired</span><br><span class="line">    private TestTopic testTopic;</span><br><span class="line"></span><br><span class="line">    @GetMapping(&quot;/sendMessage&quot;)</span><br><span class="line">    public String messageWithMQ(@RequestParam String message) &#123;</span><br><span class="line">        log.info(&quot;Send: &quot; + message);</span><br><span class="line">        testTopic.output().send(MessageBuilder.withPayload(message).setHeader(&quot;x-delay&quot;, 5000).build());</span><br><span class="line">        return &quot;ok&quot;;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>配置文件添加rabbit的配置</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">#rabbit 配置</span><br><span class="line">spring.rabbitmq.host=localhost</span><br><span class="line">spring.rabbitmq.port=5672</span><br><span class="line">spring.rabbitmq.username=admin</span><br><span class="line">spring.rabbitmq.password=admin</span><br><span class="line">spring.rabbitmq.virtual-host=delay-host</span><br><span class="line"></span><br><span class="line">#通道配置</span><br><span class="line">spring.cloud.stream.bindings.example-topic-input.destination=delay</span><br><span class="line">#spring.cloud.stream.bindings.example-topic-input.binder=local_rabbit</span><br><span class="line">spring.cloud.stream.bindings.example-topic-input.group=logMessageConsumers</span><br><span class="line">#延迟消息队列配置</span><br><span class="line">spring.cloud.stream.rabbit.bindings.example-topic-input.consumer.delayed-exchange=true</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">spring.cloud.stream.bindings.example-topic-output.destination=delay</span><br><span class="line">#spring.cloud.stream.bindings.example-topic-output.binder=local_rabbit</span><br><span class="line">#延迟消息队列配置</span><br><span class="line">spring.cloud.stream.rabbit.bindings.example-topic-output.producer.delayed-exchange=true</span><br><span class="line"></span><br><span class="line">##rabbitmq路径配置</span><br><span class="line">#spring.cloud.stream.binders.local_rabbit.type=rabbit</span><br><span class="line">#spring.cloud.stream.binders.local_rabbit.environment.spring.rabbitmq.host=localhost</span><br><span class="line">#spring.cloud.stream.binders.local_rabbit.environment.spring.rabbitmq.port=5672</span><br><span class="line">#spring.cloud.stream.binders.local_rabbit.environment.spring.rabbitmq.username=admin</span><br><span class="line">#spring.cloud.stream.binders.local_rabbit.environment.spring.rabbitmq.password=admin</span><br><span class="line">#spring.cloud.stream.binders.local_rabbit.environment.spring.rabbitmq.virtual-host=delay-host</span><br></pre></td></tr></table></figure>
+<p>启动服务，并请求send接口，控制台就能打印出相应的message</p>
+<h1 id="RabbitMQ延迟消息的极限"><a href="#RabbitMQ延迟消息的极限" class="headerlink" title="RabbitMQ延迟消息的极限"></a>RabbitMQ延迟消息的极限</h1><p>因为不是所有的消息都出现了没有延迟消息效果的因素，通过有问题的消息特征，大致猜测可能是延迟时间过长导致了消息延迟失败。为了验证这个原因，先拿之前<a href="http://blog.didispace.com/spring-cloud-starter-finchley-7-7/" target="_blank" rel="noopener">文章</a>中的例子，来测试一下延迟时间是否与问题直接相关。</p>
+<p>对之前的延迟消息使用样，增加了一个请求参数<code>delay</code>来控制延迟时间：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@GetMapping</span>(<span class="string">"/sendMessage"</span>)</span><br><span class="line"><span class="function"><span class="keyword">public</span> String <span class="title">messageWithMQ</span><span class="params">(@RequestParam String message, @RequestParam Long delay)</span> </span>&#123;</span><br><span class="line">    log.info(<span class="string">"Send: "</span> + message);</span><br><span class="line">    testTopic.output().send(MessageBuilder.withPayload(message).setHeader(<span class="string">"x-delay"</span>, delay).build());</span><br><span class="line">    <span class="keyword">return</span> <span class="string">"ok"</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>请求1</strong>：延迟5000毫秒。消息发送到MQ之后确实延迟了5秒之后才得到了消费，没有任何问题。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl localhost:8080/sendMessage?message=hello&amp;delay=5000</span><br></pre></td></tr></table></figure>
+<p><strong>请求2</strong>：延迟1年（31536000000毫秒）。消息发送到MQ之后马上就被消费者消费了，完全没有延迟效果。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl localhost:8080/sendMessage?message=hello&amp;delay=31536000000</span><br></pre></td></tr></table></figure>
+<p>在明确了问题原因之后，需要对该功能的时候做一些明确的限定（延迟时间的极限），以避免再次出现类似的问题。深入探索下去，这里的失败主要与消息的过期时间（TTL）有直接的关系。在RabbitMQ中，消息的过期时间必须是非负 32 位整数，即：0 &lt;= n &lt;= 2^32-1，以毫秒为单位。 其中，<strong>2^32-1 = 4294967295</strong>。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/rabbitMq/" rel="tag"># rabbitMq</a>
+          
+            <a href="/tags/spring-cloud/" rel="tag"># spring cloud</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2020/06/13/spring-cloud-rabbitmq延迟消息队列/" rel="next" title="spring-cloud rabbitmq延迟消息队列">
+                <i class="fa fa-chevron-left"></i> spring-cloud rabbitmq延迟消息队列
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  <div>
+    
+    <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:14px;">------ 本文结束------</div>
+    
+</div>
+    
+ </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/sliver.jpg" alt="wei xy">
+            
+              <p class="site-author-name" itemprop="name">wei xy</p>
+              <p class="site-description motion-element" itemprop="description">一步一步似爪牙</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">45</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">14</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">36</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+		  <iframe frameborder="no" border="0" marginwidth="0" marginheight="0" width="330" height="86" src="//music.163.com/outchain/player?type=2&id=28285910&auto=1&height=66"></iframe>
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#通道根据消息内容分发不同的消费逻辑"><span class="nav-number">1.</span> <span class="nav-text">通道根据消息内容分发不同的消费逻辑</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#消息发送失败重新入队"><span class="nav-number">2.</span> <span class="nav-text">消息发送失败重新入队</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#消息失败时自定义错误逻辑"><span class="nav-number">3.</span> <span class="nav-text">消息失败时自定义错误逻辑</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#处理重复的消息"><span class="nav-number">4.</span> <span class="nav-text">处理重复的消息</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#消息分区"><span class="nav-number">5.</span> <span class="nav-text">消息分区</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#rabbitMQ-延迟消息插件"><span class="nav-number">6.</span> <span class="nav-text">rabbitMQ 延迟消息插件</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#spring-cloud-stream-使用延迟消息实现定时任务"><span class="nav-number">7.</span> <span class="nav-text">spring cloud stream 使用延迟消息实现定时任务</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#RabbitMQ延迟消息的极限"><span class="nav-number">8.</span> <span class="nav-text">RabbitMQ延迟消息的极限</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+        <div class="back-to-top">
+          <i class="fa fa-arrow-up"></i>
+          
+            <span id="scrollpercent"><span>0</span>%</span>
+          
+        </div>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        
+<div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">wei xy</span>
+
+  
+</div>
+
+<!-- 
+  <div class="powered-by">由  强力驱动</div>
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash;  v5.1.4</div>
+
+-->
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  <!--动态标题-->
+<script type="text/javascript" src="/js/src/dytitle.js"></script>
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"model":{"jsonPath":"live2d-widget-model-miku"},"display":{"position":"right","width":150,"height":300},"mobile":{"show":false,"symbols_count_time":null},"symbols":true,"time":true,"total_symbols":true,"total_time":true,"log":false});</script></body>
+</html>
+<!-- 页面点击小红心 -->
+<script type="text/javascript" src="/js/src/love.js"></script>
