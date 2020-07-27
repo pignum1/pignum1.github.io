@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="spring ioc&aop,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="IOCIOC（Inverse of Contro）控制反转，有时候也被称为DI依赖注入，它是一种降低对象耦合关系的一种设计思想。 ​    一般而言，在开发中使用分层体系结构，都是上层调用下层的接口，上层依赖下层的执行，这就使得调用者依赖被调用者。所以现在调用者和被调用者之间就错在紧密得联系，假如现在一方要进行变动，那么就会导致程序出现较大得变动，显然这不合适，这样降低了程序得可扩展性。 目前开发">
+<meta name="keywords" content="spring ioc&amp;aop">
+<meta property="og:type" content="article">
+<meta property="og:title" content="spring ioc&amp;aop">
+<meta property="og:url" content="http://yoursite.com/2020/07/01/spring-ioc-aop/index.html">
+<meta property="og:site_name" content="放空">
+<meta property="og:description" content="IOCIOC（Inverse of Contro）控制反转，有时候也被称为DI依赖注入，它是一种降低对象耦合关系的一种设计思想。 ​    一般而言，在开发中使用分层体系结构，都是上层调用下层的接口，上层依赖下层的执行，这就使得调用者依赖被调用者。所以现在调用者和被调用者之间就错在紧密得联系，假如现在一方要进行变动，那么就会导致程序出现较大得变动，显然这不合适，这样降低了程序得可扩展性。 目前开发">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2020-07-03T04:06:10.976Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="spring ioc&amp;aop">
+<meta name="twitter:description" content="IOCIOC（Inverse of Contro）控制反转，有时候也被称为DI依赖注入，它是一种降低对象耦合关系的一种设计思想。 ​    一般而言，在开发中使用分层体系结构，都是上层调用下层的接口，上层依赖下层的执行，这就使得调用者依赖被调用者。所以现在调用者和被调用者之间就错在紧密得联系，假如现在一方要进行变动，那么就会导致程序出现较大得变动，显然这不合适，这样降低了程序得可扩展性。 目前开发">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":true,"scrollpercent":true,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2020/07/01/spring-ioc-aop/">
+
+
+
+
+
+  <title>spring ioc&aop | 放空</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+	<a href="https://github.com/pignum1/pignum1.github.io.git"><img style="position: absolute; top: 0; right: 0;border: 0;" src="https://github.blog/wp-content/uploads/2008/12/forkme_right_darkblue_121621.png?resize=149%2C149" class="attachment-full size-full" alt="Fork me on GitHub" data-recalc-dims="1"></a>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">放空</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-categories" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/07/01/spring-ioc-aop/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="wei xy">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/sliver.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="放空">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">spring ioc&aop</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-07-01T16:05:30+08:00">
+                2020-07-01
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/spring/" itemprop="url" rel="index">
+                    <span itemprop="name">spring</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="IOC"><a href="#IOC" class="headerlink" title="IOC"></a>IOC</h1><p><em>IOC（Inverse of Contro）控制反转，有时候也被称为DI依赖注入，它是一种降低对象耦合关系的一种设计思想。</em></p>
+<p>​    一般而言，在开发中使用分层体系结构，都是上层调用下层的接口，上层依赖下层的执行，这就使得调用者依赖被调用者。所以现在调用者和被调用者之间就错在紧密得联系，假如现在一方要进行变动，那么就会导致程序出现较大得变动，显然这不合适，这样降低了程序得可扩展性。</p>
+<p>目前开发常用于依赖注入的有spring的@Service,@Resposity,@Component</p>
+<p>​    随着SpringBoot的流行，基于注解式开发的热潮逐渐覆盖了基于XML纯配置的开发，而作为Spring中最核心的bean当然也能够使用注解的方式进行表示。使用bean的注解来实现类管理交由spring,</p>
+<h2 id="Bean-基础声明"><a href="#Bean-基础声明" class="headerlink" title="@Bean 基础声明"></a>@Bean 基础声明</h2><p>Spring的@Bean注解用于告诉方法，产生一个Bean对象，然后这个Bean对象交给Spring管理。产生这个Bean对象的方法Spring只会调用一次，随后这个Spring将会将这个Bean对象放在自己的IOC容器中。</p>
+<p>SpringIOC 容器管理一个或者多个bean，<strong><em>这些bean都需要在@Configuration注解下进行创建</em></strong>，在一个方法上使用@Bean注解就表明这个方法需要交给Spring进行管理。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">@Configuration</span><br><span class="line">public class BeanConfig &#123;</span><br><span class="line"></span><br><span class="line">    // 使用@Bean 注解表明myBean需要交给Spring进行管理</span><br><span class="line">    // 未指定bean 的名称，默认采用的是 &quot;方法名&quot; + &quot;首字母小写&quot;的配置方式</span><br><span class="line">    @Bean(&quot;myBean&quot;)</span><br><span class="line">    public MyBean myBean() &#123;</span><br><span class="line">        return new MyBean();</span><br><span class="line">    &#125;</span><br><span class="line">   </span><br><span class="line">    @Bean(&quot;myBean2&quot;)</span><br><span class="line">    public MyBean myBean2()&#123;</span><br><span class="line">        MyBean myBean = new MyBean();</span><br><span class="line">        myBean.setValue(&quot;test2&quot;);</span><br><span class="line">        return myBean;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">public class MyBean &#123;</span><br><span class="line"></span><br><span class="line">    private String value;</span><br><span class="line">    public MyBean() &#123;</span><br><span class="line">        System.out.println(&quot;MyBean Initializing&quot;);</span><br><span class="line">        value=&quot;test&quot;;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>添加测试方法</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">@Autowired</span><br><span class="line">@Qualifier(&quot;myBean2&quot;)//这是指定注入方法</span><br><span class="line">private MyBean myBean;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">@PostMapping(&quot;/test&quot;)</span><br><span class="line">public String test() &#123;</span><br><span class="line">    return myBean.getValue();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="Bean-基本构成"><a href="#Bean-基本构成" class="headerlink" title="@Bean 基本构成"></a>@Bean 基本构成</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">@Target(&#123;ElementType.METHOD, ElementType.ANNOTATION_TYPE&#125;)</span><br><span class="line">@Retention(RetentionPolicy.RUNTIME)</span><br><span class="line">@Documented</span><br><span class="line">public @interface Bean &#123;</span><br><span class="line"></span><br><span class="line">	@AliasFor(&quot;name&quot;)</span><br><span class="line">	String[] value() default &#123;&#125;;</span><br><span class="line"></span><br><span class="line">	@AliasFor(&quot;value&quot;)</span><br><span class="line">	String[] name() default &#123;&#125;;</span><br><span class="line"></span><br><span class="line">	Autowire autowire() default Autowire.NO;</span><br><span class="line"></span><br><span class="line">	String initMethod() default &quot;&quot;;</span><br><span class="line"></span><br><span class="line">	String destroyMethod() default AbstractBeanDefinition.INFER_METHOD;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>@Bean不仅可以作用在方法上，也可以作用在注解类型上，在运行时提供注册。</p>
+<p><strong>value</strong>： name属性的别名，在不需要其他属性时使用，也就是说value 就是默认值</p>
+<p><strong>name</strong>： 此bean 的名称，或多个名称，主要的bean的名称加别名。如果未指定，则bean的名称是带注解方法的名称。如果指定了，方法的名称就会忽略，如果没有其他属性声明的话，bean的名称和别名可能通过value属性配置</p>
+<p><strong>autowire</strong> ： 此注解的方法表示自动装配的类型，返回一个<code>Autowire</code>类型的枚举，我们来看一下<code>Autowire</code>枚举类型的概念</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">// 枚举确定自动装配状态：即，bean是否应该使用setter注入由Spring容器自动注入其依赖项。</span><br><span class="line">// 这是Spring DI的核心概念</span><br><span class="line">public enum Autowire &#123;</span><br><span class="line"></span><br><span class="line">  	// 常量，表示根本没有自动装配。</span><br><span class="line">	NO(AutowireCapableBeanFactory.AUTOWIRE_NO),</span><br><span class="line">	// 常量，通过名称进行自动装配</span><br><span class="line">	BY_NAME(AutowireCapableBeanFactory.AUTOWIRE_BY_NAME),</span><br><span class="line">	// 常量，通过类型进行自动装配</span><br><span class="line">	BY_TYPE(AutowireCapableBeanFactory.AUTOWIRE_BY_TYPE);</span><br><span class="line"></span><br><span class="line">	private final int value;</span><br><span class="line">	Autowire(int value) &#123;</span><br><span class="line">		this.value = value;</span><br><span class="line">	&#125;</span><br><span class="line">	public int value() &#123;</span><br><span class="line">		return this.value;</span><br><span class="line">	&#125;</span><br><span class="line">	public boolean isAutowire() &#123;</span><br><span class="line">		return (this == BY_NAME || this == BY_TYPE);</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>nitMethod</strong>: 这个可选择的方法在bean实例化的时候调用，<code>InitializationBean</code>接口允许bean在合适的时机通过设置注解的初始化属性从而调用初始化方法，InitializationBean 接口有一个定义好的初始化方法</p>
+<p><strong>destroyMethod</strong>: 方法的可选择名称在调用bean示例在关闭上下文的时候，例如JDBC的close()方法，或者SqlSession的close()方法。<code>DisposableBean</code> 接口的实现允许在bean销毁的时候进行回调调用，DisposableBean 接口之后一个单个的方法</p>
+<p>这两个方法都不推荐使用</p>
+<h2 id="Bean-注解与其他注解结合使用"><a href="#Bean-注解与其他注解结合使用" class="headerlink" title="@Bean 注解与其他注解结合使用"></a>@Bean 注解与其他注解结合使用</h2><h3 id="Profile-注解"><a href="#Profile-注解" class="headerlink" title="@Profile 注解"></a>@Profile 注解</h3><p>​        @Profile的作用是把一些meta-data进行分类，分成Active和InActive这两种状态，然后你可以选择在active 和在Inactive这两种状态下配置bean，在Inactive状态通常的注解有一个！操作符，通常写为：@Profile(“!p”),这里的p是Profile的名字。</p>
+<p>三种激活Profile的方式</p>
+<ul>
+<li>可以通过ConfigurableEnvironment.setActiveProfiles()以编程的方式激活</li>
+<li>可以通过AbstractEnvironment.ACTIVE_PROFILES_PROPERTY_NAME (spring.profiles.active )属性设置JVM属性</li>
+<li>作为环境变量，或作为web.xml 应用程序的Servlet 上下文参数。也可以通过@ActiveProfiles 注解在集成测试中以声明方式激活配置文件。</li>
+</ul>
+<p>现有一个POJO类为Subject学科类，里面有两个属性，一个是like(理科)属性，一个是wenke(文科)属性，分别有两个配置类，一个是<code>AppConfigWithActiveProfile</code> ，一个是<code>AppConfigWithInactiveProfile</code>，当系统环境是 “like”的时候就注册 AppConfigWithActiveProfile ，如果是 “wenke”，就注册 AppConfigWithInactiveProfile，</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">// 学科</span><br><span class="line">public class Subject &#123;</span><br><span class="line"></span><br><span class="line">    // 理科</span><br><span class="line">    private String like;</span><br><span class="line">    // 文科</span><br><span class="line">    private String wenke;</span><br><span class="line"></span><br><span class="line">   //get and set 省略 ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>设置两个环境不同的配置</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">@Profile(&quot;like&quot;)</span><br><span class="line">@Configuration</span><br><span class="line">public class AppConfigWithActiveProfile &#123;</span><br><span class="line"></span><br><span class="line">    @Bean</span><br><span class="line">    public Subject subject()&#123;</span><br><span class="line">        Subject subject = new Subject();</span><br><span class="line">        subject.setLike(&quot;物理&quot;);</span><br><span class="line">        return subject;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">@Profile(&quot;wenke&quot;)</span><br><span class="line">@Configuration</span><br><span class="line">public class AppConfigWithInactiveProfile &#123;</span><br><span class="line"></span><br><span class="line">    @Bean</span><br><span class="line">    public Subject subject()&#123;</span><br><span class="line">        Subject subject = new Subject();</span><br><span class="line">        subject.setWenke(&quot;历史&quot;);</span><br><span class="line">        return subject;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>添加测试方法，测试设置不同的proFile来加载不同的配置</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">    public static void main(String[] args) &#123;</span><br><span class="line">        AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();</span><br><span class="line">        // 激活 like 的profile</span><br><span class="line">        context.getEnvironment().setActiveProfiles(&quot;like&quot;);</span><br><span class="line">//        context.getEnvironment().setActiveProfiles(&quot;wenke&quot;);</span><br><span class="line">        context.register(AppConfigWithActiveProfile.class,AppConfigWithInactiveProfile.class);</span><br><span class="line">        context.refresh();</span><br><span class="line">        Subject subject = (Subject) context.getBean(&quot;subject&quot;);</span><br><span class="line">        System.out.println(&quot;subject = &quot; + JSON.toJSONString(subject));</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<h3 id="Scope-注解"><a href="#Scope-注解" class="headerlink" title="@Scope 注解"></a>@Scope 注解</h3><p>在Spring中对于bean的默认处理都是单例的，我们通过上下文容器.getBean方法拿到bean容器，并对其进行实例化，这个实例化的过程其实只进行一次，即多次getBean 获取的对象都是同一个对象，也就相当于这个bean的实例在IOC容器中是public的，对于所有的bean请求来讲都可以共享此bean。</p>
+<p>bean的非单例原型范围会使每次发出对该特定bean的请求时都创建新的bean实例，也就是说，bean被注入另一个bean，或者通过对容器的getBean()方法调用来请求它，可以用如下图来表示：</p>
+<p>下面是返回多个实例的示例</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">@Configuration</span><br><span class="line">public class AppConfigWithAliasAndScope &#123;</span><br><span class="line">    /**</span><br><span class="line">     * 为myBean起两个名字，b1 和 b2</span><br><span class="line">     * @Scope 默认为 singleton，但是可以指定其作用域</span><br><span class="line">     * prototype 是多例的，即每一次调用都会生成一个新的实例。</span><br><span class="line">     */</span><br><span class="line">    @Bean(&#123;&quot;b1&quot;,&quot;b2&quot;&#125;)</span><br><span class="line">    @Scope(&quot;prototype&quot;)</span><br><span class="line">    public MyBean myBean()&#123;</span><br><span class="line">        return new MyBean();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public static void main(String[] args) &#123;</span><br><span class="line">        // ------------------------------ 测试scope  ------------------------------</span><br><span class="line">        ApplicationContext context = new AnnotationConfigApplicationContext(AppConfigWithAliasAndScope.class);</span><br><span class="line">        MyBean myBean = (MyBean) context.getBean(&quot;b1&quot;);</span><br><span class="line">        MyBean myBean2 = (MyBean) context.getBean(&quot;b2&quot;);</span><br><span class="line">        System.out.println(myBean);</span><br><span class="line">        System.out.println(myBean2);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>@Primary和@DependsOn使用的比较简单也比较多，就不赘述了</p>
+<h1 id="AOP"><a href="#AOP" class="headerlink" title="AOP"></a>AOP</h1><p><em>AOP面向切面编程，是面向对象开发的一种补充，它允许开发人员在不改变原来模型的以满足新的需求，例如，开发人员可以在不改变原来业务逻辑模型的基础可以进行动态的增加日志，安全或异常处理功能</em></p>
+<p>spring cloud 添加切面编程方法，引入切面依赖</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">compile group: &apos;org.springframework.boot&apos;, name: &apos;spring-boot-starter-aop&apos;, version: &apos;2.3.1.RELEASE&apos;</span><br></pre></td></tr></table></figure>
+<p>测试使用注解的方式添加切面的日志</p>
+<h2 id="添加自定义注解ServiceLog"><a href="#添加自定义注解ServiceLog" class="headerlink" title="添加自定义注解ServiceLog"></a>添加自定义注解ServiceLog</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">//日志级别类</span><br><span class="line">public enum LogType &#123;</span><br><span class="line">    INFO, WARN, ERROR</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">//切面编程注解</span><br><span class="line">@Target(&#123;ElementType.METHOD&#125;)</span><br><span class="line">@Retention(RetentionPolicy.RUNTIME)</span><br><span class="line">@Documented</span><br><span class="line">public @interface ServiceLog &#123;</span><br><span class="line"></span><br><span class="line">    /**</span><br><span class="line">     * 操作描述</span><br><span class="line">     *</span><br><span class="line">     * @return</span><br><span class="line">     */</span><br><span class="line">    public String operation();</span><br><span class="line"></span><br><span class="line">    /**</span><br><span class="line">     * 日志级别</span><br><span class="line">     *</span><br><span class="line">     * @return</span><br><span class="line">     */</span><br><span class="line">    public LogType level() default LogType.INFO;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="切面日志LogAspect"><a href="#切面日志LogAspect" class="headerlink" title="切面日志LogAspect"></a>切面日志LogAspect</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br></pre></td><td class="code"><pre><span class="line">@Component</span><br><span class="line">@Aspect</span><br><span class="line">public class LogAspect &#123;</span><br><span class="line"></span><br><span class="line">    private static final Logger log = LoggerFactory.getLogger(LogAspect.class);</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    /**</span><br><span class="line">     * @Description: 切面方法日志功能</span><br><span class="line">     * @Param: [joinPoint]</span><br><span class="line">     * @return: void</span><br><span class="line">     * @Author: Mr.Wei</span><br><span class="line">     * @Date: 2020/7/2</span><br><span class="line">     */</span><br><span class="line">    public void operateLog(JoinPoint joinPoint) throws ClassNotFoundException &#123;</span><br><span class="line">        String targetName = joinPoint.getTarget().getClass().getName();</span><br><span class="line">        String methodName = joinPoint.getSignature().getName();</span><br><span class="line">        Object[] arguments = joinPoint.getArgs();</span><br><span class="line">        Class&lt;?&gt; targetClass = Class.forName(targetName);</span><br><span class="line">        Method[] methods = targetClass.getMethods();</span><br><span class="line">        String operation = &quot;&quot;;</span><br><span class="line">        for (Method method : methods) &#123;</span><br><span class="line">            if (method.getName().equals(methodName)) &#123;</span><br><span class="line">                Class&lt;?&gt;[] clazzs = method.getParameterTypes();</span><br><span class="line">                if (clazzs.length == arguments.length) &#123;</span><br><span class="line">                    operation = method.getAnnotation(ServiceLog.class).operation();// 操作</span><br><span class="line">                    break;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        StringBuilder paramsBuf = new StringBuilder();</span><br><span class="line">        for (Object arg : arguments) &#123;</span><br><span class="line">            paramsBuf.append(arg);</span><br><span class="line">            paramsBuf.append(&quot;&amp;&quot;);</span><br><span class="line">        &#125;</span><br><span class="line">        // *========控制台输出=========*//</span><br><span class="line">        log.info(&quot;执行了[&quot; + operation + &quot;],类:&quot; + targetName + &quot;,方法名：&quot; + methodName + &quot;,参数:&quot;</span><br><span class="line">                + paramsBuf.toString());</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    /**</span><br><span class="line">     * 切入点</span><br><span class="line">     */</span><br><span class="line">    @Pointcut(&quot;@annotation(com.panghu.rabbit.aop.anno.ServiceLog) &quot;)</span><br><span class="line">    public void entryPoint() &#123;</span><br><span class="line">        // 无需内容</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    /**</span><br><span class="line">     * 切入之前</span><br><span class="line">     *</span><br><span class="line">     * @param joinPoint</span><br><span class="line">     */</span><br><span class="line">    @Before(&quot;entryPoint()&quot;)</span><br><span class="line">    public void before(JoinPoint joinPoint) &#123;</span><br><span class="line">        try &#123;</span><br><span class="line">            log.info(&quot;=====================开始执行前置通知==================&quot;);</span><br><span class="line">            operateLog(joinPoint);</span><br><span class="line">            log.info(&quot;=====================执行前置通知结束==================&quot;);</span><br><span class="line">        &#125; catch (Throwable e) &#123;</span><br><span class="line">            log.info(&quot;around &quot; + joinPoint + &quot; with exception : &quot; + e.getMessage());</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    @After(&quot;entryPoint()&quot;)</span><br><span class="line">    public void after(JoinPoint joinPoint) &#123;</span><br><span class="line">        try &#123;</span><br><span class="line">            log.info(&quot;=====================开始执行后置通知==================&quot;);</span><br><span class="line">            operateLog(joinPoint);</span><br><span class="line">            log.info(&quot;=====================执行后置通知结束==================&quot;);</span><br><span class="line">        &#125; catch (Throwable e) &#123;</span><br><span class="line">            log.info(&quot;around &quot; + joinPoint + &quot; with exception : &quot; + e.getMessage());</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    /**</span><br><span class="line">     * 环绕通知处理处理</span><br><span class="line">     *</span><br><span class="line">     * @param point</span><br><span class="line">     * @throws Throwable</span><br><span class="line">     */</span><br><span class="line">    @Around(&quot;entryPoint()&quot;)</span><br><span class="line">    public Object around(ProceedingJoinPoint point) throws Throwable &#123;</span><br><span class="line">        // 先执行业务,注意:业务这样写业务发生异常不会拦截日志。</span><br><span class="line">        Object result = point.proceed();</span><br><span class="line">        try &#123;</span><br><span class="line">            handleAround(point);// 处理日志</span><br><span class="line"></span><br><span class="line">        &#125; catch (Exception e) &#123;</span><br><span class="line">            log.error(&quot;日志记录异常&quot;, e);</span><br><span class="line">        &#125;</span><br><span class="line">        return result;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    /**</span><br><span class="line">     * around日志记录</span><br><span class="line">     *</span><br><span class="line">     * @param point</span><br><span class="line">     * @throws SecurityException</span><br><span class="line">     * @throws NoSuchMethodException</span><br><span class="line">     */</span><br><span class="line">    public void handleAround(ProceedingJoinPoint point) throws Exception &#123;</span><br><span class="line">        Signature sig = point.getSignature();</span><br><span class="line">        MethodSignature msig = null;</span><br><span class="line">        if (!(sig instanceof MethodSignature)) &#123;</span><br><span class="line">            throw new IllegalArgumentException(&quot;该注解只能用于方法&quot;);</span><br><span class="line">        &#125;</span><br><span class="line">        msig = (MethodSignature) sig;</span><br><span class="line">        Object target = point.getTarget();</span><br><span class="line">        Method currentMethod = target.getClass().getMethod(msig.getName(), msig.getParameterTypes());</span><br><span class="line">        // 方法名称</span><br><span class="line">        String methodName = currentMethod.getName();</span><br><span class="line">        // 获取注解对象</span><br><span class="line">        ServiceLog aLog = currentMethod.getAnnotation(ServiceLog.class);</span><br><span class="line">        // 类名</span><br><span class="line">        String className = point.getTarget().getClass().getName();</span><br><span class="line">        // 方法的参数</span><br><span class="line">        Object[] params = point.getArgs();</span><br><span class="line"></span><br><span class="line">        StringBuilder paramsBuf = new StringBuilder();</span><br><span class="line">        for (Object arg : params) &#123;</span><br><span class="line">            paramsBuf.append(arg);</span><br><span class="line">            paramsBuf.append(&quot;&amp;&quot;);</span><br><span class="line">        &#125;</span><br><span class="line">        // 处理log。。。。</span><br><span class="line">        log.info(&quot;执行了[&quot; + aLog.operation() + &quot;],类:&quot; + className + &quot;,方法名：&quot; + methodName + &quot;,参数:&quot;</span><br><span class="line">                + paramsBuf.toString());</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    @AfterThrowing(pointcut = &quot;entryPoint()&quot;, throwing = &quot;e&quot;)</span><br><span class="line">    public void doAfterThrowing(JoinPoint joinPoint, Throwable e) &#123;</span><br><span class="line">        try &#123;</span><br><span class="line">            String targetName = joinPoint.getTarget().getClass().getName();</span><br><span class="line">            String methodName = joinPoint.getSignature().getName();</span><br><span class="line">            Object[] arguments = joinPoint.getArgs();</span><br><span class="line">            Class&lt;?&gt; targetClass = Class.forName(targetName);</span><br><span class="line">            Method[] methods = targetClass.getMethods();</span><br><span class="line">            String operation = &quot;&quot;;</span><br><span class="line">            for (Method method : methods) &#123;</span><br><span class="line">                if (method.getName().equals(methodName)) &#123;</span><br><span class="line">                    Class&lt;?&gt;[] clazzs = method.getParameterTypes();</span><br><span class="line">                    if (clazzs.length == arguments.length) &#123;</span><br><span class="line">                        operation = method.getAnnotation(ServiceLog.class).operation();</span><br><span class="line">                        break;</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            StringBuilder paramsBuf = new StringBuilder();</span><br><span class="line">            for (Object arg : arguments) &#123;</span><br><span class="line">                paramsBuf.append(arg);</span><br><span class="line">                paramsBuf.append(&quot;&amp;&quot;);</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            log.info(&quot;异常方法:&quot; + targetName + &quot;.&quot; + methodName + &quot;();参数:&quot; + paramsBuf.toString() + &quot;,处理:&quot; + operation);</span><br><span class="line">            log.info(&quot;异常信息:&quot; + e.getMessage());</span><br><span class="line">        &#125; catch (Exception ex) &#123;</span><br><span class="line">            log.error(&quot;异常信息:&#123;&#125;&quot;, ex.getMessage());</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="添加监听的方法"><a href="#添加监听的方法" class="headerlink" title="添加监听的方法"></a>添加监听的方法</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">@ServiceLog(operation = &quot;测试切面编程操作....&quot;)</span><br><span class="line">@PostMapping(&quot;/test&quot;)</span><br><span class="line">public String test(String v1,String v2) throws Exception &#123;</span><br><span class="line">    throw new Exception(&quot;手动抛出异常&quot;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>就是在监听的方法上添加一个自定义的注解就可以，这样就可以不影响原本的业务逻辑模型，切面记录日志</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/spring-ioc-aop/" rel="tag"># spring ioc&aop</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2020/06/28/spring-cloud-mysql配置中心/" rel="next" title="spring-cloud mysql配置中心">
+                <i class="fa fa-chevron-left"></i> spring-cloud mysql配置中心
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2020/07/03/动态代理原理/" rel="prev" title="动态代理原理">
+                动态代理原理 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  <div>
+    
+    <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:14px;">------ 本文结束------</div>
+    
+</div>
+    
+ </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/sliver.jpg" alt="wei xy">
+            
+              <p class="site-author-name" itemprop="name">wei xy</p>
+              <p class="site-description motion-element" itemprop="description">一步一步似爪牙</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">56</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">17</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">43</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+		  <iframe frameborder="no" border="0" marginwidth="0" marginheight="0" width="330" height="86" src="//music.163.com/outchain/player?type=2&id=28285910&auto=1&height=66"></iframe>
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#IOC"><span class="nav-number">1.</span> <span class="nav-text">IOC</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Bean-基础声明"><span class="nav-number">1.1.</span> <span class="nav-text">@Bean 基础声明</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Bean-基本构成"><span class="nav-number">1.2.</span> <span class="nav-text">@Bean 基本构成</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Bean-注解与其他注解结合使用"><span class="nav-number">1.3.</span> <span class="nav-text">@Bean 注解与其他注解结合使用</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Profile-注解"><span class="nav-number">1.3.1.</span> <span class="nav-text">@Profile 注解</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Scope-注解"><span class="nav-number">1.3.2.</span> <span class="nav-text">@Scope 注解</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#AOP"><span class="nav-number">2.</span> <span class="nav-text">AOP</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#添加自定义注解ServiceLog"><span class="nav-number">2.1.</span> <span class="nav-text">添加自定义注解ServiceLog</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#切面日志LogAspect"><span class="nav-number">2.2.</span> <span class="nav-text">切面日志LogAspect</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#添加监听的方法"><span class="nav-number">2.3.</span> <span class="nav-text">添加监听的方法</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+        <div class="back-to-top">
+          <i class="fa fa-arrow-up"></i>
+          
+            <span id="scrollpercent"><span>0</span>%</span>
+          
+        </div>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        
+<div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">wei xy</span>
+
+  
+</div>
+
+<!-- 
+  <div class="powered-by">由  强力驱动</div>
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash;  v5.1.4</div>
+
+-->
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  <!--动态标题-->
+<script type="text/javascript" src="/js/src/dytitle.js"></script>
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"model":{"jsonPath":"live2d-widget-model-miku"},"display":{"position":"right","width":150,"height":300},"mobile":{"show":false,"symbols_count_time":null},"symbols":true,"time":true,"total_symbols":true,"total_time":true,"log":false});</script></body>
+</html>
+<!-- 页面点击小红心 -->
+<script type="text/javascript" src="/js/src/love.js"></script>

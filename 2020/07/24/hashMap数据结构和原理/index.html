@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Hexo, NexT">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="HashMap的数据结构HashMap是一个集合，键值对的集合,源码中hashMap的内部类Node,每个节点用Node&amp;lt;K,V&amp;gt;表示,可以看到Node里面存放的数据分别是hash-哈希值，key-键，value-值,next-下一节点。 12345static class Node&amp;lt;K,V&amp;gt; implements Map.Entry&amp;lt;K,V&amp;gt; &amp;#123;">
+<meta property="og:type" content="article">
+<meta property="og:title" content="hashMap数据结构和原理">
+<meta property="og:url" content="http://yoursite.com/2020/07/24/hashMap数据结构和原理/index.html">
+<meta property="og:site_name" content="放空">
+<meta property="og:description" content="HashMap的数据结构HashMap是一个集合，键值对的集合,源码中hashMap的内部类Node,每个节点用Node&amp;lt;K,V&amp;gt;表示,可以看到Node里面存放的数据分别是hash-哈希值，key-键，value-值,next-下一节点。 12345static class Node&amp;lt;K,V&amp;gt; implements Map.Entry&amp;lt;K,V&amp;gt; &amp;#123;">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://yoursite.com/2020/07/24/hashMap数据结构和原理/hashMap.jpg">
+<meta property="og:image" content="http://yoursite.com/2020/07/24/hashMap数据结构和原理/hashMap_put.png">
+<meta property="og:image" content="http://yoursite.com/2020/07/24/hashMap数据结构和原理/resize.png">
+<meta property="og:updated_time" content="2020-07-27T09:02:36.520Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="hashMap数据结构和原理">
+<meta name="twitter:description" content="HashMap的数据结构HashMap是一个集合，键值对的集合,源码中hashMap的内部类Node,每个节点用Node&amp;lt;K,V&amp;gt;表示,可以看到Node里面存放的数据分别是hash-哈希值，key-键，value-值,next-下一节点。 12345static class Node&amp;lt;K,V&amp;gt; implements Map.Entry&amp;lt;K,V&amp;gt; &amp;#123;">
+<meta name="twitter:image" content="http://yoursite.com/2020/07/24/hashMap数据结构和原理/hashMap.jpg">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":true,"scrollpercent":true,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2020/07/24/hashMap数据结构和原理/">
+
+
+
+
+
+  <title>hashMap数据结构和原理 | 放空</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+	<a href="https://github.com/pignum1/pignum1.github.io.git"><img style="position: absolute; top: 0; right: 0;border: 0;" src="https://github.blog/wp-content/uploads/2008/12/forkme_right_darkblue_121621.png?resize=149%2C149" class="attachment-full size-full" alt="Fork me on GitHub" data-recalc-dims="1"></a>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">放空</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/07/24/hashMap数据结构和原理/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="wei xy">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/sliver.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="放空">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">hashMap数据结构和原理</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-07-24T11:15:38+08:00">
+                2020-07-24
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="HashMap的数据结构"><a href="#HashMap的数据结构" class="headerlink" title="HashMap的数据结构"></a>HashMap的数据结构</h1><p>HashMap是一个集合，键值对的集合,源码中hashMap的内部类Node,每个节点用Node&lt;K,V&gt;表示,可以看到Node里面存放的数据分别是hash-哈希值，key-键，value-值,next-下一节点。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">static class Node&lt;K,V&gt; implements Map.Entry&lt;K,V&gt; &#123;</span><br><span class="line">   final int hash;</span><br><span class="line">   final K key;</span><br><span class="line">   V value;</span><br><span class="line">   Node&lt;K,V&gt; next;</span><br></pre></td></tr></table></figure>
+<p>HashMap的数据结构为 <strong>数组+(链表或红黑树)</strong></p>
+<p><img src="/2020/07/24/hashMap数据结构和原理/hashMap.jpg" alt="img"></p>
+<p>使用数组+链表/红黑树的数据结构有以下优点。</p>
+<p><strong>数组的特点：查询效率高，插入，删除效率低</strong>。</p>
+<p><strong>链表的特点：查询效率低，插入删除效率高</strong>。</p>
+<p>红黑树的特点：红黑树是一种含有红黑结点并能自平衡的二叉查找树 </p>
+<p>​        性质1：每个节点要么是黑色，要么是红色。</p>
+<p>​        性质2：根节点是黑色。</p>
+<p>​        性质3：每个叶子节点（NIL）是黑色。</p>
+<p>​        性质4：每个红色结点的两个子结点一定都是黑色。</p>
+<p>​        性质5：任意一结点到每个叶子结点的路径都包含数量相同的黑结点。</p>
+<p>因为链表中元素太多的时候会影响查找效率，所以当链表的元素个数达到8的时候使用链表存储就转变成了使用红黑树存储，原因就是<strong>红黑树是平衡二叉树，在查找性能方面比链表要高</strong>.所以后面修改成红黑树是为了提高查询效率。</p>
+<h1 id="HashMap存放数据的过程"><a href="#HashMap存放数据的过程" class="headerlink" title="HashMap存放数据的过程"></a>HashMap存放数据的过程</h1><p>1、存放元素的时候会先根据key的hash值去计算元素下标，如果这个下标没有元素，就创建一个Node节点放进去；</p>
+<p>2、如果数组下标有数据，先判断key是否相同，相同的话替换元素的value；不同的话插在链表的尾节点。这里说明了 同一个链表中的节点不一定是发生了hash冲突的，有可能hash值不同，但是在计算时下标相同。</p>
+<p>3、链表长度大于8，且数组长度大于64，会把链表转位红黑树，红黑树本质是一颗自平衡的二叉查找树，查找时间复杂度为o(logn)；</p>
+<p>4、用数组容量大小(threshold)乘以加载因子(loadFactor)得到一个值，一旦数组中存储的元素个数超过该值就会调用rehash方法将数组容量增加到原来的两倍扩容。在做扩容的时候会生成一个新的数组，原来的所有数据需要重新计算哈希码值重新分配到新的数组，所以扩容的操作非常消耗性能.</p>
+<p><img src="/2020/07/24/hashMap数据结构和原理/hashMap_put.png" alt></p>
+<h1 id="HashMap的常见问题"><a href="#HashMap的常见问题" class="headerlink" title="HashMap的常见问题"></a>HashMap的常见问题</h1><h2 id="解决hash冲突"><a href="#解决hash冲突" class="headerlink" title="解决hash冲突"></a>解决hash冲突</h2><p>当存储元素出现hash冲突时，意味着hash值相同（计算下标相同）的多个元素要存储在数组中的同一个位置，这时候就通过一个单链表/红黑树来解决，判断新增元素的时是否需要扩容，在扩容之后重新计算下标位置，如果链表的元素超过8个，且数组的长度大于64，这个时候会将链表转换成为红黑树。</p>
+<h2 id="为什么是链表个数超过8的时候才转红黑树"><a href="#为什么是链表个数超过8的时候才转红黑树" class="headerlink" title="为什么是链表个数超过8的时候才转红黑树"></a>为什么是链表个数超过8的时候才转红黑树</h2><p>红黑树插入为O(lgn),查询为O(lgn)，链表插入为O(1)，查询为O(n)。个数少时，插入删除成本高，用链表；个数多时，查询成本高，用红黑树。需要定一个值，比这个值大就转红黑树，比这个值小就转链表，而且要避免频繁的转换。根据泊松分布，在负载因子0.75（HashMap默认）的情况下，单个hash槽内元素个数为8的概率小于百万分之一，将7作为一个分水岭，等于7时不做转换，大于等于8才转红黑树，小于等于6才转链表。</p>
+<h2 id="为什么数组的数量扩容的个数是2-n"><a href="#为什么数组的数量扩容的个数是2-n" class="headerlink" title="为什么数组的数量扩容的个数是2^n"></a>为什么数组的数量扩容的个数是2^n</h2><p>为了让添加的元素均匀分布在HashMap的数组上，减少hash碰撞。hash是int类型，转换为2进制数是32位，为了简化，假设<br>hash=0101 0101，n-1= 15</p>
+<p>这样就可以限制&amp;运算的结果在<code>0000~1111</code>之间，转为10进制数就是<code>0～15</code>，是不是和求余运算的结果一致？如果n=17，n-1=0001 0000，这样&amp;运算结果的低位全为0，数组中有很多位置利用不到，这样会出现大量的hash冲突。</p>
+<h2 id="HashMap的扩容"><a href="#HashMap的扩容" class="headerlink" title="HashMap的扩容"></a>HashMap的扩容</h2><p>扩容有3个触发时机，一个是初始化，也就是第一次<code>put()</code>存放数据时，另一个是存储的元素数量大于阈值<code>threshold</code>时；还有一个是树化的时候（这一点很多人应该不知道），最后都是调用<code>resize()</code>方法完成扩容和数据迁移的。</p>
+<p><strong>原来数组中的元素在扩容后只有2种选择，第一，在原来的位置；第二，在原来位置基础上再加上原来数组长度。</strong></p>
+<p>下面这幅图是扩容前后A、B元素的数组下标的计算过程（有区别的地方做了标示）。在扩容前A、B的hash值不一样，但是&amp;运算后的下标却是一样的；扩容后发生了一个变化，就是n变成了2原来的2倍，变成2倍可以用左移1位表示，也就是从<code>0000 1111(16)</code>变成<code>0001 1111(32)</code>，那扩容后与运算，A在高位的第4位&amp;运算结果为0；B在高位的第4位&amp;运算结果为1；也就是说A还是在原来的位置，B在原来的位置(5),再往后移动16位，也就是B移动到21了。</p>
+<p><img src="/2020/07/24/hashMap数据结构和原理/resize.png" alt></p>
+<h2 id="HashMap是否有序"><a href="#HashMap是否有序" class="headerlink" title="HashMap是否有序"></a>HashMap是否有序</h2><p>hashMap是无序的，再存放元素的时候是按照hash值来确定下标来存放元素，所以是无序的。想要有序的存放元素可以选择LinkedHashMap或则TreeMap。</p>
+<h1 id="LinkedHashMap解析"><a href="#LinkedHashMap解析" class="headerlink" title="LinkedHashMap解析"></a>LinkedHashMap解析</h1><p><code>LinkedHashMap</code> 是一个<strong>关联数组、哈希表</strong>，它是<strong>线程不安全</strong>的，允许<strong>key为null</strong>,<strong>value为null</strong>。它也是HashMap的一个派生类。所以很多方法都是直接集成自HashMap。</p>
+<p>LinkedHashMap是有序的是因为他的节点数据结构是类似于双向链表,Entry集成Node.记录了上下节点的信息。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">static class Entry&lt;K,V&gt; extends HashMap.Node&lt;K,V&gt; &#123;</span><br><span class="line">    Entry&lt;K,V&gt; before, after;</span><br><span class="line">    Entry(int hash, K key, V value, Node&lt;K,V&gt; next) &#123;</span><br><span class="line">        super(hash, key, value, next);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在每次<strong>插入数据，或者访问、修改数据</strong>时，<strong>会增加节点、或调整链表的节点顺序</strong>。以决定迭代时输出的顺序。</p>
+<p>默认情况，遍历时的顺序是<strong>按照插入节点的顺序</strong>。这也是其与<code>HashMap</code>最大的区别。 也可以在构造时传入<code>accessOrder</code>参数，使得其遍历顺序<strong>按照访问的顺序</strong>输出。</p>
+<p>LinkedHashMap`在实现时，就是重写override了几个方法。以满足其输出序列有序的需求。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line">    public static void main(String[] args) &#123;</span><br><span class="line">        Map&lt;String, String&gt; map = new LinkedHashMap&lt;&gt;();</span><br><span class="line">        map.put(&quot;1&quot;, &quot;a&quot;);</span><br><span class="line">        map.put(&quot;2&quot;, &quot;b&quot;);</span><br><span class="line">        map.put(&quot;3&quot;, &quot;c&quot;);</span><br><span class="line">        map.put(&quot;4&quot;, &quot;d&quot;);</span><br><span class="line"></span><br><span class="line">        Iterator&lt;Map.Entry&lt;String, String&gt;&gt; iterator = map.entrySet().iterator();</span><br><span class="line">        while (iterator.hasNext()) &#123;</span><br><span class="line">            System.out.println(iterator.next());</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        System.out.println(&quot;以下是accessOrder=true的情况:&quot;);</span><br><span class="line"></span><br><span class="line">        map = new LinkedHashMap&lt;String, String&gt;(10, 0.75f, true);</span><br><span class="line">        map.put(&quot;1&quot;, &quot;a&quot;);</span><br><span class="line">        map.put(&quot;2&quot;, &quot;b&quot;);</span><br><span class="line">        map.put(&quot;3&quot;, &quot;c&quot;);</span><br><span class="line">        map.put(&quot;4&quot;, &quot;d&quot;);</span><br><span class="line">        map.get(&quot;2&quot;);//2移动到了内部的链表末尾</span><br><span class="line">        map.get(&quot;4&quot;);//4调整至末尾</span><br><span class="line">        map.put(&quot;3&quot;, &quot;e&quot;);//3调整至末尾</span><br><span class="line">        map.put(null, null);//插入两个新的节点 null</span><br><span class="line">        map.put(&quot;5&quot;, null);//5</span><br><span class="line">        iterator = map.entrySet().iterator();</span><br><span class="line">        while (iterator.hasNext()) &#123;</span><br><span class="line">            System.out.println(iterator.next());</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    //打印结果</span><br><span class="line"> &gt; Task :Hash.main()</span><br><span class="line">1=a</span><br><span class="line">2=b</span><br><span class="line">3=c</span><br><span class="line">4=d</span><br><span class="line">以下是accessOrder=true的情况:</span><br><span class="line">1=a</span><br><span class="line">2=b</span><br><span class="line">4=d</span><br><span class="line">3=e</span><br><span class="line">null=null</span><br><span class="line">5=null</span><br></pre></td></tr></table></figure>
+<p>LinkedHashMap修改了节点的结构，并且添加了链表的头和尾节点。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">/**</span><br><span class="line"> * The head (eldest) of the doubly linked list.</span><br><span class="line"> */</span><br><span class="line">transient LinkedHashMap.Entry&lt;K,V&gt; head;</span><br><span class="line"></span><br><span class="line">/**</span><br><span class="line"> * The tail (youngest) of the doubly linked list.</span><br><span class="line"> */</span><br><span class="line">transient LinkedHashMap.Entry&lt;K,V&gt; tail;</span><br></pre></td></tr></table></figure>
+<p>相比较HashMap的增删逻辑没有什么改变，其重写了构建新节点的<code>newNode()</code>方法，新建节点是在链表的末尾添加该节点。重写了<code>afterNodeRemoval()</code>这个回调方法，在删除节点后，更新双向链表的操作。</p>
+<p>重写了containsValue方法，在判断是否包含某个元素的方法，HashMap使用了的两层for循环，逐个遍历元素，效率相对较低。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">//hashMap </span><br><span class="line">public boolean containsValue(Object value) &#123;</span><br><span class="line">    Node&lt;K,V&gt;[] tab; V v;</span><br><span class="line">    if ((tab = table) != null &amp;&amp; size &gt; 0) &#123;</span><br><span class="line">        for (int i = 0; i &lt; tab.length; ++i) &#123;</span><br><span class="line">            for (Node&lt;K,V&gt; e = tab[i]; e != null; e = e.next) &#123;</span><br><span class="line">                if ((v = e.value) == value ||</span><br><span class="line">                    (value != null &amp;&amp; value.equals(v)))</span><br><span class="line">                    return true;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    return false;</span><br><span class="line">&#125;</span><br><span class="line">//LinkedHashMap</span><br><span class="line">public boolean containsValue(Object value) &#123;</span><br><span class="line">    //遍历一遍链表，去比较有没有value相等的节点，并返回</span><br><span class="line">    for (LinkedHashMap.Entry&lt;K,V&gt; e = head; e != null; e = e.after) &#123;</span><br><span class="line">        V v = e.value;</span><br><span class="line">        if (v == value || (value != null &amp;&amp; value.equals(v)))</span><br><span class="line">            return true;</span><br><span class="line">    &#125;</span><br><span class="line">    return false;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h1 id="TreeMap解析"><a href="#TreeMap解析" class="headerlink" title="TreeMap解析"></a>TreeMap解析</h1><p>TreeMap是以红黑树为存储结构，TreeMap因为是按照红黑树的构造，默认情况下comparator为null，所以按照key来自动排序，，如果想自定义排序规则，就要传递默comparator的实现。</p>
+<p>TreeMap的构造，他的几点Entry也是继承Map.Entry</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">public class TreeMap&lt;K,V&gt;</span><br><span class="line">    extends AbstractMap&lt;K,V&gt;</span><br><span class="line">    implements NavigableMap&lt;K,V&gt;, Cloneable, java.io.Serializable</span><br><span class="line">&#123;</span><br><span class="line">	//比较器用于维护此树形图中的顺序；如果比较器使用其键的自然顺序，则为null</span><br><span class="line">    private final Comparator&lt;? super K&gt; comparator;</span><br><span class="line">	//Tree根节点</span><br><span class="line">    private transient Entry&lt;K,V&gt; root;</span><br><span class="line"> 	//Entry数</span><br><span class="line">    private transient int size = 0;</span><br><span class="line">	//结构修改次数</span><br><span class="line">    private transient int modCount = 0;</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">static final class Entry&lt;K,V&gt; implements Map.Entry&lt;K,V&gt; &#123;</span><br><span class="line">    K key;</span><br><span class="line">    V value;</span><br><span class="line">    //左子节点</span><br><span class="line">    Entry&lt;K,V&gt; left;</span><br><span class="line">    //右子节点</span><br><span class="line">    Entry&lt;K,V&gt; right;</span><br><span class="line">    //父节点</span><br><span class="line">    Entry&lt;K,V&gt; parent;</span><br><span class="line">    //默认情况下为黑色</span><br><span class="line">    boolean color = BLACK;</span><br></pre></td></tr></table></figure>
+<p>TreeMap是红黑树的结构，所以会在插入节点的时候自平衡</p>
+<ol>
+<li>变色：在不违反上述红黑树规则特点情况下，将红黑树某个node节点颜色由红变黑，或者由黑变红；</li>
+<li>左旋：逆时针旋转两个节点，让一个节点被其右子节点取代，而该节点成为右子节点的左子节点</li>
+<li>右旋：顺时针旋转两个节点，让一个节点被其左子节点取代，而该节点成为左子节点的右子节点</li>
+</ol>
+<p>TreeMap的核心是put方法，在添加值的时候，为了维护红黑树的平衡，需要进行一系列操作，fixAfterInsertion方法来进行自平衡处理。</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>无需调整</th>
+<th>【变色】即可实现平衡</th>
+<th>【旋转+变色】才可实现平衡</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>情况1：</td>
+<td>当父节点为黑色时插入子节点</td>
+<td>空树插入根节点，将根节点红色变为黑色</td>
+<td>父节点为红色左节点，叔父节点为黑色，插入左子节点，那么通过【左左节点旋转】</td>
+</tr>
+<tr>
+<td>情况2：</td>
+<td>-</td>
+<td>父节点和叔父节点都为红色</td>
+<td>父节点为红色左节点，叔父节点为黑色，插入右子节点，那么通过【左右节点旋转】</td>
+</tr>
+<tr>
+<td>情况3：</td>
+<td>-</td>
+<td>-</td>
+<td>父节点为红色右节点，叔父节点为黑色，插入左子节点，那么通过【右左节点旋转】</td>
+</tr>
+<tr>
+<td>情况4：</td>
+<td>-</td>
+<td>-</td>
+<td>父节点为红色右节点，叔父节点为黑色，插入右子节点，那么通过【右右节点旋转】</td>
+</tr>
+</tbody>
+</table>
+<h1 id="ConcurrentHashMap解析"><a href="#ConcurrentHashMap解析" class="headerlink" title="ConcurrentHashMap解析"></a>ConcurrentHashMap解析</h1><p>ConCurrentHashMap的结构是：数组+红黑树，与HashMap相同。Hashtable容器使用synchronized来保证线程安全，但在线程竞争激烈的情况下Hashtable的效率非常低下。因为当一个线程访问Hashtable的同步方法时，其他线程访问Hashtable的同步方法时，可能会进入阻塞或轮询状态。</p>
+<p>CAS是比较常见的一个问题：当多个线程尝试使用CAS同时更新同一个变量时，只有其中一个线程能更新变量的值(<strong>A和内存值V相同时，将内存值V修改为B)</strong>，而其它线程都失败，失败的线程<strong>并不会被挂起</strong>，而是被告知这次竞争中失败，并可以再次尝试<strong>(否则什么都不做)</strong></p>
+<p><strong>volatile仅仅用来保证该变量对所有线程的可见性，但不保证原子性</strong>。</p>
+<p>HashTable容器在竞争激烈的并发环境下表现出效率低下的原因，是因为所有访问HashTable的线程都必须竞争同一把锁，那假如容器里有多把锁，每一把锁用于锁容器其中一部分数据，</p>
+<p>（JDK 1.7）那么当多线程访问容器里不同数据段的数据时，线程间就不会存在锁竞争，从而可以有效的提高并发访问效率，这就是ConcurrentHashMap所使用的锁分段技术，首先将数据分成一段一段的存储，然后给每一段数据配一把锁，当一个线程占用锁访问其中一个段数据的时候，其他段的数据也能被其他线程访问。1.7用这种分段锁的方法来保证数据的一致性。</p>
+<p>JDK1.8 使用的是CAS+Synchronized来保证并发更新的安全性，在更新时会局部锁住某部分数据，但不会把整个表都锁住。同步读取操作则是完全非阻塞的。好处是在保证合理的同步前提下，效率很高。坏处是严格来说读取操作不能保证反映最近的更新。例如线程A调用putAll写入大量数据，期间线程B调用get，则只能get到目前为止已经顺利插入的部分数据。</p>
+<h2 id="类似的-HashSet-和TreeSet"><a href="#类似的-HashSet-和TreeSet" class="headerlink" title="类似的 HashSet 和TreeSet"></a>类似的 HashSet 和TreeSet</h2><p>HashSet不允许保存重复对象，这个重复是有自己定义的。比如需要保存People对象，People类包含名字和年龄两个属性，你可以在People类中重写equals和hashCode方法，指明姓名和年龄都相等的People对象是相等的，那么就不能重复存入姓名和年龄相等的People对象。HashSet中的对象没有顺序。<br> TreeSet保存的对象有顺序性，也有不可重复性。顺序性有两种方法实现，一个是类实现Comparable接口；另一个是构造比较器，将比较器对象作为TreeSet的构造函数的参数传入。顺序性和不可重复性都是在compareTo()方法中实现的，当按年龄排序时，先比较年龄，年龄相等再比较姓名，姓名相等则不存入。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2020/07/16/kafka/" rel="next" title="kafka">
+                <i class="fa fa-chevron-left"></i> kafka
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  <div>
+    
+    <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:14px;">------ 本文结束------</div>
+    
+</div>
+    
+ </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/sliver.jpg" alt="wei xy">
+            
+              <p class="site-author-name" itemprop="name">wei xy</p>
+              <p class="site-description motion-element" itemprop="description">一步一步似爪牙</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">56</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">17</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">43</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+		  <iframe frameborder="no" border="0" marginwidth="0" marginheight="0" width="330" height="86" src="//music.163.com/outchain/player?type=2&id=28285910&auto=1&height=66"></iframe>
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#HashMap的数据结构"><span class="nav-number">1.</span> <span class="nav-text">HashMap的数据结构</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#HashMap存放数据的过程"><span class="nav-number">2.</span> <span class="nav-text">HashMap存放数据的过程</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#HashMap的常见问题"><span class="nav-number">3.</span> <span class="nav-text">HashMap的常见问题</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#解决hash冲突"><span class="nav-number">3.1.</span> <span class="nav-text">解决hash冲突</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#为什么是链表个数超过8的时候才转红黑树"><span class="nav-number">3.2.</span> <span class="nav-text">为什么是链表个数超过8的时候才转红黑树</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#为什么数组的数量扩容的个数是2-n"><span class="nav-number">3.3.</span> <span class="nav-text">为什么数组的数量扩容的个数是2^n</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#HashMap的扩容"><span class="nav-number">3.4.</span> <span class="nav-text">HashMap的扩容</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#HashMap是否有序"><span class="nav-number">3.5.</span> <span class="nav-text">HashMap是否有序</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#LinkedHashMap解析"><span class="nav-number">4.</span> <span class="nav-text">LinkedHashMap解析</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#TreeMap解析"><span class="nav-number">5.</span> <span class="nav-text">TreeMap解析</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#ConcurrentHashMap解析"><span class="nav-number">6.</span> <span class="nav-text">ConcurrentHashMap解析</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#类似的-HashSet-和TreeSet"><span class="nav-number">6.1.</span> <span class="nav-text">类似的 HashSet 和TreeSet</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+        <div class="back-to-top">
+          <i class="fa fa-arrow-up"></i>
+          
+            <span id="scrollpercent"><span>0</span>%</span>
+          
+        </div>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        
+<div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">wei xy</span>
+
+  
+</div>
+
+<!-- 
+  <div class="powered-by">由  强力驱动</div>
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash;  v5.1.4</div>
+
+-->
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  <!--动态标题-->
+<script type="text/javascript" src="/js/src/dytitle.js"></script>
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"model":{"jsonPath":"live2d-widget-model-miku"},"display":{"position":"right","width":150,"height":300},"mobile":{"show":false,"symbols_count_time":null},"symbols":true,"time":true,"total_symbols":true,"total_time":true,"log":false});</script></body>
+</html>
+<!-- 页面点击小红心 -->
+<script type="text/javascript" src="/js/src/love.js"></script>

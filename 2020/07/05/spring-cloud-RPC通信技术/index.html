@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="rpc,spring cloud,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="RPC概念RPC（Remote Promote Call） 一种进程间通信方式。允许像调用本地服务一样调用远程服务。 ​        RPC框架的主要目标就是让远程服务调用更简单、透明。RPC框架负责屏蔽底层的传输方式（TCP或者UDP）、序列化方式（XML/JSON/二进制）和通信细节。开发人员在使用的时候只需要了解谁在什么位置提供了什么样的远程服务接口即可，并不需要关心底层通信细节和调用过程">
+<meta name="keywords" content="rpc,spring cloud">
+<meta property="og:type" content="article">
+<meta property="og:title" content="spring-cloud RPC通信技术">
+<meta property="og:url" content="http://yoursite.com/2020/07/05/spring-cloud-RPC通信技术/index.html">
+<meta property="og:site_name" content="放空">
+<meta property="og:description" content="RPC概念RPC（Remote Promote Call） 一种进程间通信方式。允许像调用本地服务一样调用远程服务。 ​        RPC框架的主要目标就是让远程服务调用更简单、透明。RPC框架负责屏蔽底层的传输方式（TCP或者UDP）、序列化方式（XML/JSON/二进制）和通信细节。开发人员在使用的时候只需要了解谁在什么位置提供了什么样的远程服务接口即可，并不需要关心底层通信细节和调用过程">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://yoursite.com/2020/07/05/spring-cloud-RPC通信技术/E:/blog/source/_posts/spring-cloud-RPC通信技术/rpc.png">
+<meta property="og:image" content="http://yoursite.com/2020/07/05/spring-cloud-RPC通信技术/E:/blog/source/_posts/spring-cloud-RPC通信技术/process.png">
+<meta property="og:image" content="http://yoursite.com/2020/07/05/spring-cloud-RPC通信技术/E:/blog/source/_posts/spring-cloud-RPC通信技术/history.png">
+<meta property="og:updated_time" content="2020-07-05T09:18:23.055Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="spring-cloud RPC通信技术">
+<meta name="twitter:description" content="RPC概念RPC（Remote Promote Call） 一种进程间通信方式。允许像调用本地服务一样调用远程服务。 ​        RPC框架的主要目标就是让远程服务调用更简单、透明。RPC框架负责屏蔽底层的传输方式（TCP或者UDP）、序列化方式（XML/JSON/二进制）和通信细节。开发人员在使用的时候只需要了解谁在什么位置提供了什么样的远程服务接口即可，并不需要关心底层通信细节和调用过程">
+<meta name="twitter:image" content="http://yoursite.com/2020/07/05/spring-cloud-RPC通信技术/E:/blog/source/_posts/spring-cloud-RPC通信技术/rpc.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":true,"scrollpercent":true,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2020/07/05/spring-cloud-RPC通信技术/">
+
+
+
+
+
+  <title>spring-cloud RPC通信技术 | 放空</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+	<a href="https://github.com/pignum1/pignum1.github.io.git"><img style="position: absolute; top: 0; right: 0;border: 0;" src="https://github.blog/wp-content/uploads/2008/12/forkme_right_darkblue_121621.png?resize=149%2C149" class="attachment-full size-full" alt="Fork me on GitHub" data-recalc-dims="1"></a>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">放空</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-categories" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/07/05/spring-cloud-RPC通信技术/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="wei xy">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/sliver.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="放空">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">spring-cloud RPC通信技术</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-07-05T15:50:47+08:00">
+                2020-07-05
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/spring-cloud/" itemprop="url" rel="index">
+                    <span itemprop="name">spring cloud</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="RPC概念"><a href="#RPC概念" class="headerlink" title="RPC概念"></a>RPC概念</h1><p>RPC（Remote Promote Call） 一种进程间通信方式。允许像调用本地服务一样调用远程服务。</p>
+<p>​        RPC框架的主要目标就是让远程服务调用更简单、透明。RPC框架负责屏蔽底层的传输方式（TCP或者UDP）、序列化方式（XML/JSON/二进制）和通信细节。开发人员在使用的时候只需要了解谁在什么位置提供了什么样的远程服务接口即可，并不需要关心底层通信细节和调用过程。</p>
+<p>​        HTTP协议是应用层的超文本传送协议，它是Web的基础。HTTP协议位于TCP/IP协议栈的应用层。基于HTTP协议的客户/服务器模式的信息交换过程，分四个过程：建立连接、发送请求信息、发送响应信息、关闭连接。</p>
+<p>可以看到 HTTP 和 RPC 并不是一个并行概念。</p>
+<p>RPC是一种概念，http也是rpc实现的一种方式。论复杂度，dubbo/hessian用起来是超级简单的。最近用dubbo和hessian比较多，http的几乎都被废弃了</p>
+<h1 id="RPC的优势"><a href="#RPC的优势" class="headerlink" title="RPC的优势"></a>RPC的优势</h1><p>随着互联网的发展，网站应用的规模不断扩大，常规的垂直应用架构已无法应对，分布式服务架构以及流动计算架构势在必行，亟需一个治理系统确保架构有条不紊的演进。</p>
+<p> 当垂直应用越来越多，应用之间交互不可避免，将核心业务抽取出来，作为独立的服务，逐渐形成稳定的服务中心，使前端应用能更快速的响应多变的市场需求。此时，用于提高业务复用及整合的 分布式服务框架(RPC)，提供统一的服务是关键。</p>
+<h1 id="RPC的实现原理"><a href="#RPC的实现原理" class="headerlink" title="RPC的实现原理"></a>RPC的实现原理</h1><p><img src="/2020/07/05/spring-cloud-RPC通信技术/E:/blog\source\_posts\spring-cloud-RPC通信技术\rpc.png" alt="rpc"></p>
+<p>也就是说两台服务器A，B，一个应用部署在A服务器上，想要调用B服务器上应用提供的函数/方法，由于不在一个内存空间，不能直接调用，需要通过网络来表达调用的语义和传达调用的数据。</p>
+<p>比如说，A服务器想调用B服务器上的一个方法：</p>
+<p>Employee getEmployeeByName(String fullName)</p>
+<p>整个调用过程，主要经历如下几个步骤：</p>
+<h2 id="1、建立通信"><a href="#1、建立通信" class="headerlink" title="1、建立通信"></a>1、建立通信</h2><p>首先要解决通讯的问题：即A机器想要调用B机器，首先得建立起通信连接。</p>
+<p>主要是通过在客户端和服务器之间建立TCP连接，远程过程调用的所有交换的数据都在这个连接里传输。连接可以是按需连接，调用结束后就断掉，也可以是长连接，多个远程过程调用共享同一个连接。</p>
+<h2 id="2、服务寻址"><a href="#2、服务寻址" class="headerlink" title="2、服务寻址"></a>2、服务寻址</h2><p>要解决寻址的问题，也就是说，A服务器上的应用怎么告诉底层的RPC框架，如何连接到B服务器（如主机或IP地址）以及特定的端口，方法的名称名称是什么。</p>
+<p>通常情况下我们需要提供B机器（主机名或IP地址）以及特定的端口，然后指定调用的方法或者函数的名称以及入参出参等信息，这样才能完成服务的一个调用。</p>
+<p>可靠的寻址方式（主要是提供服务的发现）是RPC的实现基石，比如可以采用redis或者zookeeper来注册服务等等。</p>
+<ol>
+<li>从服务提供者的角度看：当提供者服务启动时，需要自动向注册中心注册服务；</li>
+<li>当提供者服务停止时，需要向注册中心注销服务；</li>
+<li>提供者需要定时向注册中心发送心跳，一段时间未收到来自提供者的心跳后，认为提供者已经停止服务，从注册中心上摘取掉对应的服务。</li>
+<li>从调用者的角度看：调用者启动时订阅注册中心的消息并从注册中心获取提供者的地址；</li>
+<li>当有提供者上线或者下线时，注册中心会告知到调用者；</li>
+<li>调用者下线时，取消订阅。</li>
+</ol>
+<h2 id="3、网络传输"><a href="#3、网络传输" class="headerlink" title="3、网络传输"></a>3、网络传输</h2><h3 id="3-1、序列化"><a href="#3-1、序列化" class="headerlink" title="3.1、序列化"></a>3.1、序列化</h3><p>当A机器上的应用发起一个RPC调用时，调用方法和其入参等信息需要通过底层的网络协议如TCP传输到B机器，由于网络协议是基于二进制的，所有我们传输的参数数据都需要先进行序列化（Serialize）或者编组（marshal）成二进制的形式才能在网络中进行传输。然后通过寻址操作和网络传输将序列化或者编组之后的二进制数据发送给B机器。</p>
+<h3 id="3-2、反序列化"><a href="#3-2、反序列化" class="headerlink" title="3.2、反序列化"></a>3.2、反序列化</h3><p>当B机器接收到A机器的应用发来的请求之后，又需要对接收到的参数等信息进行反序列化操作（序列化的逆操作），即将二进制信息恢复为内存中的表达方式，然后再找到对应的方法（寻址的一部分）进行本地调用（一般是通过生成代理Proxy去调用,<br>通常会有JDK动态代理、CGLIB动态代理、Javassist生成字节码技术等），之后得到调用的返回值。</p>
+<h2 id="4、服务调用"><a href="#4、服务调用" class="headerlink" title="4、服务调用"></a>4、服务调用</h2><p>B机器进行本地调用（通过代理Proxy）之后得到了返回值，此时还需要再把返回值发送回A机器，同样也需要经过序列化操作，然后再经过网络传输将二进制数据发送回A机器，而当A机器接收到这些返回值之后，则再次进行反序列化操作，恢复为内存中的表达方式，最后再交给A机器上的应用进行相关处理（一般是业务逻辑处理操作）。</p>
+<p>通常，经过以上四个步骤之后，一次完整的RPC调用算是完成了。</p>
+<h2 id="RPC调用过程"><a href="#RPC调用过程" class="headerlink" title="RPC调用过程"></a>RPC调用过程</h2><p><img src="/2020/07/05/spring-cloud-RPC通信技术/E:/blog\source\_posts\spring-cloud-RPC通信技术\process.png" alt="process"></p>
+<p>1、服务消费者（client客户端）通过本地调用的方式调用服务</p>
+<p>2、客户端存根（client stub）接收到调用请求后负责将方法、入参等信息序列化（组装）成能够进行网络传输的消息体</p>
+<p>3、客户端存根（client stub）找到远程的服务地址，并且将消息通过网络发送给服务端</p>
+<p>4、服务端存根（server stub）收到消息后进行解码（反序列化操作）</p>
+<p>5、服务端存根（server stub）根据解码结果调用本地的服务进行相关处理</p>
+<p>6、本地服务执行具体业务逻辑并将处理结果返回给服务端存根（server stub）</p>
+<p>7、服务端存根（server stub）将返回结果重新打包成消息（序列化）并通过网络发送至消费方</p>
+<p>8、客户端存根（client stub）接收到消息，并进行解码（反序列化）</p>
+<p>9、服务消费方得到最终结果</p>
+<h2 id="主流的RPC框架"><a href="#主流的RPC框架" class="headerlink" title="主流的RPC框架"></a>主流的RPC框架</h2><p>1.RMI</p>
+<p>利用java.rmi包实现，基于Java远程方法协议(Java Remote Method Protocol) 和java的原生序列化。</p>
+<p>2.Hessian</p>
+<p>是一个轻量级的remoting onhttp工具，使用简单的方法提供了RMI的功能。 基于HTTP协议，采用二进制编解码。</p>
+<p>3.protobuf-rpc-pro</p>
+<p>是一个Java类库，提供了基于 Google 的 Protocol Buffers 协议的远程方法调用的框架。基于 Netty 底层的 NIO 技术。支持 TCP 重用/ keep-alive、SSL加密、RPC 调用取消操作、嵌入式日志等功能。</p>
+<p>4.Thrift</p>
+<p>是一种可伸缩的跨语言服务的软件框架。它拥有功能强大的代码生成引擎，无缝地支持C + +，C#，Java，Python和PHP和Ruby。thrift允许你定义一个描述文件，描述数据类型和服务接口。依据该文件，编译器方便地生成RPC客户端和服务器通信代码。</p>
+<p>最初由facebook开发用做系统内个语言之间的RPC通信，2007年由facebook贡献到apache基金 ，现在是apache下的opensource之一 。支持多种语言之间的RPC方式的通信：php语言client可以构造一个对象，调用相应的服务方法来调用java语言的服务，跨越语言的C/S RPC调用。底层通讯基于SOCKET。</p>
+<p>5.Avro</p>
+<p>出自Hadoop之父Doug Cutting, 在Thrift已经相当流行的情况下推出Avro的目标不仅是提供一套类似Thrift的通讯中间件,更是要建立一个新的，标准性的云计算的数据交换和存储的Protocol。支持HTTP，TCP两种协议。</p>
+<p>6.Dubbo</p>
+<p>Dubbo是 阿里巴巴公司开源的一个高性能优秀的服务框架，使得应用可通过高性能的 RPC 实现服务的输出和输入功能，可以和 Spring框架无缝集成。</p>
+<h1 id="广义的远程通讯技术"><a href="#广义的远程通讯技术" class="headerlink" title="广义的远程通讯技术"></a>广义的远程通讯技术</h1><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">CORBA:面向对象的编程体系规范,分布式系统,跨语言,对标RMI(竞争关系)。</span><br><span class="line">SOAP:简单对象访问协议,微软联合厂商对xml-rpc标准化,soap协议就是联合标准化的结果,而且微软抢先完善了soap协议,推出了webservice。对象访问协议指的是使用XML描述web service的信息(URI/类/参数/返回值),理论上SOAP就是一段xml</span><br><span class="line">WebService:属于广义rpc的一种(常见的广义rpc实现还有xml-rpc和json-rpc),支持异构系统间的交互, 支持不同语言的通信,使用http通信,通过serlvet提供XML格式的数据,是SOAP协议的封装,WSDL是它的描述方式。</span><br><span class="line">WSDL:webservice描述语言,描述SOAP协议的,也是段XML</span><br><span class="line">RMI:远程调用对象,其实是java实现了RPC的一组接口</span><br><span class="line">JMS:MQ</span><br><span class="line">EJB:大型分布式,rmi-iiop协议</span><br></pre></td></tr></table></figure>
+<p><img src="/2020/07/05/spring-cloud-RPC通信技术/E:/blog\source\_posts\spring-cloud-RPC通信技术\history.png" alt="history"></p>
+<h1 id="RPC框架实现的几个核心技术点："><a href="#RPC框架实现的几个核心技术点：" class="headerlink" title="RPC框架实现的几个核心技术点："></a><strong>RPC框架实现的几个核心技术点</strong>：</h1><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">远程提供者需要以某种形式提供服务调用相关的信息，包括但不限于服务接口定义、数据结构、或者中间态的服务定义文件。例如Facebook的 Thrift的IDL文件，Web service的WSDL文件；服务的调用者需要通过一定的图景获取远程服务调用相关的信息。</span><br><span class="line">远程代理对象：服务调用者用的服务实际是远程服务的本地代理。说白了就是通过动态代理来实现。</span><br><span class="line">通信：RPC框架与具体的协议无关。</span><br><span class="line">序列化：毕竟是远程通信，需要将对象转化成二进制流进行传输。不同的RPC框架应用的场景不同，在序列化上也会采取不同的技术</span><br></pre></td></tr></table></figure>
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/rpc/" rel="tag"># rpc</a>
+          
+            <a href="/tags/spring-cloud/" rel="tag"># spring cloud</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2020/07/03/BeanFactory与FactoryBean/" rel="next" title="BeanFactory与FactoryBean">
+                <i class="fa fa-chevron-left"></i> BeanFactory与FactoryBean
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2020/07/11/zookeeper集群/" rel="prev" title="zookeeper集群">
+                zookeeper集群 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  <div>
+    
+    <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:14px;">------ 本文结束------</div>
+    
+</div>
+    
+ </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/sliver.jpg" alt="wei xy">
+            
+              <p class="site-author-name" itemprop="name">wei xy</p>
+              <p class="site-description motion-element" itemprop="description">一步一步似爪牙</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">56</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">17</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">43</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+		  <iframe frameborder="no" border="0" marginwidth="0" marginheight="0" width="330" height="86" src="//music.163.com/outchain/player?type=2&id=28285910&auto=1&height=66"></iframe>
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#RPC概念"><span class="nav-number">1.</span> <span class="nav-text">RPC概念</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#RPC的优势"><span class="nav-number">2.</span> <span class="nav-text">RPC的优势</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#RPC的实现原理"><span class="nav-number">3.</span> <span class="nav-text">RPC的实现原理</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1、建立通信"><span class="nav-number">3.1.</span> <span class="nav-text">1、建立通信</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2、服务寻址"><span class="nav-number">3.2.</span> <span class="nav-text">2、服务寻址</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3、网络传输"><span class="nav-number">3.3.</span> <span class="nav-text">3、网络传输</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1、序列化"><span class="nav-number">3.3.1.</span> <span class="nav-text">3.1、序列化</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2、反序列化"><span class="nav-number">3.3.2.</span> <span class="nav-text">3.2、反序列化</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4、服务调用"><span class="nav-number">3.4.</span> <span class="nav-text">4、服务调用</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#RPC调用过程"><span class="nav-number">3.5.</span> <span class="nav-text">RPC调用过程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#主流的RPC框架"><span class="nav-number">3.6.</span> <span class="nav-text">主流的RPC框架</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#广义的远程通讯技术"><span class="nav-number">4.</span> <span class="nav-text">广义的远程通讯技术</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#RPC框架实现的几个核心技术点："><span class="nav-number">5.</span> <span class="nav-text">RPC框架实现的几个核心技术点：</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+        <div class="back-to-top">
+          <i class="fa fa-arrow-up"></i>
+          
+            <span id="scrollpercent"><span>0</span>%</span>
+          
+        </div>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        
+<div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">wei xy</span>
+
+  
+</div>
+
+<!-- 
+  <div class="powered-by">由  强力驱动</div>
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash;  v5.1.4</div>
+
+-->
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  <!--动态标题-->
+<script type="text/javascript" src="/js/src/dytitle.js"></script>
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"model":{"jsonPath":"live2d-widget-model-miku"},"display":{"position":"right","width":150,"height":300},"mobile":{"show":false,"symbols_count_time":null},"symbols":true,"time":true,"total_symbols":true,"total_time":true,"log":false});</script></body>
+</html>
+<!-- 页面点击小红心 -->
+<script type="text/javascript" src="/js/src/love.js"></script>

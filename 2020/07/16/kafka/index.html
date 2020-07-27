@@ -1,0 +1,988 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="kafka,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="公司用到的很多技术，自己之前都没学过(尬)，于是只能慢慢补了。这次是消息队列的笔记。以前写过的RabitMq和这个差别还是蛮大的。 为什么要使用消息队列消息队列的主要作用是 解耦 现在我有一个系统A，系统A可以产生一个userId 携程伪代码可能是这个样子 1234567891011121314151617public class SystemA &amp;#123;    // 系统B和系统C的依赖">
+<meta name="keywords" content="kafka">
+<meta property="og:type" content="article">
+<meta property="og:title" content="kafka">
+<meta property="og:url" content="http://yoursite.com/2020/07/16/kafka/index.html">
+<meta property="og:site_name" content="放空">
+<meta property="og:description" content="公司用到的很多技术，自己之前都没学过(尬)，于是只能慢慢补了。这次是消息队列的笔记。以前写过的RabitMq和这个差别还是蛮大的。 为什么要使用消息队列消息队列的主要作用是 解耦 现在我有一个系统A，系统A可以产生一个userId 携程伪代码可能是这个样子 1234567891011121314151617public class SystemA &amp;#123;    // 系统B和系统C的依赖">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://yoursite.com/2020/07/16/kafka/E:/blog/source/_posts/kafka/解耦.png">
+<meta property="og:image" content="http://yoursite.com/2020/07/16/kafka/E:/blog/source/_posts/kafka/削峰.png">
+<meta property="og:image" content="http://yoursite.com/2020/07/16/kafka/E:/blog/source/_posts/kafka/异步.png">
+<meta property="og:image" content="http://yoursite.com/2020/07/16/kafka/E:/blog/source/_posts/kafka/异步2.png">
+<meta property="og:image" content="http://yoursite.com/2020/07/16/kafka/E:/blog/source/_posts/kafka/高可用.png">
+<meta property="og:image" content="http://yoursite.com/2020/07/16/kafka/E:/blog/source/_posts/kafka/消息丢失.png">
+<meta property="og:image" content="http://yoursite.com/2020/07/16/kafka/E:/blog/source/_posts/kafka/kafka-describe.png">
+<meta property="og:image" content="http://yoursite.com/2020/07/16/kafka/E:/blog/source/_posts/kafka/kafka-zk-持久化.png">
+<meta property="og:image" content="http://yoursite.com/2020/07/16/kafka/E:/blog/source/_posts/kafka/topic.png">
+<meta property="og:image" content="http://yoursite.com/2020/07/16/kafka/E:/blog/source/_posts/kafka/消费模型.png">
+<meta property="og:updated_time" content="2020-07-21T17:28:12.372Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="kafka">
+<meta name="twitter:description" content="公司用到的很多技术，自己之前都没学过(尬)，于是只能慢慢补了。这次是消息队列的笔记。以前写过的RabitMq和这个差别还是蛮大的。 为什么要使用消息队列消息队列的主要作用是 解耦 现在我有一个系统A，系统A可以产生一个userId 携程伪代码可能是这个样子 1234567891011121314151617public class SystemA &amp;#123;    // 系统B和系统C的依赖">
+<meta name="twitter:image" content="http://yoursite.com/2020/07/16/kafka/E:/blog/source/_posts/kafka/解耦.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":true,"scrollpercent":true,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2020/07/16/kafka/">
+
+
+
+
+
+  <title>kafka | 放空</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+	<a href="https://github.com/pignum1/pignum1.github.io.git"><img style="position: absolute; top: 0; right: 0;border: 0;" src="https://github.blog/wp-content/uploads/2008/12/forkme_right_darkblue_121621.png?resize=149%2C149" class="attachment-full size-full" alt="Fork me on GitHub" data-recalc-dims="1"></a>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">放空</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-categories" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/07/16/kafka/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="wei xy">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/sliver.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="放空">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">kafka</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-07-16T10:52:15+08:00">
+                2020-07-16
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/kafka/" itemprop="url" rel="index">
+                    <span itemprop="name">kafka</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>公司用到的很多技术，自己之前都没学过(<strong>尬</strong>)，于是只能慢慢补了。这次是<strong>消息队列</strong>的笔记。以前写过的RabitMq和这个差别还是蛮大的。</p>
+<h1 id="为什么要使用消息队列"><a href="#为什么要使用消息队列" class="headerlink" title="为什么要使用消息队列"></a>为什么要使用消息队列</h1><p>消息队列的主要作用是</p>
+<h2 id="解耦"><a href="#解耦" class="headerlink" title="解耦"></a>解耦</h2><p><img src="/2020/07/16/kafka/E:/blog\source\_posts\kafka\解耦.png" alt></p>
+<p>现在我有一个系统A，系统A可以产生一个<code>userId</code></p>
+<p>携程伪代码可能是这个样子</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">public class SystemA &#123;</span><br><span class="line"></span><br><span class="line">    // 系统B和系统C的依赖</span><br><span class="line">    SystemB systemB = new SystemB();</span><br><span class="line">    SystemC systemC = new SystemC();</span><br><span class="line"></span><br><span class="line">    // 系统A独有的数据userId</span><br><span class="line">    private String userId = &quot;Java3y&quot;;</span><br><span class="line"></span><br><span class="line">    public void doSomething() &#123;</span><br><span class="line"></span><br><span class="line">        // 系统B和系统C都需要拿着系统A的userId去操作其他的事</span><br><span class="line">        systemB.SystemBNeed2do(userId);</span><br><span class="line">        systemC.SystemCNeed2do(userId);</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>又过了几天，系统E的负责人过来了，告诉系统A，需要userId。</li>
+<li>又过了几天，系统B的负责人过来了，告诉系统A，还是重新关调那个接口吧。</li>
+<li>又过了几天，系统F的负责人过来了，告诉系统A，需要userId。</li>
+</ul>
+<p>然后就原地boom!!!。</p>
+<p>现在将系统A将userId写到消息队列中，系统C和系统D从消息队列中拿数据。这样就根本不管系统b、c。他们的交互也是从消息队列中获取。</p>
+<h2 id="削峰"><a href="#削峰" class="headerlink" title="削峰"></a>削峰</h2><p>我们再来一个场景，现在我们每个月要搞一次大促，大促期间的并发可能会很高的，比如每秒3000个请求。假设我们现在有两台机器处理请求，并且每台机器只能每次处理1000个请求。那多出来的1000个请求，可能就把我们<strong>整个系统给搞崩了</strong>…所以，有一种办法，我们可以写到消息队列中：</p>
+<p><img src="/2020/07/16/kafka/E:/blog\source\_posts\kafka\削峰.png" alt></p>
+<h2 id="异步"><a href="#异步" class="headerlink" title="异步"></a>异步</h2><p><img src="/2020/07/16/kafka/E:/blog\source\_posts\kafka\异步.png" alt></p>
+<p>伪代码如下</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">public class SystemA &#123;</span><br><span class="line"></span><br><span class="line">    SystemB systemB = new SystemB();</span><br><span class="line">    SystemC systemC = new SystemC();</span><br><span class="line">    SystemD systemD = new SystemD();</span><br><span class="line"></span><br><span class="line">    // 系统A独有的数据</span><br><span class="line">    private String userId ;</span><br><span class="line"></span><br><span class="line">    public void doOrder() &#123;</span><br><span class="line"></span><br><span class="line">        // 下订单</span><br><span class="line">          userId = this.order();</span><br><span class="line">        // 如果下单成功，则安排其他系统做一些事  </span><br><span class="line">        systemB.SystemBNeed2do(userId);</span><br><span class="line">        systemC.SystemCNeed2do(userId);</span><br><span class="line">        systemD.SystemDNeed2do(userId);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>假设</strong>系统A运算出userId具体的值需要50ms，调用系统B的接口需要300ms，调用系统C的接口需要300ms，调用系统D的接口需要300ms。那么这次请求就需要<code>50+300+300+300=950ms</code></p>
+<p>并且我们得知，系统A做的是<strong>主要的业务</strong>，而系统B、C、D是<strong>非主要</strong>的业务。比如系统A处理的是<strong>订单下单</strong>，而系统B是订单下单成功了，那发送一条短信告诉具体的用户此订单已成功，而系统C和系统D也是处理一些小事而已。</p>
+<p>那么此时，为了<strong>提高用户体验和吞吐量</strong>，其实可以<strong>异步地</strong>调用系统B、C、D的接口。所以，我们可以弄成是这样的：</p>
+<p><img src="/2020/07/16/kafka/E:/blog\source\_posts\kafka\异步2.png" alt></p>
+<h1 id="消息队列的问题"><a href="#消息队列的问题" class="headerlink" title="消息队列的问题"></a>消息队列的问题</h1><h2 id="高可用"><a href="#高可用" class="headerlink" title="高可用"></a>高可用</h2><p>消息队列的选择上，无论是我们使用消息队列来做解耦、异步还是削峰，消息队列<strong>肯定不能是单机</strong>的。试着想一下，如果是单机的消息队列，万一这台机器挂了，那我们整个系统几乎就是不可用了。所以，当我们项目中使用消息队列，都是得<code>集群/分布式</code>的。要做<code>集群/分布式</code>就必然希望该消息队列能够提供<strong>现成</strong>的支持，而不是自己写代码手动去实现。</p>
+<p><img src="/2020/07/16/kafka/E:/blog\source\_posts\kafka\高可用.png" alt></p>
+<h2 id="数据丢失"><a href="#数据丢失" class="headerlink" title="数据丢失"></a>数据丢失</h2><p>我们将数据写到消息队列上，系统B和C还没来得及取消息队列的数据，就挂掉了。<strong>如果没有做任何的措施，我们的数据就丢了</strong>。</p>
+<p><img src="/2020/07/16/kafka/E:/blog\source\_posts\kafka\消息丢失.png" alt></p>
+<p>学过Redis的都知道，Redis可以将数据持久化磁盘上，万一Redis挂了，还能从磁盘从将数据恢复过来。同样地，消息队列中的数据也需要存在别的地方，这样才尽可能减少数据的丢失。</p>
+<p>除了这些，我们在<strong>使用的时候</strong>还得考虑各种的问题：</p>
+<ul>
+<li>消息重复消费了怎么办啊？</li>
+<li>我想保证消息是<strong>绝对</strong>有顺序的怎么做？</li>
+<li>……..</li>
+</ul>
+<p>虽然消息队列给我们带来了那么多的好处，但同时我们发现引入消息队列也会<strong>提高系统的复杂性</strong>。市面上现在已经有不少消息队列轮子了，每种消息队列都有自己的特点，<strong>选取哪种MQ还得好好斟酌</strong>。</p>
+<h1 id="centos7安装kafka集群"><a href="#centos7安装kafka集群" class="headerlink" title="centos7安装kafka集群"></a>centos7安装kafka集群</h1><p>1.下载zookeeper</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">cd /root/soft</span><br><span class="line">wget https://mirrors.bfsu.edu.cn/apache/kafka/2.5.0/kafka_2.12-2.5.0.tgz</span><br></pre></td></tr></table></figure>
+<p>2.解压文件</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">tar -zxvf kafka_2.12-2.5.0.tgz</span><br><span class="line">cd /root/soft/kafka_2.12-2.5.0.tgz</span><br></pre></td></tr></table></figure>
+<p>3.修改配置文件</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">cd  /usr/local/application/kafka/kafka_2.12-2.5.0/config</span><br><span class="line">vim server.properties</span><br></pre></td></tr></table></figure>
+<p>修改配置文件中的内容</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">broker.id=0  #当前机器在集群中的唯一标识，和zookeeper的myid性质一样</span><br><span class="line">port=5701 #当前kafka对外提供服务的端口默认是9092</span><br><span class="line">host.name=192.168.7.100 #这个参数默认是关闭的，在0.8.1有个bug，DNS解析问题，失败率的问题。</span><br><span class="line">num.network.threads=3 #这个是borker进行网络处理的线程数</span><br><span class="line">num.io.threads=8 #这个是borker进行I/O处理的线程数</span><br><span class="line">log.dirs=/usr/local/application/kafka/kafka_2.12-2.5.0/kafka-logs #消息存放的目录，这个目录可以配置为“，”逗号分割的表达式，上面的num.io.threads要大于这个目录的个数这个目录，如果配置多个目录，新创建的topic他把消息持久化的地方是，当前以逗号分割的目录中，那个分区数最少就放那一个</span><br><span class="line">socket.send.buffer.bytes=102400 #发送缓冲区buffer大小，数据不是一下子就发送的，先回存储到缓冲区了到达一定的大小后在发送，能提高性能</span><br><span class="line">socket.receive.buffer.bytes=102400 #kafka接收缓冲区大小，当数据到达一定大小后在序列化到磁盘</span><br><span class="line">socket.request.max.bytes=104857600 #这个参数是向kafka请求消息或者向kafka发送消息的请请求的最大数，这个值不能超过java的堆栈大小</span><br><span class="line">num.partitions=1 #默认的分区数，一个topic默认1个分区数</span><br><span class="line">log.retention.hours=168 #默认消息的最大持久化时间，168小时，7天</span><br><span class="line">message.max.byte=5242880  #消息保存的最大值5M</span><br><span class="line">default.replication.factor=2  #kafka保存消息的副本数，如果一个副本失效了，另一个还可以继续提供服务</span><br><span class="line">replica.fetch.max.bytes=5242880  #取消息的最大直接数</span><br><span class="line">log.segment.bytes=1073741824 #这个参数是：因为kafka的消息是以追加的形式落地到文件，当超过这个值的时候，kafka会新起一个文件</span><br><span class="line">log.retention.check.interval.ms=300000 #每隔300000毫秒去检查上面配置的log失效时间（log.retention.hours=168 ），到目录查看是否有过期的消息如果有，删除</span><br><span class="line">log.cleaner.enable=false #是否启用log压缩，一般不用启用，启用的话可以提高性能</span><br><span class="line">zookeeper.connect=192.168.7.100:5701,192.168.7.101:5702,192.168.7.107:5703 #设置zk服务的端口</span><br></pre></td></tr></table></figure>
+<p>启动kafka集群并测试</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">cd /usr/local/application/kafka/kafka_2.12-2.5.0/bin</span><br><span class="line">#启动方式一</span><br><span class="line">./kafka-server-start.sh ../config/server.properties</span><br><span class="line">#启动方式二  </span><br><span class="line">./kafka-server-start.sh ../config/server_1.properties &gt; ../logs/kafka_log_1/kafka.log 2&gt;&amp;1 &amp;</span><br></pre></td></tr></table></figure>
+<p>验证kafka 是否可以使用</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">进入bin 目录下</span><br><span class="line"></span><br><span class="line">运行kafka生产者发送消息</span><br><span class="line">./kafka-console-producer.sh --broker-list localhost:5701 --topic shuaige</span><br><span class="line">发送消息</span><br><span class="line">&gt; aa</span><br><span class="line"></span><br><span class="line">运行kafka消费者接收消息</span><br><span class="line">$ ./kafka-console-consumer.sh --bootstrap-server localhost:5701 --topic shuaige --from-beginning</span><br><span class="line">aa</span><br><span class="line"></span><br><span class="line">查看主题列表</span><br><span class="line">./kafka-topics.sh --list --zookeeper localhost:5601</span><br></pre></td></tr></table></figure>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">功能</th>
+<th>命令</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">创建主题</td>
+<td>./kafka-topics.sh –create –zookeeper localhost:5601 –replication-factor 2 –partitions 1 –topic shuaige</td>
+</tr>
+<tr>
+<td style="text-align:left">查看主题</td>
+<td>./kafka-topics.sh –list –zookeeper localhost:5601</td>
+</tr>
+<tr>
+<td style="text-align:left">删除主题</td>
+<td>./kafka-topics.sh –delete –topic shuaige –zookeeper localhost:5601</td>
+</tr>
+<tr>
+<td style="text-align:left">启动生产者</td>
+<td>./kafka-console-producer.sh –broker-list localhost:5701 –topic shuaige</td>
+</tr>
+<tr>
+<td style="text-align:left">启动消费者</td>
+<td>./kafka-console-consumer.sh –bootstrap-server localhost:5701 –topic shuaige</td>
+</tr>
+</tbody>
+</table>
+<p>现在只是单个的一个broker,没什么意思。对于Kafka，一个broker仅仅只是一个集群的大小，所有让我们多设几个broker。</p>
+<p>首先为每个broker创建一个配置文件:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">#复制两份配置文件，修改其中的属性</span><br><span class="line">&gt; cp config/server.properties config/server-1.properties </span><br><span class="line">&gt; cp config/server.properties config/server-2.properties</span><br><span class="line"></span><br><span class="line">#修改properties的属性</span><br><span class="line">config/server-1.properties: </span><br><span class="line">    broker.id=1 </span><br><span class="line">    listeners=PLAINTEXT://:5701 </span><br><span class="line">    advertised.listeners=PLAINTEXT://localhost:5701</span><br><span class="line">    log.dir=/usr/local/application/kafka/kafka_2.12-2.5.0/kafka-logs/log_1</span><br><span class="line"></span><br><span class="line">config/server-2.properties: </span><br><span class="line">    broker.id=2 </span><br><span class="line">    listeners=PLAINTEXT://:5702 </span><br><span class="line">    advertised.listeners=PLAINTEXT://localhost:5702</span><br><span class="line">    log.dir=/usr/local/application/kafka/kafka_2.12-2.5.0/kafka-logs/log_2</span><br></pre></td></tr></table></figure>
+<p>现在已经做好了集群，查看每个集群在做什么使用下面的命令</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">#新建一个消息topic,分区为1，备份2</span><br><span class="line">./kafka-topics.sh --create --zookeeper localhost:5601 --replication-factor 2 --partitions 1 --topic panghu</span><br><span class="line">#查看集群信息</span><br><span class="line">./kafka-topics.sh --describe --zookeeper localhost:5601 --topic panghu</span><br></pre></td></tr></table></figure>
+<p><img src="/2020/07/16/kafka/E:/blog\source\_posts\kafka\kafka-describe.png" alt="kafka-describe"></p>
+<ul>
+<li>“leader”：该节点负责该分区的所有的读和写，每个节点的<code>leader</code>都是随机选择的。</li>
+<li>“replicas”：备份的节点列表，无论该节点是否是leader或者目前是否还活着，只是显示。</li>
+<li>“isr”：“同步备份”的节点列表，也就是活着的节点并且正在同步leader。</li>
+</ul>
+<p>kafkamanage</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">shell&gt; nohup bin/kafka-manager -Dconfig.file=conf/application.conf -Dhttp.port=9002 &gt;/dev/null 2&gt;&amp;1 &amp;</span><br></pre></td></tr></table></figure>
+<h1 id="标记删除topic的问题"><a href="#标记删除topic的问题" class="headerlink" title="标记删除topic的问题"></a>标记删除topic的问题</h1><p>删除节点时遇见了mark delete,标记删除，但是实际上topic并没有删除。尝试过修改配置文件server.properties,添加属性 delete.topic.enable=true,但是没得生效，后来看了大佬们的博客发现了topic的删除过程。</p>
+<p>kafka是依托于zookeeper的一个消息系统。再kafka创建topic的同时，zookeeper的admin/topic节点下也会持久化对应的节点信息。当调用./kafka-topics.sh –delete –topic 的命令的时候，是在zookeeper的节点/admin/delete_topics下创建一个要被删除的节点名称，此时只是标记删除。</p>
+<p>在Kafka中删除Topic的过程，</p>
+<p>1.Kafka的broker在被选举成controller后，会执行下面几步 1.1 注册DeleteTopicsListener，监听zookeeper节点/admin/delete_topics下子节点的变化，delete命令实际上就是要在该节点下创建一个节点，名字是待删除topic名，标记该topic是待删除的</p>
+<p>2.DeleteTopicsThread线程启动时会先在awaitTopicDeletionNotification处阻塞并等待删除事件的通知，即有新的topic被添加到queue里等待被删除。</p>
+<p>3.DeleteTopicsThread线程启动时会先在awaitTopicDeletionNotification处阻塞并等待删除事件的通知，即有新的topic被添加到queue里等待被删除</p>
+<p>4.DeleteTopicsListener会收到ChildChange事件会依次判断如下逻辑： 4.1 查询topic是否存在，若已经不存在了，则直接删除/admin/delete_topics/&lt;topic_name&gt;节点。 4.2 查询topic是否为当前正在执行Preferred副本选举或分区重分配，若果是，则标记为暂时不适合被删除。 4.3 并将该topic添加到queue中，此时会唤醒DeleteTopicsThread中doWork方法里awaitTopicDeletionNotification处的阻塞线程，让删除线程继续往下执行</p>
+<p>执行删除操作的真正逻辑是</p>
+<ol>
+<li>它首先会向各broker更新原信息，使得他们不再向外提供数据服务，准备开始删除数据。</li>
+<li>开始删除这个topic的所有分区 2.1 给所有broker发请求，告诉它们这些分区要被删除。broker收到后就不再接受任何在这些分区上的客户端请求了 2.2 把每个分区下的所有副本都置于OfflineReplica状态，这样ISR就不断缩小，当leader副本最后也被置于OfflineReplica状态时leader信息将被更新为-1 2.3 将所有副本置于ReplicaDeletionStarted状态 2.4 副本状态机捕获状态变更，然后发起StopReplicaRequest给broker，broker接到请求后停止所有fetcher线程、移除缓存，然后删除底层log文件 2.5 关闭所有空闲的Fetcher线程</li>
+<li>删除zookeeper上节点/brokers/topics/&lt;topic_name&gt;</li>
+<li>删除zookeeper上节点/config/topics/&lt;topic_name&gt;</li>
+<li>删除zookeeper上节点/admin/delete_topics/&lt;topic_name&gt;</li>
+<li>并删除内存中的topic相关信息。</li>
+</ol>
+<p>用zookeeper tool查看zookeeper的结构</p>
+<p><img src="/2020/07/16/kafka/E:/blog\source\_posts\kafka\kafka-zk-持久化.png" alt="kafka-zk-持久化"></p>
+<p>总结来说就要保证以下的几步操作</p>
+<p>1.被删除topic 的生产和消费程序需要停止。同时，需要设置 auto.create.topics.enable = false，避免自动创建topic。</p>
+<p>2.server.properties <strong>设置 delete.topic.enable=true</strong>则调用kafka 的delete命令无法真正将topic删除，而是显示（marked for deletion）</p>
+<p>3.删除kafka存储目录（server.properties文件log.dirs配置，默认为”/data/kafka-logs”）相关topic的数据目录。</p>
+<p>4.找到注册的zookeeper，在对应的bin目录下执行以下操作</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">#登录到zk</span><br><span class="line">bin/zkCli.sh -server zookeeper localhost:5601</span><br><span class="line">#查看kafka的已有topic和标记删除目录</span><br><span class="line">ls /brokers/topics</span><br><span class="line">ls /admin/delete_topics</span><br><span class="line">#找到你要删除的topic,执行下面的删除命令</span><br><span class="line">rmr /brokers/topics/shuaige</span><br><span class="line">rmr /admin/delete_topics/shuaige</span><br></pre></td></tr></table></figure>
+<p>此时在查看kafka的topic列表，不出意外的话对应的topic已被删除。</p>
+<h1 id="kafka的一些基本概念"><a href="#kafka的一些基本概念" class="headerlink" title="kafka的一些基本概念"></a>kafka的一些基本概念</h1><p>  Kafka是一个分布式流数据系统，使用Zookeeper进行集群的管理。与其他消息系统类似，整个系统由生产者、Broker Server和消费者三部分组成，生产者和消费者由开发人员编写，通过API连接到Broker Server进行数据操作</p>
+<h4 id="Topic"><a href="#Topic" class="headerlink" title="Topic"></a>Topic</h4><p>Kafka将消息分门别类，每一类的消息称之为一个主题（Topic）。</p>
+<h4 id="Producer"><a href="#Producer" class="headerlink" title="Producer"></a>Producer</h4><p>发布消息的对象称之为主题生产者（Kafka topic producer）</p>
+<h4 id="Consumer"><a href="#Consumer" class="headerlink" title="Consumer"></a>Consumer</h4><p>订阅消息并处理发布的消息的对象称之为主题消费者（consumers）</p>
+<h4 id="Broker"><a href="#Broker" class="headerlink" title="Broker"></a>Broker</h4><p>已发布的消息保存在一组服务器中，称之为Kafka集群。集群中的每一个服务器都是一个代理（Broker）。 消费者可以订阅一个或多个主题（topic），并从Broker拉数据，从而消费这些已发布的消息。</p>
+<p>Topic是发布的消息的类别名，一个topic可以有零个，一个或多个消费者订阅该主题的消息。</p>
+<p>对于每个topic，Kafka集群都会维护一个分区log，就像下图中所示：</p>
+<p><img src="/2020/07/16/kafka/E:/blog\source\_posts\kafka\topic.png" alt></p>
+<p>再说说分区。Kafka中采用分区的设计有几个目的。一是可以处理更多的消息，不受单台服务器的限制。Topic拥有多个分区意味着它可以不受限的处理更多的数据。第二，分区可以作为并行处理的单元。Log的分区被分布到集群中的多个服务器上。每个服务器处理它分到的分区。 根据配置每个分区还可以复制到其它服务器作为备份容错。 每个分区有一个leader，零或多个follower。Leader处理此分区的所有的读写请求，而follower被动的复制数据。如果leader宕机，其它的一个follower会被推举为新的leader。 一台服务器可能同时是一个分区的leader，另一个分区的follower。 这样可以平衡负载，避免所有的请求都只让一台或者某几台服务器处理。</p>
+<h2 id="消费模型"><a href="#消费模型" class="headerlink" title="消费模型"></a>消费模型</h2><p>通常来讲，消息模型可以分为两种， 队列和发布-订阅式。 队列的处理方式是 一组消费者从服务器读取消息，一条消息只有其中的一个消费者来处理。在发布-订阅模型中，消息被广播给所有的消费者，接收到消息的消费者都可以处理此消息。Kafka为这两种模型提供了单一的消费者抽象模型： 消费者组 （consumer group）。 消费者用一个消费者组名标记自己。 一个发布在Topic上消息被分发给此消费者组中的一个消费者。 假如所有的消费者都在一个组中，那么这就变成了queue模型。 假如所有的消费者都在不同的组中，那么就完全变成了发布-订阅模型。 更通用的， 我们可以创建一些消费者组作为逻辑上的订阅者。每个组包含数目不等的消费者， 一个组内多个消费者可以用来扩展性能和容错。正如下图所示：</p>
+<p><img src="/2020/07/16/kafka/E:/blog\source\_posts\kafka\消费模型.png" alt></p>
+<p>2个kafka集群托管4个分区（P0-P3），2个消费者组，消费组A有2个消费者实例，消费组B有4个。</p>
+<p>正像传统的消息系统一样，Kafka保证消息的顺序不变。 再详细扯几句。传统的队列模型保持消息，并且保证它们的先后顺序不变。但是， 尽管服务器保证了消息的顺序，消息还是异步的发送给各个消费者，消费者收到消息的先后顺序不能保证了。这也意味着并行消费将不能保证消息的先后顺序。用过传统的消息系统的同学肯定清楚，消息的顺序处理很让人头痛。如果只让一个消费者处理消息，又违背了并行处理的初衷。 在这一点上Kafka做的更好，尽管并没有完全解决上述问题。 Kafka采用了一种分而治之的策略：分区。 因为Topic分区中消息只能由消费者组中的唯一一个消费者处理，所以消息肯定是按照先后顺序进行处理的。但是它也仅仅是保证Topic的一个分区顺序处理，不能保证跨分区的消息先后处理顺序。 所以，如果你想要顺序的处理Topic的所有消息，那就只提供一个分区。</p>
+<h5 id="kafka有比传统的消息系统更强的顺序保证。"><a href="#kafka有比传统的消息系统更强的顺序保证。" class="headerlink" title="kafka有比传统的消息系统更强的顺序保证。"></a>kafka有比传统的消息系统更强的顺序保证。</h5><p>传统的消息系统按顺序保存数据，如果多个消费者从队列消费，则服务器按存储的顺序发送消息，但是，尽管服务器按顺序发送，消息异步传递到消费者，因此消息可能乱序到达消费者。这意味着消息存在并行消费的情况，顺序就无法保证。消息系统常常通过仅设1个消费者来解决这个问题，但是这意味着没用到并行处理。</p>
+<p>kafka通过并行topic的parition —— kafka提供了顺序保证和负载均衡。每个partition仅由同一个消费者组中的一个消费者消费到。并确保消费者是该partition的唯一消费者，并按顺序消费数据。每个topic有多个分区，则需要对多个消费者做负载均衡，但请注意，<code>相同的消费者组中不能有比分区更多的消费者，否则多出的消费者一直处于空等待，不会收到消息</code>。</p>
+<h1 id="spring-boot-集成kafka"><a href="#spring-boot-集成kafka" class="headerlink" title="spring boot 集成kafka"></a>spring boot 集成kafka</h1><h2 id="简单的演示demo"><a href="#简单的演示demo" class="headerlink" title="简单的演示demo"></a>简单的演示demo</h2><p>创建springboot项目 kafka-demo,下面是一个简单的kafka的集成demo，后续来添加更多详细的使用</p>
+<p>引入kafka的依赖</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">//这个版本需要跟springboot对应，不然会在连接kafka的时候报错 no broker</span><br><span class="line">implementation group: &apos;org.springframework.kafka&apos;, name: &apos;spring-kafka&apos;, version: &apos;2.1.7.RELEASE&apos;</span><br></pre></td></tr></table></figure>
+<p>创建消息发送者</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">@RestController</span><br><span class="line">public class SendMessageController &#123;</span><br><span class="line">    @Autowired</span><br><span class="line">    private KafkaTemplate&lt;String, String&gt; kafkaTemplate;</span><br><span class="line"></span><br><span class="line">    private String topic = &quot;test_1&quot;;</span><br><span class="line"></span><br><span class="line">    @GetMapping(&quot;/send&quot;)</span><br><span class="line">    public String send(String params) &#123;</span><br><span class="line">        System.out.println(&quot;[ 收到请求 ]&quot;);</span><br><span class="line"></span><br><span class="line">        kafkaTemplate.send(topic, params);</span><br><span class="line"></span><br><span class="line">        System.out.println(&quot;[ 返回响应 ]&quot;);</span><br><span class="line">        return &quot;您的任务已提交&quot;;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>创建消息监听者</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line">@Component</span><br><span class="line">public class MessageHandler &#123;</span><br><span class="line">    @KafkaListener(topics = &quot;test_1&quot; ,groupId = &quot;test&quot;)</span><br><span class="line">    public void handle(String message) &#123;</span><br><span class="line">        System.out.println(&quot;[ 处理器开始处理消息 ]&quot; + System.currentTimeMillis());</span><br><span class="line"></span><br><span class="line">        try &#123;</span><br><span class="line">            Thread.sleep(5000);</span><br><span class="line">        &#125; catch (InterruptedException e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        System.out.println(message);</span><br><span class="line"></span><br><span class="line">        System.out.println(&quot;[ 处理器处理消息完成 ]&quot; + System.currentTimeMillis());</span><br><span class="line">    &#125;</span><br><span class="line">    	//任意一个都可以处理消息</span><br><span class="line">        @KafkaListener(topics = &quot;test_1&quot; ,groupId = &quot;test&quot;)</span><br><span class="line">    public void handle(ConsumerRecord&lt;String, String&gt; record) &#123;</span><br><span class="line">        System.out.println(&quot;[ 处理器开始处理消息 ]&quot; + System.currentTimeMillis());</span><br><span class="line"></span><br><span class="line">        try &#123;</span><br><span class="line">            Thread.sleep(5000);</span><br><span class="line">        &#125; catch (InterruptedException e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        System.out.println(record);</span><br><span class="line"></span><br><span class="line">        System.out.println(&quot;[ 处理器处理消息完成 ]&quot; + System.currentTimeMillis());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>启动文件application.proerties修改</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"># 指定kafka server的地址，集群配多个，中间，逗号隔开</span><br><span class="line">spring.kafka.bootstrap-servers=ip:port</span><br><span class="line"></span><br><span class="line">#生产者配置</span><br><span class="line">spring.kafka.producer.bootstrapServers=ip:port</span><br><span class="line"># 当retris为0时，produce不会重复。retirs重发，此时repli节点完全成为leader节点，不会产生消息丢失。</span><br><span class="line">spring.kafka.producer.retries=0</span><br><span class="line"># 每次批量发送消息的数量,produce积累到一定数据，一次发送</span><br><span class="line">spring.kafka.producer.batch-size=16384</span><br><span class="line"># produce积累数据一次发送，缓存大小达到buffer.memory就发送数据</span><br><span class="line">spring.kafka.producer.buffer-memory=33554432</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"># 指定消息key和消息体的编解码方式</span><br><span class="line">spring.kafka.producer.key-serializer=org.apache.kafka.common.serialization.StringSerializer</span><br><span class="line">spring.kafka.producer.value-serializer=org.apache.kafka.common.serialization.StringSerializer</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">#消费者配置</span><br><span class="line">#procedure要求leader在考虑完成请求之前收到的确认数，用于控制发送记录在服务端的持久化，其值可以为如下：</span><br><span class="line">#acks = 0 如果设置为零，则生产者将不会等待来自服务器的任何确认，该记录将立即添加到套接字缓冲区并视为已发送。在这种情况下，无法保证服务器已收到记录，并且重试配置将不会生效（因为客户端通常不会知道任何故障），为每条记录返回的偏移量始终设置为-1。</span><br><span class="line">#acks = 1 这意味着leader会将记录写入其本地日志，但无需等待所有副本服务器的完全确认即可做出回应，在这种情况下，如果leader在确认记录后立即失败，但在将数据复制到所有的副本服务器之前，则记录将会丢失。</span><br><span class="line">#acks = all 这意味着leader将等待完整的同步副本集以确认记录，这保证了只要至少一个同步副本服务器仍然存活，记录就不会丢失，这是最强有力的保证，这相当于acks = -1的设置。</span><br><span class="line">#可以设置的值为：all, -1, 0, 1</span><br><span class="line">spring.kafka.producer.acks=1</span><br><span class="line"></span><br><span class="line">spring.kafka.consumer.bootstrapServers=ip:port</span><br><span class="line">spring.kafka.consumer.groupId=test</span><br><span class="line">spring.kafka.consumer.autoOffsetReset=earliest</span><br><span class="line">spring.kafka.consumer.enableAutoCommit=true</span><br></pre></td></tr></table></figure>
+<p>启动服务，调用send接口，就会在控制台打印出消息处理的信息。</p>
+<h2 id="kafka的集成使用详解"><a href="#kafka的集成使用详解" class="headerlink" title="kafka的集成使用详解"></a>kafka的集成使用详解</h2><p>在上面的演示demo中，我们没有在服务器上先创建topic，而是<strong>KafkaTemplate</strong> 在发送消息的时候帮我们手动创建的消息。</p>
+<h3 id="手动创建topic"><a href="#手动创建topic" class="headerlink" title="手动创建topic"></a>手动创建topic</h3><p>上述的demo的调用了send方法，在send的时候自动创建了topic。（可以通过设置auto.create.topics.enable=false来设置自动创建topic），我们可以自动逸配置类或者添加方法来实现手动topic的创建、修改、查询等方法。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">@Configuration</span><br><span class="line">public class KafkaInitialConfiguration &#123;</span><br><span class="line"></span><br><span class="line">    //创建TopicName为topic.quick.initial的Topic并设置分区数为8以及副本数为1,这个分区数修改后只会增大，不会减少</span><br><span class="line">    @Bean//通过bean创建(bean的名字为initialTopic)</span><br><span class="line">    public NewTopic initialTopic() &#123;</span><br><span class="line">        return new NewTopic(&quot;topic.quick.initial&quot;,12, (short) 1 );</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    @Bean //创建一个kafka管理类，相当于rabbitMQ的管理类rabbitAdmin,没有此bean无法自定义的使用adminClient创建topic</span><br><span class="line">    public KafkaAdmin kafkaAdmin() &#123;</span><br><span class="line">        Map&lt;String, Object&gt; props = new HashMap&lt;&gt;();</span><br><span class="line">        //配置Kafka实例的连接地址                                                                    //kafka的地址，不是zookeeper</span><br><span class="line">        props.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, &quot;ip:port&quot;);</span><br><span class="line">        KafkaAdmin admin = new KafkaAdmin(props);</span><br><span class="line">        return admin;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    @Bean  //kafka客户端，在spring中创建这个bean之后可以注入并且创建topic</span><br><span class="line">    public AdminClient adminClient() &#123;</span><br><span class="line">        return AdminClient.create(kafkaAdmin().getConfig());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>因为上文的配置文件，我们定义了AdminClient的实体Bean,所以也可以通过在其他地方注入来使用</p>
+<p>AdminClient的更多功能。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">@Autowired</span><br><span class="line">private KafkaTemplate&lt;String, String&gt; kafkaTemplate;</span><br><span class="line"></span><br><span class="line">@GetMapping(&quot;/addTopic&quot;)</span><br><span class="line">public String addTopic(String topic, Integer partitions, short replicationFactor) &#123;</span><br><span class="line">    NewTopic newTopic = new NewTopic(&quot;topic.manual.create&quot;, partitions, replicationFactor);</span><br><span class="line">    adminClient.createTopics(Arrays.asList(newTopic));</span><br><span class="line">    return &quot;创建topic:&quot; + topic + &quot;成功&quot;;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="生产者：指定-topic、partition、key-等发送"><a href="#生产者：指定-topic、partition、key-等发送" class="headerlink" title="生产者：指定 topic、partition、key 等发送"></a>生产者：指定 topic、partition、key 等发送</h3><p>在之前的文章中我们都是通过 <strong>KafkaTemplate</strong> 的 <strong>send()</strong> 方法指定一个 <strong>topic</strong> 发送消息，其实 <strong>send()</strong> 方法还支持其他参数，具体如下：</p>
+<p><strong>参数说明：</strong></p>
+<ul>
+<li><strong>topic</strong>：这里填写的是 <strong>Topic</strong> 的名字</li>
+<li><strong>partition</strong>：这里填写的是分区的 <strong>id</strong>，其实也是就第几个分区，<strong>id</strong> 从 <strong>0</strong> 开始。表示指定发送到该分区中</li>
+<li><strong>timestamp</strong>：时间戳，一般默认当前时间戳</li>
+<li><strong>key</strong>：消息的键</li>
+<li><strong>data</strong>：消息的数据</li>
+<li><strong>ProducerRecord</strong>：消息对应的封装类，包含上述字段</li>
+<li><strong>Message</strong>：<strong>Spring</strong> 自带的 <strong>Message</strong> 封装类，包含消息及消息头</li>
+</ul>
+<p>下面是使用的样例，修改send方法即可。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">//发送带有时间戳的消息</span><br><span class="line">kafkaTemplate.send(&quot;topic.hangge.demo&quot;, 0, System.currentTimeMillis(), &quot;key1&quot;, &quot;message&quot;);</span><br><span class="line"> </span><br><span class="line">//使用ProducerRecord发送消息</span><br><span class="line">ProducerRecord record = new ProducerRecord(&quot;topic.hangge.demo&quot;, &quot;message&quot;);</span><br><span class="line">kafkaTemplate.send(record);</span><br><span class="line"> </span><br><span class="line">//使用Message发送消息</span><br><span class="line">Map map = new HashMap();</span><br><span class="line">map.put(KafkaHeaders.TOPIC, &quot;topic.hangge.demo&quot;);</span><br><span class="line">map.put(KafkaHeaders.PARTITION_ID, 0);</span><br><span class="line">map.put(KafkaHeaders.MESSAGE_KEY, 0);</span><br><span class="line">GenericMessage message = new GenericMessage(&quot;use Message to send message&quot;,new MessageHeaders(map));</span><br><span class="line">kafkaTemplate.send(message);</span><br></pre></td></tr></table></figure>
+<h3 id="生产者：消息回调、同步异步发送消息"><a href="#生产者：消息回调、同步异步发送消息" class="headerlink" title="生产者：消息回调、同步异步发送消息"></a>生产者：消息回调、同步异步发送消息</h3><p>当我们发送消息到 <strong>Kafka</strong> 后，有时我们需要确认消息是否发送成功，如果消息发送失败，就要重新发送或者执行对应的业务逻辑。下面分别演示如何在异步或者同步发送消息时，获取发送结果。<br>默认情况下 <strong>KafkaTemplate</strong> 发送消息是采取异步方式，并且 <strong>kafkaTemplate</strong> 提供了一个回调方法 <strong>addCallback</strong>，我们可以在回调方法中监控消息是否发送成功或在失败时做补偿处理：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">@GetMapping(&quot;/sendCallBack&quot;)</span><br><span class="line">public void sendCallBack(String topic, Integer partition, String key, String data) &#123;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    kafkaTemplate.send(topic, partition, key, data).addCallback(success -&gt; &#123;</span><br><span class="line">        // 消息发送到的topic</span><br><span class="line">        String sendTopic = success.getRecordMetadata().topic();</span><br><span class="line">        // 消息发送到的分区</span><br><span class="line">        int sendPartition = success.getRecordMetadata().partition();</span><br><span class="line">        // 消息在分区内的offset</span><br><span class="line">        long sendOffset = success.getRecordMetadata().offset();</span><br><span class="line">        System.out.println(&quot;发送消息成功:&quot; + sendTopic + &quot;-&quot; + sendPartition + &quot;-&quot; + sendOffset);</span><br><span class="line">    &#125;, failure -&gt; &#123;</span><br><span class="line">        System.out.println(&quot;发送消息失败:&quot; + failure.getMessage());</span><br><span class="line">    &#125;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>默认情况下 <strong>KafkaTemplate</strong> 发送消息是采取异步方式发送的，如果希望同步发送消息只需要在 <strong>send</strong> 方法后面调用 <strong>get</strong> 方法即可，<strong>get</strong> 方法返回的即为结果（如果发送失败则抛出异常）</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">@GetMapping(&quot;/sendSynCallBack&quot;)</span><br><span class="line">public void sendSynCallBack() throws InterruptedException, ExecutionException, TimeoutException &#123;</span><br><span class="line">    try &#123;</span><br><span class="line">        SendResult&lt;String, String&gt; sendResult =</span><br><span class="line">                kafkaTemplate.send(&quot;topic1&quot;, &quot;消息回调测试&quot;).get(1, TimeUnit.MICROSECONDS);</span><br><span class="line">        // 消息发送到的topic</span><br><span class="line">        String topic = sendResult.getRecordMetadata().topic();</span><br><span class="line">        // 消息发送到的分区</span><br><span class="line">        int partition = sendResult.getRecordMetadata().partition();</span><br><span class="line">        // 消息在分区内的offset</span><br><span class="line">        long offset = sendResult.getRecordMetadata().offset();</span><br><span class="line">        System.out.println(&quot;发送消息成功:&quot; + topic + &quot;-&quot; + partition + &quot;-&quot; + offset);</span><br><span class="line">    &#125; catch (TimeoutException e) &#123;</span><br><span class="line">        System.out.println(&quot;发送消息超时&quot;);</span><br><span class="line">    &#125; catch (InterruptedException e) &#123;</span><br><span class="line">        System.out.println(&quot;发送消息失败:&quot; + e.getMessage());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="生产者：事务管理"><a href="#生产者：事务管理" class="headerlink" title="生产者：事务管理"></a>生产者：事务管理</h3><p> <strong>Kafka</strong> 同数据库一样支持事务，当发生异常或者出现特定逻辑判断的时候可以进行回滚，确保消息监听器不会接收到一些错误的或者不需要的消息</p>
+<p>使用executeInTransaction 方法添加事务,这种方式开启事务是不需要配置事务管理器的，也可以称为本地事务。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">@Autowired</span><br><span class="line">   private KafkaTemplate&lt;String, String&gt; kafkaTemplate;</span><br><span class="line"></span><br><span class="line">   // 发送消息</span><br><span class="line">   @GetMapping(&quot;/test&quot;)</span><br><span class="line">   public void test() &#123;</span><br><span class="line">       // 声明事务：后面报错消息不会发出去</span><br><span class="line">       kafkaTemplate.executeInTransaction(operations -&gt; &#123;</span><br><span class="line">           operations.send(&quot;topic1&quot;,&quot;test executeInTransaction&quot;);</span><br><span class="line">           throw new RuntimeException(&quot;fail&quot;);</span><br><span class="line">       &#125;);</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure>
+<p>也可以定义配置 <strong>KafkaTransactionManager</strong>，使用生产者工厂来创建这个事务管理类。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line">@Configuration</span><br><span class="line">public class KafkaProducerConfig &#123;</span><br><span class="line">    @Value(&quot;$&#123;spring.kafka.bootstrap-servers&#125;&quot;)</span><br><span class="line">    private String servers;</span><br><span class="line">    @Value(&quot;$&#123;spring.kafka.producer.retries&#125;&quot;)</span><br><span class="line">    private int retries;</span><br><span class="line">    @Value(&quot;$&#123;spring.kafka.producer.acks&#125;&quot;)</span><br><span class="line">    private String acks;</span><br><span class="line">    @Value(&quot;$&#123;spring.kafka.producer.batch-size&#125;&quot;)</span><br><span class="line">    private int batchSize;</span><br><span class="line">    @Value(&quot;$&#123;spring.kafka.producer.properties.linger.ms&#125;&quot;)</span><br><span class="line">    private int linger;</span><br><span class="line">    @Value(&quot;$&#123;spring.kafka.producer.buffer-memory&#125;&quot;)</span><br><span class="line">    private int bufferMemory;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    public Map&lt;String, Object&gt; producerConfigs() &#123;</span><br><span class="line">        Map&lt;String, Object&gt; props = new HashMap&lt;&gt;();</span><br><span class="line">        props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, servers);</span><br><span class="line">        props.put(ProducerConfig.RETRIES_CONFIG, retries);</span><br><span class="line">        props.put(ProducerConfig.ACKS_CONFIG, acks);</span><br><span class="line">        props.put(ProducerConfig.BATCH_SIZE_CONFIG, batchSize);</span><br><span class="line">        props.put(ProducerConfig.LINGER_MS_CONFIG, linger);</span><br><span class="line">        props.put(ProducerConfig.BUFFER_MEMORY_CONFIG, bufferMemory);</span><br><span class="line">        props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);</span><br><span class="line">        props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);</span><br><span class="line">        return props;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    @Bean</span><br><span class="line">    public ProducerFactory&lt;String, Object&gt; producerFactory() &#123;</span><br><span class="line">        DefaultKafkaProducerFactory factory = new DefaultKafkaProducerFactory&lt;&gt;(producerConfigs());</span><br><span class="line">        factory.transactionCapable();</span><br><span class="line">        factory.setTransactionIdPrefix(&quot;tran-&quot;);</span><br><span class="line">        return factory;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    @Bean</span><br><span class="line">    public KafkaTransactionManager transactionManager() &#123;</span><br><span class="line">        KafkaTransactionManager manager = new KafkaTransactionManager(producerFactory());</span><br><span class="line">        return manager;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>controller添加方法测试</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">@Autowired</span><br><span class="line">   private KafkaTemplate&lt;String, String&gt; kafkaTemplate;</span><br><span class="line"></span><br><span class="line">   // 发送消息</span><br><span class="line">   @GetMapping(&quot;/test&quot;)</span><br><span class="line">   @Transactional</span><br><span class="line">   public void test() &#123;</span><br><span class="line">       kafkaTemplate.send(&quot;topic1&quot;,&quot;test executeInTransaction&quot;);</span><br><span class="line">       throw new RuntimeException(&quot;fail&quot;);</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure>
+<h3 id="消费者：指定topic、partition、offset消费"><a href="#消费者：指定topic、partition、offset消费" class="headerlink" title="消费者：指定topic、partition、offset消费"></a>消费者：指定topic、partition、offset消费</h3><p>使用 topics 指定 topic</p>
+<p>监听器主要是使用 <strong>@KafkaListenter</strong> 注解即可，而通过 <strong>topics</strong> 参数设置监听的 <strong>topic</strong>（可监听多个，用逗号隔开）：<strong>id</strong>（消费者 <strong>ID</strong>）、 <strong>groupId</strong>（消费组 <strong>ID</strong>）</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">@KafkaListener(id = &quot;consumer1&quot;,groupId = &quot;my-group1&quot;, topics = &#123;&quot;topic1&quot;,&quot;topic2&quot;&#125;)</span><br><span class="line">public void listen1(String data) &#123;</span><br><span class="line">    System.out.println(&quot;接收到消息：&quot;+data);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>使用 topicPartitions 指定 topic、parition、offset</p>
+<p><strong>topicPartitions</strong> 可配置更加详细的监听信息，比如下面代码同样是同时监听 <strong>topic1</strong> 和 <strong>topic2</strong>，不同在于这次：</p>
+<ul>
+<li>监听 <strong>topic1</strong> 的 <strong>0</strong> 号分区</li>
+<li>监听 <strong>topic2</strong> 的 <strong>0</strong> 号和 <strong>1</strong> 号分区（其中 <strong>1</strong> 号分区的初始偏移量为 <strong>100</strong>）</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">// 消费监听</span><br><span class="line">@KafkaListener(id = &quot;consumer1&quot;,groupId = &quot;my-group1&quot;,topicPartitions = &#123;</span><br><span class="line">        @TopicPartition(topic = &quot;topic1&quot;, partitions = &#123; &quot;0&quot; &#125;),</span><br><span class="line">        @TopicPartition(topic = &quot;topic2&quot;, partitions = &quot;0&quot;,</span><br><span class="line">                partitionOffsets = @PartitionOffset(partition = &quot;1&quot;, initialOffset = &quot;100&quot;))</span><br><span class="line">&#125;)</span><br><span class="line">public void listen2(String data) &#123;</span><br><span class="line">    System.out.println(data);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>此时想topic中发送不同的分区消息,message2因为没有监听不会被打印出来</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">kafkaTemplate.send(&quot;topic1&quot;, 0, &quot;key1&quot;, &quot;message1&quot;);</span><br><span class="line">     kafkaTemplate.send(&quot;topic1&quot;, 1, &quot;key2&quot;, &quot;message2&quot;);</span><br><span class="line">     kafkaTemplate.send(&quot;topic2&quot;, 0, &quot;key3&quot;, &quot;message3&quot;);</span><br><span class="line">     kafkaTemplate.send(&quot;topic2&quot;, 1, &quot;key4&quot;, &quot;message4&quot;);</span><br></pre></td></tr></table></figure>
+<h3 id="消费者：获取消息头和消息实体"><a href="#消费者：获取消息头和消息实体" class="headerlink" title="消费者：获取消息头和消息实体"></a>消费者：获取消息头和消息实体</h3><p>之前的样例中消费者这边都直接获取消息内容并使用，如果我们还想要获取分区信息、消息头等其他内容的话，有如下两种方式。</p>
+<p>使用 ConsumerRecord 类方式</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">@KafkaListener(id = &quot;consumer1&quot;,groupId = &quot;my-group1&quot;, topics = &#123;&quot;topic1&quot;,&quot;topic2&quot;&#125;)</span><br><span class="line">public void listen1(ConsumerRecord&lt;String, Object&gt; record) &#123;</span><br><span class="line">    System.out.println(&quot;接收到消息：&quot;+record);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>使用注解的方式</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">// 消费监听</span><br><span class="line">@KafkaListener(topics = &#123;&quot;topic2&quot;&#125;)</span><br><span class="line">public void listen2(@Payload String data,</span><br><span class="line">                    @Header(KafkaHeaders.RECEIVED_TOPIC) String topic,</span><br><span class="line">                    @Header(KafkaHeaders.RECEIVED_PARTITION_ID) int partition,</span><br><span class="line">                    @Header(KafkaHeaders.RECEIVED_MESSAGE_KEY) String key,</span><br><span class="line">                    @Header(KafkaHeaders.RECEIVED_TIMESTAMP) long ts) &#123;</span><br><span class="line">    System.out.println(data);</span><br><span class="line">    System.out.println(topic);</span><br><span class="line">    System.out.println(partition);</span><br><span class="line">    System.out.println(key);</span><br><span class="line">    System.out.println(ts);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="消费者：批量消费"><a href="#消费者：批量消费" class="headerlink" title="消费者：批量消费"></a>消费者：批量消费</h3><p>批量消费,配置文件添加参数</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">#设置消费类型批量消费</span><br><span class="line">spring.kafka.listener.type=batch</span><br><span class="line">#一次最多消费5条</span><br><span class="line">spring.kafka.consumer.max-poll-records=5</span><br><span class="line"># 并发数设为3 并发量根据实际分区数决定，必须小于等于分区数，否则会有线程一直处于空闲状态。</span><br><span class="line">spring.kafka.listener.concurrency=3</span><br></pre></td></tr></table></figure>
+<p>修改消费者的接收类型为List</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">@KafkaListener(id = &quot;consumer1&quot;,groupId = &quot;my-group1&quot;, topics = &#123;&quot;topic1&quot;,&quot;topic2&quot;&#125;)</span><br><span class="line">public void listen1(List&lt;ConsumerRecord&lt;String, String&gt;&gt; record) &#123;</span><br><span class="line">    System.out.println(&quot;接收到消息：&quot;+record);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="消费者：异常处理器"><a href="#消费者：异常处理器" class="headerlink" title="消费者：异常处理器"></a>消费者：异常处理器</h3><p>在KafkaInitialConfiguration配置类中创建异常处理类</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">    //异常处理器</span><br><span class="line">    @Bean</span><br><span class="line">    public ConsumerAwareListenerErrorHandler myConsumerAwareErrorHandler() &#123;</span><br><span class="line">        return new ConsumerAwareListenerErrorHandler() &#123;</span><br><span class="line">            @Override</span><br><span class="line">            public Object handleError(Message&lt;?&gt; message, ListenerExecutionFailedException exception,</span><br><span class="line">                                      Consumer&lt;?, ?&gt; consumer) &#123;</span><br><span class="line">                System.out.println(&quot;--- 发生消费异常 ---&quot;);</span><br><span class="line">                System.out.println(message.getPayload());</span><br><span class="line">                System.out.println(exception);</span><br><span class="line">                return null;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;;</span><br><span class="line">        </span><br><span class="line">//        return (message, exception, consumer) -&gt; &#123;</span><br><span class="line">//            System.out.println(&quot;--- 发生消费异常 ---&quot;);</span><br><span class="line">//            System.out.println(message.getPayload());</span><br><span class="line">//            System.out.println(exception);</span><br><span class="line">//            return null;</span><br><span class="line">//        &#125;;</span><br><span class="line">//    &#125;</span><br></pre></td></tr></table></figure>
+<p>使用异常处理器也比较简单，在监听的注解里面指定异常方法里面异常处理</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">// 消费监听</span><br><span class="line">@KafkaListener(topics = &#123;&quot;topic3&quot;&#125;, errorHandler = &quot;myConsumerAwareErrorHandler&quot;)</span><br><span class="line">public void listen1(String data) throws Exception &#123;</span><br><span class="line">    throw new Exception(&quot;模拟一个异常&quot;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="消费者：消息过滤器"><a href="#消费者：消息过滤器" class="headerlink" title="消费者：消息过滤器"></a>消费者：消息过滤器</h3><p>  配置消息过滤器十分简单，只需要为监听容器工厂配置一个 <strong>RecordFilterStrategy</strong>（消息过滤策略），返回 <strong>true</strong> 的时候消息将会被抛弃，返回 <strong>false</strong> 时，消息则能正常抵达监听容器。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line">@Configuration</span><br><span class="line">public class KafkaInitialConfiguration &#123;</span><br><span class="line"> </span><br><span class="line">    // 监听器工厂</span><br><span class="line">    @Autowired</span><br><span class="line">    private ConsumerFactory consumerFactory;</span><br><span class="line"> </span><br><span class="line">    // 配置一个消息过滤策略</span><br><span class="line">    @Bean</span><br><span class="line">    public ConcurrentKafkaListenerContainerFactory myFilterContainerFactory() &#123;</span><br><span class="line">        ConcurrentKafkaListenerContainerFactory factory =</span><br><span class="line">                new ConcurrentKafkaListenerContainerFactory();</span><br><span class="line">        factory.setConsumerFactory(consumerFactory);</span><br><span class="line">        // 被过滤的消息将被丢弃</span><br><span class="line">        factory.setAckDiscarded(true);</span><br><span class="line">        // 消息过滤策略（将消息转换为long类型，判断是奇数还是偶数，把所有奇数过滤，监听器只接收偶数）</span><br><span class="line">        factory.setRecordFilterStrategy(new RecordFilterStrategy() &#123;</span><br><span class="line">            @Override</span><br><span class="line">            public boolean filter(ConsumerRecord consumerRecord) &#123;</span><br><span class="line">                long data = Long.parseLong((String) consumerRecord.value());</span><br><span class="line">                if (data % 2 == 0) &#123;</span><br><span class="line">                    return false;</span><br><span class="line">                &#125;</span><br><span class="line">                //返回true将会被丢弃</span><br><span class="line">                return true;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;);</span><br><span class="line">        return factory;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>使用消息过滤器</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">@Component</span><br><span class="line">public class KafkaConsumer &#123;</span><br><span class="line">    // 消费监听</span><br><span class="line">    @KafkaListener(topics = &#123;&quot;topic2&quot;&#125;, containerFactory = &quot;myFilterContainerFactory&quot;)</span><br><span class="line">    public void listen1(String data) &#123;</span><br><span class="line">        System.out.println(data);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="消费者：消息转发"><a href="#消费者：消息转发" class="headerlink" title="消费者：消息转发"></a>消费者：消息转发</h3><p>在实际开发中，我们常常需要使用转发功能实现业务解耦。比如：应用 <strong>A</strong> 从 <strong>topic1</strong> 获取到消息，经过处理后转发到 <strong>topic2</strong>。应用 <strong>B</strong> 监听 <strong>topic2</strong> 获取消息再次进行处理。</p>
+<p><strong>@SendTo</strong> 注解即可以实现消息的转发，被注解方法的 <strong>return</strong> 值即转发的消息内容</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">@Component</span><br><span class="line">public class KafkaConsumer &#123;</span><br><span class="line">    // 消费监听</span><br><span class="line">    @KafkaListener(topics = &#123;&quot;topic1&quot;&#125;)</span><br><span class="line">    @SendTo(&quot;topic2&quot;)</span><br><span class="line">    public String listen1(String data) &#123;</span><br><span class="line">        System.out.println(&quot;业务A收到消息：&quot; + data);</span><br><span class="line">        return data + &quot;(已处理)&quot;;</span><br><span class="line">    &#125;</span><br><span class="line"> </span><br><span class="line">    // 消费监听</span><br><span class="line">    @KafkaListener(topics = &#123;&quot;topic2&quot;&#125;)</span><br><span class="line">    public void listen2(String data) &#123;</span><br><span class="line">        System.out.println(&quot;业务B收到消息：&quot; + data);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="消费者：动态启动、停止监听器"><a href="#消费者：动态启动、停止监听器" class="headerlink" title="消费者：动态启动、停止监听器"></a>消费者：动态启动、停止监听器</h3><p> 默认情况下，当项目启动时，监听器就开始工作（监听消费发送到指定 <strong>topic</strong> 的消息）。如果我们不想让监听器立即工作，想在程序运行的过程中能够动态地开启、关闭监听器，可以借助 <strong>KafkaListenerEndpointRegistry</strong> 实现，下面通过样例进行演示。</p>
+<p>消费者这边代码没有什么特别的，主要是设置了个消费者 <strong>ID</strong>（监听器 <strong>ID</strong>），后面要根据这个 <strong>ID</strong> 来开启、关闭监听</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">@Component</span><br><span class="line">public class KafkaConsumer &#123;</span><br><span class="line">    // 消费监听</span><br><span class="line">    @KafkaListener(id = &quot;myListener1&quot;, topics = &#123;&quot;topic1&quot;&#125;)</span><br><span class="line">    public void listen1(String data) &#123;</span><br><span class="line">        System.out.println(&quot;监听器收到消息：&quot; + data);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>）然后我定义两个 <strong>controller</strong> 接口分别通过 <strong>KafkaListenerEndpointRegistry</strong> 来控制监听器的开启、关闭：</p>
+<p><strong>注意：</strong></p>
+<ul>
+<li><strong>KafkaListenerEndpointRegistry</strong> 在 <strong>SpringIO</strong> 中已经被注册为 <strong>Bean</strong>，直接注入使用即可。</li>
+<li>还需要注意一下启动监听容器的方法，<strong>resume</strong> 是恢复的意思不是启动的意思。所以我们需要判断容器是否运行，如果运行则调用 <strong>resume</strong> 方法，否则调用 <strong>start</strong> 方法。</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line">@RestController</span><br><span class="line">public class KafkaProducer &#123;</span><br><span class="line"> </span><br><span class="line">    @Autowired</span><br><span class="line">    private KafkaListenerEndpointRegistry registry;</span><br><span class="line"> </span><br><span class="line">    @Autowired</span><br><span class="line">    private KafkaTemplate&lt;String, Object&gt; kafkaTemplate;</span><br><span class="line"> </span><br><span class="line">    // 发送消息</span><br><span class="line">    @GetMapping(&quot;/test&quot;)</span><br><span class="line">    public void test() &#123;</span><br><span class="line">        System.out.println(&quot;监听器发送消息!&quot;);</span><br><span class="line">        kafkaTemplate.send(&quot;topic1&quot;, &quot;1条测试消息&quot;);</span><br><span class="line">    &#125;</span><br><span class="line"> </span><br><span class="line">    // 开启监听</span><br><span class="line">    @GetMapping(&quot;/start&quot;)</span><br><span class="line">    public void start() &#123;</span><br><span class="line">        System.out.println(&quot;开启监听&quot;);</span><br><span class="line">        //判断监听容器是否启动，未启动则将其启动</span><br><span class="line">        if (!registry.getListenerContainer(&quot;myListener1&quot;).isRunning()) &#123;</span><br><span class="line">            registry.getListenerContainer(&quot;myListener1&quot;).start();</span><br><span class="line">        &#125;</span><br><span class="line">        registry.getListenerContainer(&quot;myListener1&quot;).resume();</span><br><span class="line">    &#125;</span><br><span class="line"> </span><br><span class="line">    // 关闭监听</span><br><span class="line">    @GetMapping(&quot;/stop&quot;)</span><br><span class="line">    public void stop() &#123;</span><br><span class="line">        System.out.println(&quot;关闭监听&quot;);</span><br><span class="line">        //判断监听容器是否启动，未启动则将其启动</span><br><span class="line">        registry.getListenerContainer(&quot;myListener1&quot;).pause();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>禁止监听器自启动</p>
+<p>默认情况下，当项目启动的时候，监听器就开始工作。如果想要禁止监听器自启动，首先我们定义一个不自动启动的监听容器工厂：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">@Configuration</span><br><span class="line">public class KafkaInitialConfiguration &#123;</span><br><span class="line"> </span><br><span class="line">    // 监听器工厂</span><br><span class="line">    @Autowired</span><br><span class="line">    private ConsumerFactory consumerFactory;</span><br><span class="line"> </span><br><span class="line">    // 监听器容器工厂(设置禁止KafkaListener自启动)</span><br><span class="line">    @Bean</span><br><span class="line">    public ConcurrentKafkaListenerContainerFactory delayContainerFactory() &#123;</span><br><span class="line">        ConcurrentKafkaListenerContainerFactory container =</span><br><span class="line">                new ConcurrentKafkaListenerContainerFactory();</span><br><span class="line">        container.setConsumerFactory(consumerFactory);</span><br><span class="line">        //禁止自动启动</span><br><span class="line">        container.setAutoStartup(false);</span><br><span class="line">        return container;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>然后将这个容器工厂的 <strong>BeanName</strong> 放到 <strong>@KafkaListener</strong> 注解的 <strong>containerFactory</strong> 属性里面。这样该监听器就不会自动启动了。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">@Component</span><br><span class="line">public class KafkaConsumer &#123;</span><br><span class="line">    // 消费监听</span><br><span class="line">    @KafkaListener(id = &quot;myListener1&quot;, topics = &#123;&quot;topic1&quot;&#125;,</span><br><span class="line">            containerFactory = &quot;delayContainerFactory&quot;)</span><br><span class="line">    public void listen1(String data) &#123;</span><br><span class="line">        System.out.println(&quot;监听器收到消息：&quot; + data);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/kafka/" rel="tag"># kafka</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2020/07/15/spring-boot-zookeeper分布式锁/" rel="next" title="spring-boot zookeeper分布式锁">
+                <i class="fa fa-chevron-left"></i> spring-boot zookeeper分布式锁
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2020/07/24/hashMap数据结构和原理/" rel="prev" title="hashMap数据结构和原理">
+                hashMap数据结构和原理 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  <div>
+    
+    <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:14px;">------ 本文结束------</div>
+    
+</div>
+    
+ </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/sliver.jpg" alt="wei xy">
+            
+              <p class="site-author-name" itemprop="name">wei xy</p>
+              <p class="site-description motion-element" itemprop="description">一步一步似爪牙</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">56</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">17</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">43</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+		  <iframe frameborder="no" border="0" marginwidth="0" marginheight="0" width="330" height="86" src="//music.163.com/outchain/player?type=2&id=28285910&auto=1&height=66"></iframe>
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#为什么要使用消息队列"><span class="nav-number">1.</span> <span class="nav-text">为什么要使用消息队列</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#解耦"><span class="nav-number">1.1.</span> <span class="nav-text">解耦</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#削峰"><span class="nav-number">1.2.</span> <span class="nav-text">削峰</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#异步"><span class="nav-number">1.3.</span> <span class="nav-text">异步</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#消息队列的问题"><span class="nav-number">2.</span> <span class="nav-text">消息队列的问题</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#高可用"><span class="nav-number">2.1.</span> <span class="nav-text">高可用</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#数据丢失"><span class="nav-number">2.2.</span> <span class="nav-text">数据丢失</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#centos7安装kafka集群"><span class="nav-number">3.</span> <span class="nav-text">centos7安装kafka集群</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#标记删除topic的问题"><span class="nav-number">4.</span> <span class="nav-text">标记删除topic的问题</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#kafka的一些基本概念"><span class="nav-number">5.</span> <span class="nav-text">kafka的一些基本概念</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Topic"><span class="nav-number">5.0.0.1.</span> <span class="nav-text">Topic</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Producer"><span class="nav-number">5.0.0.2.</span> <span class="nav-text">Producer</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Consumer"><span class="nav-number">5.0.0.3.</span> <span class="nav-text">Consumer</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Broker"><span class="nav-number">5.0.0.4.</span> <span class="nav-text">Broker</span></a></li></ol></li></ol><li class="nav-item nav-level-2"><a class="nav-link" href="#消费模型"><span class="nav-number">5.1.</span> <span class="nav-text">消费模型</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#kafka有比传统的消息系统更强的顺序保证。"><span class="nav-number">5.1.0.0.1.</span> <span class="nav-text">kafka有比传统的消息系统更强的顺序保证。</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#spring-boot-集成kafka"><span class="nav-number">6.</span> <span class="nav-text">spring boot 集成kafka</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#简单的演示demo"><span class="nav-number">6.1.</span> <span class="nav-text">简单的演示demo</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#kafka的集成使用详解"><span class="nav-number">6.2.</span> <span class="nav-text">kafka的集成使用详解</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#手动创建topic"><span class="nav-number">6.2.1.</span> <span class="nav-text">手动创建topic</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#生产者：指定-topic、partition、key-等发送"><span class="nav-number">6.2.2.</span> <span class="nav-text">生产者：指定 topic、partition、key 等发送</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#生产者：消息回调、同步异步发送消息"><span class="nav-number">6.2.3.</span> <span class="nav-text">生产者：消息回调、同步异步发送消息</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#生产者：事务管理"><span class="nav-number">6.2.4.</span> <span class="nav-text">生产者：事务管理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#消费者：指定topic、partition、offset消费"><span class="nav-number">6.2.5.</span> <span class="nav-text">消费者：指定topic、partition、offset消费</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#消费者：获取消息头和消息实体"><span class="nav-number">6.2.6.</span> <span class="nav-text">消费者：获取消息头和消息实体</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#消费者：批量消费"><span class="nav-number">6.2.7.</span> <span class="nav-text">消费者：批量消费</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#消费者：异常处理器"><span class="nav-number">6.2.8.</span> <span class="nav-text">消费者：异常处理器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#消费者：消息过滤器"><span class="nav-number">6.2.9.</span> <span class="nav-text">消费者：消息过滤器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#消费者：消息转发"><span class="nav-number">6.2.10.</span> <span class="nav-text">消费者：消息转发</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#消费者：动态启动、停止监听器"><span class="nav-number">6.2.11.</span> <span class="nav-text">消费者：动态启动、停止监听器</span></a></li></ol></li></ol></li></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+        <div class="back-to-top">
+          <i class="fa fa-arrow-up"></i>
+          
+            <span id="scrollpercent"><span>0</span>%</span>
+          
+        </div>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        
+<div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">wei xy</span>
+
+  
+</div>
+
+<!-- 
+  <div class="powered-by">由  强力驱动</div>
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash;  v5.1.4</div>
+
+-->
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  <!--动态标题-->
+<script type="text/javascript" src="/js/src/dytitle.js"></script>
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"model":{"jsonPath":"live2d-widget-model-miku"},"display":{"position":"right","width":150,"height":300},"mobile":{"show":false,"symbols_count_time":null},"symbols":true,"time":true,"total_symbols":true,"total_time":true,"log":false});</script></body>
+</html>
+<!-- 页面点击小红心 -->
+<script type="text/javascript" src="/js/src/love.js"></script>
