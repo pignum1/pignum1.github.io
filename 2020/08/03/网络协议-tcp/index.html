@@ -1,0 +1,1292 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+  
+  
+    
+    
+  <script src="/lib/pace/pace.min.js?v=1.0.2"></script>
+  <link href="/lib/pace/pace-theme-minimal.min.css?v=1.0.2" rel="stylesheet">
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="tcp,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="TCP头部结构​    TCP 是面向连接的、可靠的、基于字节流的传输层通信协议。  ​    16位端口号：标示该段报文来自哪里（源端口）以及要传给哪个上层协议或应用程序（目的端口）。进行tcp通信时，一般client是通过系统自动选择的临时端口号，而服务器一般是使用知名服务端口号或者自己指定的端口号。 ​     32位序列号：一次TCP通信（从TCP连接建立到断开）过程中某一个传输方向上的字">
+<meta name="keywords" content="tcp">
+<meta property="og:type" content="article">
+<meta property="og:title" content="tcp">
+<meta property="og:url" content="http://yoursite.com/2020/08/03/网络协议-tcp/index.html">
+<meta property="og:site_name" content="风寒露重">
+<meta property="og:description" content="TCP头部结构​    TCP 是面向连接的、可靠的、基于字节流的传输层通信协议。  ​    16位端口号：标示该段报文来自哪里（源端口）以及要传给哪个上层协议或应用程序（目的端口）。进行tcp通信时，一般client是通过系统自动选择的临时端口号，而服务器一般是使用知名服务端口号或者自己指定的端口号。 ​     32位序列号：一次TCP通信（从TCP连接建立到断开）过程中某一个传输方向上的字">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://yoursite.com/2020/08/03/网络协议-tcp/tcpHeader.png">
+<meta property="og:image" content="http://yoursite.com/2020/08/03/网络协议-tcp/connect.png">
+<meta property="og:image" content="http://yoursite.com/2020/08/03/网络协议-tcp/disconnect.png">
+<meta property="og:image" content="http://yoursite.com/2020/08/03/网络协议-tcp/udpHeader.png">
+<meta property="og:updated_time" content="2020-10-15T02:59:16.959Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="tcp">
+<meta name="twitter:description" content="TCP头部结构​    TCP 是面向连接的、可靠的、基于字节流的传输层通信协议。  ​    16位端口号：标示该段报文来自哪里（源端口）以及要传给哪个上层协议或应用程序（目的端口）。进行tcp通信时，一般client是通过系统自动选择的临时端口号，而服务器一般是使用知名服务端口号或者自己指定的端口号。 ​     32位序列号：一次TCP通信（从TCP连接建立到断开）过程中某一个传输方向上的字">
+<meta name="twitter:image" content="http://yoursite.com/2020/08/03/网络协议-tcp/tcpHeader.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":true,"scrollpercent":true,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2020/08/03/网络协议-tcp/">
+
+
+
+
+
+  <title>tcp | 风寒露重</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+	<a href="https://github.com/pignum1/pignum1.github.io.git">
+		<img style="position: absolute; top: 0; right: 0;border: 0;" src="https://github.blog/wp-content/uploads/2008/12/forkme_right_darkblue_121621.png?resize=149%2C149" class="attachment-full size-full" alt="Fork me on GitHub" data-recalc-dims="1"></a>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">风寒露重</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off" placeholder="搜索..." spellcheck="false" type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-categories" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/08/03/网络协议-tcp/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="wei xy">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/sliver.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="风寒露重">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">tcp</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-08-03T14:19:49+08:00">
+                2020-08-03
+              </time>
+            
+
+            
+              <span class="post-meta-divider">|</span>
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-check-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">更新于&#58;</span>
+              
+              <time title="更新于" itemprop="dateModified" datetime="2020-10-15T10:59:16+08:00">
+                2020-10-15
+              </time>
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/网络协议/" itemprop="url" rel="index">
+                    <span itemprop="name">网络协议</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="TCP头部结构"><a href="#TCP头部结构" class="headerlink" title="TCP头部结构"></a>TCP头部结构</h1><p>​    TCP 是<strong>面向连接的、可靠的、基于字节流</strong>的传输层通信协议。</p>
+<p><img src="/2020/08/03/网络协议-tcp/./tcpHeader.png" width="400" height="350" alt="TCP头部" align="center"></p>
+<p>​    <strong>16位端口号</strong>：标示该段报文来自哪里（源端口）以及要传给哪个上层协议或应用程序（目的端口）。进行tcp通信时，一般client是通过系统自动选择的临时端口号，而服务器一般是使用知名服务端口号或者自己指定的端口号。</p>
+<p>​     <strong>32位序列号</strong>：一次TCP通信（从TCP连接建立到断开）过程中某一个传输方向上的字节流的每个字节的编号。假设主机A和主机B进行TCP通信，A发送给B的第一个TCP报文段中，序号值被系统初始化为某个随机值ISN（Initial Sequence Number，初始序号值）。那么在该传输方向上（从A到B），后续的TCP报文段中序号值将被系统设置成ISN加上该报文段所携带数据的第一个字节在整个字节流中的偏移。例如，某个TCP报文段传送的数据是字节流中的第1025~2048字节，那么该报文段的序号值就是ISN+1025.另外一个传输方向（从B到A）的TCP报文段的序号值也具有相同的含义。</p>
+<p>​    <strong>确认应答号</strong>：用作对另一方发送来的TCP报文段的响应。其值是收到的TCP报文段的序号值加1</p>
+<p>​    <strong>4位头部长度（header length）</strong>：标识该TCP头部有多少个32bit字（4字节）。因为4位最大能标识15，所以TCP头部最长是60字节。</p>
+<p>​     <strong>6位标志位包含如下几项</strong></p>
+<p>SYN：表示建立一个连接，携带SYN的tcp报文段为同步报文段</p>
+<p>ACK：表示确认好是否有效，携带ack标志的报文段也称确认报文段</p>
+<p>FIN：表示告知对方本端要关闭连接了。</p>
+<p>RST：表示要求对方重建连接。带RST标志的tcp报文段也叫复位报文段</p>
+<p>PSH：提示接收端应用程序应该立即从tcp接受缓冲区中读走数据，为后续接收的数据让出空间</p>
+<p>URG：紧急指针是否有效</p>
+<p><strong>16位窗口大小</strong>：是TCP流量控制的一个手段，这里说的窗口是指接收通告窗口，它告诉对方本端的tcp接收缓冲区还能容纳多少字节的数据，这样对方就可以控制发送数据的速度。</p>
+<p><strong>16位校验和</strong>：由发送端填充，接收端对tcp报文段执行CRC算法以检验TCP报文段在传输过程中是否损坏。注意这个校验不仅包括tcp头部，也包括数据部分。这也是tcp可靠传输的一个重要保障。</p>
+<p><strong>16位紧急指针</strong>：是一个正的偏移量。它和序号字段的值相加表示最后一个紧急数据的下一字节的序号。因此这个字段是紧急指针相对当前序号的偏移量。不妨称之为紧急便宜，发送紧急数据时会用到这个。</p>
+<p> <strong>TCP头部选项</strong>：TCP头部的最后一个选项字段（options）是可变长的可选信息。这部分最多包含40字节，因为TCP头部最长是60字节</p>
+<p><strong>四元组</strong></p>
+<p>TCP 四元组可以唯一的确定一个连接，四元组包括如下：</p>
+<ul>
+<li>源地址</li>
+<li>源端口</li>
+<li>目的地址</li>
+<li>目的端口</li>
+</ul>
+<h1 id="TCP的连接数限制"><a href="#TCP的连接数限制" class="headerlink" title="TCP的连接数限制"></a>TCP的连接数限制</h1><h2 id="client最大连接数"><a href="#client最大连接数" class="headerlink" title="client最大连接数"></a>client最大连接数</h2><p>​                client每次发起TCP请求的时候，除非绑定接口，通常会让系统选取一个空闲的本地端口（local port），    该端口是独占的，不能和其他tcp连接共享。这样可用端口最多只有65535，所以在全部作为client端的情况           下，最大tcp连接数为65535，这些连接可以连到不同的server ip。</p>
+<h2 id="server最大tcp连接数"><a href="#server最大tcp连接数" class="headerlink" title="server最大tcp连接数"></a>server最大tcp连接数</h2><p>​                server通常<strong>固定在某个本地端口上</strong>监听，等待client的连接请求。<strong>不考虑地址重用</strong>（unix的SO_REUSEADDR选项）的情况下，即使server端有多个ip，本地监听端口也是独占的，因此最大tcp连接为客户端ip数×客户端port数，对IPV4，不考虑ip地址分类等因素，最大tcp连接数约为2的32次方（ip数）×2的16次方（port数），也就是server端单机最大tcp连接数约为2的48次方。</p>
+<p>但是在实际情况，收到机器资源和操作系统的限制，并发的tcp数量远远达不到理论的值</p>
+<p>1、首先主要是<strong>文件描述符限制</strong>，Socket 都是文件，所以首先要通过 ulimit 配置文件描述符的数目</p>
+<p>2、另一个是<strong>内存限制</strong>，每个 TCP 连接都要占用一定内存，操作系统是有限的</p>
+<h1 id="TCP连接图解"><a href="#TCP连接图解" class="headerlink" title="TCP连接图解"></a>TCP连接图解</h1><p>​    TCP 是面向连接的协议，所以使用 TCP 前必须先建立连接，而<strong>建立连接是通过三次握手而进行的。</strong></p>
+<h2 id="TCP-三次握手过程和状态变迁"><a href="#TCP-三次握手过程和状态变迁" class="headerlink" title="TCP 三次握手过程和状态变迁"></a><strong>TCP 三次握手过程和状态变迁</strong></h2><p><img src="/2020/08/03/网络协议-tcp/./connect.png" width="400" height="350" alt="TCP头部" align="center"></p>
+<p>1、第一次客户端向请求段发送连接请求。携带的信息是初始化的seq产生的一个随机初始化值，标志位为syn。</p>
+<p>2、第二个报文是服务端向客户端发送请求，服务端接收到客户端的报文后也初始化自己的序列号seq,确认序列号为客户端的seq+1，并设置标志位为syn和ack.</p>
+<p>3、第三次握手是客户端接收到服务端的报文后，向服务端返回最后一个应达报文，该tcp把标志位的ack置为1，确认应答的序号为第二步服务端发送的seq+1。</p>
+<h2 id="TCP-四次挥手过程和状态变迁"><a href="#TCP-四次挥手过程和状态变迁" class="headerlink" title="TCP 四次挥手过程和状态变迁"></a><strong>TCP 四次挥手过程和状态变迁</strong></h2><p>TCP 断开连接是通过<strong>四次挥手</strong>方式。双方都可以主动断开连接，断开连接后主机中的「资源」将被释放。</p>
+<p><img src="/2020/08/03/网络协议-tcp/./disconnect.png" width="400" height="350" alt="TCP头部" align="center"></p>
+<p>1、客户端发起关闭请求的连接，标志位 fin为1，也即 FIN 报文，之后客户端进入 FIN_WAIT_1 状态。</p>
+<p>2、服务端收到该报文后，就向客户端发送 ACK 应答报文，接着服务端进入CLOSED_WAIT 状态。</p>
+<p>3、客户端收到服务端的 ACK 应答报文后，之后进入 FIN_WAIT_2 状态。</p>
+<p>4、等待服务端处理完数据后，也向客户端发送 FIN 报文，之后服务端进入LAST_ACK 状态。</p>
+<p>5、客户端收到服务端的 FIN 报文后，回一个 ACK 应答报文，之后进入TIME_WAIT 状态</p>
+<p>6、服务器收到了 ACK 应答报文后，就进入了 CLOSE 状态，至此服务端已经完成连接的关闭。</p>
+<p>7、客户端在经过 2MSL 一段时间后，自动进入 CLOSE 状态，至此客户端也完成连接的关闭。</p>
+<h1 id="UDP和TCP的对比"><a href="#UDP和TCP的对比" class="headerlink" title="UDP和TCP的对比"></a>UDP和TCP的对比</h1><p><img src="/2020/08/03/网络协议-tcp/./udpHeader.png" width="400" height="350" alt="TCP头部" align="center"></p>
+<p>udp的头部结构没有那么复杂，</p>
+<ul>
+<li>目标和源端口：主要是告诉 UDP 协议应该把报文发给哪个进程。</li>
+<li>包长度：该字段保存了 UDP 首部的长度跟数据的长度之和。</li>
+<li>校验和：校验和是为了提供可靠的 UDP 首部和数据而设计。</li>
+</ul>
+<p><strong>连接方式不同</strong></p>
+<ul>
+<li>TCP 是面向连接的传输层协议，传输数据前先要建立连接。</li>
+<li>UDP 是不需要连接，即刻传输数据。</li>
+</ul>
+<p><strong>服务对象不同</strong></p>
+<ul>
+<li>TCP 是一对一的两点服务，即一条连接只有两个端点。</li>
+<li><p>UDP 支持一对一、一对多、多对多的交互通信</p>
+<p><strong>可靠性</strong></p>
+</li>
+<li><p>TCP 是可靠交付数据的，数据可以无差错、不丢失、不重复、按需到达。</p>
+</li>
+<li>UDP 是尽最大努力交付，不保证可靠交付数据。</li>
+</ul>
+<p><strong>拥塞控制</strong>、<strong>流量控制</strong></p>
+<ul>
+<li>TCP 有拥塞控制和流量控制机制，保证数据传输的安全性。</li>
+<li>UDP 则没有，即使网络非常拥堵了，也不会影响 UDP 的发送速率。</li>
+</ul>
+<h1 id="为什么tcp是三次握手"><a href="#为什么tcp是三次握手" class="headerlink" title="为什么tcp是三次握手"></a>为什么tcp是三次握手</h1><p>看了上面的tcp的三次握手的状态变化，很容易答出，三次握手的TCP是保证客户端和服务端两端都具有收发信息的能力。</p>
+<p>但是除了上面的原因之外还有其他的一些考虑。</p>
+<p>tcp的连接的可靠性是依赖于头部的sequence序列号来确认的，如果只有两次握手，即客户端的发送消息能力和客户端的接收发送能力是正常的（sequence是双方确认了的），但不能保证客户端的接收能力是正常的，在服务端发送tcp包的时候序列号不能保证被客户端正确接收，此时由于tcp的超时重发特性可能会不断重发TCP包到客户端</p>
+<p>至于为什么不是四次握手，是因为第二握手的时候，服务端在返回ACK报文的时候同时也发起了建立连接的请求，同时初始化随机的sequence发送到客户端。如果把这一步才成服务端确认和服务端发情和客户端建立连接的请求，理论上也是可行，但是优化成一个请求能减少一次连接，不必要平白对一次连接。</p>
+<h1 id="为什么TCP四次挥手"><a href="#为什么TCP四次挥手" class="headerlink" title="为什么TCP四次挥手"></a><strong>为什么TCP四次挥手</strong></h1><p>在客户端和服务端都没有发送数据的时候才能断开tcp连接，而客户端发起fin请求关闭连接的时候，只能说明客户端没有发送数据的请求了，服务端可能仍然存在要发送的消息，所以只能返回一个ACK的请求告诉客户端知道了，但是服务端额数据在发送数据数据完之后才能发送服务端断开连接的请求，然后客户端接收到连接断开的请求之后返回确认断开的ACK。</p>
+<h1 id="第四次挥手的为什么要等待2MSL"><a href="#第四次挥手的为什么要等待2MSL" class="headerlink" title="第四次挥手的为什么要等待2MSL"></a>第四次挥手的为什么要等待2MSL</h1><p>这里同样是要考虑丢包的问题，如果第四次挥手的报文丢失，服务端没收到确认ack报文就会重发第三次挥手的报文，这样报文一去一回最长时间就是2MSL，所以需要等这么长时间来确认服务端确实已经收到了。</p>
+<h1 id="滑动窗口"><a href="#滑动窗口" class="headerlink" title="滑动窗口"></a>滑动窗口</h1><p>窗口大小指的是无需等待确认应答就可以继续发送数据的最大值.在窗口范围的TCP不需要确认就可以直接接收，接收到第一个TCP的时候，窗口不断向后滑动, 所以叫做<strong>滑动窗口.</strong></p>
+<h1 id="快重传"><a href="#快重传" class="headerlink" title="快重传"></a>快重传</h1><p>如果服务端发送报文丢失，发送端主机连续三次收到了同样的应答, 就会将对应的数据重新发送<br>这个时候接收端收到了数据之后, 再次返回的ACK就是正常的ACK了</p>
+<h1 id="拥塞控制"><a href="#拥塞控制" class="headerlink" title="拥塞控制"></a>拥塞控制</h1><p>TCP虽然可以通过滑动窗口设置窗口大小，可靠的传输大量数据，但是如果一开始就传输大量数据或在传输的过程中因为网咯原因服务端接收能力减弱，可能引发一些问题。</p>
+<p>因此TCP引入慢启动的机制。 先发少量的数据, 探探路, 摸清当前的网络拥堵状态以后, 再决定按照多大的速度传输数据。慢启动” 只是指初使时慢, 但是增长速度非常快，以指数的倍数上涨。慢启动本身设置了阈值，拥塞窗口的大小超过这个阈值的时候, 不再按照指数方式增长, 而是按照线性方式增长.当窗口大超过阈值，窗口大小乘法减少，重复快重传的过程。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/tcp/" rel="tag"><i class="fa fa-tag"></i> tcp</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2020/07/31/redis知识点总结/" rel="next" title="redis知识点总结">
+                <i class="fa fa-chevron-left"></i> redis知识点总结
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2020/08/17/ThreadLocal/" rel="prev" title="ThreadLocal">
+                ThreadLocal <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  <div>
+    
+    <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:14px;">------ 本文结束------</div>
+    
+</div>
+    
+ </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+		  <div id="music163player">
+			<iframe frameborder="no" border="0" marginwidth="0" marginheight="0" width="330" height="86" src="//music.163.com/outchain/player?type=2&id=28285910&auto=1&height=66">
+			</iframe>
+		  </div>
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/sliver.jpg" alt="wei xy">
+            
+              <p class="site-author-name" itemprop="name">wei xy</p>
+              <p class="site-description motion-element" itemprop="description">一步一步似爪牙</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">59</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">22</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">50</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/yourname" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="mailto:yourname@gmail.com" target="_blank" title="E-Mail">
+                      
+                        <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="https://plus.google.com/yourname" target="_blank" title="Google">
+                      
+                        <i class="fa fa-fw fa-google"></i>Google</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="https://twitter.com/yourname" target="_blank" title="Twitter">
+                      
+                        <i class="fa fa-fw fa-twitter"></i>Twitter</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="https://www.facebook.com/yourname" target="_blank" title="FB Page">
+                      
+                        <i class="fa fa-fw fa-facebook"></i>FB Page</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="https://vk.com/yourname" target="_blank" title="VK Group">
+                      
+                        <i class="fa fa-fw fa-vk"></i>VK Group</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="https://stackoverflow.com/yourname" target="_blank" title="StackOverflow">
+                      
+                        <i class="fa fa-fw fa-stack-overflow"></i>StackOverflow</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="https://youtube.com/yourname" target="_blank" title="YouTube">
+                      
+                        <i class="fa fa-fw fa-youtube"></i>YouTube</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="https://instagram.com/yourname" target="_blank" title="Instagram">
+                      
+                        <i class="fa fa-fw fa-instagram"></i>Instagram</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="skype:yourname?call|chat" target="_blank" title="Skype">
+                      
+                        <i class="fa fa-fw fa-skype"></i>Skype</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#TCP头部结构"><span class="nav-number">1.</span> <span class="nav-text">TCP头部结构</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#TCP的连接数限制"><span class="nav-number">2.</span> <span class="nav-text">TCP的连接数限制</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#client最大连接数"><span class="nav-number">2.1.</span> <span class="nav-text">client最大连接数</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#server最大tcp连接数"><span class="nav-number">2.2.</span> <span class="nav-text">server最大tcp连接数</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#TCP连接图解"><span class="nav-number">3.</span> <span class="nav-text">TCP连接图解</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#TCP-三次握手过程和状态变迁"><span class="nav-number">3.1.</span> <span class="nav-text">TCP 三次握手过程和状态变迁</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#TCP-四次挥手过程和状态变迁"><span class="nav-number">3.2.</span> <span class="nav-text">TCP 四次挥手过程和状态变迁</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#UDP和TCP的对比"><span class="nav-number">4.</span> <span class="nav-text">UDP和TCP的对比</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#为什么tcp是三次握手"><span class="nav-number">5.</span> <span class="nav-text">为什么tcp是三次握手</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#为什么TCP四次挥手"><span class="nav-number">6.</span> <span class="nav-text">为什么TCP四次挥手</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#第四次挥手的为什么要等待2MSL"><span class="nav-number">7.</span> <span class="nav-text">第四次挥手的为什么要等待2MSL</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#滑动窗口"><span class="nav-number">8.</span> <span class="nav-text">滑动窗口</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#快重传"><span class="nav-number">9.</span> <span class="nav-text">快重传</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#拥塞控制"><span class="nav-number">10.</span> <span class="nav-text">拥塞控制</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+        <div class="back-to-top">
+          <i class="fa fa-arrow-up"></i>
+          
+            <span id="scrollpercent"><span>0</span>%</span>
+          
+        </div>
+      
+
+    </div>
+  </aside>
+
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">wei xy</span>
+
+  
+</div>
+	<!--div class="powered-by">
+		<i class="fa fa-user-md"></i>
+		<span id="busuanzi_container_site_uv">
+			本站访客数:<span id="busuanzi_value_site_uv"></span>
+		</span>
+	</div -->
+
+<!-- 
+  <div class="powered-by">由  强力驱动</div>
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash;  v5.1.4</div>
+
+-->
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+	<!-- 代码块复制功能 -->
+	<script type="text/javascript" src="/js/src/clipboard.min.js"></script>  
+	<script type="text/javascript" src="/js/src/clipboard-use.js"></script>
+	<!--动态标题-->
+	<script type="text/javascript" src="/js/src/dytitle.js"></script>
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"symbols":true,"time":true,"total_symbols":true,"total_time":true,"log":false});</script></body>
+</html>
+<!-- 页面点击小红心 -->
+<script type="text/javascript" src="/js/src/love.js"></script>
