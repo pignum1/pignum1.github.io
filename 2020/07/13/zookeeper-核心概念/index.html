@@ -1,0 +1,1358 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+  
+  
+    
+    
+  <script src="/lib/pace/pace.min.js?v=1.0.2"></script>
+  <link href="/lib/pace/pace-theme-minimal.min.css?v=1.0.2" rel="stylesheet">
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="zookeeper,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="会话session ZooKeeper的架构图，client跟ZooKeeper集群中的某一台server保持连接，发送读/写请求，读请求直接由当前连接的server处理，写请求由于是事务请求，由当前server转发给leader进行处理。同时，client还能接收来自server端的watcher通知。ZooKeeper对外的服务端口默认是2181，客户端启动时，首先会与服务器建立一个TCP连接">
+<meta name="keywords" content="zookeeper">
+<meta property="og:type" content="article">
+<meta property="og:title" content="zookeeper-核心概念">
+<meta property="og:url" content="http://yoursite.com/2020/07/13/zookeeper-核心概念/index.html">
+<meta property="og:site_name" content="风寒露重">
+<meta property="og:description" content="会话session ZooKeeper的架构图，client跟ZooKeeper集群中的某一台server保持连接，发送读/写请求，读请求直接由当前连接的server处理，写请求由于是事务请求，由当前server转发给leader进行处理。同时，client还能接收来自server端的watcher通知。ZooKeeper对外的服务端口默认是2181，客户端启动时，首先会与服务器建立一个TCP连接">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://yoursite.com/2020/07/13/zookeeper-核心概念/session.png">
+<meta property="og:image" content="http://yoursite.com/2020/07/13/zookeeper-核心概念/sessionTimeout.png">
+<meta property="og:image" content="http://yoursite.com/2020/07/13/zookeeper-核心概念/heartCheck.png">
+<meta property="og:image" content="http://yoursite.com/2020/07/13/zookeeper-核心概念/watch.png">
+<meta property="og:image" content="http://yoursite.com/2020/07/13/zookeeper-核心概念/projectStruct.png">
+<meta property="og:updated_time" content="2020-11-21T12:18:51.740Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="zookeeper-核心概念">
+<meta name="twitter:description" content="会话session ZooKeeper的架构图，client跟ZooKeeper集群中的某一台server保持连接，发送读/写请求，读请求直接由当前连接的server处理，写请求由于是事务请求，由当前server转发给leader进行处理。同时，client还能接收来自server端的watcher通知。ZooKeeper对外的服务端口默认是2181，客户端启动时，首先会与服务器建立一个TCP连接">
+<meta name="twitter:image" content="http://yoursite.com/2020/07/13/zookeeper-核心概念/session.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":true,"scrollpercent":true,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2020/07/13/zookeeper-核心概念/">
+
+
+
+
+
+  <title>zookeeper-核心概念 | 风寒露重</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+	<a href="https://github.com/pignum1/pignum1.github.io.git">
+		<img style="position: absolute; top: 0; right: 0;border: 0;" src="https://github.blog/wp-content/uploads/2008/12/forkme_right_darkblue_121621.png?resize=149%2C149" class="attachment-full size-full" alt="Fork me on GitHub" data-recalc-dims="1"></a>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">风寒露重</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off" placeholder="搜索..." spellcheck="false" type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-categories" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/07/13/zookeeper-核心概念/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="wei xy">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/sliver.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="风寒露重">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">zookeeper-核心概念</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-07-13T00:03:09+08:00">
+                2020-07-13
+              </time>
+            
+
+            
+              <span class="post-meta-divider">|</span>
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-check-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">更新于&#58;</span>
+              
+              <time title="更新于" itemprop="dateModified" datetime="2020-11-21T20:18:51+08:00">
+                2020-11-21
+              </time>
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/zookeeper/" itemprop="url" rel="index">
+                    <span itemprop="name">zookeeper</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="会话session"><a href="#会话session" class="headerlink" title="会话session"></a>会话session</h1><p><img src="/2020/07/13/zookeeper-核心概念/session.png" alt></p>
+<p>ZooKeeper的架构图，client跟ZooKeeper集群中的某一台server保持连接，发送读/写请求，读请求直接由当前连接的server处理，写请求由于是事务请求，由当前server转发给leader进行处理。同时，client还能接收来自server端的watcher通知。<br>ZooKeeper对外的服务端口默认是2181，客户端启动时，首先会与服务器建立一个TCP连接，从第一次连接建立开始，客户端会话的生命周期也开始了，通过这个连接，客户端能够通过心跳检测和服务器保持有效的会话，也能够向ZooKeeper服务器发送请求并接受响应，同时还能通过该连接接收来自服务器的Watch事件通知。Session的SessionTimeout值用来设置一个客户端会话的超时时间。当由于服务器压力太大、网络故障或是客户端主动断开连接等各种原因导致客户端连接断开时，只要在SessionTimeout规定的时间内能够重新连接上集群中任意一个那么之前创建的会话仍然有效。</p>
+<p>网络中不同节点使用TCP协议通过SOCKET进行通信，首先需要3次握手建立连接，数据传输，4次握手断开连接，因此如果频繁的创建、关闭，是很耗费系统资源的，就像短连接那样；使用长连接貌似弥补了短连接的缺点，但是，如果并发量过大，会有大量的长连接，同样会耗费大量系统资源，因此具体选用长连接还是短连接，是要根据具体的场景来选择。<br>ZooKeeper中一个client只会跟一个server进行交互(除非与当前server连接失败，会切换到下个server)，不管这种交互有多频繁，只需要一个TCP长连接就足以应对。</p>
+<h2 id="Session的管理"><a href="#Session的管理" class="headerlink" title="Session的管理"></a>Session的管理</h2><p>首先了解3个基本概念：</p>
+<p>sessionID：会话ID，用来唯一标识一个会话，每次客户端创建会话的时候，ZooKeeper都会为其分配一个全局唯一的sessionID<br>TimeOut：会话超时时间，如果客户端与服务器之间因为网络闪断导致断开连接，并在TimeOut时间内未连上其他server，则此次会话失效，此次会话创建的临时节点将被清理<br>ExpirationTime：下次会话超时时间点。ZooKeeper会为每个会话标记一个下次会话超时时间点，便于对会话进行“分桶管理”，同时也是为了搞笑低耗的实现会话的超时检查与清理。其值接近于当前时间+TimeOut，但不完全相等，稍后会介绍。</p>
+<h3 id="sessionId的初始化"><a href="#sessionId的初始化" class="headerlink" title="sessionId的初始化"></a>sessionId的初始化</h3><p>在每次client向server发起“会话创建”请求时，服务端都会为其分配一个sessionID，现在看下sessionID是如何生成的。</p>
+<p>在SessionTrackerImpl初始化的时候，会调用initializeNextSession来生成一个初始化的sessionID，之后在该sessionID的基础上为每个会话进行分配，其初始化算法如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">//是ZooKeeper服务器的会话管理器，负责会话的创建、管理和清理等工作</span><br><span class="line">public class SessionTrackerImpl extends Thread implements SessionTracker &#123;</span><br><span class="line">   </span><br><span class="line">    &#123;...&#125;</span><br><span class="line"></span><br><span class="line">	//参数id为当前服务器的myid</span><br><span class="line">    public static long initializeNextSession(long id) &#123;</span><br><span class="line">        long nextSid = 0;</span><br><span class="line">        //此处采用无符号右移，是为了防止出现负数的情况</span><br><span class="line">        nextSid = (System.currentTimeMillis() &lt;&lt; 24) &gt;&gt;&gt; 8;</span><br><span class="line">        nextSid =  nextSid | (id &lt;&lt;56);</span><br><span class="line">        return nextSid;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">	&#123;...&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>该逻辑计算后得到的sessionID的前8位确定了所在的机器，后56位使用当前时间的毫秒表示进行随机</strong></p>
+<h4 id="分桶策略"><a href="#分桶策略" class="headerlink" title="分桶策略"></a>分桶策略</h4><p>SessionTrackerImpl通过<strong>“分桶策略”</strong>来进行会话的管理，分桶的原则是将每个会话的<strong>“下次超时时间点”(ExpirationTime)</strong>相同的会话放在同一区块中进行管理，以便于ZooKeeper对会话进行不同区块的隔离处理，以及同一区块的统一处理，</p>
+<p><img src="/2020/07/13/zookeeper-核心概念/sessionTimeout.png" alt="sessionTimeout"></p>
+<p>每个会话创建完毕后，ZooKeeper就会为其计算ExpirationTime，计算方式大体如下：</p>
+<p>ExpirationTime = CurrentTime(当前时间) + SessionTimeOut(会话超时时间)</p>
+<h4 id="会话激活"><a href="#会话激活" class="headerlink" title="会话激活"></a>会话激活</h4><p>为了保持client会话的有效性，在ZooKeeper运行过程中，client会在会话超时时间过期范围内向server发送PING请求来保持会话的有效性，俗称“心跳检测”。同时server重新激活client对应的会话，这段逻辑是在SessionTrackerImpl的touchSession中实现的。先看下流程，再看源码：<br><img src="/2020/07/13/zookeeper-核心概念/heartCheck.png" alt="heartCheck"></p>
+<p>下面再展示激活sessionId的源码</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line">//sessionId为发起会话激活的client的sessionId，timeout为会话超时时间</span><br><span class="line">synchronized public boolean touchSession(long sessionId, int timeout) &#123;</span><br><span class="line">        /*</span><br><span class="line">         * sessionsById的结构为 HashMap&lt;Long, SessionImpl&gt;()，每个sessionid都有一个对应的session实现</span><br><span class="line">         * 这里取出对应的session实现</span><br><span class="line">         */</span><br><span class="line">        SessionImpl s = sessionsById.get(sessionId);</span><br><span class="line">        // Return false, if the session doesn&apos;t exists or marked as closing</span><br><span class="line">        if (s == null || s.isClosing()) &#123;</span><br><span class="line">            return false;</span><br><span class="line">        &#125;</span><br><span class="line">        //计算当前会话的下一个失效时间，可以理解为ExpirationTime_New</span><br><span class="line">        long expireTime = roundToInterval(System.currentTimeMillis() + timeout);</span><br><span class="line">        //tickTime是上一次计算的超时时间，可以理解为ExpirationTime_Old</span><br><span class="line">        if (s.tickTime &gt;= expireTime) &#123;</span><br><span class="line">            // Nothing needs to be done</span><br><span class="line">            return true;</span><br><span class="line">        &#125;</span><br><span class="line">        //将ExpirationTime_Old对应的桶中的会话取出，SessionSet 是SessionImpl的集合</span><br><span class="line">        SessionSet set = sessionSets.get(s.tickTime);</span><br><span class="line">        if (set != null) &#123;</span><br><span class="line">        	//将旧桶中的会话移除</span><br><span class="line">            set.sessions.remove(s);</span><br><span class="line">        &#125;</span><br><span class="line">        //更新当前会话的下一次超时时间</span><br><span class="line">        s.tickTime = expireTime;</span><br><span class="line">        //从新桶中取出该会话，无则创建，有则更新</span><br><span class="line">        set = sessionSets.get(s.tickTime);</span><br><span class="line">        if (set == null) &#123;</span><br><span class="line">            set = new SessionSet();</span><br><span class="line">            sessionSets.put(expireTime, set);</span><br><span class="line">        &#125;</span><br><span class="line">        set.sessions.add(s);</span><br><span class="line">        return true;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<p>那这个方法什么时候会被触发呢？</p>
+<ol>
+<li>只要client向server发送请求，包括读或写请求，就会触发一次激活；</li>
+<li>如果client发现在sessionTimeOut / 3 时间内未尚和server进行任何通信，就会主动发起一次PING请求，进而触发激活；</li>
+</ol>
+<h1 id="watch"><a href="#watch" class="headerlink" title="watch"></a>watch</h1><p>zookeeper主要是为了统一分布式系统中各个节点的工作状态，在资源冲突的情况下协调提供节点资源抢占，提供给每个节点了解整个集群所处状态的途径。这一切的实现都依赖于zookeeper中的事件监听和通知机制。</p>
+<p>Watcher实现由三个部分组成：</p>
+<ul>
+<li>Zookeeper服务端；</li>
+<li>Zookeeper客户端；</li>
+<li>客户端的ZKWatchManager对象；</li>
+</ul>
+<p>  客户端首先将Watcher注册到服务端，同时将Watcher对象保存到客户端的Watch管理器中。当ZooKeeper服务端监听的数据状态发生变化时，服务端会主动通知客户端，接着客户端的Watch管理器会触发相关Watcher来回调相应处理逻辑，从而完成整体的数据发布/订阅流程。</p>
+<p><img src="/2020/07/13/zookeeper-核心概念/watch.png" alt></p>
+<h2 id="watch中的事件和状态"><a href="#watch中的事件和状态" class="headerlink" title="watch中的事件和状态"></a>watch中的事件和状态</h2><p>zookeeper客户端与zookeeper server连接的状态</p>
+<table>
+<thead>
+<tr>
+<th>连接状态</th>
+<th>状态含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>KeeperState.Expired</td>
+<td>客户端和服务器在ticktime的时间周期内，是要发送心跳通知的。这是租约协议的一个实现。客户端发送request，告诉服务器其上一个租约时间，服务器收到这个请求后，告诉客户端其下一个租约时间是哪个时间点。当客户端时间戳达到最后一个租约时间，而没有收到服务器发来的任何新租约时间，即认为自己下线（此后客户端会废弃这次连接，并试图重新建立连接）。这个过期状态就是Expired状态</td>
+</tr>
+<tr>
+<td>KeeperState.Disconnected</td>
+<td>就像上面那个状态所述，当客户端断开一个连接（可能是租约期满，也可能是客户端主动断开）这是客户端和服务器的连接就是Disconnected状态</td>
+</tr>
+<tr>
+<td>KeeperState.SyncConnected</td>
+<td>一旦客户端和服务器的某一个节点建立连接（注意，虽然集群有多个节点，但是客户端一次连接到一个节点就行了），并完成一次version、zxid的同步，这时的客户端和服务器的连接状态就是SyncConnected</td>
+</tr>
+<tr>
+<td>KeeperState.AuthFailed</td>
+<td>zookeeper客户端进行连接认证失败时，发生该状态</td>
+</tr>
+</tbody>
+</table>
+<p><em>需要说明的是，这些状态在触发时，所记录的事件类型都是：EventType.None</em></p>
+<p>事件类型</p>
+<table>
+<thead>
+<tr>
+<th>zookeeper事件</th>
+<th>事件含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>EventType.NodeCreated</td>
+<td>当node-x这个节点被创建时，该事件被触发</td>
+</tr>
+<tr>
+<td>EventType.NodeChildrenChanged</td>
+<td>当node-x这个节点的直接子节点被创建、被删除、子节点数据发生变更时，该事件被触发。</td>
+</tr>
+<tr>
+<td>EventType.NodeDataChanged</td>
+<td>当node-x这个节点的数据发生变更时，该事件被触发</td>
+</tr>
+<tr>
+<td>EventType.NodeDeleted</td>
+<td>当node-x这个节点被删除时，该事件被触发。</td>
+</tr>
+<tr>
+<td>EventType.None</td>
+<td>当zookeeper客户端的连接状态发生变更时，即KeeperState.Expired、KeeperState.Disconnected、KeeperState.SyncConnected、KeeperState.AuthFailed状态切换时，描述的事件类型为EventType.None</td>
+</tr>
+</tbody>
+</table>
+<h2 id="watch运行机制"><a href="#watch运行机制" class="headerlink" title="watch运行机制"></a>watch运行机制</h2><p>Watch是轻量级的，其实就是本地JVM的Callback，服务器端只是存了是否有设置了Watcher的布尔类型。（源码见：org.apache.zookeeper.server.FinalRequestProcessor）  在服务端，在FinalRequestProcessor处理对应的Znode操作时，会根据客户端传递的watcher变量，添加到对应的ZKDatabase（org.apache.zookeeper.server.ZKDatabase）中进行持久化存储，同时将自己NIOServerCnxn做为一个Watcher callback，监听服务端事件变化  Leader通过投票通过了某次Znode变化的请求后，然后通知对应的Follower，Follower根据自己内存中的zkDataBase信息，发送notification信息给zookeeper客户端。  Zookeeper客户端接收到notification信息后，找到对应变化path的watcher列表，挨个进行触发回调。</p>
+<h2 id="watch的特性"><a href="#watch的特性" class="headerlink" title="watch的特性"></a>watch的特性</h2><p>Znode发生变化（Znode本身的增加，删除，修改，以及子Znode的变化）可以通过Watch机制通知到客户端。那么要实现Watch，就必须实现org.apache.zookeeper.Watcher接口，并且将实现类的对象传入到可以Watch的方法中。Zookeeper中所有读操作（getData()，getChildren()，exists()）都可以设置Watch选项。Watch事件具有one-time trigger（一次性触发）的特性，如果Watch监视的Znode有变化，那么就会通知设置该Watch的客户端。</p>
+<p>在上述说道的所有读操作中，如果需要Watcher，我们可以自定义Watcher，如果是Boolean型变量，当为true时，则使用系统默认的Watcher，系统默认的Watcher是在Zookeeper的构造函数中定义的Watcher。参数中Watcher为空或者false，表示不启用Wather。</p>
+<h3 id="watch特性1：一次性触发器"><a href="#watch特性1：一次性触发器" class="headerlink" title="watch特性1：一次性触发器"></a>watch特性1：一次性触发器</h3><p>客户端在Znode设置了Watch时，如果Znode内容发生改变，那么客户端就会获得Watch事件。例如：客户端设置getData(“/znode1”, true)后，如果/znode1发生改变或者删除，那么客户端就会得到一个/znode1的Watch事件，但是/znode1再次发生变化，那客户端是无法收到Watch事件的，除非客户端设置了新的Watch。</p>
+<h3 id="watch特性2：发送至客户端"><a href="#watch特性2：发送至客户端" class="headerlink" title="watch特性2：发送至客户端"></a>watch特性2：发送至客户端</h3><p>Watch事件是异步发送到Client。Zookeeper可以保证客户端发送过去的更新顺序是有序的。例如：某个Znode没有设置watche，那么客户端对这个Znode设置Watcher发送到集群之前，该客户端是感知不到该Znode任何的改变情况的。换个角度来解释：由于Watch有一次性触发的特点，所以在服务器端没有Watche的情况下，Znode的任何变更就不会通知到客户端。不过，即使某个Znode设置了Watche，且在Znode有变化的情况下通知到了客户端，但是在客户端接收到这个变化事件，但是还没有再次设置Watche之前，如果其他客户端对该Znode做了修改，这种情况下，Znode第二次的变化客户端是无法收到通知的。这可能是由于网络延迟或者是其他因素导致，所以我们使用Zookeeper不能期望能够监控到节点每次的变化。Zookeeper只能保证最终的一致性，而无法保证强一致性。</p>
+<h3 id="watch特性3：设置watch的数据内容"><a href="#watch特性3：设置watch的数据内容" class="headerlink" title="watch特性3：设置watch的数据内容"></a>watch特性3：设置watch的数据内容</h3><p>Znode改变有很多种方式，例如：节点创建，节点删除，节点改变，子节点改变等等。Zookeeper维护了两个Watch列表，一个节点数据Watch列表，另一个是子节点Watch列表。getData()和exists()设置数据Watch，getChildren()设置子节点Watch。两者选其一，可以让我们根据不同的返回结果选择不同的Watch方式，getData()和exists()返回节点的内容，getChildren()返回子节点列表。因此，setData()触发内容Watch，create()触发当前节点的内容Watch或者是其父节点的子节点Watch。delete()同时触发父节点的子节点Watch和内容Watch，以及子节点的内容Watch。</p>
+<h1 id="ZAB协议"><a href="#ZAB协议" class="headerlink" title="ZAB协议"></a>ZAB协议</h1><p>&nbsp; ZAB协议是一种专门为zookeeper设计的一种支持崩溃回复的原子广播协议，是一种通用的分布式一致性算法，基于该协议，zookeeper实现了一种主备模式的系统架构来保持集群中各副本之间数据的一致性。具体来说，zookeeper使用一个单一的主进程来接收并处理客户端的所有事务请求，并采用ZAB的原子广播协议，将服务器数据的状态变更为以事务的形式广播到所有的副本进程上去，该协议的这个主备模式架构保证了同一时刻集群中只能够有一个主进程来广播服务器的状态变更。</p>
+<h2 id="崩溃恢复"><a href="#崩溃恢复" class="headerlink" title="崩溃恢复"></a>崩溃恢复</h2><p>当leader崩溃或者leader失去大多数的follower时，zk就进入恢复模式，恢复模式即需要重新选举出一个新的leader，让所有的节点都恢复到一个正确的状态。zk的选举算法有两种。</p>
+<ul>
+<li><strong>zxid（Zookeeper Transaction Id）</strong>：Client发起事务请求Leader接收后，会对该事务请求进行提议（Proposal），针对这个提议Leader服务器会生成一个<strong>64</strong>位的数字（zxid），它的高32位是epoch（选举周期）用来标识Leader关系是否改变，低32位是electionEpoch/logicalclock（本地选举周期）用来判断是否为同一次选举。zxid会被记录到transaction log中， 值越大，表示数据越新；</li>
+<li><strong>epoch（peerEpoch）</strong>：选举周期，每次选举最终确定完leader结束选举流程时会自增(zxid的前32位)；</li>
+<li><strong>logicalclock（electionEpoch）</strong>：本地选举周期，每次投票都会自增(zxid的后32位)；</li>
+<li><strong>sid/myid（Server Id）</strong>：服务器在集群中被标记id；</li>
+</ul>
+<h3 id="BasicLeaderElection"><a href="#BasicLeaderElection" class="headerlink" title="BasicLeaderElection"></a>BasicLeaderElection</h3><p>选举线程是一个独立的线程，其主要功能是对投票结果进行统计，并选出推荐的Server</p>
+<ol>
+<li>选举线程首先向所有节点发起一次询问(包括自己)；在收到回复后，验证是否是自己发起的询问(验证zxid是否一致)，然后获取对方的id(myid)，并存储到当前询问对象列表中，最后获取对方提议的leader相关信息(id,zxid)，并将这些信息存储到当次选举的投票记录表中；</li>
+<li>收到所有节点回复以后，就计算出zxid最大的那个节点，并将这个节点相关信息设置成下一次要投票的节点；</li>
+<li>线程将当前zxid最大的Server设置为当前Server要推荐的Leader，如果此时获胜的Server至少获得n/2 + 1的Server票数，设置当前推荐的leader为获胜的Server，将根据获胜的Server相关信息设置自己的状态，否则，继续这个过程，直到leader被选举出来。</li>
+</ol>
+<h3 id="FastLeaderElection"><a href="#FastLeaderElection" class="headerlink" title="FastLeaderElection"></a>FastLeaderElection</h3><p>zookeeper的默认选举算法是FastLeaderElection，</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br></pre></td><td class="code"><pre><span class="line">public Vote lookForLeader() throws InterruptedException &#123;</span><br><span class="line">        //计算选举的耗时</span><br><span class="line">        if (self.start_fle == 0) &#123;</span><br><span class="line">            self.start_fle = Time.currentElapsedTime();</span><br><span class="line">        &#125;</span><br><span class="line">        try &#123;</span><br><span class="line">            //选票票箱</span><br><span class="line">            Map&lt;Long/** 发送方的myid(sid) **/, Vote /** 选票实体 **/&gt; recvset = new HashMap&lt;Long, Vote&gt;();</span><br><span class="line">            Map&lt;Long, Vote&gt; outofelection = new HashMap&lt;Long, Vote&gt;();</span><br><span class="line">            //接收消息的时间</span><br><span class="line">            int notTimeout = minNotificationInterval;</span><br><span class="line">            synchronized (this) &#123;</span><br><span class="line">                logicalclock.incrementAndGet();</span><br><span class="line">                //先投给自己</span><br><span class="line">                updateProposal(getInitId()/** 被推举服务器myid（vote_id） **/, getInitLastLoggedZxid() /** 被推举服务器zxid（vote_zxid） **/, getPeerEpoch() /** 投票轮次（logicClock） **/);</span><br><span class="line">            &#125;</span><br><span class="line">            //发送投票，包括发给自己</span><br><span class="line">            sendNotifications();</span><br><span class="line">            SyncedLearnerTracker voteSet;</span><br><span class="line">            //主循环，直到选出leader</span><br><span class="line">            while ((self.getPeerState() == ServerState.LOOKING) &amp;&amp;</span><br><span class="line">                    (!stop)) &#123;</span><br><span class="line">                //从IO线程里拿到投票消息，自己的投票也在这里处理</span><br><span class="line">                //LinkedBlockedQueue() 接收</span><br><span class="line">                Notification n = recvqueue.poll(notTimeout,</span><br><span class="line">                        TimeUnit.MILLISECONDS);</span><br><span class="line">                if (n == null) &#123;//没有获取到选票</span><br><span class="line">                    //如果空闲情况，消息发完了，继续发送，一直到选出leader为止</span><br><span class="line">                    if (manager.haveDelivered()) &#123;</span><br><span class="line">                        sendNotifications();</span><br><span class="line">                    &#125; else &#123;</span><br><span class="line">                        //消息还没投递出去，可能是其他server 还没启动，尝试再连接</span><br><span class="line">                        manager.connectAll();</span><br><span class="line">                    &#125;</span><br><span class="line">                    //延长超时时间</span><br><span class="line">                    int tmpTimeOut = notTimeout * 2;</span><br><span class="line">                    notTimeout = (tmpTimeOut &lt; maxNotificationInterval ?</span><br><span class="line">                            tmpTimeOut : maxNotificationInterval);</span><br><span class="line">                    LOG.info(&quot;Notification time out: &quot; + notTimeout);</span><br><span class="line">                &#125; else if (validVoter(n.sid) &amp;&amp; validVoter(n.leader)) &#123;//收到一个有效的选票结果</span><br><span class="line">                    switch (n.state) &#123;</span><br><span class="line">                        case LOOKING: //发送消息放的节点状态LOOKING</span><br><span class="line">                            if (getInitLastLoggedZxid() == -1) &#123;</span><br><span class="line">                                LOG.debug(&quot;Ignoring notification as our zxid is -1&quot;);</span><br><span class="line">                                break;</span><br><span class="line">                            &#125;</span><br><span class="line">                            if (n.zxid == -1) &#123;</span><br><span class="line">                                LOG.debug(&quot;Ignoring notification from member with -1 zxid&quot; + n.sid);</span><br><span class="line">                                break;</span><br><span class="line">                            &#125;</span><br><span class="line">                            // If notification &gt; current, replace and send messages out</span><br><span class="line">                            //判断收到消息投票的轮次epoch（接收消息的投票轮次大于自己的轮次）</span><br><span class="line">                            if (n.electionEpoch &gt; logicalclock.get()) &#123;</span><br><span class="line">                                //更新本地的投票的轮次epoch</span><br><span class="line">                                logicalclock.set(n.electionEpoch);</span><br><span class="line">                                //清空接收队列</span><br><span class="line">                                recvset.clear();</span><br><span class="line">                                //检查接收到的这个消息是否可以胜出，logicClock/peerEpoch（选举轮次），vote_zxid/zxid（事物id），vote_id/leader(被推举服务器myid)</span><br><span class="line">                                if (totalOrderPredicate(n.leader, n.zxid, n.peerEpoch,</span><br><span class="line">                                        getInitId(), getInitLastLoggedZxid(), getPeerEpoch())) &#123;</span><br><span class="line">                                    //胜出以后，把投票改为对方的投票</span><br><span class="line">                                    updateProposal(n.leader, n.zxid, n.peerEpoch);</span><br><span class="line">                                &#125; else &#123;//否则票据不变</span><br><span class="line">                                    updateProposal(getInitId(),</span><br><span class="line">                                            getInitLastLoggedZxid(),</span><br><span class="line">                                            getPeerEpoch());</span><br><span class="line">                                &#125;</span><br><span class="line">                                //继续广播消息，让其他节点知道我现在的票据</span><br><span class="line">                                sendNotifications();</span><br><span class="line">                            &#125; else if (n.electionEpoch &lt; logicalclock.get()) &#123;</span><br><span class="line">                                //如果收到的消息epoch小于当前节点的epoch,则忽略这条消息</span><br><span class="line">                                if (LOG.isDebugEnabled()) &#123;</span><br><span class="line">                                    //...</span><br><span class="line">                                &#125;</span><br><span class="line">                                break;</span><br><span class="line">                            &#125; else if (totalOrderPredicate(n.leader, n.zxid, n.peerEpoch,</span><br><span class="line">                                    proposedLeader, proposedZxid, proposedEpoch)) &#123;</span><br><span class="line">                                //如果是epoch相同的话，就是比较zxid,myid,如果胜出，则更新自己的票据,并且发出广播</span><br><span class="line">                                updateProposal(n.leader, n.zxid, n.peerEpoch);</span><br><span class="line">                                sendNotifications();</span><br><span class="line">                            &#125;</span><br><span class="line">                            // don&apos;t care about the version if it&apos;s in LOOKING state</span><br><span class="line">                            recvset.put(n.sid, new Vote(n.leader, n.zxid, n.electionEpoch, n.peerEpoch));</span><br><span class="line">                            // 把与自己当前的选票相同的票加到voteSet中去</span><br><span class="line">                            voteSet = getVoteTracker(</span><br><span class="line">                                    recvset, new Vote(proposedLeader, proposedZxid,</span><br><span class="line">                                            logicalclock.get(), proposedEpoch));</span><br><span class="line">                            //收到了大多数的选票</span><br><span class="line">                            if (voteSet.hasAllQuorums()) &#123;</span><br><span class="line">                                // Verify if there is any change in the proposed leader</span><br><span class="line">                                //一直等到新的notification的到达，直到超时</span><br><span class="line">                                while ((n = recvqueue.poll(finalizeWait,</span><br><span class="line">                                        TimeUnit.MILLISECONDS)) != null) &#123;</span><br><span class="line">                                    if (totalOrderPredicate(n.leader, n.zxid, n.peerEpoch,</span><br><span class="line">                                            proposedLeader, proposedZxid, proposedEpoch)) &#123;</span><br><span class="line">                                        recvqueue.put(n);</span><br><span class="line">                                        break;</span><br><span class="line">                                    &#125;</span><br><span class="line">                                &#125;</span><br><span class="line">                                // 超时时间内没有新的选票了</span><br><span class="line">                                if (n == null) &#123;</span><br><span class="line">                                    //选举结束，设置当前节点的状态</span><br><span class="line">                                    setPeerState(proposedLeader, voteSet);</span><br><span class="line">                                    //返回最终投票结果</span><br><span class="line">                                    Vote endVote = new Vote(proposedLeader,</span><br><span class="line">                                            proposedZxid, logicalclock.get(),</span><br><span class="line">                                            proposedEpoch);</span><br><span class="line">                                    leaveInstance(endVote);</span><br><span class="line">                                    return endVote;</span><br><span class="line">                                &#125;</span><br><span class="line">                            &#125;</span><br><span class="line">                            break;</span><br><span class="line">                        case OBSERVING:</span><br><span class="line">                            //如果收到的消息选票状态不是LOOKING,比如这台机器刚加入一个已经正在运行的ZK集群时//observer 不参与选举</span><br><span class="line">                            LOG.debug(&quot;Notification from observer: &quot; + n.sid);</span><br><span class="line">                            break;</span><br><span class="line">                        case FOLLOWING:</span><br><span class="line">                        case LEADING:</span><br><span class="line">                            //说明当前系统中已经存在Leader了，直接同步Leader</span><br><span class="line">                            if (n.electionEpoch == logicalclock.get()) &#123;//判断epoch是否相同</span><br><span class="line">                                //加入到本机的投票集合</span><br><span class="line">                                recvset.put(n.sid, new Vote(n.leader, n.zxid, n.electionEpoch, n.peerEpoch));</span><br><span class="line">                                //投票是否结束，如果结束，再确认Leader是否有效</span><br><span class="line">                                //如果结束，修改自己的状态并返回投票结果</span><br><span class="line">                                voteSet = getVoteTracker(recvset, new Vote(n.version,</span><br><span class="line">                                        n.leader, n.zxid, n.electionEpoch, n.peerEpoch, n.state));</span><br><span class="line">                                if (voteSet.hasAllQuorums() &amp;&amp;</span><br><span class="line">                                        checkLeader(outofelection, n.leader, n.electionEpoch)) &#123;</span><br><span class="line">                                    setPeerState(n.leader, voteSet);</span><br><span class="line">                                    Vote endVote = new Vote(n.leader,</span><br><span class="line">                                            n.zxid, n.electionEpoch, n.peerEpoch);</span><br><span class="line">                                    leaveInstance(endVote);</span><br><span class="line">                                    return endVote;</span><br><span class="line">                                &#125;</span><br><span class="line">                            &#125;</span><br><span class="line">                            outofelection.put(n.sid, new Vote(n.version, n.leader,</span><br><span class="line">                                    n.zxid, n.electionEpoch, n.peerEpoch, n.state));</span><br><span class="line">                            voteSet = getVoteTracker(outofelection, new Vote(n.version,</span><br><span class="line">                                    n.leader, n.zxid, n.electionEpoch, n.peerEpoch, n.state));</span><br><span class="line"> </span><br><span class="line">                            if (voteSet.hasAllQuorums() &amp;&amp;</span><br><span class="line">                                    checkLeader(outofelection, n.leader, n.electionEpoch)) &#123;</span><br><span class="line">                                synchronized (this) &#123;</span><br><span class="line">                                    logicalclock.set(n.electionEpoch);</span><br><span class="line">                                    setPeerState(n.leader, voteSet);</span><br><span class="line">                                &#125;</span><br><span class="line">                                Vote endVote = new Vote(n.leader, n.zxid,</span><br><span class="line">                                        n.electionEpoch, n.peerEpoch);</span><br><span class="line">                                leaveInstance(endVote);</span><br><span class="line">                                return endVote;</span><br><span class="line">                            &#125;</span><br><span class="line">                            break;</span><br><span class="line">                        default:</span><br><span class="line">                            LOG.warn(&quot;Notification state unrecoginized: &quot; + n.state</span><br><span class="line">                                    + &quot; (n.state), &quot; + n.sid + &quot; (n.sid)&quot;);</span><br><span class="line">                            break;</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125; else &#123;</span><br><span class="line">                    // 收到了选票结果，但是无效的</span><br><span class="line">                    if (!validVoter(n.leader)) &#123;</span><br><span class="line">                        LOG.warn(&quot;Ignoring notification for non-cluster member sid &#123;&#125; from sid &#123;&#125;&quot;, n.leader, n.sid);</span><br><span class="line">                    &#125;</span><br><span class="line">                    if (!validVoter(n.sid)) &#123;</span><br><span class="line">                        LOG.warn(&quot;Ignoring notification for sid &#123;&#125; from non-quorum member sid &#123;&#125;&quot;, n.leader, n.sid);</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            return null;</span><br><span class="line">        &#125; finally &#123;</span><br><span class="line">            //jmx相关处理...</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<p>具体步骤如下</p>
+<ol>
+<li>开始选举：选举开始自增选举轮次即logicClock++</li>
+<li>清空票箱：清空recvset集合</li>
+<li>发送初始化选票：开始选票时每个服务器节点把第一个选票投给自己，记录到票箱并广播</li>
+<li>接收外部选票：从IO线程里拿到其他服务器节点的投票消息对象（Notification）</li>
+<li>选票PK: 用自己的选票跟接收到的外部选票信息比较pk核心方法totalOrderPredicate,依次比较peerEpoch/logicClock(选票轮次)、zxid（被推举服务器事务id）、leader/vote_id(被推举服务器myid)；如果接收到的外部选票信息能够胜出则把自己的选票改外对方的投票，并把自己接收的选票信息和自己更新后的选票记录入票箱。</li>
+<li>统计选票：统计票箱中的选票数据，如果已经确定有过半服务器认可了自己的投票信息则终止投票。否则继续广播自己的投票或者接收外部选票信息。</li>
+<li>更新服务器状态：投票终止后，服务器开始更新自身状态。若获取过半服务器选票的支持则把自己的状态更新为LEADING，否则更新自己的状态为FOLLOWING。</li>
+<li>开始广播模式：集群确定了LEADING后，恢复模式结束开启广播模式保证各个节点间数据的同步。</li>
+</ol>
+<h2 id="原子广播"><a href="#原子广播" class="headerlink" title="原子广播"></a>原子广播</h2><p>根据ZAB协议，所有的写操作都必须通过Leader完成，Leader写入本地日志后再复制到所有的Follower节点。一旦Leader节点无法工作，ZAB协议能够自动从Follower节点中重新选出一个合适的替代者，即新的Leader。leader负责接收来自Client(s)的所用状态变更，它在自己保存的同时，也会复制到其他的follower(s)。不过，对于所有读请求，则是被同时负载均衡到leader和follower(s)。</p>
+<ul>
+<li>可靠递送– 如果一个事务M被一个服务器提交，它最后也会被所有服务器提交。</li>
+<li>绝对顺序– 如果一个服务器提交的事务A先于事务B, 那么对于所有服务器，A都将先于B被提交。</li>
+<li><p>因果顺序（Causal Order）– 如果事务B发送的时间，是在B的发送者提交事务A之后，A必须是排在B之前。如果在发送B之后，某个发送者发出C ，那么C必须排在B之后。</p>
+</li>
+<li><p>只要达到法定数量(quorum)/大多数节点是正常的，事务就会被复制。</p>
+</li>
+<li>在事务复制期间，因down机错过的失败节点，恢复运行时应能再次获得。</li>
+</ul>
+<h1 id="集成zookeeper"><a href="#集成zookeeper" class="headerlink" title="集成zookeeper"></a>集成zookeeper</h1><p>项目结构如下图</p>
+<p><img src="/2020/07/13/zookeeper-核心概念/projectStruct.png" alt></p>
+<p>集成zookeeper引入对应的版本依赖。这个取决于你服务器上的zookeeper的版本。最好是统一的。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">dependencies &#123;</span><br><span class="line">    compile(&quot;org.apache.zookeeper:zookeeper:3.4.12&quot;) &#123;</span><br><span class="line">        exclude group: &apos;org.slf4j&apos;</span><br><span class="line">    &#125;</span><br><span class="line">    compile &apos;org.springframework.boot:spring-boot-starter-web:2.0.5.RELEASE&apos;</span><br><span class="line">    compile group: &apos;com.alibaba&apos;, name: &apos;fastjson&apos;, version: &apos;1.2.75&apos;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>application.properties添加zookeeper的配置</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">server.port=9001</span><br><span class="line">zookeeper.address=ip:port</span><br><span class="line">zookeeper.timeout=4000</span><br></pre></td></tr></table></figure>
+<h2 id="ZookeeperConfig"><a href="#ZookeeperConfig" class="headerlink" title="ZookeeperConfig"></a>ZookeeperConfig</h2><p>创建zookeeper的配置类，初始化zookeeper连接</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line">@Configuration</span><br><span class="line">public class ZookeeperConfig &#123;</span><br><span class="line">    private static final Logger logger = LoggerFactory.getLogger(ZookeeperConfig.class);</span><br><span class="line">    private final static Lock lock = new ReentrantLock();</span><br><span class="line">    private final static Condition connect = lock.newCondition();</span><br><span class="line"></span><br><span class="line">    @Value(&quot;$&#123;zookeeper.address&#125;&quot;)</span><br><span class="line">    private String connectString;</span><br><span class="line"></span><br><span class="line">    @Value(&quot;$&#123;zookeeper.timeout&#125;0&quot;)</span><br><span class="line">    private int timeout;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    @Bean(name = &quot;zkClient&quot;)</span><br><span class="line">    public ZooKeeper zkClient() &#123;</span><br><span class="line">        ZooKeeper zooKeeper = null;</span><br><span class="line">        try &#123;</span><br><span class="line">            lock.lock();</span><br><span class="line">            //连接成功后，会回调watcher监听，此连接操作是异步的，执行完new语句后，直接调用后续代码</span><br><span class="line">            zooKeeper = new ZooKeeper(connectString, timeout, event -&gt; &#123;</span><br><span class="line">                if (Watcher.Event.KeeperState.SyncConnected == event.getState()) &#123;</span><br><span class="line">                    //如果收到了服务端的响应事件,连接成功</span><br><span class="line">                    lock.lock();</span><br><span class="line">                    connect.signal();</span><br><span class="line">                    lock.unlock();</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;);</span><br><span class="line">            connect.await();</span><br><span class="line">            logger.info(&quot;【初始化ZooKeeper连接状态....】=&#123;&#125;&quot;, zooKeeper.getState());</span><br><span class="line">        &#125; catch (Exception e) &#123;</span><br><span class="line">            logger.error(&quot;初始化ZooKeeper连接异常....】&quot;, e);</span><br><span class="line">        &#125; finally &#123;</span><br><span class="line">            lock.unlock();</span><br><span class="line">        &#125;</span><br><span class="line">        return zooKeeper;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="MyWatcher"><a href="#MyWatcher" class="headerlink" title="MyWatcher"></a>MyWatcher</h2><p>创建自定义的监听，打印监听信息</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">public class MyWatcher implements Watcher &#123;</span><br><span class="line"></span><br><span class="line">    private static final Logger logger = LoggerFactory.getLogger(MyWatcher.class);</span><br><span class="line"></span><br><span class="line">    @Override</span><br><span class="line">    public void process(WatchedEvent event) &#123;</span><br><span class="line">        logger.info(&quot;【Watcher监听事件】=&#123;&#125;&quot;, event.getState());</span><br><span class="line">        logger.info(&quot;【监听路径为】=&#123;&#125;&quot;, event.getPath());</span><br><span class="line">        logger.info(&quot;【监听的类型为】=&#123;&#125;&quot;, event.getType()); //  三种监听类型： 创建，删除，更新</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="ZookeeperAPI"><a href="#ZookeeperAPI" class="headerlink" title="ZookeeperAPI"></a>ZookeeperAPI</h2><p>添加zookeeper接口,新建、修改、删除等方法</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">public interface ZookeeperAPI &#123;</span><br><span class="line"></span><br><span class="line">    public void createNode(String path, Object data);</span><br><span class="line"></span><br><span class="line">    public Boolean exist(String path, Watcher watcher);</span><br><span class="line"></span><br><span class="line">    public void deleteNode(String path, int data);</span><br><span class="line"></span><br><span class="line">    public void updateNode(String path, Object data);</span><br><span class="line"></span><br><span class="line">    public Object getNodeData(String path, MyWatcher watcher, Class&lt;?&gt; clz);</span><br><span class="line"></span><br><span class="line">    List&lt;String&gt; nodeChildren(String path);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="ZookeeperService"><a href="#ZookeeperService" class="headerlink" title="ZookeeperService"></a>ZookeeperService</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br></pre></td><td class="code"><pre><span class="line">@Service</span><br><span class="line">public class ZookeeperService implements ZookeeperAPI &#123;</span><br><span class="line"></span><br><span class="line">    private static final Logger logger = LoggerFactory.getLogger(ZookeeperService.class);</span><br><span class="line"></span><br><span class="line">    @Autowired</span><br><span class="line">    @Qualifier(&quot;zkClient&quot;)</span><br><span class="line">    private ZooKeeper zkClient;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    /**</span><br><span class="line">     * 判断zk路径是否已存在，并添加监视到给定的路径上</span><br><span class="line">     *</span><br><span class="line">     * @param path</span><br><span class="line">     * @param watcher</span><br><span class="line">     * @return</span><br><span class="line">     */</span><br><span class="line">    public Boolean exist(String path, Watcher watcher) &#123;</span><br><span class="line">        try &#123;</span><br><span class="line">            Stat stat = zkClient.exists(path, watcher);</span><br><span class="line">            return !ObjectUtils.isEmpty(stat);</span><br><span class="line">        &#125; catch (Exception e) &#123;</span><br><span class="line">            logger.error(&quot;【断指定节点是否存在异常】&#123;&#125;,&#123;&#125;&quot;, path, e);</span><br><span class="line">            return false;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    /**</span><br><span class="line">     * 添加节点</span><br><span class="line">     *</span><br><span class="line">     * @param path</span><br><span class="line">     * @param data</span><br><span class="line">     */</span><br><span class="line">    @Override</span><br><span class="line">    public void createNode(String path, Object data) &#123;</span><br><span class="line">        try &#123;</span><br><span class="line">            if (!exist(path, new MyWatcher())) &#123;</span><br><span class="line">                zkClient.create(path, JSON.toJSONString(data).getBytes(), ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);</span><br><span class="line">                logger.info(&quot;【指定节点创建成功】，path=&#123;&#125;&quot;, path);</span><br><span class="line">            &#125; else &#123;</span><br><span class="line">                logger.info(&quot;【指定节点是已存在】，path=&#123;&#125;&quot;, path);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; catch (InterruptedException | KeeperException e) &#123;</span><br><span class="line">            logger.error(&quot;【指定节点是否存在异常】&#123;&#125;,&#123;&#125;&quot;, path, e);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    /**</span><br><span class="line">     * 删除节点</span><br><span class="line">     *</span><br><span class="line">     * @param path</span><br><span class="line">     * @param data</span><br><span class="line">     */</span><br><span class="line">    @Override</span><br><span class="line">    public void deleteNode(String path, int version) &#123;</span><br><span class="line">        try &#123;</span><br><span class="line">            //version参数指定要更新的数据的版本, 如果version和真实的版本不同, 更新操作将失败. 指定version为-1则忽略版本检查</span><br><span class="line">            zkClient.delete(path, version);</span><br><span class="line">            logger.info(&quot;【指定节点删除成功】，path=&#123;&#125;&quot;, path);</span><br><span class="line">        &#125; catch (Exception e) &#123;</span><br><span class="line">            logger.error(&quot;【删除持久化节点异常】&#123;&#125;,&#123;&#125;&quot;, path, e);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    /**</span><br><span class="line">     * 更新节点值</span><br><span class="line">     * @param path</span><br><span class="line">     * @param data</span><br><span class="line">     */</span><br><span class="line">    public void updateNode(String path, Object data) &#123;</span><br><span class="line">        try &#123;</span><br><span class="line">            //zk的数据版本是从0开始计数的。如果客户端传入的是-1，则表示zk服务器需要基于最新的数据进行更新。如果对zk的数据节点的更新操作没有原子性要求则可以使用-1.</span><br><span class="line">            //version参数指定要更新的数据的版本, 如果version和真实的版本不同, 更新操作将失败. 指定version为-1则忽略版本检查</span><br><span class="line">            zkClient.setData(path, JSON.toJSONString(data).getBytes(), -1);</span><br><span class="line">            logger.info(&quot;【指定节点修改成功】，path=&#123;&#125;&quot;, path);</span><br><span class="line">        &#125; catch (Exception e) &#123;</span><br><span class="line">            logger.error(&quot;【修改持久化节点异常】&#123;&#125;,&#123;&#125;,&#123;&#125;&quot;, path, data, e);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    /**</span><br><span class="line">     * 获取节点值</span><br><span class="line">     * @param path</span><br><span class="line">     * @param watcher</span><br><span class="line">     * @param clz</span><br><span class="line">     * @return</span><br><span class="line">     */</span><br><span class="line">    public Object getNodeData(String path, MyWatcher watcher,Class&lt;?&gt; clz) &#123;</span><br><span class="line">        try &#123;</span><br><span class="line">            Stat stat = new Stat();</span><br><span class="line">            byte[] bytes = zkClient.getData(path, watcher, stat);</span><br><span class="line">            return JSON.parseObject(bytes,clz);</span><br><span class="line">        &#125; catch (Exception e) &#123;</span><br><span class="line">            logger.error(&quot;【获取持久化节点数据异常】&#123;&#125;,&#123;&#125;&quot;, path, e);</span><br><span class="line">        &#125;</span><br><span class="line">        return null;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    /**</span><br><span class="line">     * 获取当前路径下的子节点</span><br><span class="line">     * @param path</span><br><span class="line">     * @return</span><br><span class="line">     */</span><br><span class="line">    @Override</span><br><span class="line">    public List&lt;String&gt; nodeChildren(String path) &#123;</span><br><span class="line">        try &#123;</span><br><span class="line">           return  zkClient.getChildren(path, false);</span><br><span class="line">        &#125; catch (Exception e) &#123;</span><br><span class="line">            logger.error(&quot;【获取持久化节点数据异常】&#123;&#125;,&#123;&#125;&quot;, path, e);</span><br><span class="line">            return new ArrayList&lt;&gt;();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="ZookeeperController"><a href="#ZookeeperController" class="headerlink" title="ZookeeperController"></a>ZookeeperController</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line">@RestController</span><br><span class="line">public class ZookeeperController &#123;</span><br><span class="line">    @Autowired</span><br><span class="line">    private ZookeeperAPI zookeeperAPI;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    @PostMapping(&quot;exist&quot;)</span><br><span class="line">    public Boolean exist(String path) &#123;</span><br><span class="line">        return zookeeperAPI.exist(path, new MyWatcher());</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    @PostMapping(&quot;createNode&quot;)</span><br><span class="line">    public void createNode(String path, String data) &#123;</span><br><span class="line">        zookeeperAPI.createNode(path, data);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    @PostMapping(&quot;deleteNode&quot;)</span><br><span class="line">    public void deleteNode(String path, int version) &#123;</span><br><span class="line">        zookeeperAPI.deleteNode(path, version);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    @PostMapping(&quot;updateNode&quot;)</span><br><span class="line">    public void updateNode(String path, String data) &#123;</span><br><span class="line">        zookeeperAPI.updateNode(path, data);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    @PostMapping(&quot;getNodeData&quot;)</span><br><span class="line">    public Object getNodeData(String path) &#123;</span><br><span class="line">        return zookeeperAPI.getNodeData(path, new MyWatcher(), String.class);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    @PostMapping(&quot;nodeChildren&quot;)</span><br><span class="line">    public Object nodeChildren(String path) &#123;</span><br><span class="line">        return zookeeperAPI.nodeChildren(path);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/zookeeper/" rel="tag"><i class="fa fa-tag"></i> zookeeper</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2020/07/11/zookeeper-集群/" rel="next" title="zookeeper-集群">
+                <i class="fa fa-chevron-left"></i> zookeeper-集群
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2020/07/14/spring-boot集成zookeeper/" rel="prev" title="spring-boot集成zookeeper">
+                spring-boot集成zookeeper <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  <div>
+    
+    <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:14px;">------ 本文结束------</div>
+    
+</div>
+    
+ </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+		  <div id="music163player">
+			<iframe frameborder="no" border="0" marginwidth="0" marginheight="0" width="330" height="86" src="//music.163.com/outchain/player?type=2&id=28285910&auto=1&height=66">
+			</iframe>
+		  </div>
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/sliver.jpg" alt="wei xy">
+            
+              <p class="site-author-name" itemprop="name">wei xy</p>
+              <p class="site-description motion-element" itemprop="description">一步一步似爪牙</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">62</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">22</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">54</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/yourname" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="mailto:yourname@gmail.com" target="_blank" title="E-Mail">
+                      
+                        <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="https://plus.google.com/yourname" target="_blank" title="Google">
+                      
+                        <i class="fa fa-fw fa-google"></i>Google</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="https://twitter.com/yourname" target="_blank" title="Twitter">
+                      
+                        <i class="fa fa-fw fa-twitter"></i>Twitter</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="https://www.facebook.com/yourname" target="_blank" title="FB Page">
+                      
+                        <i class="fa fa-fw fa-facebook"></i>FB Page</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="https://vk.com/yourname" target="_blank" title="VK Group">
+                      
+                        <i class="fa fa-fw fa-vk"></i>VK Group</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="https://stackoverflow.com/yourname" target="_blank" title="StackOverflow">
+                      
+                        <i class="fa fa-fw fa-stack-overflow"></i>StackOverflow</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="https://youtube.com/yourname" target="_blank" title="YouTube">
+                      
+                        <i class="fa fa-fw fa-youtube"></i>YouTube</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="https://instagram.com/yourname" target="_blank" title="Instagram">
+                      
+                        <i class="fa fa-fw fa-instagram"></i>Instagram</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="skype:yourname?call|chat" target="_blank" title="Skype">
+                      
+                        <i class="fa fa-fw fa-skype"></i>Skype</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#会话session"><span class="nav-number">1.</span> <span class="nav-text">会话session</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Session的管理"><span class="nav-number">1.1.</span> <span class="nav-text">Session的管理</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#sessionId的初始化"><span class="nav-number">1.1.1.</span> <span class="nav-text">sessionId的初始化</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#分桶策略"><span class="nav-number">1.1.1.1.</span> <span class="nav-text">分桶策略</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#会话激活"><span class="nav-number">1.1.1.2.</span> <span class="nav-text">会话激活</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#watch"><span class="nav-number">2.</span> <span class="nav-text">watch</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#watch中的事件和状态"><span class="nav-number">2.1.</span> <span class="nav-text">watch中的事件和状态</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#watch运行机制"><span class="nav-number">2.2.</span> <span class="nav-text">watch运行机制</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#watch的特性"><span class="nav-number">2.3.</span> <span class="nav-text">watch的特性</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#watch特性1：一次性触发器"><span class="nav-number">2.3.1.</span> <span class="nav-text">watch特性1：一次性触发器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#watch特性2：发送至客户端"><span class="nav-number">2.3.2.</span> <span class="nav-text">watch特性2：发送至客户端</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#watch特性3：设置watch的数据内容"><span class="nav-number">2.3.3.</span> <span class="nav-text">watch特性3：设置watch的数据内容</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#ZAB协议"><span class="nav-number">3.</span> <span class="nav-text">ZAB协议</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#崩溃恢复"><span class="nav-number">3.1.</span> <span class="nav-text">崩溃恢复</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#BasicLeaderElection"><span class="nav-number">3.1.1.</span> <span class="nav-text">BasicLeaderElection</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#FastLeaderElection"><span class="nav-number">3.1.2.</span> <span class="nav-text">FastLeaderElection</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#原子广播"><span class="nav-number">3.2.</span> <span class="nav-text">原子广播</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#集成zookeeper"><span class="nav-number">4.</span> <span class="nav-text">集成zookeeper</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#ZookeeperConfig"><span class="nav-number">4.1.</span> <span class="nav-text">ZookeeperConfig</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#MyWatcher"><span class="nav-number">4.2.</span> <span class="nav-text">MyWatcher</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ZookeeperAPI"><span class="nav-number">4.3.</span> <span class="nav-text">ZookeeperAPI</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ZookeeperService"><span class="nav-number">4.4.</span> <span class="nav-text">ZookeeperService</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ZookeeperController"><span class="nav-number">4.5.</span> <span class="nav-text">ZookeeperController</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+        <div class="back-to-top">
+          <i class="fa fa-arrow-up"></i>
+          
+            <span id="scrollpercent"><span>0</span>%</span>
+          
+        </div>
+      
+
+    </div>
+  </aside>
+
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">wei xy</span>
+
+  
+</div>
+	<!--div class="powered-by">
+		<i class="fa fa-user-md"></i>
+		<span id="busuanzi_container_site_uv">
+			本站访客数:<span id="busuanzi_value_site_uv"></span>
+		</span>
+	</div -->
+
+<!-- 
+  <div class="powered-by">由  强力驱动</div>
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash;  v5.1.4</div>
+
+-->
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+	<!-- 代码块复制功能 -->
+	<script type="text/javascript" src="/js/src/clipboard.min.js"></script>  
+	<script type="text/javascript" src="/js/src/clipboard-use.js"></script>
+	<!--动态标题-->
+	<script type="text/javascript" src="/js/src/dytitle.js"></script>
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"symbols":true,"time":true,"total_symbols":true,"total_time":true,"log":false});</script></body>
+</html>
+<!-- 页面点击小红心 -->
+<script type="text/javascript" src="/js/src/love.js"></script>
