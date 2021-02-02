@@ -992,7 +992,7 @@
   <entry>
     <title>netty-通道处理器</title>
     <url>/2021/01/22/netty-%E9%80%9A%E9%81%93%E5%A4%84%E7%90%86%E5%99%A8/</url>
-    <content><![CDATA[<p><img src="/2021/01/22/netty-通道处理器/netty-struct.png" width="400px" height="500px"></p>
+    <content><![CDATA[<p><img src="/2021/01/22/netty-通道处理器/netty-model.png" width="400px" height="500px"></p>
 <h1 id="通道处理器-ChannelHandle"><a href="#通道处理器-ChannelHandle" class="headerlink" title="通道处理器-ChannelHandle"></a>通道处理器-ChannelHandle</h1><p>io.netty.channel.Channel 是 Netty 框架自己定义的一个通道接口，Netty 实现的客户端 NIO 套接字通道是 NioSocketChannel，提供的服务器端 NIO 套接字通道是 NioServerSocketChannel。</p>
 <ul>
 <li>NioSocketChannel：客户端套接字通道，内部管理了一个 Java NIO 中的 java.nio.channels.SocketChannel 实例，用来创建 SocketChannel 实例和设置该实例的属性，并调用 Connect 方法向服务端发起 TCP 链接等。</li>
