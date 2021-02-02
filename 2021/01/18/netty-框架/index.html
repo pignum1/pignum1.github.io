@@ -1,0 +1,1282 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+  
+  
+    
+    
+  <script src="/lib/pace/pace.min.js?v=1.0.2"></script>
+  <link href="/lib/pace/pace-theme-minimal.min.css?v=1.0.2" rel="stylesheet">
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Netty,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="Netty框架模型Netty 是一款异步的事件驱动的网络应用程序框架，支持快速地开发可维护的高性能的面向协议的服务器。 NIO 的类库和API繁杂，使用麻烦：需要熟练掌握Selector、ServerSocket、ChannelSocketChannel、 ByteBuffer等。开发工作量和难度都非常大： 例如客户端面临断连重连、 网络闪断、心跳处理、半包读写、 网络拥塞和异常流的处理等等。 N">
+<meta name="keywords" content="Netty">
+<meta property="og:type" content="article">
+<meta property="og:title" content="netty-框架">
+<meta property="og:url" content="http://yoursite.com/2021/01/18/netty-框架/index.html">
+<meta property="og:site_name" content="风寒露重">
+<meta property="og:description" content="Netty框架模型Netty 是一款异步的事件驱动的网络应用程序框架，支持快速地开发可维护的高性能的面向协议的服务器。 NIO 的类库和API繁杂，使用麻烦：需要熟练掌握Selector、ServerSocket、ChannelSocketChannel、 ByteBuffer等。开发工作量和难度都非常大： 例如客户端面临断连重连、 网络闪断、心跳处理、半包读写、 网络拥塞和异常流的处理等等。 N">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://yoursite.com/2021/01/18/netty-框架/netty-struct.png">
+<meta property="og:image" content="http://yoursite.com/2021/01/18/netty-框架/netty-model.png">
+<meta property="og:updated_time" content="2021-01-22T06:32:59.609Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="netty-框架">
+<meta name="twitter:description" content="Netty框架模型Netty 是一款异步的事件驱动的网络应用程序框架，支持快速地开发可维护的高性能的面向协议的服务器。 NIO 的类库和API繁杂，使用麻烦：需要熟练掌握Selector、ServerSocket、ChannelSocketChannel、 ByteBuffer等。开发工作量和难度都非常大： 例如客户端面临断连重连、 网络闪断、心跳处理、半包读写、 网络拥塞和异常流的处理等等。 N">
+<meta name="twitter:image" content="http://yoursite.com/2021/01/18/netty-框架/netty-struct.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":true,"scrollpercent":true,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2021/01/18/netty-框架/">
+
+
+
+
+
+  <title>netty-框架 | 风寒露重</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+	<a href="https://github.com/pignum1/pignum1.github.io.git">
+		<img style="position: absolute; top: 0; right: 0;border: 0;" src="https://github.blog/wp-content/uploads/2008/12/forkme_right_darkblue_121621.png?resize=149%2C149" class="attachment-full size-full" alt="Fork me on GitHub" data-recalc-dims="1"></a>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">风寒露重</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off" placeholder="搜索..." spellcheck="false" type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-categories" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2021/01/18/netty-框架/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="wei xy">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/sliver.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="风寒露重">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">netty-框架</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2021-01-18T14:58:57+08:00">
+                2021-01-18
+              </time>
+            
+
+            
+              <span class="post-meta-divider">|</span>
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-check-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">更新于&#58;</span>
+              
+              <time title="更新于" itemprop="dateModified" datetime="2021-01-22T14:32:59+08:00">
+                2021-01-22
+              </time>
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Netty/" itemprop="url" rel="index">
+                    <span itemprop="name">Netty</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="Netty框架模型"><a href="#Netty框架模型" class="headerlink" title="Netty框架模型"></a>Netty框架模型</h1><p>Netty 是一款异步的事件驱动的网络应用程序框架，支持快速地开发可维护的高性能的面向协议的服务器。</p>
+<p>NIO 的类库和API繁杂，使用麻烦：需要熟练掌握Selector、ServerSocket、ChannelSocketChannel、 ByteBuffer等。开发工作量和难度都非常大： 例如客户端面临断连重连、 网络闪断、心跳处理、半包读写、 网络拥塞和异常流的处理等等。</p>
+<p>Netty 对 JDK 自带的 NIO 的 API 进行了良好的封装，解决了上述问题。且Netty拥有<strong>高性能</strong>、 <strong>吞吐量高</strong>，<strong>延迟低</strong>，<strong>零拷贝</strong>。</p>
+<p>Netty的使用场景：<br>1）互联网行业：在分布式系统中，各个节点之间需要远程服务调用，高性能的 RPC 框架必不可少，Netty 作为异步高性能的通信框架，往往作为基础通信组件被这些 RPC 框架使用。典型的应用有：阿里分布式服务框架 Dubbo 的 RPC 框架使用 Dubbo 协议进行节点间通信，Dubbo 协议默认使用Netty 作为基础通信组件，用于实现。各进程节点之间的内部通信。Rocketmq底层也是用的Netty作为基础通信组件。<br>2）游戏行业：无论是手游服务端还是大型的网络游戏，Java 语言得到了越来越广泛的应用。Netty作为高性能的基础通信组件，它本身提供了 TCP/UDP 和 HTTP 协议栈。<br>3）大数据领域：经典的 Hadoop 的高性能通信和序列化组件 Avro 的 RPC 框架，默认采用 Netty进行跨界点通信，它的 Netty Service 基于 Netty 框架二次封装实现。</p>
+<p><img src="/2021/01/18/netty-框架/netty-struct.png" width="400px" height="500px"></p>
+<h1 id="Netty线程模型"><a href="#Netty线程模型" class="headerlink" title="Netty线程模型"></a>Netty线程模型</h1><p><img src="/2021/01/18/netty-框架/netty-model.png" width="400px" height="500px"></p>
+<p>Netty中的Reactor模式，Netty的构成其实也是围绕这个模式的实现来的，主要包括了Selector，EventLoopGroup/EventLoop、ChannelPipeline，当然除了和模式相关的这三个组件，还有一个Buffer，到这里由和我们之前说的NIO实现的三大构成Selector，Channel，Buffer对上了，以下我们分别来看下这几样东西。</p>
+<h2 id="Selector"><a href="#Selector" class="headerlink" title="Selector"></a>Selector</h2><p>Selector即为NIO中提供的SelectableChannel多路复用器，充当着demultiplexer的角色，这里Netty基本使用了NIO中的Selector一套，封装了一个实现类SelectedSelectionKeySetSelector，实现如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><span class="line">final class SelectedSelectionKeySetSelector extends Selector &#123;</span><br><span class="line">    private final SelectedSelectionKeySet selectionKeys;</span><br><span class="line">    private final Selector delegate;</span><br><span class="line"></span><br><span class="line">    SelectedSelectionKeySetSelector(Selector delegate, SelectedSelectionKeySet selectionKeys) &#123;</span><br><span class="line">        this.delegate = delegate;</span><br><span class="line">        this.selectionKeys = selectionKeys;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public boolean isOpen() &#123;</span><br><span class="line">        return this.delegate.isOpen();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public SelectorProvider provider() &#123;</span><br><span class="line">        return this.delegate.provider();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public Set&lt;SelectionKey&gt; keys() &#123;</span><br><span class="line">        return this.delegate.keys();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public Set&lt;SelectionKey&gt; selectedKeys() &#123;</span><br><span class="line">        return this.delegate.selectedKeys();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public int selectNow() throws IOException &#123;</span><br><span class="line">        this.selectionKeys.reset();</span><br><span class="line">        return this.delegate.selectNow();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public int select(long timeout) throws IOException &#123;</span><br><span class="line">        this.selectionKeys.reset();</span><br><span class="line">        return this.delegate.select(timeout);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public int select() throws IOException &#123;</span><br><span class="line">        this.selectionKeys.reset();</span><br><span class="line">        return this.delegate.select();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public Selector wakeup() &#123;</span><br><span class="line">        return this.delegate.wakeup();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public void close() throws IOException &#123;</span><br><span class="line">        this.delegate.close();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="ChannelPipeline"><a href="#ChannelPipeline" class="headerlink" title="ChannelPipeline"></a>ChannelPipeline</h2><p>ChannelPipeline其实是担任着Reactor模式中的请求处理器这个角色。ChannelPipeline的默认实现是DefaultChannelPipeline，DefaultChannelPipeline本身维护着一个用户不可见的tail和head的ChannelHandler，他们分别位于链表队列的头部和尾部。tail在更上层的部分，而head在靠近网络层的方向。</p>
+<p>在Netty中关于ChannelHandler有两个重要的接口，ChannelInBoundHandler和ChannelOutBoundHandler。inbound可以理解为网络数据从外部流向系统内部，而outbound可以理解为网络数据从系统内部流向系统外部。用户实现的ChannelHandler可以根据需要实现其中一个或多个接口，将其放入Pipeline中的链表队列中，ChannelPipeline会根据不同的IO事件类型来找到相应的Handler来处理，同时链表队列是责任链模式的一种变种，自上而下或自下而上所有满足事件关联的Handler都会对事件进行处理。</p>
+<p>ChannelInBoundHandler对从客户端发往服务器的报文进行处理，一般用来执行半包/粘包，解码，读取数据，业务处理等；ChannelOutBoundHandler对从服务器发往客户端的报文进行处理，一般用来进行编码，发送报文到客户端。</p>
+<h2 id="ChannelHandler"><a href="#ChannelHandler" class="headerlink" title="ChannelHandler"></a>ChannelHandler</h2><p>实际的数据处理都是交给通道处理器ChannelHandler去处理，包括上层消息对象转换底层字节流和字节流转换为上层消息对象。在简单的ECHO示例中服务端和客户端的IO操作Handler都是基于通道处理器ChannelHandler，主要有两个事件方法分别为handlerAdded和handlerRemoved，handlerAdded在通道处理器添加到实际上下文后调用，通道处理器准备处理IO事件；handlerRemoved在通道处理器从实际上下文中移除后调用，通道处理器不再处理IO事件。<br>一个通道处理器关联一个通道处理器上下文ChannelHandlerContext。通道处理器通过一个上下文对象，与它所属的通道管道线交互。通道上下文对象，通道处理器上行或下行传递的事件，动态修改管道，或通过AttributeKey存储特殊的信息。通道处理器内部定义了一个共享注解Sharable，默认访问类型为Protected；添加共享注解的通道处理器，说明通道处理器中的变量可以共享，可以创建一个通道处理器实例，多次添加到通道管道线ChannlePipeline;对于没有共享注解的通道器，在每次添加到管道线上时，都要重新创建一个通道处理器实例。通道处理器只定义了简单的通道处理器添加到通道处理器上下文或从上下文移除的事件操作，没有具体定义读操作（上行UpStream，输入流Inbound，字节流到消息对象ByteToMessage），写操作（下行DownStream，输出流Outbound，消息到字节流MessageToByte）。这操作分别定义在，输入流处理器ChannelInboundHandler，输出流处理器ChannelOutboundHandler，并提供了处理的相应适配器，输入流处理器适配器ChannelInboundHandlerAdapter，输出流通道适配器ChannelOutboundHandlerAdapter，多路复用适配器ChannelDuplexHandler。<br>   通道处理器适配器ChannelHandlerAdapter的设计模式为适配器，这个适配器模式中的 handlerAdded和handlerRemoved事件默认处理器，不做任何事情，这个与MINA中的适配器模式相同。处理IO操作异常，则调用ChannelHandlerContext#fireExceptionCaught方法，触发异常事件，并转发给通道管道线的下一个通道处理器。<br>   看通道处理器适配器的判断通道处理器是否共享注解，首先获取线程的本地变量，从线程本地变量获取线程本地共享注解通道处理器探测结果缓存，如果缓存中存在通道处理器clazz，则返回缓存结果，否则将探测结果添加到缓存中。</p>
+<h2 id="EventLoopGroup-EventLoop"><a href="#EventLoopGroup-EventLoop" class="headerlink" title="EventLoopGroup/EventLoop"></a>EventLoopGroup/EventLoop</h2><p>Netty采用了串行化设计理念，从消息的读取、编码以及后续Handler的执行，始终都由IO线程EventLoop负责，这就意外着整个流程不会进行线程上下文的切换，数据也不会面临被并发修改的风险。这也解释了为什么Netty线程模型去掉了Reactor主从模型中线程池。</p>
+<p>具体的我们可以看一个NioEventLoopGroup类实现，可以看到这里提供了线程，选择策略等参数：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br></pre></td><td class="code"><pre><span class="line">public class NioEventLoopGroup extends MultithreadEventLoopGroup &#123;</span><br><span class="line">    public NioEventLoopGroup() &#123;</span><br><span class="line">        this(0);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public NioEventLoopGroup(int nThreads) &#123;</span><br><span class="line">        this(nThreads, (Executor)null);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public NioEventLoopGroup(int nThreads, ThreadFactory threadFactory) &#123;</span><br><span class="line">        this(nThreads, threadFactory, SelectorProvider.provider());</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public NioEventLoopGroup(int nThreads, Executor executor) &#123;</span><br><span class="line">        this(nThreads, executor, SelectorProvider.provider());</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public NioEventLoopGroup(int nThreads, ThreadFactory threadFactory, SelectorProvider selectorProvider) &#123;</span><br><span class="line">        this(nThreads, threadFactory, selectorProvider, DefaultSelectStrategyFactory.INSTANCE);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public NioEventLoopGroup(int nThreads, ThreadFactory threadFactory, SelectorProvider selectorProvider, SelectStrategyFactory selectStrategyFactory) &#123;</span><br><span class="line">        super(nThreads, threadFactory, new Object[]&#123;selectorProvider, selectStrategyFactory, RejectedExecutionHandlers.reject()&#125;);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public NioEventLoopGroup(int nThreads, Executor executor, SelectorProvider selectorProvider) &#123;</span><br><span class="line">        this(nThreads, executor, selectorProvider, DefaultSelectStrategyFactory.INSTANCE);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public NioEventLoopGroup(int nThreads, Executor executor, SelectorProvider selectorProvider, SelectStrategyFactory selectStrategyFactory) &#123;</span><br><span class="line">        super(nThreads, executor, new Object[]&#123;selectorProvider, selectStrategyFactory, RejectedExecutionHandlers.reject()&#125;);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public NioEventLoopGroup(int nThreads, Executor executor, EventExecutorChooserFactory chooserFactory, SelectorProvider selectorProvider, SelectStrategyFactory selectStrategyFactory) &#123;</span><br><span class="line">        super(nThreads, executor, chooserFactory, new Object[]&#123;selectorProvider, selectStrategyFactory, RejectedExecutionHandlers.reject()&#125;);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public NioEventLoopGroup(int nThreads, Executor executor, EventExecutorChooserFactory chooserFactory, SelectorProvider selectorProvider, SelectStrategyFactory selectStrategyFactory, RejectedExecutionHandler rejectedExecutionHandler) &#123;</span><br><span class="line">        super(nThreads, executor, chooserFactory, new Object[]&#123;selectorProvider, selectStrategyFactory, rejectedExecutionHandler&#125;);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public void setIoRatio(int ioRatio) &#123;</span><br><span class="line">        Iterator var2 = this.iterator();</span><br><span class="line"></span><br><span class="line">        while(var2.hasNext()) &#123;</span><br><span class="line">            EventExecutor e = (EventExecutor)var2.next();</span><br><span class="line">            ((NioEventLoop)e).setIoRatio(ioRatio);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public void rebuildSelectors() &#123;</span><br><span class="line">        Iterator var1 = this.iterator();</span><br><span class="line"></span><br><span class="line">        while(var1.hasNext()) &#123;</span><br><span class="line">            EventExecutor e = (EventExecutor)var1.next();</span><br><span class="line">            ((NioEventLoop)e).rebuildSelector();</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    protected EventLoop newChild(Executor executor, Object... args) throws Exception &#123;</span><br><span class="line">        return new NioEventLoop(this, executor, (SelectorProvider)args[0], ((SelectStrategyFactory)args[1]).newSelectStrategy(), (RejectedExecutionHandler)args[2]);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="Buffer"><a href="#Buffer" class="headerlink" title="Buffer"></a>Buffer</h2><p>Netty提供的经过扩展的Buffer相对NIO中的有个许多优势，作为数据存取非常重要的一块，我们来看看Netty中的Buffer有什么特点。</p>
+<p>1）ByteBuf读写指针</p>
+<p>在ByteBuffer中，读写指针都是position，而在ByteBuf中，读写指针分别为readerIndex和writerIndex，直观看上去ByteBuffer仅用了一个指针就实现了两个指针的功能，节省了变量，但是当对于ByteBuffer的读写状态切换的时候必须要调用flip方法，而当下一次写之前，必须要将Buffe中的内容读完，再调用clear方法。每次读之前调用flip，写之前调用clear，这样无疑给开发带来了繁琐的步骤，而且内容没有读完是不能写的，这样非常不灵活。相比之下我们看看ByteBuf，读的时候仅仅依赖readerIndex指针，写的时候仅仅依赖writerIndex指针，不需每次读写之前调用对应的方法，而且没有必须一次读完的限制。</p>
+<p>2）零拷贝</p>
+<p>Netty的接收和发送ByteBuffer采用DIRECT BUFFERS，使用堆外直接内存进行Socket读写，不需要进行字节缓冲区的二次拷贝。如果使用传统的堆内存（HEAP BUFFERS）进行Socket读写，JVM会将堆内存Buffer拷贝一份到直接内存中，然后才写入Socket中。相比于堆外直接内存，消息在发送过程中多了一次缓冲区的内存拷贝。</p>
+<p>Netty提供了组合Buffer对象，可以聚合多个ByteBuffer对象，用户可以像操作一个Buffer那样方便的对组合Buffer进行操作，避免了传统通过内存拷贝的方式将几个小Buffer合并成一个大的Buffer。</p>
+<p>Netty的文件传输采用了transferTo方法，它可以直接将文件缓冲区的数据发送到目标Channel，避免了传统通过循环write方式导致的内存拷贝问题。</p>
+<p>3）引用计数与池化技术</p>
+<p>在Netty中，每个被申请的Buffer对于Netty来说都可能是很宝贵的资源，因此为了获得对于内存的申请与回收更多的控制权，Netty自己根据引用计数法去实现了内存的管理。Netty对于Buffer的使用都是基于直接内存（DirectBuffer）实现的，大大提高I/O操作的效率，然而DirectBuffer和HeapBuffer相比之下除了I/O操作效率高之外还有一个天生的缺点，即对于DirectBuffer的申请相比HeapBuffer效率更低，因此Netty结合引用计数实现了PolledBuffer，即池化的用法，当引用计数等于0的时候，Netty将Buffer回收致池中，在下一次申请Buffer的没某个时刻会被复用。</p>
+<h1 id="Netty实战"><a href="#Netty实战" class="headerlink" title="Netty实战"></a>Netty实战</h1><p>Netty极大的简化了NIO编程，开发者更多的是编写ChannelHandle逻辑做业务处理</p>
+<h2 id="netty-demo"><a href="#netty-demo" class="headerlink" title="netty demo"></a>netty demo</h2><p>多人聊天室demo</p>
+<p>引入netty的依赖</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">compile &apos;io.netty:netty-all:4.1.9.Final&apos;</span><br></pre></td></tr></table></figure>
+<p>服务端代码 Server</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br></pre></td><td class="code"><pre><span class="line">package com.netty.server;</span><br><span class="line"></span><br><span class="line">import io.netty.bootstrap.ServerBootstrap;</span><br><span class="line">import io.netty.channel.ChannelFuture;</span><br><span class="line">import io.netty.channel.ChannelInitializer;</span><br><span class="line">import io.netty.channel.EventLoopGroup;</span><br><span class="line">import io.netty.channel.nio.NioEventLoopGroup;</span><br><span class="line">import io.netty.channel.socket.SocketChannel;</span><br><span class="line">import io.netty.channel.socket.nio.NioServerSocketChannel;</span><br><span class="line">import io.netty.handler.codec.string.StringDecoder;</span><br><span class="line">import io.netty.handler.codec.string.StringEncoder;</span><br><span class="line"></span><br><span class="line">/**</span><br><span class="line"> * @ProjectName: dubbo-demo</span><br><span class="line"> * @Package: com.netty.client</span><br><span class="line"> * @ClassName: ChatServer</span><br><span class="line"> * @Description: 服务端</span><br><span class="line"> */</span><br><span class="line">public class ChatServer &#123;</span><br><span class="line">    public void openServer(int port) &#123;</span><br><span class="line">        ServerBootstrap bootstrap = new ServerBootstrap();</span><br><span class="line">        EventLoopGroup boss = new NioEventLoopGroup(1);  //create boss group, threadpool size is 1</span><br><span class="line">        EventLoopGroup work = new NioEventLoopGroup(5); //create work group, threadpool size is 5</span><br><span class="line">        bootstrap.group(boss, work);   //组合netty组件</span><br><span class="line">        //配置handle组件</span><br><span class="line">        bootstrap.childHandler(new ChannelInitializer&lt;SocketChannel&gt;() &#123;</span><br><span class="line"></span><br><span class="line">            @Override</span><br><span class="line">            protected void initChannel(SocketChannel ch) &#123;</span><br><span class="line">                ch.pipeline().addLast(&quot;encoder&quot;, new StringEncoder());</span><br><span class="line">                ch.pipeline().addLast(&quot;decoder&quot;, new StringDecoder());</span><br><span class="line">                ch.pipeline().addLast(new ServerChanelHandle());</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;);</span><br><span class="line">        bootstrap.channel(NioServerSocketChannel.class);</span><br><span class="line"></span><br><span class="line">        try &#123;</span><br><span class="line">            ChannelFuture channel = bootstrap.bind(port).sync();</span><br><span class="line">            System.out.println((&quot;服务端已启动，绑定端口:&quot; + port));</span><br><span class="line">            channel.channel().closeFuture().sync();</span><br><span class="line"></span><br><span class="line">        &#125; catch (InterruptedException e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125; finally &#123;</span><br><span class="line">            boss.shutdownGracefully();</span><br><span class="line">            work.shutdownGracefully();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public static void main(String[] args) &#123;</span><br><span class="line">        ChatServer server = new ChatServer();</span><br><span class="line">        server.openServer(8090);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>服务端ChannelHandle</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br></pre></td><td class="code"><pre><span class="line">package com.netty.server;</span><br><span class="line"></span><br><span class="line">import io.netty.channel.Channel;</span><br><span class="line">import io.netty.channel.ChannelHandlerContext;</span><br><span class="line">import io.netty.channel.ChannelInboundHandlerAdapter;</span><br><span class="line">import io.netty.channel.group.ChannelGroup;</span><br><span class="line">import io.netty.channel.group.DefaultChannelGroup;</span><br><span class="line">import io.netty.util.concurrent.GlobalEventExecutor;</span><br><span class="line"></span><br><span class="line">/**</span><br><span class="line"> * @ProjectName: dubbo-demo</span><br><span class="line"> * @Package: com.netty.server</span><br><span class="line"> * @ClassName: ServerChanelHandle</span><br><span class="line"> * @Description: channelkHandle</span><br><span class="line"></span><br><span class="line"> */</span><br><span class="line">public class ServerChanelHandle extends ChannelInboundHandlerAdapter &#123;</span><br><span class="line"></span><br><span class="line">    //必须定义为类成员变量。每个客户端连接时，都会new ChatServerHandler。static保证数据共享</span><br><span class="line">    public static ChannelGroup cg = new DefaultChannelGroup(GlobalEventExecutor.INSTANCE);</span><br><span class="line"></span><br><span class="line">    @Override</span><br><span class="line">    public void handlerAdded(ChannelHandlerContext ctx) &#123;</span><br><span class="line">        Channel ch = ctx.channel();</span><br><span class="line">        cg.forEach(c -&gt; c.writeAndFlush(ch.remoteAddress() + &quot;加入群聊！&quot;));</span><br><span class="line">        cg.add(ch);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    @Override</span><br><span class="line">    public void channelActive(ChannelHandlerContext ctx) &#123;</span><br><span class="line">        Channel channel = ctx.channel();</span><br><span class="line">        cg.forEach(c -&gt; c.writeAndFlush(channel.remoteAddress() + &quot;上线啦&quot;));</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    @Override</span><br><span class="line">    public void channelRead(ChannelHandlerContext ctx, Object msg) &#123;</span><br><span class="line">        Channel channel = ctx.channel();</span><br><span class="line">        for (Channel ch : cg) &#123;</span><br><span class="line">            if (channel == ch) &#123;</span><br><span class="line">                ch.writeAndFlush(&quot;我说&quot; + msg);</span><br><span class="line">            &#125; else &#123;</span><br><span class="line">                ch.writeAndFlush(channel.remoteAddress() + &quot;说：&quot; + msg);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">//        cg.forEach(ch -&gt; ch.writeAndFlush((ch.equals(cg) ? &quot;我说&quot; : channel.remoteAddress()) + msg.toString()));</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    @Override</span><br><span class="line">    public void handlerRemoved(ChannelHandlerContext ctx) &#123;</span><br><span class="line">        Channel channel = ctx.channel();</span><br><span class="line">        cg.remove(channel);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    @Override</span><br><span class="line">    public void channelInactive(ChannelHandlerContext ctx) &#123;</span><br><span class="line">        Channel channel = ctx.channel();</span><br><span class="line">        cg.forEach(c -&gt; c.writeAndFlush(&quot;客户端&quot; + channel.remoteAddress() + &quot;下线了！&quot;));</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>客户端</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br></pre></td><td class="code"><pre><span class="line">package com.netty.client;</span><br><span class="line"></span><br><span class="line">import io.netty.bootstrap.Bootstrap;</span><br><span class="line">import io.netty.channel.Channel;</span><br><span class="line">import io.netty.channel.ChannelFuture;</span><br><span class="line">import io.netty.channel.ChannelInitializer;</span><br><span class="line">import io.netty.channel.EventLoopGroup;</span><br><span class="line">import io.netty.channel.nio.NioEventLoopGroup;</span><br><span class="line">import io.netty.channel.socket.SocketChannel;</span><br><span class="line">import io.netty.channel.socket.nio.NioSocketChannel;</span><br><span class="line">import io.netty.handler.codec.string.StringDecoder;</span><br><span class="line">import io.netty.handler.codec.string.StringEncoder;</span><br><span class="line"></span><br><span class="line">import java.util.Scanner;</span><br><span class="line"></span><br><span class="line">/**</span><br><span class="line"> * @ProjectName: dubbo-demo</span><br><span class="line"> * @Package: com.netty.client</span><br><span class="line"> * @ClassName: ChatClient</span><br><span class="line"> */</span><br><span class="line">public class ChatClient implements Runnable &#123;</span><br><span class="line"></span><br><span class="line">    private String serverIP;</span><br><span class="line">    private int port;</span><br><span class="line"></span><br><span class="line">    public ChatClient(String serverIp, int port) &#123;</span><br><span class="line">        this.serverIP = serverIp;</span><br><span class="line">        this.port = port;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    @Override</span><br><span class="line">    public void run() &#123;</span><br><span class="line">        Bootstrap bootstrap = new Bootstrap();</span><br><span class="line">        EventLoopGroup work = new NioEventLoopGroup(1);</span><br><span class="line">        bootstrap.group(work);</span><br><span class="line">        bootstrap.handler(new ChannelInitializer&lt;SocketChannel&gt;() &#123;</span><br><span class="line"></span><br><span class="line">            @Override</span><br><span class="line">            protected void initChannel(SocketChannel ch) &#123;</span><br><span class="line">                ch.pipeline().addLast(&quot;encode&quot;, new StringEncoder());</span><br><span class="line">                ch.pipeline().addLast(&quot;decode&quot;, new StringDecoder());</span><br><span class="line">                ch.pipeline().addLast(new ClientChanelHandle());</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;);</span><br><span class="line">        bootstrap.channel(NioSocketChannel.class);</span><br><span class="line"></span><br><span class="line">        ChannelFuture channelFuture = bootstrap.connect(serverIP, port);</span><br><span class="line">        Channel channel = channelFuture.channel();</span><br><span class="line"></span><br><span class="line">        Scanner scanner = new Scanner(System.in);</span><br><span class="line">        while (scanner.hasNext()) &#123;</span><br><span class="line">            String sendMsg = scanner.nextLine();</span><br><span class="line">            if (&quot;end&quot;.equals(sendMsg)) &#123;</span><br><span class="line">                channel.closeFuture();</span><br><span class="line">                break;</span><br><span class="line">            &#125;</span><br><span class="line">            channel.writeAndFlush(sendMsg);</span><br><span class="line">        &#125;</span><br><span class="line">        work.shutdownGracefully();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public static void main(String[] args) &#123;</span><br><span class="line">        new Thread(new ChatClient(&quot;127.0.0.1&quot;, 8090)).start();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>客户端ChannelHandle</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">package com.netty.client;</span><br><span class="line"></span><br><span class="line">import io.netty.channel.ChannelHandlerContext;</span><br><span class="line">import io.netty.channel.SimpleChannelInboundHandler;</span><br><span class="line"></span><br><span class="line">/**</span><br><span class="line"> * @ProjectName: dubbo-demo</span><br><span class="line"> * @Package: com.netty.client</span><br><span class="line"> * @ClassName: ClientChanelHandle</span><br><span class="line"> */</span><br><span class="line">public class ClientChanelHandle extends SimpleChannelInboundHandler&lt;Object&gt; &#123;</span><br><span class="line"></span><br><span class="line">    @Override</span><br><span class="line">    protected void channelRead0(ChannelHandlerContext ctx, Object msg) &#123;</span><br><span class="line">        System.out.println(msg);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="http传输json数据"><a href="#http传输json数据" class="headerlink" title="http传输json数据"></a>http传输json数据</h2><p>netty开发的关键在于各种编解码器。</p>
+<ol>
+<li>client端构造订阅请求消息，将请求消息编码为HTTP+json格式</li>
+<li>client端发起连接，通过HTTP协议栈发送HTTP请求消息</li>
+<li>server端对HTTP+json请求消息进行解码，解码成请求POJO</li>
+<li>server端构造应答消息并编码，通过HTTP+json方式返回给客户端</li>
+<li>client端对HTTP+json响应消息进行解码，解码成响应POJO</li>
+</ol>
+<p>首先定义自己的<strong>请求类和响应类</strong>：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br></pre></td><td class="code"><pre><span class="line">package com.netty.fileNetty.codec;</span><br><span class="line"></span><br><span class="line">import io.netty.handler.codec.http.FullHttpRequest;</span><br><span class="line"></span><br><span class="line">/**</span><br><span class="line"> * @ProjectName: dubbo-demo</span><br><span class="line"> * @Package: com.netty.server.JSON</span><br><span class="line"> * @ClassName: HttpJsonRequest</span><br><span class="line"> * @Description: JSON请求</span><br><span class="line"> */</span><br><span class="line">public class HttpJsonRequest &#123;</span><br><span class="line">    private FullHttpRequest request;</span><br><span class="line">    private Object body;</span><br><span class="line"></span><br><span class="line">    public HttpJsonRequest(FullHttpRequest request, Object body) &#123;</span><br><span class="line">        this.request = request;</span><br><span class="line">        this.body = body;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    /**</span><br><span class="line">     * @return the request</span><br><span class="line">     */</span><br><span class="line">    public final FullHttpRequest getRequest() &#123;</span><br><span class="line">        return request;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    /**</span><br><span class="line">     * @param request the request to set</span><br><span class="line">     */</span><br><span class="line">    public final void setRequest(FullHttpRequest request) &#123;</span><br><span class="line">        this.request = request;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    /**</span><br><span class="line">     * @return the object</span><br><span class="line">     */</span><br><span class="line">    public final Object getBody() &#123;</span><br><span class="line">        return body;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    /**</span><br><span class="line">     * @param body the object to set</span><br><span class="line">     */</span><br><span class="line">    public final void setBody(Object body) &#123;</span><br><span class="line">        this.body = body;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    /*</span><br><span class="line">     * (non-Javadoc)</span><br><span class="line">     *</span><br><span class="line">     * @see java.lang.Object#toString()</span><br><span class="line">     */</span><br><span class="line">    @Override</span><br><span class="line">    public String toString() &#123;</span><br><span class="line">        return &quot;HttpJsonRequest [request=&quot; + request + &quot;, body =&quot; + body + &quot;]&quot;;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br></pre></td><td class="code"><pre><span class="line">package com.netty.fileNetty.codec;</span><br><span class="line"></span><br><span class="line">import io.netty.handler.codec.http.FullHttpResponse;</span><br><span class="line"></span><br><span class="line">/**</span><br><span class="line"> * @ProjectName: dubbo-demo</span><br><span class="line"> * @Package: com.netty.server.JSON</span><br><span class="line"> * @ClassName: HttpJsonResponse</span><br><span class="line"> * @Description: json  response</span><br><span class="line"> */</span><br><span class="line">public class HttpJsonResponse &#123;</span><br><span class="line">    private FullHttpResponse httpResponse;</span><br><span class="line">    private Object result;</span><br><span class="line"></span><br><span class="line">    public HttpJsonResponse(FullHttpResponse httpResponse, Object result) &#123;</span><br><span class="line">        this.httpResponse = httpResponse;</span><br><span class="line">        this.result = result;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    /**</span><br><span class="line">     * @return the httpResponse</span><br><span class="line">     */</span><br><span class="line">    public final FullHttpResponse getHttpResponse() &#123;</span><br><span class="line">        return httpResponse;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    /**</span><br><span class="line">     * @param httpResponse the httpResponse to set</span><br><span class="line">     */</span><br><span class="line">    public final void setHttpResponse(FullHttpResponse httpResponse) &#123;</span><br><span class="line">        this.httpResponse = httpResponse;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    /**</span><br><span class="line">     * @return the body</span><br><span class="line">     */</span><br><span class="line">    public final Object getResult() &#123;</span><br><span class="line">        return result;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    /**</span><br><span class="line">     * @param result the body to set</span><br><span class="line">     */</span><br><span class="line">    public final void setResult(Object result) &#123;</span><br><span class="line">        this.result = result;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    /*</span><br><span class="line">     * (non-Javadoc)</span><br><span class="line">     *</span><br><span class="line">     * @see java.lang.Object#toString()</span><br><span class="line">     */</span><br><span class="line">    @Override</span><br><span class="line">    public String toString() &#123;</span><br><span class="line">        return &quot;HttpJsonResponse [httpResponse=&quot; + httpResponse + &quot;, result=&quot;</span><br><span class="line">                + result + &quot;]&quot;;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>定义json的序列化和反序列化编译器</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line">package com.netty.fileNetty.codec;</span><br><span class="line"></span><br><span class="line">import com.alibaba.fastjson.JSON;</span><br><span class="line">import io.netty.buffer.ByteBuf;</span><br><span class="line">import io.netty.channel.ChannelHandlerContext;</span><br><span class="line">import io.netty.handler.codec.MessageToMessageDecoder;</span><br><span class="line"></span><br><span class="line">import java.nio.charset.Charset;</span><br><span class="line"></span><br><span class="line">/**</span><br><span class="line"> * @ProjectName: dubbo-demo</span><br><span class="line"> * @Package: com.netty.server.codec</span><br><span class="line"> * @ClassName: AbstractHttpJsonDecoder</span><br><span class="line"> * @Description: 抽象解码器</span><br><span class="line"> */</span><br><span class="line">public abstract class AbstractHttpJsonDecoder&lt;T&gt; extends MessageToMessageDecoder&lt;T&gt; &#123;</span><br><span class="line">    private Class&lt;?&gt; clazz;</span><br><span class="line">    private boolean isPrint;</span><br><span class="line">    private final static Charset UTF_8 = Charset.forName(&quot;UTF-8&quot;);</span><br><span class="line"></span><br><span class="line">    protected AbstractHttpJsonDecoder(Class&lt;?&gt; clazz) &#123;</span><br><span class="line">        this(clazz, false);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    protected AbstractHttpJsonDecoder(Class&lt;?&gt; clazz, boolean isPrint) &#123;</span><br><span class="line">        this.clazz = clazz;</span><br><span class="line">        this.isPrint = isPrint;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    protected Object decode0(ChannelHandlerContext ctx, ByteBuf body) &#123;</span><br><span class="line">        String content = body.toString(UTF_8);</span><br><span class="line">        if (isPrint)</span><br><span class="line">            System.out.println(&quot;The body is : &quot; + content);</span><br><span class="line">        return JSON.parseObject(content,clazz);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">package com.netty.fileNetty.codec;</span><br><span class="line"></span><br><span class="line">import com.alibaba.fastjson.JSON;</span><br><span class="line">import io.netty.buffer.ByteBuf;</span><br><span class="line">import io.netty.buffer.Unpooled;</span><br><span class="line">import io.netty.channel.ChannelHandlerContext;</span><br><span class="line">import io.netty.handler.codec.MessageToMessageEncoder;</span><br><span class="line"></span><br><span class="line">import java.nio.charset.Charset;</span><br><span class="line">import java.nio.charset.StandardCharsets;</span><br><span class="line"></span><br><span class="line">/**</span><br><span class="line"> * @ProjectName: dubbo-demo</span><br><span class="line"> * @Package: com.netty.server.codec</span><br><span class="line"> * @ClassName: AbstractHttpJsonEncoder</span><br><span class="line"> * @Description: 抽象编码器</span><br><span class="line"> */</span><br><span class="line">public abstract class AbstractHttpJsonEncoder&lt;T&gt; extends MessageToMessageEncoder&lt;T&gt; &#123;</span><br><span class="line"></span><br><span class="line">    final static Charset UTF_8 = StandardCharsets.UTF_8;</span><br><span class="line"></span><br><span class="line">    protected ByteBuf encode0(ChannelHandlerContext ctx, Object body) &#123;</span><br><span class="line">        String jsonStr = JSON.toJSONString(body);</span><br><span class="line">        return Unpooled.copiedBuffer(jsonStr, UTF_8);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>定义请求和返回的json+http的编解码器</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><span class="line">package com.netty.fileNetty.codec;</span><br><span class="line"></span><br><span class="line">import io.netty.buffer.ByteBuf;</span><br><span class="line">import io.netty.channel.ChannelHandlerContext;</span><br><span class="line">import io.netty.handler.codec.http.*;</span><br><span class="line"></span><br><span class="line">import java.net.InetAddress;</span><br><span class="line">import java.util.List;</span><br><span class="line"></span><br><span class="line">/**</span><br><span class="line"> * @ProjectName: dubbo-demo</span><br><span class="line"> * @Package: com.netty.server.codec</span><br><span class="line"> * @ClassName: HttpJsonRequestEncoder</span><br><span class="line"> */</span><br><span class="line">public class HttpJsonRequestEncoder extends AbstractHttpJsonEncoder&lt;HttpJsonRequest&gt;&#123;</span><br><span class="line">    @Override</span><br><span class="line">    protected void encode(ChannelHandlerContext ctx, HttpJsonRequest msg, List&lt;Object&gt; out) throws Exception &#123;</span><br><span class="line">        //(1)调用父类的encode0，将业务需要发送的对象转换为Json</span><br><span class="line">        ByteBuf body = encode0(ctx, msg.getBody());</span><br><span class="line">        //(2) 如果业务自定义了HTTP消息头，则使用业务的消息头，否则在这里构造HTTP消息头</span><br><span class="line">        // 这里使用硬编码的方式来写消息头，实际中可以写入配置文件</span><br><span class="line">        FullHttpRequest request = msg.getRequest();</span><br><span class="line">        if (request == null) &#123;</span><br><span class="line">            request = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1,</span><br><span class="line">                    HttpMethod.GET, &quot;/do&quot;, body);</span><br><span class="line">            HttpHeaders headers = request.headers();</span><br><span class="line">            headers.set(HttpHeaderNames.HOST, InetAddress.getLocalHost()</span><br><span class="line">                    .getHostAddress());</span><br><span class="line">            headers.set(HttpHeaderNames.CONNECTION, HttpHeaders.Values.CLOSE);</span><br><span class="line">            headers.set(HttpHeaderNames.ACCEPT_ENCODING,</span><br><span class="line">                    HttpHeaderValues.GZIP.toString() + &apos;,&apos;</span><br><span class="line">                            + HttpHeaderValues.DEFLATE.toString());</span><br><span class="line">            headers.set(HttpHeaderNames.ACCEPT_CHARSET,</span><br><span class="line">                    &quot;ISO-8859-1,utf-8;q=0.7,*;q=0.7&quot;);</span><br><span class="line">            headers.set(HttpHeaderNames.ACCEPT_LANGUAGE, &quot;zh&quot;);</span><br><span class="line">            headers.set(HttpHeaderNames.USER_AGENT,</span><br><span class="line">                    &quot;Netty json Http Client side&quot;);</span><br><span class="line">            headers.set(HttpHeaderNames.ACCEPT,</span><br><span class="line">                    &quot;text/html,application/json;q=0.9,*/*;q=0.8&quot;);</span><br><span class="line">        &#125;</span><br><span class="line">        HttpUtil.setContentLength(request, body.readableBytes());</span><br><span class="line">        // (3) 编码后的对象</span><br><span class="line">        out.add(request);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line">package com.netty.fileNetty.codec;</span><br><span class="line"></span><br><span class="line">import io.netty.buffer.Unpooled;</span><br><span class="line">import io.netty.channel.ChannelFutureListener;</span><br><span class="line">import io.netty.channel.ChannelHandlerContext;</span><br><span class="line">import io.netty.handler.codec.http.*;</span><br><span class="line">import io.netty.util.CharsetUtil;</span><br><span class="line"></span><br><span class="line">import java.util.List;</span><br><span class="line"></span><br><span class="line">/**</span><br><span class="line"> * @ProjectName: dubbo-demo</span><br><span class="line"> * @Package: com.netty.server.codec</span><br><span class="line"> * @ClassName: HttpJsonRequestDecoder</span><br><span class="line"> */</span><br><span class="line">public class HttpJsonRequestDecoder extends AbstractHttpJsonDecoder&lt;FullHttpRequest&gt; &#123;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    public HttpJsonRequestDecoder(Class&lt;?&gt; clazz) &#123;</span><br><span class="line">        this(clazz, false);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public HttpJsonRequestDecoder(Class&lt;?&gt; clazz, boolean isPrint) &#123;</span><br><span class="line">        super(clazz, isPrint);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    @Override</span><br><span class="line">    protected void decode(ChannelHandlerContext ctx, FullHttpRequest msg, List&lt;Object&gt; out) throws Exception &#123;</span><br><span class="line">        if (!msg.decoderResult().isSuccess()) &#123;</span><br><span class="line">            sendError(ctx, HttpResponseStatus.BAD_REQUEST);</span><br><span class="line">            return;</span><br><span class="line">        &#125;</span><br><span class="line">        HttpJsonRequest request = new HttpJsonRequest(msg, decode0(ctx, msg.content()));</span><br><span class="line">        out.add(request);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    /**</span><br><span class="line">     * 测试的话，直接封装，实战中需要更健壮的处理</span><br><span class="line">     */</span><br><span class="line">    private static void sendError(ChannelHandlerContext ctx, HttpResponseStatus status) &#123;</span><br><span class="line">        FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1,</span><br><span class="line">                status, Unpooled.copiedBuffer(&quot;Failure: &quot; + status.toString()</span><br><span class="line">                + &quot;\r\n&quot;, CharsetUtil.UTF_8));</span><br><span class="line">        response.headers().set(&quot;content_type&quot;, &quot;text/plain; charset=UTF-8&quot;);</span><br><span class="line">        ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line">package com.netty.fileNetty.codec;</span><br><span class="line"></span><br><span class="line">import io.netty.buffer.ByteBuf;</span><br><span class="line">import io.netty.channel.ChannelHandlerContext;</span><br><span class="line">import io.netty.handler.codec.http.*;</span><br><span class="line"></span><br><span class="line">import java.util.List;</span><br><span class="line"></span><br><span class="line">/**</span><br><span class="line"> * @ProjectName: dubbo-demo</span><br><span class="line"> * @Package: com.netty.server.codec</span><br><span class="line"> * @ClassName: HttpJsonResponseEncoder</span><br><span class="line"> */</span><br><span class="line">public class HttpJsonResponseEncoder extends AbstractHttpJsonEncoder&lt;HttpJsonResponse&gt; &#123;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    @Override</span><br><span class="line">    protected void encode(ChannelHandlerContext ctx, HttpJsonResponse msg, List&lt;Object&gt; out) throws Exception &#123;</span><br><span class="line">        //编码</span><br><span class="line">        ByteBuf body = encode0(ctx, msg.getResult());</span><br><span class="line">        FullHttpResponse response = msg.getHttpResponse();</span><br><span class="line">        if (response == null) &#123;</span><br><span class="line">            response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK, body);</span><br><span class="line">        &#125; else &#123;</span><br><span class="line">            response = new DefaultFullHttpResponse(msg.getHttpResponse()</span><br><span class="line">                    .protocolVersion(), msg.getHttpResponse().status(),</span><br><span class="line">                    body);</span><br><span class="line">        &#125;</span><br><span class="line">        response.headers().set(&quot;content_type&quot;, &quot;text/json&quot;);</span><br><span class="line">        HttpUtil.setContentLength(response, body.readableBytes());</span><br><span class="line">        out.add(response);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line">package com.netty.fileNetty.codec;</span><br><span class="line"></span><br><span class="line">import io.netty.channel.ChannelHandlerContext;</span><br><span class="line">import io.netty.handler.codec.http.FullHttpResponse;</span><br><span class="line"></span><br><span class="line">import java.util.List;</span><br><span class="line"></span><br><span class="line">/**</span><br><span class="line"> * @ProjectName: dubbo-demo</span><br><span class="line"> * @Package: com.netty.server.codec</span><br><span class="line"> * @ClassName: HttpJsonResponseDecoder</span><br><span class="line"> */</span><br><span class="line">public class HttpJsonResponseDecoder extends AbstractHttpJsonDecoder&lt;FullHttpResponse&gt; &#123;</span><br><span class="line"></span><br><span class="line">    public HttpJsonResponseDecoder(Class&lt;?&gt; clazz) &#123;</span><br><span class="line">        this(clazz, false);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public HttpJsonResponseDecoder(Class&lt;?&gt; clazz, boolean isPrint) &#123;</span><br><span class="line">        super(clazz, isPrint);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    @Override</span><br><span class="line">    protected void decode(ChannelHandlerContext ctx, FullHttpResponse msg, List&lt;Object&gt; out) throws Exception &#123;</span><br><span class="line">        System.out.println(&quot;开始解码...&quot;);</span><br><span class="line">        out.add(</span><br><span class="line">                new HttpJsonResponse(msg, decode0(ctx, msg.content()))</span><br><span class="line">        );</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>服务端</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br></pre></td><td class="code"><pre><span class="line">package com.netty.fileNetty.server;</span><br><span class="line"></span><br><span class="line">import com.netty.fileNetty.Order;</span><br><span class="line">import com.netty.fileNetty.codec.HttpJsonRequestDecoder;</span><br><span class="line">import com.netty.fileNetty.codec.HttpJsonResponseEncoder;</span><br><span class="line">import io.netty.bootstrap.ServerBootstrap;</span><br><span class="line">import io.netty.channel.ChannelFuture;</span><br><span class="line">import io.netty.channel.ChannelInitializer;</span><br><span class="line">import io.netty.channel.ChannelOption;</span><br><span class="line">import io.netty.channel.EventLoopGroup;</span><br><span class="line">import io.netty.channel.nio.NioEventLoopGroup;</span><br><span class="line">import io.netty.channel.socket.SocketChannel;</span><br><span class="line">import io.netty.channel.socket.nio.NioServerSocketChannel;</span><br><span class="line">import io.netty.handler.codec.http.HttpObjectAggregator;</span><br><span class="line">import io.netty.handler.codec.http.HttpRequestDecoder;</span><br><span class="line">import io.netty.handler.codec.http.HttpResponseEncoder;</span><br><span class="line"></span><br><span class="line">import java.net.InetSocketAddress;</span><br><span class="line"></span><br><span class="line">/**</span><br><span class="line"> * @ProjectName: dubbo-demo</span><br><span class="line"> * @Package: com.netty.fileNetty.server</span><br><span class="line"> * @ClassName: HttpJsonServer</span><br><span class="line"> */</span><br><span class="line">public class HttpJsonServer &#123;</span><br><span class="line"></span><br><span class="line">    public void run(final int port) throws Exception &#123;</span><br><span class="line">        EventLoopGroup bossGroup = new NioEventLoopGroup();</span><br><span class="line">        EventLoopGroup workerGroup = new NioEventLoopGroup();</span><br><span class="line">        try &#123;</span><br><span class="line">            ServerBootstrap serverBootstrap = new ServerBootstrap();</span><br><span class="line">            serverBootstrap.group(bossGroup, workerGroup)</span><br><span class="line">                    .channel(NioServerSocketChannel.class)</span><br><span class="line">                    .childHandler(new ChannelInitializer&lt;SocketChannel&gt;() &#123;</span><br><span class="line">                        @Override</span><br><span class="line">                        protected void initChannel(SocketChannel ch)</span><br><span class="line">                                throws Exception &#123;</span><br><span class="line">                            //接收HttpJsonRequest，需要对应解码器</span><br><span class="line">                            //ByteBuf-&gt;FullHttpRequest-&gt; HttpJsonRequestDecoder</span><br><span class="line">                            //输出HttpJsonResponse，需要对应编码器</span><br><span class="line">                            //HttpResponseEncoder-&gt;FullHttpResponse-&gt; HttpJsonResponseEncoder</span><br><span class="line">                            ch.pipeline().addLast(&quot;http-encoder&quot;, new HttpResponseEncoder());</span><br><span class="line">                            ch.pipeline().addLast(&quot;http-decoder&quot;, new HttpRequestDecoder());</span><br><span class="line">                            ch.pipeline().addLast(&quot;http-aggregator&quot;, new HttpObjectAggregator(65536));</span><br><span class="line">                            ch.pipeline().addLast(&quot;json-decoder&quot;, new HttpJsonRequestDecoder(Order.class, true));</span><br><span class="line">                            ch.pipeline().addLast(&quot;json-encoder&quot;, new HttpJsonResponseEncoder());</span><br><span class="line">                            ch.pipeline().addLast(&quot;jsonServerHandler&quot;, new HttpJsonServerHandler());</span><br><span class="line">                        &#125;</span><br><span class="line">                    &#125;).option(ChannelOption.SO_BACKLOG, 128)//socket监听器连接队列大小、</span><br><span class="line">                    .childOption(ChannelOption.SO_KEEPALIVE, true); //保活，此配置针对ServerSocket通道接收连接产生的Socket通道  ;</span><br><span class="line">            ChannelFuture future = serverBootstrap.bind(new InetSocketAddress(port)).sync();</span><br><span class="line">            System.out.println(&quot;HTTP订购服务器启动，网址是 : &quot; + &quot;http://localhost:&quot; + port);</span><br><span class="line">            future.channel().closeFuture().sync();</span><br><span class="line">        &#125; finally &#123;</span><br><span class="line">            bossGroup.shutdownGracefully();</span><br><span class="line">            workerGroup.shutdownGracefully();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public static void main(String[] args) throws Exception &#123;</span><br><span class="line">        int port = 8080;</span><br><span class="line">        if (args.length &gt; 0) &#123;</span><br><span class="line">            try &#123;</span><br><span class="line">                port = Integer.parseInt(args[0]);</span><br><span class="line">            &#125; catch (NumberFormatException e) &#123;</span><br><span class="line">                e.printStackTrace();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        new HttpJsonServer().run(port);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br></pre></td><td class="code"><pre><span class="line">package com.netty.fileNetty.server;</span><br><span class="line"></span><br><span class="line">import com.netty.fileNetty.Order;</span><br><span class="line">import com.netty.fileNetty.codec.HttpJsonRequest;</span><br><span class="line">import com.netty.fileNetty.codec.HttpJsonResponse;</span><br><span class="line">import io.netty.buffer.Unpooled;</span><br><span class="line">import io.netty.channel.ChannelFuture;</span><br><span class="line">import io.netty.channel.ChannelFutureListener;</span><br><span class="line">import io.netty.channel.ChannelHandlerContext;</span><br><span class="line">import io.netty.channel.SimpleChannelInboundHandler;</span><br><span class="line">import io.netty.handler.codec.http.*;</span><br><span class="line">import io.netty.util.CharsetUtil;</span><br><span class="line"></span><br><span class="line">/**</span><br><span class="line"> * @ProjectName: dubbo-demo</span><br><span class="line"> * @Package: com.netty.fileNetty.server</span><br><span class="line"> * @ClassName: HttpJsonServerHandler</span><br><span class="line"> */</span><br><span class="line">public class HttpJsonServerHandler extends SimpleChannelInboundHandler&lt;HttpJsonRequest&gt; &#123;</span><br><span class="line"></span><br><span class="line">    @Override</span><br><span class="line">    protected void channelRead0(ChannelHandlerContext ctx, HttpJsonRequest msg) throws Exception &#123;</span><br><span class="line">        HttpRequest request = msg.getRequest();</span><br><span class="line">        Order order = (Order) msg.getBody();</span><br><span class="line">        System.out.println(&quot;Http server receive request : &quot; + order);</span><br><span class="line">        ChannelFuture future = ctx.writeAndFlush(new HttpJsonResponse(null, order));</span><br><span class="line">        if (!HttpUtil.isKeepAlive(request)) &#123;</span><br><span class="line">            future.addListener(future1 -&gt; ctx.close());</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    @Override</span><br><span class="line">    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause)</span><br><span class="line">            throws Exception &#123;</span><br><span class="line">        cause.printStackTrace();</span><br><span class="line">        if (ctx.channel().isActive()) &#123;</span><br><span class="line">            sendError(ctx, HttpResponseStatus.INTERNAL_SERVER_ERROR);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    private static void sendError(ChannelHandlerContext ctx,</span><br><span class="line">                                  HttpResponseStatus status) &#123;</span><br><span class="line">        FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1,</span><br><span class="line">                status, Unpooled.copiedBuffer(&quot;失败: &quot; + status.toString()</span><br><span class="line">                + &quot;\r\n&quot;, CharsetUtil.UTF_8));</span><br><span class="line">        response.headers().set(&quot;content_type&quot;, &quot;text/plain; charset=UTF-8&quot;);</span><br><span class="line">        ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>客户端</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br></pre></td><td class="code"><pre><span class="line">package com.netty.fileNetty.client;</span><br><span class="line"></span><br><span class="line">import com.netty.fileNetty.Order;</span><br><span class="line">import com.netty.fileNetty.codec.HttpJsonRequestEncoder;</span><br><span class="line">import com.netty.fileNetty.codec.HttpJsonResponseDecoder;</span><br><span class="line">import io.netty.bootstrap.Bootstrap;</span><br><span class="line">import io.netty.channel.ChannelFuture;</span><br><span class="line">import io.netty.channel.ChannelInitializer;</span><br><span class="line">import io.netty.channel.ChannelOption;</span><br><span class="line">import io.netty.channel.EventLoopGroup;</span><br><span class="line">import io.netty.channel.nio.NioEventLoopGroup;</span><br><span class="line">import io.netty.channel.socket.SocketChannel;</span><br><span class="line">import io.netty.channel.socket.nio.NioSocketChannel;</span><br><span class="line">import io.netty.handler.codec.http.HttpObjectAggregator;</span><br><span class="line">import io.netty.handler.codec.http.HttpRequestEncoder;</span><br><span class="line">import io.netty.handler.codec.http.HttpResponseDecoder;</span><br><span class="line"></span><br><span class="line">import java.net.InetSocketAddress;</span><br><span class="line"></span><br><span class="line">/**</span><br><span class="line"> * @ProjectName: dubbo-demo</span><br><span class="line"> * @Package: com.netty.fileNetty.client</span><br><span class="line"> * @ClassName: HttpJsonClient</span><br><span class="line"> */</span><br><span class="line">public class HttpJsonClient &#123;</span><br><span class="line"></span><br><span class="line">    public void connect(int port) throws Exception &#123;</span><br><span class="line">        // 配置客户端NIO线程组</span><br><span class="line">        EventLoopGroup group = new NioEventLoopGroup();</span><br><span class="line">        try &#123;</span><br><span class="line">            Bootstrap b = new Bootstrap();</span><br><span class="line">            b.group(group).channel(NioSocketChannel.class)</span><br><span class="line">                    .option(ChannelOption.TCP_NODELAY, true)</span><br><span class="line">                    .handler(new ChannelInitializer&lt;SocketChannel&gt;() &#123;</span><br><span class="line">                        @Override</span><br><span class="line">                        public void initChannel(SocketChannel ch)</span><br><span class="line">                                throws Exception &#123;</span><br><span class="line">                            ch.pipeline().addLast(&quot;http-decoder&quot;, new HttpResponseDecoder());</span><br><span class="line">                            ch.pipeline().addLast(&quot;http-encoder&quot;, new HttpRequestEncoder());</span><br><span class="line">                            ch.pipeline().addLast(&quot;http-aggregator&quot;, new HttpObjectAggregator(65536));</span><br><span class="line">                            // json解码器</span><br><span class="line">                            ch.pipeline().addLast(&quot;json-decoder&quot;, new HttpJsonResponseDecoder(Order.class, true));</span><br><span class="line">                            ch.pipeline().addLast(&quot;json-encoder&quot;, new HttpJsonRequestEncoder());</span><br><span class="line">                            ch.pipeline().addLast(&quot;jsonClientHandler&quot;, new HttpJsonClientHandler());</span><br><span class="line">                        &#125;</span><br><span class="line">                    &#125;);</span><br><span class="line"></span><br><span class="line">            // 发起异步连接操作</span><br><span class="line">            ChannelFuture f = b.connect(new InetSocketAddress(port)).sync();</span><br><span class="line">            // 当代客户端链路关闭</span><br><span class="line">            f.channel().closeFuture().sync();</span><br><span class="line">        &#125; finally &#123;</span><br><span class="line">            // 优雅退出，释放NIO线程组</span><br><span class="line">            group.shutdownGracefully();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public static void main(String[] args) throws Exception &#123;</span><br><span class="line">        int port = 8080;</span><br><span class="line">        if (args != null &amp;&amp; args.length &gt; 0) &#123;</span><br><span class="line">            try &#123;</span><br><span class="line">                port = Integer.valueOf(args[0]);</span><br><span class="line">            &#125; catch (NumberFormatException e) &#123;</span><br><span class="line">                // 采用默认值</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        new HttpJsonClient().connect(port);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line">package com.netty.fileNetty.client;</span><br><span class="line"></span><br><span class="line">import com.netty.fileNetty.Order;</span><br><span class="line">import com.netty.fileNetty.codec.HttpJsonRequest;</span><br><span class="line">import io.netty.channel.ChannelHandlerContext;</span><br><span class="line">import io.netty.channel.ChannelInboundHandlerAdapter;</span><br><span class="line"></span><br><span class="line">/**</span><br><span class="line"> * @ProjectName: dubbo-demo</span><br><span class="line"> * @Package: com.netty.fileNetty.client</span><br><span class="line"> * @ClassName: HttpJsonClientHandler</span><br><span class="line"> */</span><br><span class="line">public class HttpJsonClientHandler  extends ChannelInboundHandlerAdapter &#123;</span><br><span class="line">    @Override</span><br><span class="line">    public void channelActive(ChannelHandlerContext ctx) throws Exception &#123;</span><br><span class="line">        System.out.println(&quot;连接上服务器...&quot;);</span><br><span class="line">        Order order = new Order();</span><br><span class="line">        order.setOrderNo(&quot;1&quot;);</span><br><span class="line">        order.setOrderNoLine(&quot;2&quot;);</span><br><span class="line">        HttpJsonRequest request = new HttpJsonRequest(null,order);</span><br><span class="line">        ctx.writeAndFlush(request);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    @Override</span><br><span class="line">    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception &#123;</span><br><span class="line">        System.out.println(msg.getClass().getName());</span><br><span class="line">        System.out.println(&quot;接收到了数据...&quot; + msg);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    @Override</span><br><span class="line">    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) &#123;</span><br><span class="line">        cause.printStackTrace();</span><br><span class="line">        ctx.close();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="UDP数据连接"><a href="#UDP数据连接" class="headerlink" title="UDP数据连接"></a>UDP数据连接</h2><p>大部分项目用Netty一般用TCP协议，很少用UDP协议，官方文档中，UDP协议的实例都很少，我们在实例可以看到一个UDT的实例包，UDT协议是基于UDP的数据传输协议（UDP-based Data Transfer Protocol，简称UDT），是一种互联网数据传输协议。UDT的主要目的是支持高速广域网上的海量数据传输，而互联网上的标准数据传输协议TCP在高带宽长距离网络上性能很差。</p>
+<p>服务端</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line">public final class ByteEchoServer &#123;  </span><br><span class="line">    private static final Logger log = LoggerFactory.getLogger(ByteEchoServer.class);  </span><br><span class="line">    public static final String ip = System.getProperty(&quot;host&quot;, &quot;192.168.31.153&quot;);  </span><br><span class="line">    static final int port = Integer.parseInt(System.getProperty(&quot;port&quot;, &quot;10020&quot;));  </span><br><span class="line">    @SuppressWarnings(&quot;deprecation&quot;)  </span><br><span class="line">    public static void main(String[] args) throws Exception &#123;  </span><br><span class="line">        final ThreadFactory acceptFactory = new DefaultThreadFactory(&quot;accept&quot;);  </span><br><span class="line">        final ThreadFactory connectFactory = new DefaultThreadFactory(&quot;connect&quot;);  </span><br><span class="line">        final NioEventLoopGroup acceptGroup = new NioEventLoopGroup(1, acceptFactory, NioUdtProvider.BYTE_PROVIDER);  </span><br><span class="line">        final NioEventLoopGroup connectGroup = new NioEventLoopGroup(1, connectFactory, NioUdtProvider.BYTE_PROVIDER);  </span><br><span class="line">  </span><br><span class="line">        // Configure the server.  </span><br><span class="line">        try &#123;  </span><br><span class="line">            final ServerBootstrap boot = new ServerBootstrap();  </span><br><span class="line">            boot.group(acceptGroup, connectGroup)  </span><br><span class="line">                    .channelFactory(NioUdtProvider.BYTE_ACCEPTOR)  </span><br><span class="line">                    .option(ChannelOption.SO_BACKLOG, 10)  </span><br><span class="line">                    .handler(new LoggingHandler(LogLevel.INFO))  </span><br><span class="line">                    .childHandler(new ChannelInitializer&lt;UdtChannel&gt;() &#123;  </span><br><span class="line">                        @Override  </span><br><span class="line">                        public void initChannel(final UdtChannel ch)  </span><br><span class="line">                                throws Exception &#123;  </span><br><span class="line">                            ch.pipeline().addLast(  </span><br><span class="line">                                    new LoggingHandler(LogLevel.INFO),  </span><br><span class="line">                                    new ByteEchoServerHandler());  </span><br><span class="line">                        &#125;  </span><br><span class="line">                    &#125;);  </span><br><span class="line">            InetSocketAddress inetSocketAddress = new InetSocketAddress(ip,port);  </span><br><span class="line">            // Start the server.  </span><br><span class="line">            final ChannelFuture future = boot.bind(inetSocketAddress).sync();  </span><br><span class="line">            log.info(&quot;=========UDT Server is start=========&quot;);  </span><br><span class="line">            // Wait until the server socket is closed.  </span><br><span class="line">            future.channel().closeFuture().sync();  </span><br><span class="line">        &#125; finally &#123;  </span><br><span class="line">            // Shut down all event loops to terminate all threads.  </span><br><span class="line">            acceptGroup.shutdownGracefully();  </span><br><span class="line">            connectGroup.shutdownGracefully();  </span><br><span class="line">        &#125;  </span><br><span class="line">    &#125;  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br></pre></td><td class="code"><pre><span class="line">@Sharable  </span><br><span class="line">public class ByteEchoServerHandler extends ChannelInboundHandlerAdapter &#123;  </span><br><span class="line">    private static final Logger log = LoggerFactory.getLogger(ByteEchoServerHandler.class);  </span><br><span class="line">  </span><br><span class="line">    @SuppressWarnings(&quot;deprecation&quot;)  </span><br><span class="line">    @Override  </span><br><span class="line">    public void channelActive(final ChannelHandlerContext ctx) &#123;  </span><br><span class="line">         log.info(&quot;ECHO active &quot; +  </span><br><span class="line">         NioUdtProvider.socketUDT(ctx.channel()).toStringOptions());  </span><br><span class="line">    &#125;  </span><br><span class="line">  </span><br><span class="line">    @Override  </span><br><span class="line">    public void channelRead(final ChannelHandlerContext ctx, Object msg) &#123;  </span><br><span class="line">        ByteBuf in = (ByteBuf)msg;  </span><br><span class="line">        byte[] bytes = new byte[in.writerIndex()];  </span><br><span class="line">        in.readBytes(bytes);  </span><br><span class="line">        //针对堆buf，direct buf不支持  </span><br><span class="line">//      byte[] bytes = in.array();  </span><br><span class="line">        String message = null;  </span><br><span class="line">        try &#123;  </span><br><span class="line">            message = new String(bytes,&quot;UTF-8&quot;);  </span><br><span class="line">        &#125; catch (UnsupportedEncodingException e) &#123;  </span><br><span class="line">            e.printStackTrace();  </span><br><span class="line">        &#125;  </span><br><span class="line">        try&#123;  </span><br><span class="line">            log.info(&quot;===Server reciever message:&quot; +message);  </span><br><span class="line">        &#125;  </span><br><span class="line">        finally&#123;  </span><br><span class="line">            //如果msg为引用计数对象，在使用后注意释放，一般在通道handler中释放  </span><br><span class="line">//            ReferenceCountUtil.release(msg);  </span><br><span class="line">        &#125;  </span><br><span class="line">        String ackMessage = &quot;hello client ...&quot;;  </span><br><span class="line">        in.clear();  </span><br><span class="line">        try &#123;  </span><br><span class="line">            in.writeBytes(ackMessage.getBytes(&quot;UTF-8&quot;));  </span><br><span class="line">        &#125; catch (UnsupportedEncodingException e) &#123;  </span><br><span class="line">            e.printStackTrace();  </span><br><span class="line">        &#125;  </span><br><span class="line">        ctx.write(in);  </span><br><span class="line">    &#125;  </span><br><span class="line">  </span><br><span class="line">    @Override  </span><br><span class="line">    public void channelReadComplete(ChannelHandlerContext ctx) &#123;  </span><br><span class="line">        ctx.flush();  </span><br><span class="line">    &#125;  </span><br><span class="line">  </span><br><span class="line">    @Override  </span><br><span class="line">    public void exceptionCaught(final ChannelHandlerContext ctx, final Throwable cause) &#123;  </span><br><span class="line">        cause.printStackTrace();  </span><br><span class="line">        ctx.close();  </span><br><span class="line">    &#125;  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>客户端</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line">public final class ByteEchoClient &#123;  </span><br><span class="line">    private static final Logger log = LoggerFactory.getLogger(ByteEchoClient.class);  </span><br><span class="line">    public static final String ip = System.getProperty(&quot;host&quot;, &quot;192.168.31.153&quot;);  </span><br><span class="line">    static final int port = Integer.parseInt(System.getProperty(&quot;port&quot;, &quot;10020&quot;));  </span><br><span class="line">    public static final int SIZE = Integer.parseInt(System.getProperty(&quot;size&quot;, &quot;256&quot;));  </span><br><span class="line">  </span><br><span class="line">    @SuppressWarnings(&quot;deprecation&quot;)  </span><br><span class="line">    public static void main(String[] args) throws Exception &#123;  </span><br><span class="line">        // Configure the client.  </span><br><span class="line">        final ThreadFactory connectFactory = new DefaultThreadFactory(&quot;connect&quot;);  </span><br><span class="line">        final NioEventLoopGroup connectGroup = new NioEventLoopGroup(1,  </span><br><span class="line">                connectFactory, NioUdtProvider.BYTE_PROVIDER);  </span><br><span class="line">        try &#123;  </span><br><span class="line">            final Bootstrap boot = new Bootstrap();  </span><br><span class="line">            boot.group(connectGroup)  </span><br><span class="line">                    .channelFactory(NioUdtProvider.BYTE_CONNECTOR)  </span><br><span class="line">                    .handler(new ChannelInitializer&lt;UdtChannel&gt;() &#123;  </span><br><span class="line">                        @Override  </span><br><span class="line">                        public void initChannel(final UdtChannel ch)  </span><br><span class="line">                                throws Exception &#123;  </span><br><span class="line">                            ch.pipeline().addLast(  </span><br><span class="line">                                    new LoggingHandler(LogLevel.INFO),  </span><br><span class="line">                                    new ByteEchoClientHandler());  </span><br><span class="line">                        &#125;  </span><br><span class="line">                    &#125;);  </span><br><span class="line">            InetSocketAddress inetSocketAddress = new InetSocketAddress(ip,port);  </span><br><span class="line">            // Start the client.  </span><br><span class="line">            final ChannelFuture f = boot.connect(inetSocketAddress).sync();  </span><br><span class="line">            log.info(&quot;=========UDT Client is start=========&quot;);  </span><br><span class="line">            // Wait until the connection is closed.  </span><br><span class="line">            f.channel().closeFuture().sync();  </span><br><span class="line">        &#125; finally &#123;  </span><br><span class="line">            // Shut down the event loop to terminate all threads.  </span><br><span class="line">            connectGroup.shutdownGracefully();  </span><br><span class="line">        &#125;  </span><br><span class="line">    &#125;  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br></pre></td><td class="code"><pre><span class="line">public class ByteEchoClientHandler extends SimpleChannelInboundHandler&lt;ByteBuf&gt; &#123;  </span><br><span class="line">    private static final Logger log = LoggerFactory.getLogger(ByteEchoClientHandler.class);  </span><br><span class="line">    private final ByteBuf message;  </span><br><span class="line">    public ByteEchoClientHandler() &#123;  </span><br><span class="line">        super(false);  </span><br><span class="line">        String hello = &quot;Hello peer...&quot;;  </span><br><span class="line">        message = Unpooled.buffer(ByteEchoClient.SIZE);//堆buffer  </span><br><span class="line">        try &#123;  </span><br><span class="line">            message.writeBytes(hello.getBytes(&quot;UTF-8&quot;));  </span><br><span class="line">            message.retainedDuplicate();  </span><br><span class="line">        &#125; catch (UnsupportedEncodingException e) &#123;  </span><br><span class="line">            e.printStackTrace();  </span><br><span class="line">        &#125;  </span><br><span class="line">    &#125;  </span><br><span class="line">  </span><br><span class="line">    @SuppressWarnings(&quot;deprecation&quot;)  </span><br><span class="line">    @Override  </span><br><span class="line">    public void channelActive(final ChannelHandlerContext ctx) &#123;  </span><br><span class="line">        log.info(&quot;ECHO active &quot; +  </span><br><span class="line">         NioUdtProvider.socketUDT(ctx.channel()).toStringOptions());  </span><br><span class="line">        ctx.writeAndFlush(message);  </span><br><span class="line">    &#125;  </span><br><span class="line">  </span><br><span class="line">    @Override  </span><br><span class="line">    public void channelRead0(ChannelHandlerContext ctx, ByteBuf msg) &#123;  </span><br><span class="line">        ByteBuf in = (ByteBuf)msg;  </span><br><span class="line">        byte[] bytes = new byte[in.writerIndex()];  </span><br><span class="line">        in.readBytes(bytes);  </span><br><span class="line">        //针对堆buf，direct buf不支持  </span><br><span class="line">//      byte[] bytes = in.array();  </span><br><span class="line">        String message = null;  </span><br><span class="line">        try &#123;  </span><br><span class="line">            message = new String(bytes,&quot;UTF-8&quot;);  </span><br><span class="line">        &#125; catch (UnsupportedEncodingException e) &#123;  </span><br><span class="line">            e.printStackTrace();  </span><br><span class="line">        &#125;  </span><br><span class="line">        log.info(&quot;=== reciever ack message from peer:&quot; +message);  </span><br><span class="line">    &#125;  </span><br><span class="line">  </span><br><span class="line">    @Override  </span><br><span class="line">    public void channelReadComplete(ChannelHandlerContext ctx) &#123;  </span><br><span class="line">//      ctx.flush();  </span><br><span class="line">    &#125;  </span><br><span class="line">  </span><br><span class="line">    @Override  </span><br><span class="line">    public void exceptionCaught(final ChannelHandlerContext ctx, final Throwable cause) &#123;  </span><br><span class="line">        cause.printStackTrace();  </span><br><span class="line">        ctx.close();  </span><br><span class="line">    &#125;  </span><br><span class="line">  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Netty/" rel="tag"><i class="fa fa-tag"></i> Netty</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2020/11/05/多线程-公平锁非公平锁/" rel="next" title="多线程-公平锁非公平锁">
+                <i class="fa fa-chevron-left"></i> 多线程-公平锁非公平锁
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2021/01/22/netty-通道处理器/" rel="prev" title="netty-通道处理器">
+                netty-通道处理器 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  <div>
+    
+    <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:14px;">------ 本文结束------</div>
+    
+</div>
+    
+ </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+		  <div id="music163player">
+			<iframe frameborder="no" border="0" marginwidth="0" marginheight="0" width="330" height="86" src="//music.163.com/outchain/player?type=2&id=28285910&auto=1&height=66">
+			</iframe>
+		  </div>
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/sliver.jpg" alt="wei xy">
+            
+              <p class="site-author-name" itemprop="name">wei xy</p>
+              <p class="site-description motion-element" itemprop="description">一步一步似爪牙</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">64</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">22</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">54</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/yourname" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="mailto:yourname@gmail.com" target="_blank" title="E-Mail">
+                      
+                        <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="https://plus.google.com/yourname" target="_blank" title="Google">
+                      
+                        <i class="fa fa-fw fa-google"></i>Google</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="https://twitter.com/yourname" target="_blank" title="Twitter">
+                      
+                        <i class="fa fa-fw fa-twitter"></i>Twitter</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="https://www.facebook.com/yourname" target="_blank" title="FB Page">
+                      
+                        <i class="fa fa-fw fa-facebook"></i>FB Page</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="https://vk.com/yourname" target="_blank" title="VK Group">
+                      
+                        <i class="fa fa-fw fa-vk"></i>VK Group</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="https://stackoverflow.com/yourname" target="_blank" title="StackOverflow">
+                      
+                        <i class="fa fa-fw fa-stack-overflow"></i>StackOverflow</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="https://youtube.com/yourname" target="_blank" title="YouTube">
+                      
+                        <i class="fa fa-fw fa-youtube"></i>YouTube</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="https://instagram.com/yourname" target="_blank" title="Instagram">
+                      
+                        <i class="fa fa-fw fa-instagram"></i>Instagram</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="skype:yourname?call|chat" target="_blank" title="Skype">
+                      
+                        <i class="fa fa-fw fa-skype"></i>Skype</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Netty框架模型"><span class="nav-number">1.</span> <span class="nav-text">Netty框架模型</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Netty线程模型"><span class="nav-number">2.</span> <span class="nav-text">Netty线程模型</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Selector"><span class="nav-number">2.1.</span> <span class="nav-text">Selector</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ChannelPipeline"><span class="nav-number">2.2.</span> <span class="nav-text">ChannelPipeline</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ChannelHandler"><span class="nav-number">2.3.</span> <span class="nav-text">ChannelHandler</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#EventLoopGroup-EventLoop"><span class="nav-number">2.4.</span> <span class="nav-text">EventLoopGroup/EventLoop</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Buffer"><span class="nav-number">2.5.</span> <span class="nav-text">Buffer</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Netty实战"><span class="nav-number">3.</span> <span class="nav-text">Netty实战</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#netty-demo"><span class="nav-number">3.1.</span> <span class="nav-text">netty demo</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#http传输json数据"><span class="nav-number">3.2.</span> <span class="nav-text">http传输json数据</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#UDP数据连接"><span class="nav-number">3.3.</span> <span class="nav-text">UDP数据连接</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+        <div class="back-to-top">
+          <i class="fa fa-arrow-up"></i>
+          
+            <span id="scrollpercent"><span>0</span>%</span>
+          
+        </div>
+      
+
+    </div>
+  </aside>
+
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<div class="copyright">&copy; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">wei xy</span>
+
+  
+</div>
+	<!--div class="powered-by">
+		<i class="fa fa-user-md"></i>
+		<span id="busuanzi_container_site_uv">
+			本站访客数:<span id="busuanzi_value_site_uv"></span>
+		</span>
+	</div -->
+
+<!-- 
+  <div class="powered-by">由  强力驱动</div>
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash;  v5.1.4</div>
+
+-->
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+	<!-- 代码块复制功能 -->
+	<script type="text/javascript" src="/js/src/clipboard.min.js"></script>  
+	<script type="text/javascript" src="/js/src/clipboard-use.js"></script>
+	<!--动态标题-->
+	<script type="text/javascript" src="/js/src/dytitle.js"></script>
+	<!-- 樱花特效 -->
+    <script async src="/js/src/fairyDustCursor.js"></script>
+
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"symbols":true,"time":true,"total_symbols":true,"total_time":true,"log":false});</script></body>
+</html>
+<!-- 页面点击小红心 -->
+<script type="text/javascript" src="/js/src/love.js"></script>

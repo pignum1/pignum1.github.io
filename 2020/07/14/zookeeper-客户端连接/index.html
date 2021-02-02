@@ -1,0 +1,1295 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+  
+  
+    
+    
+  <script src="/lib/pace/pace.min.js?v=1.0.2"></script>
+  <link href="/lib/pace/pace-theme-minimal.min.css?v=1.0.2" rel="stylesheet">
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="zookeeper,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="常用的ZK客户端有三种:  使用 Zookeeper原生API 使用 ZkClient  使用 Curator   Zookeeper原生API项目结构如下图  集成zookeeper引入对应的版本依赖。这个取决于你服务器上的zookeeper的版本。最好是统一的。 1234567dependencies &amp;#123;    compile(&amp;quot;org.apache.zookeeper:z">
+<meta name="keywords" content="zookeeper">
+<meta property="og:type" content="article">
+<meta property="og:title" content="zookeeper-客户端连接">
+<meta property="og:url" content="http://yoursite.com/2020/07/14/zookeeper-客户端连接/index.html">
+<meta property="og:site_name" content="风寒露重">
+<meta property="og:description" content="常用的ZK客户端有三种:  使用 Zookeeper原生API 使用 ZkClient  使用 Curator   Zookeeper原生API项目结构如下图  集成zookeeper引入对应的版本依赖。这个取决于你服务器上的zookeeper的版本。最好是统一的。 1234567dependencies &amp;#123;    compile(&amp;quot;org.apache.zookeeper:z">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://yoursite.com/2020/07/14/zookeeper-客户端连接/projectStruct.png">
+<meta property="og:image" content="http://yoursite.com/2020/07/14/zookeeper-客户端连接/zkclient.png">
+<meta property="og:updated_time" content="2020-11-24T08:33:48.035Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="zookeeper-客户端连接">
+<meta name="twitter:description" content="常用的ZK客户端有三种:  使用 Zookeeper原生API 使用 ZkClient  使用 Curator   Zookeeper原生API项目结构如下图  集成zookeeper引入对应的版本依赖。这个取决于你服务器上的zookeeper的版本。最好是统一的。 1234567dependencies &amp;#123;    compile(&amp;quot;org.apache.zookeeper:z">
+<meta name="twitter:image" content="http://yoursite.com/2020/07/14/zookeeper-客户端连接/projectStruct.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":true,"scrollpercent":true,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2020/07/14/zookeeper-客户端连接/">
+
+
+
+
+
+  <title>zookeeper-客户端连接 | 风寒露重</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+	<a href="https://github.com/pignum1/pignum1.github.io.git">
+		<img style="position: absolute; top: 0; right: 0;border: 0;" src="https://github.blog/wp-content/uploads/2008/12/forkme_right_darkblue_121621.png?resize=149%2C149" class="attachment-full size-full" alt="Fork me on GitHub" data-recalc-dims="1"></a>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">风寒露重</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off" placeholder="搜索..." spellcheck="false" type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-categories" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/07/14/zookeeper-客户端连接/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="wei xy">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/sliver.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="风寒露重">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">zookeeper-客户端连接</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-07-14T22:24:09+08:00">
+                2020-07-14
+              </time>
+            
+
+            
+              <span class="post-meta-divider">|</span>
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-check-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">更新于&#58;</span>
+              
+              <time title="更新于" itemprop="dateModified" datetime="2020-11-24T16:33:48+08:00">
+                2020-11-24
+              </time>
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/zookeeper/" itemprop="url" rel="index">
+                    <span itemprop="name">zookeeper</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>常用的ZK客户端有三种:</p>
+<ol>
+<li>使用 Zookeeper原生API</li>
+<li>使用 ZkClient </li>
+<li>使用 Curator </li>
+</ol>
+<h1 id="Zookeeper原生API"><a href="#Zookeeper原生API" class="headerlink" title="Zookeeper原生API"></a>Zookeeper原生API</h1><p>项目结构如下图</p>
+<p><img src="/2020/07/14/zookeeper-客户端连接/projectStruct.png" alt></p>
+<p>集成zookeeper引入对应的版本依赖。这个取决于你服务器上的zookeeper的版本。最好是统一的。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">dependencies &#123;</span><br><span class="line">    compile(&quot;org.apache.zookeeper:zookeeper:3.4.12&quot;) &#123;</span><br><span class="line">        exclude group: &apos;org.slf4j&apos;</span><br><span class="line">    &#125;</span><br><span class="line">    compile &apos;org.springframework.boot:spring-boot-starter-web:2.0.5.RELEASE&apos;</span><br><span class="line">    compile group: &apos;com.alibaba&apos;, name: &apos;fastjson&apos;, version: &apos;1.2.75&apos;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>application.properties添加zookeeper的配置</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">server.port=9001</span><br><span class="line">zookeeper.address=ip:port</span><br><span class="line">zookeeper.timeout=4000</span><br></pre></td></tr></table></figure>
+<h2 id="ZookeeperConfig"><a href="#ZookeeperConfig" class="headerlink" title="ZookeeperConfig"></a>ZookeeperConfig</h2><p>创建zookeeper的配置类，初始化zookeeper连接</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line">@Configuration</span><br><span class="line">public class ZookeeperConfig &#123;</span><br><span class="line">    private static final Logger logger = LoggerFactory.getLogger(ZookeeperConfig.class);</span><br><span class="line">    private final static Lock lock = new ReentrantLock();</span><br><span class="line">    private final static Condition connect = lock.newCondition();</span><br><span class="line"></span><br><span class="line">    @Value(&quot;$&#123;zookeeper.address&#125;&quot;)</span><br><span class="line">    private String connectString;</span><br><span class="line"></span><br><span class="line">    @Value(&quot;$&#123;zookeeper.timeout&#125;0&quot;)</span><br><span class="line">    private int timeout;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    @Bean(name = &quot;zkClient&quot;)</span><br><span class="line">    public ZooKeeper zkClient() &#123;</span><br><span class="line">        ZooKeeper zooKeeper = null;</span><br><span class="line">        try &#123;</span><br><span class="line">            lock.lock();</span><br><span class="line">            //连接成功后，会回调watcher监听，此连接操作是异步的，执行完new语句后，直接调用后续代码</span><br><span class="line">            zooKeeper = new ZooKeeper(connectString, timeout, event -&gt; &#123;</span><br><span class="line">                if (Watcher.Event.KeeperState.SyncConnected == event.getState()) &#123;</span><br><span class="line">                    //如果收到了服务端的响应事件,连接成功</span><br><span class="line">                    lock.lock();</span><br><span class="line">                    connect.signal();</span><br><span class="line">                    lock.unlock();</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;);</span><br><span class="line">            connect.await();</span><br><span class="line">            logger.info(&quot;【初始化ZooKeeper连接状态....】=&#123;&#125;&quot;, zooKeeper.getState());</span><br><span class="line">        &#125; catch (Exception e) &#123;</span><br><span class="line">            logger.error(&quot;初始化ZooKeeper连接异常....】&quot;, e);</span><br><span class="line">        &#125; finally &#123;</span><br><span class="line">            lock.unlock();</span><br><span class="line">        &#125;</span><br><span class="line">        return zooKeeper;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="MyWatcher"><a href="#MyWatcher" class="headerlink" title="MyWatcher"></a>MyWatcher</h2><p>创建自定义的监听，打印监听信息</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">public class MyWatcher implements Watcher &#123;</span><br><span class="line"></span><br><span class="line">    private static final Logger logger = LoggerFactory.getLogger(MyWatcher.class);</span><br><span class="line"></span><br><span class="line">    @Override</span><br><span class="line">    public void process(WatchedEvent event) &#123;</span><br><span class="line">        logger.info(&quot;【Watcher监听事件】=&#123;&#125;&quot;, event.getState());</span><br><span class="line">        logger.info(&quot;【监听路径为】=&#123;&#125;&quot;, event.getPath());</span><br><span class="line">        logger.info(&quot;【监听的类型为】=&#123;&#125;&quot;, event.getType()); //  三种监听类型： 创建，删除，更新</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="ZookeeperAPI"><a href="#ZookeeperAPI" class="headerlink" title="ZookeeperAPI"></a>ZookeeperAPI</h2><p>添加zookeeper接口,新建、修改、删除等方法</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">public interface ZookeeperAPI &#123;</span><br><span class="line"></span><br><span class="line">    public void createNode(String path, Object data);</span><br><span class="line"></span><br><span class="line">    public Boolean exist(String path, Watcher watcher);</span><br><span class="line"></span><br><span class="line">    public void deleteNode(String path, int data);</span><br><span class="line"></span><br><span class="line">    public void updateNode(String path, Object data);</span><br><span class="line"></span><br><span class="line">    public Object getNodeData(String path, MyWatcher watcher, Class&lt;?&gt; clz);</span><br><span class="line"></span><br><span class="line">    List&lt;String&gt; nodeChildren(String path);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="ZookeeperService"><a href="#ZookeeperService" class="headerlink" title="ZookeeperService"></a>ZookeeperService</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br></pre></td><td class="code"><pre><span class="line">@Service</span><br><span class="line">public class ZookeeperService implements ZookeeperAPI &#123;</span><br><span class="line"></span><br><span class="line">    private static final Logger logger = LoggerFactory.getLogger(ZookeeperService.class);</span><br><span class="line"></span><br><span class="line">    @Autowired</span><br><span class="line">    @Qualifier(&quot;zkClient&quot;)</span><br><span class="line">    private ZooKeeper zkClient;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    /**</span><br><span class="line">     * 判断zk路径是否已存在，并添加监视到给定的路径上</span><br><span class="line">     *</span><br><span class="line">     * @param path</span><br><span class="line">     * @param watcher</span><br><span class="line">     * @return</span><br><span class="line">     */</span><br><span class="line">    public Boolean exist(String path, Watcher watcher) &#123;</span><br><span class="line">        try &#123;</span><br><span class="line">            Stat stat = zkClient.exists(path, watcher);</span><br><span class="line">            return !ObjectUtils.isEmpty(stat);</span><br><span class="line">        &#125; catch (Exception e) &#123;</span><br><span class="line">            logger.error(&quot;【断指定节点是否存在异常】&#123;&#125;,&#123;&#125;&quot;, path, e);</span><br><span class="line">            return false;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    /**</span><br><span class="line">     * 添加节点</span><br><span class="line">     *</span><br><span class="line">     * @param path</span><br><span class="line">     * @param data</span><br><span class="line">     */</span><br><span class="line">    @Override</span><br><span class="line">    public void createNode(String path, Object data) &#123;</span><br><span class="line">        try &#123;</span><br><span class="line">            if (!exist(path, new MyWatcher())) &#123;</span><br><span class="line">                zkClient.create(path, JSON.toJSONString(data).getBytes(), ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);</span><br><span class="line">                logger.info(&quot;【指定节点创建成功】，path=&#123;&#125;&quot;, path);</span><br><span class="line">            &#125; else &#123;</span><br><span class="line">                logger.info(&quot;【指定节点是已存在】，path=&#123;&#125;&quot;, path);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; catch (InterruptedException | KeeperException e) &#123;</span><br><span class="line">            logger.error(&quot;【指定节点是否存在异常】&#123;&#125;,&#123;&#125;&quot;, path, e);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    /**</span><br><span class="line">     * 删除节点</span><br><span class="line">     *</span><br><span class="line">     * @param path</span><br><span class="line">     * @param data</span><br><span class="line">     */</span><br><span class="line">    @Override</span><br><span class="line">    public void deleteNode(String path, int version) &#123;</span><br><span class="line">        try &#123;</span><br><span class="line">            //version参数指定要更新的数据的版本, 如果version和真实的版本不同, 更新操作将失败. 指定version为-1则忽略版本检查</span><br><span class="line">            zkClient.delete(path, version);</span><br><span class="line">            logger.info(&quot;【指定节点删除成功】，path=&#123;&#125;&quot;, path);</span><br><span class="line">        &#125; catch (Exception e) &#123;</span><br><span class="line">            logger.error(&quot;【删除持久化节点异常】&#123;&#125;,&#123;&#125;&quot;, path, e);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    /**</span><br><span class="line">     * 更新节点值</span><br><span class="line">     * @param path</span><br><span class="line">     * @param data</span><br><span class="line">     */</span><br><span class="line">    public void updateNode(String path, Object data) &#123;</span><br><span class="line">        try &#123;</span><br><span class="line">            //zk的数据版本是从0开始计数的。如果客户端传入的是-1，则表示zk服务器需要基于最新的数据进行更新。如果对zk的数据节点的更新操作没有原子性要求则可以使用-1.</span><br><span class="line">            //version参数指定要更新的数据的版本, 如果version和真实的版本不同, 更新操作将失败. 指定version为-1则忽略版本检查</span><br><span class="line">            zkClient.setData(path, JSON.toJSONString(data).getBytes(), -1);</span><br><span class="line">            logger.info(&quot;【指定节点修改成功】，path=&#123;&#125;&quot;, path);</span><br><span class="line">        &#125; catch (Exception e) &#123;</span><br><span class="line">            logger.error(&quot;【修改持久化节点异常】&#123;&#125;,&#123;&#125;,&#123;&#125;&quot;, path, data, e);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    /**</span><br><span class="line">     * 获取节点值</span><br><span class="line">     * @param path</span><br><span class="line">     * @param watcher</span><br><span class="line">     * @param clz</span><br><span class="line">     * @return</span><br><span class="line">     */</span><br><span class="line">    public Object getNodeData(String path, MyWatcher watcher,Class&lt;?&gt; clz) &#123;</span><br><span class="line">        try &#123;</span><br><span class="line">            Stat stat = new Stat();</span><br><span class="line">            byte[] bytes = zkClient.getData(path, watcher, stat);</span><br><span class="line">            return JSON.parseObject(bytes,clz);</span><br><span class="line">        &#125; catch (Exception e) &#123;</span><br><span class="line">            logger.error(&quot;【获取持久化节点数据异常】&#123;&#125;,&#123;&#125;&quot;, path, e);</span><br><span class="line">        &#125;</span><br><span class="line">        return null;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    /**</span><br><span class="line">     * 获取当前路径下的子节点</span><br><span class="line">     * @param path</span><br><span class="line">     * @return</span><br><span class="line">     */</span><br><span class="line">    @Override</span><br><span class="line">    public List&lt;String&gt; nodeChildren(String path) &#123;</span><br><span class="line">        try &#123;</span><br><span class="line">           return  zkClient.getChildren(path, false);</span><br><span class="line">        &#125; catch (Exception e) &#123;</span><br><span class="line">            logger.error(&quot;【获取持久化节点数据异常】&#123;&#125;,&#123;&#125;&quot;, path, e);</span><br><span class="line">            return new ArrayList&lt;&gt;();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="ZookeeperController"><a href="#ZookeeperController" class="headerlink" title="ZookeeperController"></a>ZookeeperController</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line">@RestController</span><br><span class="line">public class ZookeeperController &#123;</span><br><span class="line">    @Autowired</span><br><span class="line">    private ZookeeperAPI zookeeperAPI;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    @PostMapping(&quot;exist&quot;)</span><br><span class="line">    public Boolean exist(String path) &#123;</span><br><span class="line">        return zookeeperAPI.exist(path, new MyWatcher());</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    @PostMapping(&quot;createNode&quot;)</span><br><span class="line">    public void createNode(String path, String data) &#123;</span><br><span class="line">        zookeeperAPI.createNode(path, data);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    @PostMapping(&quot;deleteNode&quot;)</span><br><span class="line">    public void deleteNode(String path, int version) &#123;</span><br><span class="line">        zookeeperAPI.deleteNode(path, version);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    @PostMapping(&quot;updateNode&quot;)</span><br><span class="line">    public void updateNode(String path, String data) &#123;</span><br><span class="line">        zookeeperAPI.updateNode(path, data);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    @PostMapping(&quot;getNodeData&quot;)</span><br><span class="line">    public Object getNodeData(String path) &#123;</span><br><span class="line">        return zookeeperAPI.getNodeData(path, new MyWatcher(), String.class);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    @PostMapping(&quot;nodeChildren&quot;)</span><br><span class="line">    public Object nodeChildren(String path) &#123;</span><br><span class="line">        return zookeeperAPI.nodeChildren(path);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h1 id="ZkClient"><a href="#ZkClient" class="headerlink" title="ZkClient"></a>ZkClient</h1><p>ZkClient是由Datameer的工程师开发的开源客户端，对Zookeeper的原生API进行了包装，ZkClient在原生Zookeeper api的基础上进行封装，是一个更易用的客户端，解决和如下问题：</p>
+<ol>
+<li>session会话超时重连</li>
+<li>解决Watcher反复注册</li>
+<li>简化API开发</li>
+</ol>
+<h2 id="ZkClient组件"><a href="#ZkClient组件" class="headerlink" title="ZkClient组件"></a>ZkClient组件</h2><p><img src="/2020/07/14/zookeeper-客户端连接/zkclient.png" alt></p>
+<p>IZKConnection：是一个ZkClient与Zookeeper之间的一个适配器；在代码里直接使用的是ZKClient，实质上还是委托了zookeeper来处理了。</p>
+<p>在ZKClient中，根据事件类型，分为</p>
+<ul>
+<li>节点事件（数据事件），对应的事件处理器是IZKDataListener；</li>
+<li>子节点事件，对应的事件处理器是IZKChildListener；</li>
+<li>Session事件，对应的事件处理器是IZKStatusListener；</li>
+</ul>
+<p>ZkEventThread：是专门用来处理事件的线程</p>
+<h2 id="ZkClient-初始化连接"><a href="#ZkClient-初始化连接" class="headerlink" title="ZkClient 初始化连接"></a>ZkClient 初始化连接</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">   /**</span><br><span class="line">    * @param serverstring zk路径</span><br><span class="line">    */</span><br><span class="line">public ZkClient(String serverstring) &#123;</span><br><span class="line">       this(serverstring, Integer.MAX_VALUE);</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">   public ZkClient(String zkServers, int connectionTimeout) &#123;</span><br><span class="line">       this(new ZkConnection(zkServers), connectionTimeout);</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">   public ZkClient(String zkServers, int sessionTimeout, int connectionTimeout) &#123;</span><br><span class="line">       this(new ZkConnection(zkServers, sessionTimeout), connectionTimeout);</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">/**</span><br><span class="line">    * @param serverstring zk路径</span><br><span class="line">    * @param sessionTimeout 会话超时时间</span><br><span class="line">    * @param connectionTimeout 连接超时时间</span><br><span class="line">    * @param zkSerializer Zookeeper数据序列化器</span><br><span class="line">    */</span><br><span class="line">   public ZkClient(String zkServers, int sessionTimeout, int connectionTimeout, ZkSerializer zkSerializer) &#123;</span><br><span class="line">       this(new ZkConnection(zkServers, sessionTimeout), connectionTimeout, zkSerializer);</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure>
+<h2 id="节点操作"><a href="#节点操作" class="headerlink" title="节点操作"></a>节点操作</h2><p>创建节点</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">//创建一个持久节点</span><br><span class="line">public void createPersistent(String path) throws ZkInterruptedException, IllegalArgumentException, ZkException, RuntimeException &#123;</span><br><span class="line">    createPersistent(path, false);</span><br><span class="line">&#125;</span><br><span class="line">//创建一个持久的顺序节点，按顺序会生成递增的10位节点编号后缀</span><br><span class="line">public String createPersistentSequential(String path, Object data) throws ZkInterruptedException, IllegalArgumentException, ZkException, RuntimeException &#123;</span><br><span class="line">    return create(path, data, CreateMode.PERSISTENT_SEQUENTIAL);</span><br><span class="line">&#125;</span><br><span class="line">//创建临时节点</span><br><span class="line">public void createEphemeral(final String path, final Object data) throws ZkInterruptedException, IllegalArgumentException, ZkException, RuntimeException &#123;</span><br><span class="line">    create(path, data, CreateMode.EPHEMERAL);</span><br><span class="line">&#125;</span><br><span class="line">//创建一个顺序的的临时节点，</span><br><span class="line">public String createEphemeralSequential(final String path, final Object data) throws ZkInterruptedException, IllegalArgumentException, ZkException, RuntimeException&#123;</span><br><span class="line"> return create(path, data, CreateMode.EPHEMERAL_SEQUENTIAL);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>删除节点</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">public boolean delete(final String path) &#123;</span><br><span class="line">//忽略版本的删除</span><br><span class="line">    return delete(path, -1);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">public boolean delete(final String path, final int version) &#123;</span><br><span class="line">    try &#123;</span><br><span class="line">        retryUntilConnected(new Callable&lt;Object&gt;() &#123;</span><br><span class="line"></span><br><span class="line">            @Override</span><br><span class="line">            public Object call() throws Exception &#123;</span><br><span class="line">                _connection.delete(path, version);</span><br><span class="line">                return null;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;);</span><br><span class="line"></span><br><span class="line">        return true;</span><br><span class="line">    &#125; catch (ZkNoNodeException e) &#123;</span><br><span class="line">        return false;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>修改节点数据</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">public void writeData(String path, Object object) &#123;</span><br><span class="line">    writeData(path, object, -1);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">public &lt;T extends Object&gt; void updateDataSerialized(String path, DataUpdater&lt;T&gt; updater) &#123;</span><br><span class="line">    Stat stat = new Stat();</span><br><span class="line">    boolean retry;</span><br><span class="line">    do &#123;</span><br><span class="line">        retry = false;</span><br><span class="line">        try &#123;</span><br><span class="line">            T oldData = (T) readData(path, stat);</span><br><span class="line">            T newData = updater.update(oldData);</span><br><span class="line">            writeData(path, newData, stat.getVersion());</span><br><span class="line">        &#125; catch (ZkBadVersionException e) &#123;</span><br><span class="line">            retry = true;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; while (retry);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">public void writeData(final String path, Object datat, final int expectedVersion) &#123;</span><br><span class="line">    writeDataReturnStat(path, datat, expectedVersion);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">public Stat writeDataReturnStat(final String path, Object datat, final int expectedVersion) &#123;</span><br><span class="line">    final byte[] data = serialize(datat);</span><br><span class="line">    return (Stat) retryUntilConnected(new Callable&lt;Object&gt;() &#123;</span><br><span class="line">        @Override</span><br><span class="line">        public Object call() throws Exception &#123;</span><br><span class="line">            Stat stat = _connection.writeDataReturnStat(path, data, expectedVersion);</span><br><span class="line">            return stat;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="注册Watcher事件"><a href="#注册Watcher事件" class="headerlink" title="注册Watcher事件"></a>注册Watcher事件</h2><p>创建节点改变监控</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">public List&lt;String&gt; subscribeChildChanges(String path, IZkChildListener listener) &#123;</span><br><span class="line">    synchronized (_childListener) &#123;</span><br><span class="line">        Set&lt;IZkChildListener&gt; listeners = _childListener.get(path);</span><br><span class="line">        if (listeners == null) &#123;</span><br><span class="line">            listeners = new CopyOnWriteArraySet&lt;IZkChildListener&gt;();</span><br><span class="line">            _childListener.put(path, listeners);</span><br><span class="line">        &#125;</span><br><span class="line">        listeners.add(listener);</span><br><span class="line">    &#125;</span><br><span class="line">    return watchForChilds(path);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>创建节点内容改变监控</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">public void subscribeDataChanges(String path, IZkDataListener listener) &#123;</span><br><span class="line">    Set&lt;IZkDataListener&gt; listeners;</span><br><span class="line">    synchronized (_dataListener) &#123;</span><br><span class="line">        listeners = _dataListener.get(path);</span><br><span class="line">        if (listeners == null) &#123;</span><br><span class="line">            listeners = new CopyOnWriteArraySet&lt;IZkDataListener&gt;();</span><br><span class="line">            _dataListener.put(path, listeners);</span><br><span class="line">        &#125;</span><br><span class="line">        listeners.add(listener);</span><br><span class="line">    &#125;</span><br><span class="line">    watchForData(path);</span><br><span class="line">    LOG.debug(&quot;Subscribed data changes for &quot; + path);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>创建节点状态监控</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">public void subscribeStateChanges(final IZkStateListener listener) &#123;</span><br><span class="line">    synchronized (_stateListener) &#123;</span><br><span class="line">        _stateListener.add(listener);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>示例代码</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">public static void main(String[] args) throws InterruptedException &#123;</span><br><span class="line"></span><br><span class="line">       //建立连接</span><br><span class="line">       ZkClient zkClient = new ZkClient(&quot;47.102.99.93:5602&quot;);</span><br><span class="line">       System.out.println(&quot;zookeeper 连接成功&quot;);</span><br><span class="line">       //添加节点监听</span><br><span class="line">       zkClient.subscribeChildChanges(&quot;/zkClient/node1&quot;, (parentPath, currentChild) -&gt;</span><br><span class="line">               System.out.println(parentPath + &quot; &apos;s child changed, currentChild:&quot; + currentChild));</span><br><span class="line">       //添加节点内容改变监听</span><br><span class="line">       zkClient.createPersistent(&quot;/zkClient/node2&quot;,true);</span><br><span class="line">       zkClient.createPersistentSequential(&quot;/zkClient/node3&quot;,true);</span><br><span class="line">       System.out.println(&quot;节点创建成功&quot;);</span><br><span class="line">       //添加节点内容监听</span><br><span class="line">       zkClient.subscribeDataChanges(&quot;/zkClient/node2&quot;, new IZkDataListener() &#123;</span><br><span class="line">           @Override</span><br><span class="line">           public void handleDataChange(String dataPath, Object data) &#123;</span><br><span class="line">               System.out.println(dataPath+&quot;该节点数据被修改，修改后为：&quot;+ data);</span><br><span class="line">           &#125;</span><br><span class="line">           @Override</span><br><span class="line">           public void handleDataDeleted(String dataPath) &#123;</span><br><span class="line">               System.out.println(dataPath+&quot;该节点数据被删除&quot;);</span><br><span class="line">           &#125;</span><br><span class="line">       &#125;);</span><br><span class="line">       zkClient.writeData(&quot;/zkClient/node2&quot;,&quot;77777&quot;);</span><br><span class="line">       Thread.sleep(3000);</span><br><span class="line">       System.out.println(1);</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure>
+<h1 id="Curator"><a href="#Curator" class="headerlink" title="Curator"></a>Curator</h1><p>Curator是Netflix公司开源的一个Zookeeper客户端，与Zookeeper提供的原生客户端相比，Curator的抽象层次更高，简化了Zookeeper客户端的开发量。</p>
+<ul>
+<li>封装ZooKeeper client与ZooKeeper server之间的连接处理；</li>
+<li>提供了一套Fluent风格的操作API；</li>
+<li>提供ZooKeeper各种应用场景(recipe，比如共享锁服务，集群领导选举机制)的抽象封装</li>
+</ul>
+<p>Curator主要从以下几个方面降低了zk使用的复杂性：</p>
+<ul>
+<li>重试机制:提供可插拔的重试机制, 它将给捕获所有可恢复的异常配置一个重试策略，并且内部也提供了几种标准的重试策略(比如指数补偿)</li>
+<li>连接状态监控: Curator初始化之后会一直对zk连接进行监听，一旦发现连接状态发生变化将会作出相应的处理</li>
+<li>zk客户端实例管理:Curator会对zk客户端到server集群的连接进行管理，并在需要的时候重建zk实例，保证与zk集群连接的可靠性</li>
+<li>各种使用场景支持:Curator实现了zk支持的大部分使用场景（甚至包括zk自身不支持的场景），这些实现都遵循了zk的最佳实践，并考虑了各种极端情况</li>
+</ul>
+<h2 id="Curator的ZooKeeper基本用法"><a href="#Curator的ZooKeeper基本用法" class="headerlink" title="Curator的ZooKeeper基本用法"></a>Curator的ZooKeeper基本用法</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br></pre></td><td class="code"><pre><span class="line">public class CuratorBase &#123;</span><br><span class="line">    //会话超时时间</span><br><span class="line">    private final int SESSION_TIMEOUT = 30 * 1000;</span><br><span class="line"></span><br><span class="line">    //连接超时时间</span><br><span class="line">    private final int CONNECTION_TIMEOUT = 3 * 1000;</span><br><span class="line"></span><br><span class="line">    //ZooKeeper服务地址</span><br><span class="line">    private static final String CONNECT_ADDR = &quot;192.168.1.1:2100,192.168.1.1:2101,192.168.1.:2102&quot;;</span><br><span class="line"></span><br><span class="line">    //创建连接实例</span><br><span class="line">    private CuratorFramework client = null;</span><br><span class="line"></span><br><span class="line">    public static void main(String[] args) throws Exception &#123;</span><br><span class="line">        //1 重试策略：初试时间为1s 重试10次</span><br><span class="line">        RetryPolicy retryPolicy = new ExponentialBackoffRetry(1000, 10);</span><br><span class="line">        //2 通过工厂创建连接</span><br><span class="line">        CuratorFramework client = CuratorFrameworkFactory.builder()</span><br><span class="line">                    .connectString(CONNECT_ADDR).connectionTimeoutMs(CONNECTION_TIMEOUT)</span><br><span class="line">                    .sessionTimeoutMs(SESSION_TIMEOUT)</span><br><span class="line">                    .retryPolicy(retryPolicy)</span><br><span class="line">//命名空间           .namespace(&quot;super&quot;)</span><br><span class="line">                    .build();</span><br><span class="line">        //3 开启连接</span><br><span class="line">        cf.start();</span><br><span class="line"></span><br><span class="line">        System.out.println(States.CONNECTED);</span><br><span class="line">        System.out.println(cf.getState());</span><br><span class="line"></span><br><span class="line">        //创建永久节点</span><br><span class="line">        client.create().forPath(&quot;/curator&quot;,&quot;/curator data&quot;.getBytes());</span><br><span class="line"></span><br><span class="line">        //创建永久有序节点</span><br><span class="line">        client.create().withMode(CreateMode.PERSISTENT_SEQUENTIAL).forPath(&quot;/curator_sequential&quot;,&quot;/curator_sequential data&quot;.getBytes());</span><br><span class="line"></span><br><span class="line">        //创建临时节点</span><br><span class="line">        client.create().withMode(CreateMode.EPHEMERAL)</span><br><span class="line">            .forPath(&quot;/curator/ephemeral&quot;,&quot;/curator/ephemeral data&quot;.getBytes());</span><br><span class="line"></span><br><span class="line">        //创建临时有序节点</span><br><span class="line">        client.create().withMode(CreateMode.EPHEMERAL_SEQUENTIAL) .forPath(&quot;/curator/ephemeral_path1&quot;,&quot;/curator/ephemeral_path1 data&quot;.getBytes());</span><br><span class="line"></span><br><span class="line">        client.create().withProtection().withMode(CreateMode.EPHEMERAL_SEQUENTIAL).forPath(&quot;/curator/ephemeral_path2&quot;,&quot;/curator/ephemeral_path2 data&quot;.getBytes());</span><br><span class="line"></span><br><span class="line">        //测试检查某个节点是否存在</span><br><span class="line">        Stat stat1 = client.checkExists().forPath(&quot;/curator&quot;);</span><br><span class="line">        Stat stat2 = client.checkExists().forPath(&quot;/curator2&quot;);</span><br><span class="line"></span><br><span class="line">        System.out.println(&quot;&apos;/curator&apos;是否存在： &quot; + (stat1 != null ? true : false));</span><br><span class="line">        System.out.println(&quot;&apos;/curator2&apos;是否存在： &quot; + (stat2 != null ? true : false));</span><br><span class="line"></span><br><span class="line">        //获取某个节点的所有子节点</span><br><span class="line">        System.out.println(client.getChildren().forPath(&quot;/&quot;));</span><br><span class="line"></span><br><span class="line">        //获取某个节点数据</span><br><span class="line">        System.out.println(new String(client.getData().forPath(&quot;/curator&quot;)));</span><br><span class="line"></span><br><span class="line">        //设置某个节点数据</span><br><span class="line">        client.setData().forPath(&quot;/curator&quot;,&quot;/curator modified data&quot;.getBytes());</span><br><span class="line"></span><br><span class="line">        //创建测试节点</span><br><span class="line">        client.create().orSetData().creatingParentContainersIfNeeded()</span><br><span class="line">            .forPath(&quot;/curator/del_key1&quot;,&quot;/curator/del_key1 data&quot;.getBytes());</span><br><span class="line"></span><br><span class="line">        client.create().orSetData().creatingParentContainersIfNeeded()</span><br><span class="line">        .forPath(&quot;/curator/del_key2&quot;,&quot;/curator/del_key2 data&quot;.getBytes());</span><br><span class="line"></span><br><span class="line">        client.create().forPath(&quot;/curator/del_key2/test_key&quot;,&quot;test_key data&quot;.getBytes());</span><br><span class="line"></span><br><span class="line">        //删除该节点</span><br><span class="line">        client.delete().forPath(&quot;/curator/del_key1&quot;);</span><br><span class="line"></span><br><span class="line">        //级联删除子节点</span><br><span class="line">        client.delete().guaranteed().deletingChildrenIfNeeded().forPath(&quot;/curator/del_key2&quot;);</span><br><span class="line">    ｝</span><br><span class="line">｝</span><br></pre></td></tr></table></figure>
+<ul>
+<li>orSetData()方法：如果节点存在则Curator将会使用给出的数据设置这个节点的值，相当于 setData() 方法</li>
+<li>creatingParentContainersIfNeeded()方法：如果指定节点的父节点不存在，则Curator将会自动级联创建父节点</li>
+<li>guaranteed()方法：如果服务端可能删除成功，但是client没有接收到删除成功的提示，Curator将会在后台持续尝试删除该节点</li>
+<li>deletingChildrenIfNeeded()方法：如果待删除节点存在子节点，则Curator将会级联删除该节点的子节点</li>
+</ul>
+<h2 id="事务操作"><a href="#事务操作" class="headerlink" title="事务操作"></a>事务操作</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">* 事务管理：碰到异常，事务会回滚</span><br><span class="line">     * @throws Exception</span><br><span class="line">     */</span><br><span class="line">    @Test</span><br><span class="line">    public void testTransaction() throws Exception&#123;</span><br><span class="line">        //定义几个基本操作</span><br><span class="line">        CuratorOp createOp = client.transactionOp().create()</span><br><span class="line">                .forPath(&quot;/curator/one_path&quot;,&quot;some data&quot;.getBytes());</span><br><span class="line">        </span><br><span class="line">        CuratorOp setDataOp = client.transactionOp().setData()</span><br><span class="line">                .forPath(&quot;/curator&quot;,&quot;other data&quot;.getBytes());</span><br><span class="line">        </span><br><span class="line">        CuratorOp deleteOp = client.transactionOp().delete()</span><br><span class="line">                .forPath(&quot;/curator&quot;);</span><br><span class="line">        </span><br><span class="line">        //事务执行结果</span><br><span class="line">        List&lt;CuratorTransactionResult&gt; results = client.transaction()</span><br><span class="line">                .forOperations(createOp,setDataOp,deleteOp);</span><br><span class="line">        </span><br><span class="line">        //遍历输出结果</span><br><span class="line">        for(CuratorTransactionResult result : results)&#123;</span><br><span class="line">            System.out.println(&quot;执行结果是： &quot; + result.getForPath() + &quot;--&quot; + result.getType());</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">//因为节点“/curator”存在子节点，所以在删除的时候将会报错，事务回滚</span><br></pre></td></tr></table></figure>
+<h2 id="监听器"><a href="#监听器" class="headerlink" title="监听器"></a>监听器</h2><p>Curator提供了三种Watcher(Cache)来监听结点的变化：</p>
+<ul>
+<li><strong>Path Cache</strong>：监视一个路径下1）孩子结点的创建、2）删除，3）以及结点数据的更新。产生的事件会传递给注册的PathChildrenCacheListener。</li>
+<li><strong>Node Cache</strong>：监视一个结点的创建、更新、删除，并将结点的数据缓存在本地。</li>
+<li><strong>Tree Cache</strong>：Path Cache和Node Cache的“合体”，监视路径下的创建、更新、删除事件，并缓存路径下所有孩子结点的数据。</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br></pre></td><td class="code"><pre><span class="line">/**</span><br><span class="line">         * 在注册监听器的时候，如果传入此参数，当事件触发时，逻辑由线程池处理</span><br><span class="line">         */</span><br><span class="line">        ExecutorService pool = Executors.newFixedThreadPool(2);</span><br><span class="line">        </span><br><span class="line">        /**</span><br><span class="line">         * 监听数据节点的变化情况</span><br><span class="line">         */</span><br><span class="line">        final NodeCache nodeCache = new NodeCache(client, &quot;/zk-huey/cnode&quot;, false);</span><br><span class="line">        nodeCache.start(true);</span><br><span class="line">        nodeCache.getListenable().addListener(</span><br><span class="line">            new NodeCacheListener() &#123;</span><br><span class="line">                @Override</span><br><span class="line">                public void nodeChanged() throws Exception &#123;</span><br><span class="line">                    System.out.println(&quot;Node data is changed, new data: &quot; + </span><br><span class="line">                        new String(nodeCache.getCurrentData().getData()));</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;, </span><br><span class="line">            pool</span><br><span class="line">        );</span><br><span class="line">        </span><br><span class="line">        /**</span><br><span class="line">         * 监听子节点的变化情况</span><br><span class="line">         */</span><br><span class="line">        final PathChildrenCache childrenCache = new PathChildrenCache(client, &quot;/zk-huey&quot;, true);</span><br><span class="line">        childrenCache.start(StartMode.POST_INITIALIZED_EVENT);</span><br><span class="line">        childrenCache.getListenable().addListener(</span><br><span class="line">            new PathChildrenCacheListener() &#123;</span><br><span class="line">                @Override</span><br><span class="line">                public void childEvent(CuratorFramework client, PathChildrenCacheEvent event)</span><br><span class="line">                        throws Exception &#123;</span><br><span class="line">                        switch (event.getType()) &#123;</span><br><span class="line">                        case CHILD_ADDED:</span><br><span class="line">                            System.out.println(&quot;CHILD_ADDED: &quot; + event.getData().getPath());</span><br><span class="line">                            break;</span><br><span class="line">                        case CHILD_REMOVED:</span><br><span class="line">                            System.out.println(&quot;CHILD_REMOVED: &quot; + event.getData().getPath());</span><br><span class="line">                            break;</span><br><span class="line">                        case CHILD_UPDATED:</span><br><span class="line">                            System.out.println(&quot;CHILD_UPDATED: &quot; + event.getData().getPath());</span><br><span class="line">                            break;</span><br><span class="line">                        default:</span><br><span class="line">                            break;</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;,</span><br><span class="line">            pool</span><br><span class="line">        );</span><br><span class="line">        </span><br><span class="line">        client.setData().forPath(&quot;/zk-huey/cnode&quot;, &quot;world&quot;.getBytes());</span><br><span class="line">        </span><br><span class="line">        Thread.sleep(10 * 1000);</span><br><span class="line">        pool.shutdown();</span><br><span class="line">        client.close();</span><br></pre></td></tr></table></figure>
+<h2 id="分布式锁"><a href="#分布式锁" class="headerlink" title="分布式锁"></a>分布式锁</h2><p>分布式编程时，比如最容易碰到的情况就是应用程序在线上多机部署，于是当多个应用同时访问某一资源时，就需要某种机制去协调它们。例如，现在一台应用正在rebuild缓存内容，要临时锁住某个区域暂时不让访问；又比如调度程序每次只想一个任务被一台应用执行等等.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br></pre></td><td class="code"><pre><span class="line">import org.apache.curator.framework.CuratorFramework;</span><br><span class="line">import org.apache.curator.framework.CuratorFrameworkFactory;</span><br><span class="line">import org.apache.curator.framework.recipes.locks.InterProcessMutex;</span><br><span class="line">import org.apache.curator.retry.RetryNTimes;</span><br><span class="line"></span><br><span class="line">import java.util.concurrent.TimeUnit;</span><br><span class="line"></span><br><span class="line">/**</span><br><span class="line"> * Curator framework&apos;s distributed lock test.</span><br><span class="line"> */</span><br><span class="line">public class CuratorDistrLockTest &#123;</span><br><span class="line"></span><br><span class="line">    /** Zookeeper info */</span><br><span class="line">    private static final String ZK_ADDRESS = &quot;192.168.1.100:2181&quot;;</span><br><span class="line">    private static final String ZK_LOCK_PATH = &quot;/zktest&quot;;</span><br><span class="line"></span><br><span class="line">    public static void main(String[] args) throws InterruptedException &#123;</span><br><span class="line">        // 1.Connect to zk</span><br><span class="line">        CuratorFramework client = CuratorFrameworkFactory.newClient(</span><br><span class="line">                ZK_ADDRESS,</span><br><span class="line">                new RetryNTimes(10, 5000)</span><br><span class="line">        );</span><br><span class="line">        client.start();</span><br><span class="line">        System.out.println(&quot;zk client start successfully!&quot;);</span><br><span class="line"></span><br><span class="line">        Thread t1 = new Thread(() -&gt; &#123;</span><br><span class="line">            doWithLock(client);</span><br><span class="line">        &#125;, &quot;t1&quot;);</span><br><span class="line">        Thread t2 = new Thread(() -&gt; &#123;</span><br><span class="line">            doWithLock(client);</span><br><span class="line">        &#125;, &quot;t2&quot;);</span><br><span class="line"></span><br><span class="line">        t1.start();</span><br><span class="line">        t2.start();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    private static void doWithLock(CuratorFramework client) &#123;</span><br><span class="line">        InterProcessMutex lock = new InterProcessMutex(client, ZK_LOCK_PATH);</span><br><span class="line">        try &#123;</span><br><span class="line">            if (lock.acquire(10 * 1000, TimeUnit.SECONDS)) &#123;</span><br><span class="line">                System.out.println(Thread.currentThread().getName() + &quot; hold lock&quot;);</span><br><span class="line">                Thread.sleep(5000L);</span><br><span class="line">                System.out.println(Thread.currentThread().getName() + &quot; release lock&quot;);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; catch (Exception e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125; finally &#123;</span><br><span class="line">            try &#123;</span><br><span class="line">                lock.release();</span><br><span class="line">            &#125; catch (Exception e) &#123;</span><br><span class="line">                e.printStackTrace();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h1 id="Leader选举"><a href="#Leader选举" class="headerlink" title="Leader选举"></a>Leader选举</h1><p>当集群里的某个服务down机时，我们可能要从slave结点里选出一个作为新的master，这时就需要一套能在分布式环境中自动协调的Leader选举方法。Curator提供了LeaderSelector监听器实现Leader选举功能。同一时刻，只有一个Listener会进入takeLeadership()方法，说明它是当前的Leader。注意：<strong>当Listener从takeLeadership()退出时就说明它放弃了“Leader身份”</strong>，这时Curator会利用Zookeeper再从剩余的Listener中选出一个新的Leader。autoRequeue()方法使放弃Leadership的Listener有机会重新获得Leadership，如果不设置的话放弃了的Listener是不会再变成Leader的。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br></pre></td><td class="code"><pre><span class="line">import org.apache.curator.framework.CuratorFramework;</span><br><span class="line">import org.apache.curator.framework.CuratorFrameworkFactory;</span><br><span class="line">import org.apache.curator.framework.recipes.leader.LeaderSelector;</span><br><span class="line">import org.apache.curator.framework.recipes.leader.LeaderSelectorListener;</span><br><span class="line">import org.apache.curator.framework.state.ConnectionState;</span><br><span class="line">import org.apache.curator.retry.RetryNTimes;</span><br><span class="line">import org.apache.curator.utils.EnsurePath;</span><br><span class="line"></span><br><span class="line">/**</span><br><span class="line"> * Curator framework&apos;s leader election test.</span><br><span class="line"> * Output:</span><br><span class="line"> *  LeaderSelector-2 take leadership!</span><br><span class="line"> *  LeaderSelector-2 relinquish leadership!</span><br><span class="line"> *  LeaderSelector-1 take leadership!</span><br><span class="line"> *  LeaderSelector-1 relinquish leadership!</span><br><span class="line"> *  LeaderSelector-0 take leadership!</span><br><span class="line"> *  LeaderSelector-0 relinquish leadership! </span><br><span class="line"> *      ...</span><br><span class="line"> */</span><br><span class="line">public class CuratorLeaderTest &#123;</span><br><span class="line"></span><br><span class="line">    /** Zookeeper info */</span><br><span class="line">    private static final String ZK_ADDRESS = &quot;192.168.1.100:2181&quot;;</span><br><span class="line">    private static final String ZK_PATH = &quot;/zktest&quot;;</span><br><span class="line"></span><br><span class="line">    public static void main(String[] args) throws InterruptedException &#123;</span><br><span class="line">        LeaderSelectorListener listener = new LeaderSelectorListener() &#123;</span><br><span class="line">            @Override</span><br><span class="line">            public void takeLeadership(CuratorFramework client) throws Exception &#123;</span><br><span class="line">                System.out.println(Thread.currentThread().getName() + &quot; take leadership!&quot;);</span><br><span class="line"></span><br><span class="line">                // takeLeadership() method should only return when leadership is being relinquished.</span><br><span class="line">                Thread.sleep(5000L);</span><br><span class="line"></span><br><span class="line">                System.out.println(Thread.currentThread().getName() + &quot; relinquish leadership!&quot;);</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            @Override</span><br><span class="line">            public void stateChanged(CuratorFramework client, ConnectionState state) &#123;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;;</span><br><span class="line"></span><br><span class="line">        new Thread(() -&gt; &#123;</span><br><span class="line">            registerListener(listener);</span><br><span class="line">        &#125;).start();</span><br><span class="line"></span><br><span class="line">        new Thread(() -&gt; &#123;</span><br><span class="line">            registerListener(listener);</span><br><span class="line">        &#125;).start();</span><br><span class="line"></span><br><span class="line">        new Thread(() -&gt; &#123;</span><br><span class="line">            registerListener(listener);</span><br><span class="line">        &#125;).start();</span><br><span class="line"></span><br><span class="line">        Thread.sleep(Integer.MAX_VALUE);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    private static void registerListener(LeaderSelectorListener listener) &#123;</span><br><span class="line">        // 1.Connect to zk</span><br><span class="line">        CuratorFramework client = CuratorFrameworkFactory.newClient(</span><br><span class="line">                ZK_ADDRESS,</span><br><span class="line">                new RetryNTimes(10, 5000)</span><br><span class="line">        );</span><br><span class="line">        client.start();</span><br><span class="line"></span><br><span class="line">        // 2.Ensure path</span><br><span class="line">        try &#123;</span><br><span class="line">            new EnsurePath(ZK_PATH).ensure(client.getZookeeperClient());</span><br><span class="line">        &#125; catch (Exception e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        // 3.Register listener</span><br><span class="line">        LeaderSelector selector = new LeaderSelector(client, ZK_PATH, listener);</span><br><span class="line">        selector.autoRequeue();</span><br><span class="line">        selector.start();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/zookeeper/" rel="tag"><i class="fa fa-tag"></i> zookeeper</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2020/07/13/zookeeper-核心概念/" rel="next" title="zookeeper-核心概念">
+                <i class="fa fa-chevron-left"></i> zookeeper-核心概念
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2020/07/15/zookeeper-注解实现锁/" rel="prev" title="zookeeper-注解实现锁">
+                zookeeper-注解实现锁 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  <div>
+    
+    <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:14px;">------ 本文结束------</div>
+    
+</div>
+    
+ </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+		  <div id="music163player">
+			<iframe frameborder="no" border="0" marginwidth="0" marginheight="0" width="330" height="86" src="//music.163.com/outchain/player?type=2&id=28285910&auto=1&height=66">
+			</iframe>
+		  </div>
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/sliver.jpg" alt="wei xy">
+            
+              <p class="site-author-name" itemprop="name">wei xy</p>
+              <p class="site-description motion-element" itemprop="description">一步一步似爪牙</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">64</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">22</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">54</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/yourname" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="mailto:yourname@gmail.com" target="_blank" title="E-Mail">
+                      
+                        <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="https://plus.google.com/yourname" target="_blank" title="Google">
+                      
+                        <i class="fa fa-fw fa-google"></i>Google</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="https://twitter.com/yourname" target="_blank" title="Twitter">
+                      
+                        <i class="fa fa-fw fa-twitter"></i>Twitter</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="https://www.facebook.com/yourname" target="_blank" title="FB Page">
+                      
+                        <i class="fa fa-fw fa-facebook"></i>FB Page</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="https://vk.com/yourname" target="_blank" title="VK Group">
+                      
+                        <i class="fa fa-fw fa-vk"></i>VK Group</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="https://stackoverflow.com/yourname" target="_blank" title="StackOverflow">
+                      
+                        <i class="fa fa-fw fa-stack-overflow"></i>StackOverflow</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="https://youtube.com/yourname" target="_blank" title="YouTube">
+                      
+                        <i class="fa fa-fw fa-youtube"></i>YouTube</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="https://instagram.com/yourname" target="_blank" title="Instagram">
+                      
+                        <i class="fa fa-fw fa-instagram"></i>Instagram</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="skype:yourname?call|chat" target="_blank" title="Skype">
+                      
+                        <i class="fa fa-fw fa-skype"></i>Skype</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Zookeeper原生API"><span class="nav-number">1.</span> <span class="nav-text">Zookeeper原生API</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#ZookeeperConfig"><span class="nav-number">1.1.</span> <span class="nav-text">ZookeeperConfig</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#MyWatcher"><span class="nav-number">1.2.</span> <span class="nav-text">MyWatcher</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ZookeeperAPI"><span class="nav-number">1.3.</span> <span class="nav-text">ZookeeperAPI</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ZookeeperService"><span class="nav-number">1.4.</span> <span class="nav-text">ZookeeperService</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ZookeeperController"><span class="nav-number">1.5.</span> <span class="nav-text">ZookeeperController</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#ZkClient"><span class="nav-number">2.</span> <span class="nav-text">ZkClient</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#ZkClient组件"><span class="nav-number">2.1.</span> <span class="nav-text">ZkClient组件</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ZkClient-初始化连接"><span class="nav-number">2.2.</span> <span class="nav-text">ZkClient 初始化连接</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#节点操作"><span class="nav-number">2.3.</span> <span class="nav-text">节点操作</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#注册Watcher事件"><span class="nav-number">2.4.</span> <span class="nav-text">注册Watcher事件</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Curator"><span class="nav-number">3.</span> <span class="nav-text">Curator</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Curator的ZooKeeper基本用法"><span class="nav-number">3.1.</span> <span class="nav-text">Curator的ZooKeeper基本用法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#事务操作"><span class="nav-number">3.2.</span> <span class="nav-text">事务操作</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#监听器"><span class="nav-number">3.3.</span> <span class="nav-text">监听器</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#分布式锁"><span class="nav-number">3.4.</span> <span class="nav-text">分布式锁</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Leader选举"><span class="nav-number">4.</span> <span class="nav-text">Leader选举</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+        <div class="back-to-top">
+          <i class="fa fa-arrow-up"></i>
+          
+            <span id="scrollpercent"><span>0</span>%</span>
+          
+        </div>
+      
+
+    </div>
+  </aside>
+
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<div class="copyright">&copy; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">wei xy</span>
+
+  
+</div>
+	<!--div class="powered-by">
+		<i class="fa fa-user-md"></i>
+		<span id="busuanzi_container_site_uv">
+			本站访客数:<span id="busuanzi_value_site_uv"></span>
+		</span>
+	</div -->
+
+<!-- 
+  <div class="powered-by">由  强力驱动</div>
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash;  v5.1.4</div>
+
+-->
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+	<!-- 代码块复制功能 -->
+	<script type="text/javascript" src="/js/src/clipboard.min.js"></script>  
+	<script type="text/javascript" src="/js/src/clipboard-use.js"></script>
+	<!--动态标题-->
+	<script type="text/javascript" src="/js/src/dytitle.js"></script>
+	<!-- 樱花特效 -->
+    <script async src="/js/src/fairyDustCursor.js"></script>
+
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"symbols":true,"time":true,"total_symbols":true,"total_time":true,"log":false});</script></body>
+</html>
+<!-- 页面点击小红心 -->
+<script type="text/javascript" src="/js/src/love.js"></script>

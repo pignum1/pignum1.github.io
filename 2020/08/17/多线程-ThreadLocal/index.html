@@ -94,14 +94,14 @@
 <meta property="og:site_name" content="风寒露重">
 <meta property="og:description" content="以前在刚想学习java的时候，在写练习的db的时候，做数据库连接池有用到ThreadLocal，只晓得是本地的线程变量，平时的业务开发中基本没有使用到。 ThreadLocal的作用ThreadLocal是解决线程安全问题一个很好的思路，它通过为每个线程提供一个独立的变量副本解决了变量并发访问的冲突问题。在很多情况下，ThreadLocal比直接使用synchronized同步机制解决线程安全问题">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:image" content="http://yoursite.com/2020/08/17/多线程-ThreadLocal/E:/blog/source/_posts/ThreadLocal/ThreadLocalMap.png">
-<meta property="og:image" content="http://yoursite.com/2020/08/17/多线程-ThreadLocal/E:/blog/source/_posts/ThreadLocal/内存泄露.png">
+<meta property="og:image" content="http://yoursite.com/2020/08/17/多线程-ThreadLocal/ThreadLocalMap.png">
+<meta property="og:image" content="http://yoursite.com/2020/08/17/多线程-ThreadLocal/内存泄露.png">
 <meta property="og:image" content="http://yoursite.com/2020/08/17/多线程-ThreadLocal/simpleDateFormat.png">
-<meta property="og:updated_time" content="2020-10-27T07:34:22.942Z">
+<meta property="og:updated_time" content="2020-11-21T16:17:46.053Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="多线程-ThreadLocal">
 <meta name="twitter:description" content="以前在刚想学习java的时候，在写练习的db的时候，做数据库连接池有用到ThreadLocal，只晓得是本地的线程变量，平时的业务开发中基本没有使用到。 ThreadLocal的作用ThreadLocal是解决线程安全问题一个很好的思路，它通过为每个线程提供一个独立的变量副本解决了变量并发访问的冲突问题。在很多情况下，ThreadLocal比直接使用synchronized同步机制解决线程安全问题">
-<meta name="twitter:image" content="http://yoursite.com/2020/08/17/多线程-ThreadLocal/E:/blog/source/_posts/ThreadLocal/ThreadLocalMap.png">
+<meta name="twitter:image" content="http://yoursite.com/2020/08/17/多线程-ThreadLocal/ThreadLocalMap.png">
 
 
 
@@ -353,8 +353,8 @@
               
                 <span class="post-meta-item-text">更新于&#58;</span>
               
-              <time title="更新于" itemprop="dateModified" datetime="2020-10-27T15:34:22+08:00">
-                2020-10-27
+              <time title="更新于" itemprop="dateModified" datetime="2020-11-22T00:17:46+08:00">
+                2020-11-22
               </time>
             
           </span>
@@ -418,9 +418,9 @@
 <li>ThreadLocalMap种存放的是每个子线程Thread持有的自己的ThreadLocalMap实例, 因此它们是不存在并发竞争的。</li>
 <li><code>Entry</code>的key是对ThreadLocal的弱引用，当抛弃掉ThreadLocal对象时，垃圾收集器会忽略这个key的引用而清理掉ThreadLocal对象， 防止了内存泄漏。</li>
 </ul>
-<p><img src="/2020/08/17/多线程-ThreadLocal/E:/blog\source\_posts\ThreadLocal\ThreadLocalMap.png" alt></p>
+<p><img src="/2020/08/17/多线程-ThreadLocal/ThreadLocalMap.png" alt></p>
 <p>扩展：ThreadLocal在线程池中使用容易发生的问题： 内存泄漏</p>
-<p><img src="/2020/08/17/多线程-ThreadLocal/E:/blog\source\_posts\ThreadLocal\内存泄露.png" alt></p>
+<p><img src="/2020/08/17/多线程-ThreadLocal/内存泄露.png" alt></p>
 <p>每个thread中都存在一个map, map的类型是ThreadLocal.ThreadLocalMap. Map中的key为一个threadlocal实例. 这个Map的确使用了弱引用,不过弱引用只是针对key. 每个key都弱引用指向threadlocal. 当把threadlocal实例置为null以后,没有任何强引用指向threadlocal实例,所以threadlocal将会被gc回收. 但是,我们的value却不能回收,因为存在一条从current thread连接过来的强引用. 只有当前thread结束以后, current thread就不会存在栈中,强引用断开, Current Thread, Map, value将全部被GC回收.</p>
 <p><strong>get()方法的源码</strong></p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> T <span class="title">get</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    Thread t = Thread.currentThread();</span><br><span class="line">    ThreadLocalMap map = getMap(t);</span><br><span class="line">    <span class="keyword">if</span> (map != <span class="keyword">null</span>) &#123;</span><br><span class="line">        ThreadLocalMap.Entry e = map.getEntry(<span class="keyword">this</span>);</span><br><span class="line">        <span class="keyword">if</span> (e != <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="meta">@SuppressWarnings</span>(<span class="string">"unchecked"</span>)</span><br><span class="line">            T result = (T)e.value;</span><br><span class="line">            <span class="keyword">return</span> result;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> setInitialValue();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
@@ -576,7 +576,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">62</span>
+                  <span class="site-state-item-count">64</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -724,7 +724,7 @@
       <div class="footer-inner">
         
 <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
-<div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+<div class="copyright">&copy; <span itemprop="copyrightYear">2021</span>
   <span class="with-love">
     <i class="fa fa-user"></i>
   </span>
@@ -1239,6 +1239,10 @@
 	<script type="text/javascript" src="/js/src/clipboard-use.js"></script>
 	<!--动态标题-->
 	<script type="text/javascript" src="/js/src/dytitle.js"></script>
+	<!-- 樱花特效 -->
+    <script async src="/js/src/fairyDustCursor.js"></script>
+
+
 <script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"symbols":true,"time":true,"total_symbols":true,"total_time":true,"log":false});</script></body>
 </html>
 <!-- 页面点击小红心 -->

@@ -1,0 +1,1237 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+  
+  
+    
+    
+  <script src="/lib/pace/pace.min.js?v=1.0.2"></script>
+  <link href="/lib/pace/pace-theme-minimal.min.css?v=1.0.2" rel="stylesheet">
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Netty,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="通道处理器-ChannelHandleio.netty.channel.Channel 是 Netty 框架自己定义的一个通道接口，Netty 实现的客户端 NIO 套接字通道是 NioSocketChannel，提供的服务器端 NIO 套接字通道是 NioServerSocketChannel。  NioSocketChannel：客户端套接字通道，内部管理了一个 Java NIO 中的 ja">
+<meta name="keywords" content="Netty">
+<meta property="og:type" content="article">
+<meta property="og:title" content="netty-通道处理器">
+<meta property="og:url" content="http://yoursite.com/2021/01/22/netty-通道处理器/index.html">
+<meta property="og:site_name" content="风寒露重">
+<meta property="og:description" content="通道处理器-ChannelHandleio.netty.channel.Channel 是 Netty 框架自己定义的一个通道接口，Netty 实现的客户端 NIO 套接字通道是 NioSocketChannel，提供的服务器端 NIO 套接字通道是 NioServerSocketChannel。  NioSocketChannel：客户端套接字通道，内部管理了一个 Java NIO 中的 ja">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://yoursite.com/2021/01/22/netty-通道处理器/netty-struct.png">
+<meta property="og:updated_time" content="2021-01-25T07:29:44.977Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="netty-通道处理器">
+<meta name="twitter:description" content="通道处理器-ChannelHandleio.netty.channel.Channel 是 Netty 框架自己定义的一个通道接口，Netty 实现的客户端 NIO 套接字通道是 NioSocketChannel，提供的服务器端 NIO 套接字通道是 NioServerSocketChannel。  NioSocketChannel：客户端套接字通道，内部管理了一个 Java NIO 中的 ja">
+<meta name="twitter:image" content="http://yoursite.com/2021/01/22/netty-通道处理器/netty-struct.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":true,"scrollpercent":true,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2021/01/22/netty-通道处理器/">
+
+
+
+
+
+  <title>netty-通道处理器 | 风寒露重</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+	<a href="https://github.com/pignum1/pignum1.github.io.git">
+		<img style="position: absolute; top: 0; right: 0;border: 0;" src="https://github.blog/wp-content/uploads/2008/12/forkme_right_darkblue_121621.png?resize=149%2C149" class="attachment-full size-full" alt="Fork me on GitHub" data-recalc-dims="1"></a>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">风寒露重</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off" placeholder="搜索..." spellcheck="false" type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-categories" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2021/01/22/netty-通道处理器/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="wei xy">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/sliver.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="风寒露重">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">netty-通道处理器</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2021-01-22T14:00:23+08:00">
+                2021-01-22
+              </time>
+            
+
+            
+              <span class="post-meta-divider">|</span>
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-check-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">更新于&#58;</span>
+              
+              <time title="更新于" itemprop="dateModified" datetime="2021-01-25T15:29:44+08:00">
+                2021-01-25
+              </time>
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Netty/" itemprop="url" rel="index">
+                    <span itemprop="name">Netty</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p><img src="/2021/01/22/netty-通道处理器/netty-struct.png" width="400px" height="500px"></p>
+<h1 id="通道处理器-ChannelHandle"><a href="#通道处理器-ChannelHandle" class="headerlink" title="通道处理器-ChannelHandle"></a>通道处理器-ChannelHandle</h1><p>io.netty.channel.Channel 是 Netty 框架自己定义的一个通道接口，Netty 实现的客户端 NIO 套接字通道是 NioSocketChannel，提供的服务器端 NIO 套接字通道是 NioServerSocketChannel。</p>
+<ul>
+<li>NioSocketChannel：客户端套接字通道，内部管理了一个 Java NIO 中的 java.nio.channels.SocketChannel 实例，用来创建 SocketChannel 实例和设置该实例的属性，并调用 Connect 方法向服务端发起 TCP 链接等。</li>
+<li>NioServerSocketChannel：服务器端监听套接字通道，内部管理了一个 Java NIO 中的 java.nio.channels.ServerSocketChannel 实例，用来创建 ServerSocketChannel 实例和设置该实例属性，并调用该实例的 bind 方法在指定端口监听客户端的链接。</li>
+<li>Channel 与 socket 的关系：在Netty中 Channel 有两种，对应客户端套接字通道 NioSocketChannel，内部管理 java.nio.channels.SocketChannel 套接字，对应服务器端监听套接字通道 NioServerSocketChannel，其内部管理自己的 java.nio.channels.ServerSocketChannel 套接字。也就是 Channel 是对 socket 的装饰或者门面，其封装了对 socket 的原子操作。</li>
+<li>EventLoopGroup：Netty 之所以能提供高性能网络通讯，其中一个原因是因为它使用 Reactor 线程模型。在netty中每个 EventLoopGroup 本身是一个线程池，其中包含了自定义个数的 NioEventLoop，每个 NioEventLoop 是一个线程，并且每个 NioEventLoop 里面持有自己的 selector 选择器。</li>
+</ul>
+<p>在 Netty 中客户端持有一个 EventLoopGroup 用来处理网络 IO 操作，在服务器端持有两个 EventLoopGroup，其中 boss 组是专门用来接收客户端发来的 TCP 链接请求的，worker 组是专门用来具体处理完成三次握手的链接套接字的网络 IO 请求的。</p>
+<ul>
+<li>Channel 与 EventLoop 的关系：Netty 中 NioEventLoop 是 EventLoop 的一个实现，每个 NioEventLoop 中会管理自己的一个 selector 选择器和监控选择器就绪事件的线程；每个 Channel 只会关联一个 NioEventLoop；</li>
+</ul>
+<p>当 Channel 是客户端通道 NioSocketChannel 时候，会注册 NioSocketChannel 管理的 SocketChannel 实例到自己关联的 NioEventLoop 的 selector 选择器上，然后 NioEventLoop 对应的线程会通过 select 命令监控感兴趣的网络读写事件；</p>
+<p>当 Channel 是服务端通道 NioServerSocketChannel 时候，NioServerSocketChannel 本身会被注册到 boss EventLoopGroup 里面的某一个 NioEventLoop 管理的 selector 选择器上，而完成三次握手的链接套接字是被注册到了 worker EventLoopGroup 里面的某一个 NioEventLoop 管理的 selector 选择器上；</p>
+<p>需要注意是多个 Channel 可以注册到同一个 NioEventLoop 管理的 selector 选择器上，这时候 NioEventLoop 对应的单个线程就可以处理多个 Channel 的就绪事件；但是每个 Channel 只能注册到一个固定的 NioEventLoop 管理的 selector 选择器上。</p>
+<p>正常情况下同一个ChannelHandler,的不同的实例会被添加到不同的Channel管理的管线里面的，但是如果你需要全局统计一些信息，比如所有连接报错次数（exceptionCaught）等，这时候你可能需要使用单例的ChannelHandler，需要注意的是这时候ChannelHandler上需要添加@Sharable注解。</p>
+<p>ChannelInboundHandlerAdapter的继承关系</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">public class ChannelInboundHandlerAdapter extends ChannelHandlerAdapter implements ChannelInboundHandler&#123;.....&#125;</span><br></pre></td></tr></table></figure>
+<p>先看一下ChannelHandler的接口定义</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br><span class="line">195</span><br><span class="line">196</span><br><span class="line">197</span><br><span class="line">198</span><br><span class="line">199</span><br><span class="line">200</span><br><span class="line">201</span><br><span class="line">202</span><br><span class="line">203</span><br><span class="line">204</span><br><span class="line">205</span><br><span class="line">206</span><br><span class="line">207</span><br><span class="line">208</span><br><span class="line">209</span><br><span class="line">210</span><br><span class="line">211</span><br><span class="line">212</span><br><span class="line">213</span><br><span class="line">214</span><br><span class="line">215</span><br><span class="line">216</span><br><span class="line">217</span><br><span class="line">218</span><br><span class="line">219</span><br><span class="line">220</span><br><span class="line">221</span><br><span class="line">222</span><br><span class="line">223</span><br><span class="line">224</span><br><span class="line">225</span><br><span class="line">226</span><br><span class="line">227</span><br><span class="line">228</span><br><span class="line">229</span><br><span class="line">230</span><br><span class="line">231</span><br><span class="line">232</span><br><span class="line">233</span><br><span class="line">234</span><br><span class="line">235</span><br><span class="line">236</span><br><span class="line">237</span><br><span class="line">238</span><br></pre></td><td class="code"><pre><span class="line">package io.netty.channel;  </span><br><span class="line">  </span><br><span class="line">import io.netty.util.Attribute;  </span><br><span class="line">import io.netty.util.AttributeKey;  </span><br><span class="line">  </span><br><span class="line">import java.lang.annotation.Documented;  </span><br><span class="line">import java.lang.annotation.ElementType;  </span><br><span class="line">import java.lang.annotation.Inherited;  </span><br><span class="line">import java.lang.annotation.Retention;  </span><br><span class="line">import java.lang.annotation.RetentionPolicy;  </span><br><span class="line">import java.lang.annotation.Target;  </span><br><span class="line">  </span><br><span class="line">/** </span><br><span class="line"> * Handles an I/O event or intercepts an I/O operation, and forwards it to its next handler in </span><br><span class="line"> * its &#123;@link ChannelPipeline&#125;. </span><br><span class="line"> *处理IO事件或拦截IO操作，并转发事件到处理器管道的下一个通道处理器 </span><br><span class="line"> * &lt;h3&gt;Sub-types&lt;/h3&gt; </span><br><span class="line"> *  </span><br><span class="line"> * &#123;@link ChannelHandler&#125; itself does not provide many methods, but you usually have to implement one of its subtypes: </span><br><span class="line"> 通道处理器本身没有提供太多的方法，但是你可以实现它的子类型如下 </span><br><span class="line"> * [list] </span><br><span class="line"> * [*]&#123;@link ChannelInboundHandler&#125; to handle inbound I/O events, and </span><br><span class="line">输入流通道处理器，处理流入的IO事件 </span><br><span class="line"> * [*]&#123;@link ChannelOutboundHandler&#125; to handle outbound I/O operations. </span><br><span class="line">输出流通道处理器，处理流出的IO操作 </span><br><span class="line"> * [/list] </span><br><span class="line"> *  </span><br><span class="line"> </span><br><span class="line"> *  </span><br><span class="line"> * Alternatively, the following adapter classes are provided for your convenience: </span><br><span class="line"> 另外还提供了如下结果适配器 </span><br><span class="line"> * [list] </span><br><span class="line"> * [*]&#123;@link ChannelInboundHandlerAdapter&#125; to handle inbound I/O events, </span><br><span class="line">输入流处理器适配器，处理流入的IO事件 </span><br><span class="line"> * [*]&#123;@link ChannelOutboundHandlerAdapter&#125; to handle outbound I/O operations, and </span><br><span class="line">输出流通道适配器，处理流出的IO操作 </span><br><span class="line"> * [*]&#123;@link ChannelDuplexHandler&#125; to handle both inbound and outbound events </span><br><span class="line">多路复用适配器，可以处理流入和流出的IO事件 </span><br><span class="line"> * [/list] </span><br><span class="line"> *  </span><br><span class="line"> </span><br><span class="line"> *  </span><br><span class="line"> * For more information, please refer to the documentation of each subtype. </span><br><span class="line"> *  </span><br><span class="line"> </span><br><span class="line"> * </span><br><span class="line"> * &lt;h3&gt;The context object&lt;/h3&gt; </span><br><span class="line"> 上下文对象 </span><br><span class="line"> * &lt;p&gt; </span><br><span class="line"> * A &#123;@link ChannelHandler&#125; is provided with a &#123;@link ChannelHandlerContext&#125; </span><br><span class="line"> * object.  A &#123;@link ChannelHandler&#125; is supposed to interact with the </span><br><span class="line"> * &#123;@link ChannelPipeline&#125; it belongs to via a context object.  Using the </span><br><span class="line"> * context object, the &#123;@link ChannelHandler&#125; can pass events upstream or </span><br><span class="line"> * downstream, modify the pipeline dynamically, or store the information </span><br><span class="line"> * (using &#123;@link AttributeKey&#125;s) which is specific to the handler. </span><br><span class="line"> *一个通道处理器关联一个通道处理器上下文。通道处理器通过一个上下文对象，与它所属的 </span><br><span class="line"> 通道管道线交互。通道上一下对象，通道处理器上行或下行传递事件，动态修改管道，或通过 </span><br><span class="line"> AttributeKey存储特殊的信息。 </span><br><span class="line"> * &lt;h3&gt;State management&lt;/h3&gt; </span><br><span class="line"> *状态管理 </span><br><span class="line"> * A &#123;@link ChannelHandler&#125; often needs to store some stateful information. </span><br><span class="line"> * The simplest and recommended approach is to use member variables: </span><br><span class="line"> 通道处理器器通道通常需要存储一些状态信息，简单有效，并强烈的方法是用成员变量： </span><br><span class="line"> * &lt;pre&gt; </span><br><span class="line"> * public interface Message &#123; </span><br><span class="line"> *     // your methods here </span><br><span class="line"> * &#125; </span><br><span class="line"> * </span><br><span class="line"> * public class DataServerHandler extends &#123;@link SimpleChannelInboundHandler&#125;&lt;Message&gt; &#123; </span><br><span class="line"> * </span><br><span class="line"> *     &lt;b&gt;private boolean loggedIn;&lt;/b&gt; </span><br><span class="line"> * </span><br><span class="line"> *     &#123;@code @Override&#125; </span><br><span class="line"> *     public void channelRead0(&#123;@link ChannelHandlerContext&#125; ctx, Message message) &#123; </span><br><span class="line"> *         &#123;@link Channel&#125; ch = e.getChannel(); </span><br><span class="line"> *         if (message instanceof LoginMessage) &#123; </span><br><span class="line"> *             authenticate((LoginMessage) message); </span><br><span class="line"> *             &lt;b&gt;loggedIn = true;&lt;/b&gt; </span><br><span class="line"> *         &#125; else (message instanceof GetDataMessage) &#123; </span><br><span class="line"> *             if (&lt;b&gt;loggedIn&lt;/b&gt;) &#123; </span><br><span class="line"> *                 ch.write(fetchSecret((GetDataMessage) message)); </span><br><span class="line"> *             &#125; else &#123; </span><br><span class="line"> *                 fail(); </span><br><span class="line"> *             &#125; </span><br><span class="line"> *         &#125; </span><br><span class="line"> *     &#125; </span><br><span class="line"> *     ... </span><br><span class="line"> * &#125; </span><br><span class="line"> * &lt;/pre&gt; </span><br><span class="line"> * Because the handler instance has a state variable which is dedicated to </span><br><span class="line"> * one connection, you have to create a new handler instance for each new </span><br><span class="line"> * channel to avoid a race condition where a unauthenticated client can get </span><br><span class="line"> * the confidential information: </span><br><span class="line"> 因为通道处理器实例有一个用于表示连接的状态变量，为了避免没有认证的客户端获取机密的信息， </span><br><span class="line"> 这一个竞争条件，你不得不为每个新建的通道创建一个处理器实例。 </span><br><span class="line"> * &lt;pre&gt; </span><br><span class="line"> * // Create a new handler instance per channel. </span><br><span class="line"> 每个通道创建一个处理器 </span><br><span class="line"> * // See &#123;@link ChannelInitializer#initChannel(Channel)&#125;. </span><br><span class="line"> * public class DataServerInitializer extends &#123;@link ChannelInitializer&#125;&lt;&#123;@link Channel&#125;&gt; &#123; </span><br><span class="line"> *     &#123;@code @Override&#125; </span><br><span class="line"> *     public void initChannel(&#123;@link Channel&#125; channel) &#123; </span><br><span class="line"> *         channel.pipeline().addLast(&quot;handler&quot;, &lt;b&gt;new DataServerHandler()&lt;/b&gt;); </span><br><span class="line"> *     &#125; </span><br><span class="line"> * &#125; </span><br><span class="line"> * </span><br><span class="line"> * &lt;/pre&gt; </span><br><span class="line"> * </span><br><span class="line"> * &lt;h4&gt;Using &#123;@link AttributeKey&#125;s&lt;/h4&gt; </span><br><span class="line"> *使用AttributeKey </span><br><span class="line"> * Although it&apos;s recommended to use member variables to store the state of a </span><br><span class="line"> * handler, for some reason you might not want to create many handler instances. </span><br><span class="line"> * In such a case, you can use &#123;@link AttributeKey&#125;s which is provided by </span><br><span class="line"> * &#123;@link ChannelHandlerContext&#125;: </span><br><span class="line"> 尽管强烈建议使用成员变量来存储处理器状态，由于一些原因，你也许不想创建许多处理器实例。 </span><br><span class="line"> 在这种情况，你可以使用通道处理器上下文提供的属性键AttributeKey。 </span><br><span class="line"> * &lt;pre&gt; </span><br><span class="line"> * public interface Message &#123; </span><br><span class="line"> *     // your methods here </span><br><span class="line"> * &#125; </span><br><span class="line"> * </span><br><span class="line"> * &#123;@code @Sharable&#125;//共享通道处理器 </span><br><span class="line"> * public class DataServerHandler extends &#123;@link SimpleChannelInboundHandler&#125;&lt;Message&gt; &#123; </span><br><span class="line"> *     private final &#123;@link AttributeKey&#125;&lt;&#123;@link Boolean&#125;&gt; auth = </span><br><span class="line"> *           &#123;@link AttributeKey#valueOf(String) AttributeKey.valueOf(&quot;auth&quot;)&#125;; </span><br><span class="line"> * </span><br><span class="line"> *     &#123;@code @Override&#125; </span><br><span class="line"> *     public void channelRead(&#123;@link ChannelHandlerContext&#125; ctx, Message message) &#123; </span><br><span class="line"> *         &#123;@link Attribute&#125;&lt;&#123;@link Boolean&#125;&gt; attr = ctx.attr(auth); </span><br><span class="line"> *         &#123;@link Channel&#125; ch = ctx.channel(); </span><br><span class="line"> *         if (message instanceof LoginMessage) &#123; </span><br><span class="line"> *             authenticate((LoginMessage) o); </span><br><span class="line"> *             &lt;b&gt;attr.set(true)&lt;/b&gt;; </span><br><span class="line"> *         &#125; else (message instanceof GetDataMessage) &#123; </span><br><span class="line"> *             if (&lt;b&gt;Boolean.TRUE.equals(attr.get())&lt;/b&gt;) &#123; </span><br><span class="line"> *                 ch.write(fetchSecret((GetDataMessage) o)); </span><br><span class="line"> *             &#125; else &#123; </span><br><span class="line"> *                 fail(); </span><br><span class="line"> *             &#125; </span><br><span class="line"> *         &#125; </span><br><span class="line"> *     &#125; </span><br><span class="line"> *     ... </span><br><span class="line"> * &#125; </span><br><span class="line"> * &lt;/pre&gt; </span><br><span class="line"> * Now that the state of the handler is attached to the &#123;@link ChannelHandlerContext&#125;, you can add the </span><br><span class="line"> * same handler instance to different pipelines: </span><br><span class="line"> 这种情况下，处理器附加在通道处理器上下文上，你可以添加相同的处理器实例到不同的管道上。 </span><br><span class="line"> * &lt;pre&gt; </span><br><span class="line"> * public class DataServerInitializer extends &#123;@link ChannelInitializer&#125;&lt;&#123;@link Channel&#125;&gt; &#123; </span><br><span class="line"> * </span><br><span class="line"> *     private static final DataServerHandler &lt;b&gt;SHARED&lt;/b&gt; = new DataServerHandler(); </span><br><span class="line"> * </span><br><span class="line"> *     &#123;@code @Override&#125; </span><br><span class="line"> *     public void initChannel(&#123;@link Channel&#125; channel) &#123; </span><br><span class="line"> *         channel.pipeline().addLast(&quot;handler&quot;, &lt;b&gt;SHARED&lt;/b&gt;); </span><br><span class="line"> *     &#125; </span><br><span class="line"> * &#125; </span><br><span class="line"> * &lt;/pre&gt; </span><br><span class="line"> * </span><br><span class="line"> * </span><br><span class="line"> * &lt;h4&gt;The &#123;@code @Sharable&#125; annotation&lt;/h4&gt; </span><br><span class="line"> * &lt;p&gt;@Sharable注解 </span><br><span class="line"> * In the example above which used an &#123;@link AttributeKey&#125;, </span><br><span class="line"> * you might have noticed the &#123;@code @Sharable&#125; annotation. </span><br><span class="line"> 在上面属性键的实例中，你也许已经注意到共享注解的使用。 </span><br><span class="line"> * &lt;p&gt; </span><br><span class="line"> * If a &#123;@link ChannelHandler&#125; is annotated with the &#123;@code @Sharable&#125; </span><br><span class="line"> * annotation, it means you can create an instance of the handler just once and </span><br><span class="line"> * add it to one or more &#123;@link ChannelPipeline&#125;s multiple times without </span><br><span class="line"> * a race condition. </span><br><span class="line"> 被@Sharable注解的通道处理器，意味着，你可以一次性创建一个通道处理器实例，在没有竞争 </span><br><span class="line"> 条件的情况下，可以一次或多次到通道管道线。 </span><br><span class="line"> * &lt;p&gt; </span><br><span class="line"> * If this annotation is not specified, you have to create a new handler </span><br><span class="line"> * instance every time you add it to a pipeline because it has unshared state </span><br><span class="line"> * such as member variables. </span><br><span class="line">如果通道处理器没有被@Sharable注解，由于通道处理器状态不共享，比如成员变量， </span><br><span class="line">你不得不在每次添加通道处理器到通道管道线时，创建一个新的通道处理器实例。 </span><br><span class="line"> * &lt;p&gt; </span><br><span class="line"> * This annotation is provided for documentation purpose, just like </span><br><span class="line"> * [url=http://www.javaconcurrencyinpractice.com/annotations/doc/]the JCIP annotations[/url]. </span><br><span class="line"> *此注解的相关使用文档，参看如下链接。 </span><br><span class="line"> * &lt;h3&gt;Additional resources worth reading&lt;/h3&gt; </span><br><span class="line"> * &lt;p&gt;附加可读资源。 </span><br><span class="line"> * Please refer to the &#123;@link ChannelHandler&#125;, and </span><br><span class="line"> * &#123;@link ChannelPipeline&#125; to find out more about inbound and outbound operations, </span><br><span class="line"> * what fundamental differences they have, how they flow in a  pipeline,  and how to handle </span><br><span class="line"> * the operation in your application. </span><br><span class="line"> 参见通道处理器和通道管道线，获取inbound和outbound更多的操作信息，两种操作的本质不同，在管道中的流向， </span><br><span class="line"> 以及如果在应用中处理操作 </span><br><span class="line"> */  </span><br><span class="line">public interface ChannelHandler &#123;  </span><br><span class="line">  </span><br><span class="line">    /** </span><br><span class="line">     * Gets called after the &#123;@link ChannelHandler&#125; was added to the actual context and it&apos;s ready to handle events. </span><br><span class="line">     在通道处理器添加到实际上下文后调用，准备处理IO事件 </span><br><span class="line">     */  </span><br><span class="line">    void handlerAdded(ChannelHandlerContext ctx) throws Exception;  </span><br><span class="line">  </span><br><span class="line">    /** </span><br><span class="line">     * Gets called after the &#123;@link ChannelHandler&#125; was removed from the actual context and it doesn&apos;t handle events </span><br><span class="line">     * anymore. </span><br><span class="line">     在通道处理器从实际上下文中移除后调用，不再处理IO事件 </span><br><span class="line">     */  </span><br><span class="line">    void handlerRemoved(ChannelHandlerContext ctx) throws Exception;  </span><br><span class="line">  </span><br><span class="line">    /** </span><br><span class="line">     * Gets called if a &#123;@link Throwable&#125; was thrown. </span><br><span class="line">     *到处理IO事件，异常抛出时调用，已丢弃 </span><br><span class="line">     * @deprecated is part of &#123;@link ChannelInboundHandler&#125; </span><br><span class="line">     */  </span><br><span class="line">    @Deprecated  </span><br><span class="line">    void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception;  </span><br><span class="line">  </span><br><span class="line">    /** </span><br><span class="line">     * Indicates that the same instance of the annotated &#123;@link ChannelHandler&#125; </span><br><span class="line">     * can be added to one or more &#123;@link ChannelPipeline&#125;s multiple times </span><br><span class="line">     * without a race condition. </span><br><span class="line">     Sharable注解表示一个被Sharable注解的通道处理器可以在没有竞争条件的情况下，一次或多次 </span><br><span class="line">     添加到通道管道线上。 </span><br><span class="line">     * &lt;p&gt; </span><br><span class="line">     * If this annotation is not specified, you have to create a new handler </span><br><span class="line">     * instance every time you add it to a pipeline because it has unshared </span><br><span class="line">     * state such as member variables. </span><br><span class="line">     如果通道处理器，没有被Sharable注解通道处理器，由于通道处理器成员变量为不共享状态，每次添加通道处理器到管道时， </span><br><span class="line">     必须创建一个新的处理器实例 </span><br><span class="line">     * &lt;p&gt; </span><br><span class="line">     * This annotation is provided for documentation purpose, just like </span><br><span class="line">     * [url=http://www.javaconcurrencyinpractice.com/annotations/doc/]the JCIP annotations[/url]. </span><br><span class="line">     */  </span><br><span class="line">    @Inherited  </span><br><span class="line">    @Documented  </span><br><span class="line">    @Target(ElementType.TYPE)  </span><br><span class="line">    @Retention(RetentionPolicy.RUNTIME)  </span><br><span class="line">    @interface Sharable &#123;  </span><br><span class="line">        // no value  </span><br><span class="line">    &#125;  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>  再看SimpleChannelInboundHandler</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br></pre></td><td class="code"><pre><span class="line">package io.netty.channel;  </span><br><span class="line">  </span><br><span class="line">import io.netty.util.ReferenceCountUtil;  </span><br><span class="line">import io.netty.util.internal.TypeParameterMatcher;  </span><br><span class="line">  </span><br><span class="line">/** </span><br><span class="line"> * &#123;@link ChannelInboundHandlerAdapter&#125; which allows to explicit only handle a specific type of messages. </span><br><span class="line"> *简单Inbound通道处理器SimpleChannelInboundHandler，允许明确处理一种特殊类型的消息。 </span><br><span class="line"> * For example here is an implementation which only handle &#123;@link String&#125; messages. </span><br><span class="line"> *下面是一个处理String类型数据Inbound通道处理器实现 </span><br><span class="line"> * &lt;pre&gt; </span><br><span class="line"> *     public class StringHandler extends </span><br><span class="line"> *             &#123;@link SimpleChannelInboundHandler&#125;&lt;&#123;@link String&#125;&gt; &#123; </span><br><span class="line"> * </span><br><span class="line"> *         &#123;@code @Override&#125; </span><br><span class="line"> *         protected void channelRead0(&#123;@link ChannelHandlerContext&#125; ctx, &#123;@link String&#125; message) </span><br><span class="line"> *                 throws &#123;@link Exception&#125; &#123; </span><br><span class="line"> *             System.out.println(message); </span><br><span class="line"> *         &#125; </span><br><span class="line"> *     &#125; </span><br><span class="line"> * &lt;/pre&gt; </span><br><span class="line"> * </span><br><span class="line"> * Be aware that depending of the constructor parameters it will release all handled messages by passing them to </span><br><span class="line"> * &#123;@link ReferenceCountUtil#release(Object)&#125;. In this case you may need to use </span><br><span class="line"> * &#123;@link ReferenceCountUtil#retain(Object)&#125; if you pass the object to the next handler in the &#123;@link ChannelPipeline&#125;. </span><br><span class="line"> *需要注意的是，是否通过转递消息给ReferenceCountUtil#release方法，释放处理过的消息，依赖于构造参数autoRelease（boolean）。 </span><br><span class="line"> 如果你需要将消息传递给Channle管道线的下一个通道处理器，你需要调用ReferenceCountUtil#retain(Object)方法； </span><br><span class="line"> * &lt;h3&gt;Forward compatibility notice&lt;/h3&gt; </span><br><span class="line"> * 转发兼容性提醒 </span><br><span class="line"> * Please keep in mind that &#123;@link #channelRead0(ChannelHandlerContext, I)&#125; will be renamed to </span><br><span class="line"> * &#123;@code messageReceived(ChannelHandlerContext, I)&#125; in 5.0. </span><br><span class="line"> *  </span><br><span class="line"> </span><br><span class="line"> 请注意：#channelRead0方法在Netty5，中将被命名为消息messageReceived。 </span><br><span class="line"> */  </span><br><span class="line">public abstract class SimpleChannelInboundHandler&lt;I&gt; extends ChannelInboundHandlerAdapter &#123;  </span><br><span class="line">  </span><br><span class="line">    private final TypeParameterMatcher matcher;//类型参数匹配器  </span><br><span class="line">    private final boolean autoRelease;//是否自动释放  </span><br><span class="line">  </span><br><span class="line">    /** </span><br><span class="line">     * see &#123;@link #SimpleChannelInboundHandler(boolean)&#125; with &#123;@code true&#125; as boolean parameter. </span><br><span class="line">     默认自动释放处理过的消息 </span><br><span class="line">     */  </span><br><span class="line">    protected SimpleChannelInboundHandler() &#123;  </span><br><span class="line">        this(true);  </span><br><span class="line">    &#125;  </span><br><span class="line">  </span><br><span class="line">    /** </span><br><span class="line">     * Create a new instance which will try to detect the types to match out of the type parameter of the class. </span><br><span class="line">     *创建一个实例，尝试探测接受消息类型与SimpleChannelInboundHandler的I的类型是否相同。 </span><br><span class="line">     * @param autoRelease   &#123;@code true&#125; if handled messages should be released automatically by passing them to </span><br><span class="line">     *                      &#123;@link ReferenceCountUtil#release(Object)&#125;. </span><br><span class="line">     是否通过ReferenceCountUtil#release方法释放消息 </span><br><span class="line">     */  </span><br><span class="line">    protected SimpleChannelInboundHandler(boolean autoRelease) &#123;  </span><br><span class="line">        matcher = TypeParameterMatcher.find(this, SimpleChannelInboundHandler.class, &quot;I&quot;);  </span><br><span class="line">        this.autoRelease = autoRelease;  </span><br><span class="line">    &#125;  </span><br><span class="line">  </span><br><span class="line">    /** </span><br><span class="line">     * see &#123;@link #SimpleChannelInboundHandler(Class, boolean)&#125; with &#123;@code true&#125; as boolean value. </span><br><span class="line">     */  </span><br><span class="line">    protected SimpleChannelInboundHandler(Class&lt;? extends I&gt; inboundMessageType) &#123;  </span><br><span class="line">        this(inboundMessageType, true);  </span><br><span class="line">    &#125;  </span><br><span class="line">  </span><br><span class="line">    /** </span><br><span class="line">     * Create a new instance </span><br><span class="line">     * </span><br><span class="line">     * @param inboundMessageType    The type of messages to match </span><br><span class="line">     * @param autoRelease           &#123;@code true&#125; if handled messages should be released automatically by passing them to </span><br><span class="line">     *                              &#123;@link ReferenceCountUtil#release(Object)&#125;. </span><br><span class="line">     */  </span><br><span class="line">    protected SimpleChannelInboundHandler(Class&lt;? extends I&gt; inboundMessageType, boolean autoRelease) &#123;  </span><br><span class="line">        matcher = TypeParameterMatcher.get(inboundMessageType);  </span><br><span class="line">        this.autoRelease = autoRelease;  </span><br><span class="line">    &#125;  </span><br><span class="line">  </span><br><span class="line">    /** </span><br><span class="line">     * Returns &#123;@code true&#125; if the given message should be handled. If &#123;@code false&#125; it will be passed to the next </span><br><span class="line">     * &#123;@link ChannelInboundHandler&#125; in the &#123;@link ChannelPipeline&#125;. </span><br><span class="line">     判断跟定的消息类型是否可以被处理，如果返回false，则将消息转递给Channel管道线的下一个通道处理器 </span><br><span class="line">     */  </span><br><span class="line">    public boolean acceptInboundMessage(Object msg) throws Exception &#123;  </span><br><span class="line">        return matcher.match(msg);  </span><br><span class="line">    &#125;  </span><br><span class="line">    //读取消息对象  </span><br><span class="line">    @Override  </span><br><span class="line">    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception &#123;  </span><br><span class="line">        boolean release = true;  </span><br><span class="line">        try &#123;  </span><br><span class="line">            if (acceptInboundMessage(msg)) &#123;  </span><br><span class="line">                @SuppressWarnings(&quot;unchecked&quot;)  </span><br><span class="line">                I imsg = (I) msg;  </span><br><span class="line">        //如果消息属于本Handler可以处理的消息类型，则委托给channelRead0  </span><br><span class="line">                channelRead0(ctx, imsg);  </span><br><span class="line">            &#125; else &#123;  </span><br><span class="line">                release = false;  </span><br><span class="line">        //当前通道Handler，不可处理消息，通过通道上下文，通知管道线中的下一个通道处理器，接受到一个消息  </span><br><span class="line">                ctx.fireChannelRead(msg);  </span><br><span class="line">            &#125;  </span><br><span class="line">        &#125; finally &#123;  </span><br><span class="line">            if (autoRelease &amp;&amp; release) &#123;  </span><br><span class="line">            //如果autoRelease为自动释放消息，且消息已处理则释放消息  </span><br><span class="line">                ReferenceCountUtil.release(msg);  </span><br><span class="line">            &#125;  </span><br><span class="line">        &#125;  </span><br><span class="line">    &#125;  </span><br><span class="line">  </span><br><span class="line">    /** </span><br><span class="line">     * [b]Please keep in mind that this method will be renamed to </span><br><span class="line">     * &#123;@code messageReceived(ChannelHandlerContext, I)&#125; in 5.0.[/b] </span><br><span class="line">     *注意此方法在5.0以后将命名为messageReceived </span><br><span class="line">     * Is called for each message of type &#123;@link I&#125;. </span><br><span class="line">     * </span><br><span class="line">     * @param ctx           the &#123;@link ChannelHandlerContext&#125; which this &#123;@link SimpleChannelInboundHandler&#125; </span><br><span class="line">     *                      belongs to </span><br><span class="line">     * @param msg           the message to handle </span><br><span class="line">     * @throws Exception    is thrown if an error occurred </span><br><span class="line">     */  </span><br><span class="line">    protected abstract void channelRead0(ChannelHandlerContext ctx, I msg) throws Exception;  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>其中读取消息的方法</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">//读取消息对象  </span><br><span class="line">    @Override  </span><br><span class="line">    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception &#123;  </span><br><span class="line">        boolean release = true;  </span><br><span class="line">        try &#123;  </span><br><span class="line">            if (acceptInboundMessage(msg)) &#123;  </span><br><span class="line">                @SuppressWarnings(&quot;unchecked&quot;)  </span><br><span class="line">                I imsg = (I) msg;  </span><br><span class="line">        //如果消息属于本Handler可以处理的消息类型，则委托给channelRead0  </span><br><span class="line">                channelRead0(ctx, imsg);  </span><br><span class="line">            &#125; else &#123;  </span><br><span class="line">                release = false;  </span><br><span class="line">        //当前通道Handler，不可处理消息，通过通道上下文，通知管道线中的下一个通道处理器，接受到一个消息  </span><br><span class="line">                ctx.fireChannelRead(msg);  </span><br><span class="line">            &#125;  </span><br><span class="line">        &#125; finally &#123;  </span><br><span class="line">            if (autoRelease &amp;&amp; release) &#123;  </span><br><span class="line">            //如果autoRelease为自动释放消息，且消息已处理则释放消息  </span><br><span class="line">                ReferenceCountUtil.release(msg);  </span><br><span class="line">            &#125;  </span><br><span class="line">        &#125;  </span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<p>从上面来看，读操作，首先判断跟定的消息类型是否可以被处理，如果是，则委托给channelRead0，如果返回false，则将消息转递给Channel管道线的下一个通道处理器；最后，如果autoRelease为自动释放消息，且消息已处理则释放消息。</p>
+<h1 id="通道线-ChannelPipeline"><a href="#通道线-ChannelPipeline" class="headerlink" title="通道线-ChannelPipeline"></a>通道线-ChannelPipeline</h1><p>netty的异步结果Future继承于JUC的Future，可以异步获取IO操作的结果信息，比如IO操作是否成功完成，如果失败，可以获取失败的原因，是否取消，同时可以使用cancel方法取消IO操作，添加异步结果监听器，、监听IO操作是否完成，并可以移除结果监听器，除这些之外我们还可以异步、同步等待或超时等待IO操作结果。<br>   异步结果监听器GenericFutureListener，主要监听一个IO操作是否完成，在异步结果有返回值时，通知监听器。</p>
+<p> ChannelFuture继承于空异步结果，即没有返回值，所以添加移除监听器，同步异步等待方法为空体。netty所有的IO操作都是异步的，当一个IO操作开始时，不管操作是否完成，一个新的异步操作结果将会被创建。如果因为IO操作没有完成，同时既没有成功，失败，也没有取消，新创建的那么，异步结果并没有完成初始化。如果IO操作完成，不论操作结果成功，失败或取消，异步结果将会标记为完成，同时携带更多的精确信息，比如失败的原因。需要注意的时，失败或取消也属于完成状态。强烈建议使用添加监听器的方式等待IO操作结果，而不await方法，因为监听器模式时非阻塞的，有更好的性能和资源利用率。<br>   通道结果监听器ChannelFutureListener内部有3个监听器，分别为在操作完成时，关闭通道任务关联的通道的监听器CLOSE；当IO操作失败时，关闭通道任务关联的通道的监听器CLOSE_ON_FAILURE；转发通道任务异常到Channel管道的监听器FIRE_EXCEPTION_ON_FAILURE。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br><span class="line">195</span><br><span class="line">196</span><br><span class="line">197</span><br><span class="line">198</span><br><span class="line">199</span><br><span class="line">200</span><br><span class="line">201</span><br><span class="line">202</span><br><span class="line">203</span><br><span class="line">204</span><br><span class="line">205</span><br><span class="line">206</span><br><span class="line">207</span><br><span class="line">208</span><br><span class="line">209</span><br><span class="line">210</span><br><span class="line">211</span><br><span class="line">212</span><br><span class="line">213</span><br><span class="line">214</span><br><span class="line">215</span><br><span class="line">216</span><br><span class="line">217</span><br><span class="line">218</span><br><span class="line">219</span><br><span class="line">220</span><br><span class="line">221</span><br><span class="line">222</span><br><span class="line">223</span><br><span class="line">224</span><br><span class="line">225</span><br><span class="line">226</span><br><span class="line">227</span><br><span class="line">228</span><br><span class="line">229</span><br><span class="line">230</span><br><span class="line">231</span><br><span class="line">232</span><br><span class="line">233</span><br><span class="line">234</span><br><span class="line">235</span><br><span class="line">236</span><br><span class="line">237</span><br><span class="line">238</span><br><span class="line">239</span><br><span class="line">240</span><br><span class="line">241</span><br><span class="line">242</span><br><span class="line">243</span><br><span class="line">244</span><br><span class="line">245</span><br><span class="line">246</span><br><span class="line">247</span><br><span class="line">248</span><br><span class="line">249</span><br><span class="line">250</span><br><span class="line">251</span><br><span class="line">252</span><br><span class="line">253</span><br><span class="line">254</span><br><span class="line">255</span><br><span class="line">256</span><br><span class="line">257</span><br><span class="line">258</span><br><span class="line">259</span><br><span class="line">260</span><br><span class="line">261</span><br><span class="line">262</span><br><span class="line">263</span><br><span class="line">264</span><br><span class="line">265</span><br><span class="line">266</span><br><span class="line">267</span><br><span class="line">268</span><br><span class="line">269</span><br><span class="line">270</span><br><span class="line">271</span><br><span class="line">272</span><br><span class="line">273</span><br><span class="line">274</span><br><span class="line">275</span><br><span class="line">276</span><br><span class="line">277</span><br><span class="line">278</span><br><span class="line">279</span><br><span class="line">280</span><br><span class="line">281</span><br><span class="line">282</span><br><span class="line">283</span><br><span class="line">284</span><br><span class="line">285</span><br><span class="line">286</span><br><span class="line">287</span><br><span class="line">288</span><br><span class="line">289</span><br><span class="line">290</span><br><span class="line">291</span><br><span class="line">292</span><br><span class="line">293</span><br><span class="line">294</span><br><span class="line">295</span><br><span class="line">296</span><br><span class="line">297</span><br><span class="line">298</span><br><span class="line">299</span><br><span class="line">300</span><br><span class="line">301</span><br><span class="line">302</span><br><span class="line">303</span><br><span class="line">304</span><br><span class="line">305</span><br><span class="line">306</span><br><span class="line">307</span><br><span class="line">308</span><br><span class="line">309</span><br><span class="line">310</span><br><span class="line">311</span><br><span class="line">312</span><br><span class="line">313</span><br><span class="line">314</span><br><span class="line">315</span><br><span class="line">316</span><br><span class="line">317</span><br><span class="line">318</span><br><span class="line">319</span><br><span class="line">320</span><br><span class="line">321</span><br><span class="line">322</span><br><span class="line">323</span><br><span class="line">324</span><br><span class="line">325</span><br><span class="line">326</span><br><span class="line">327</span><br><span class="line">328</span><br><span class="line">329</span><br><span class="line">330</span><br><span class="line">331</span><br><span class="line">332</span><br><span class="line">333</span><br><span class="line">334</span><br><span class="line">335</span><br><span class="line">336</span><br><span class="line">337</span><br><span class="line">338</span><br><span class="line">339</span><br><span class="line">340</span><br><span class="line">341</span><br><span class="line">342</span><br><span class="line">343</span><br><span class="line">344</span><br><span class="line">345</span><br><span class="line">346</span><br><span class="line">347</span><br><span class="line">348</span><br><span class="line">349</span><br><span class="line">350</span><br><span class="line">351</span><br><span class="line">352</span><br><span class="line">353</span><br><span class="line">354</span><br><span class="line">355</span><br><span class="line">356</span><br><span class="line">357</span><br><span class="line">358</span><br><span class="line">359</span><br><span class="line">360</span><br><span class="line">361</span><br><span class="line">362</span><br><span class="line">363</span><br><span class="line">364</span><br><span class="line">365</span><br><span class="line">366</span><br><span class="line">367</span><br><span class="line">368</span><br><span class="line">369</span><br><span class="line">370</span><br><span class="line">371</span><br><span class="line">372</span><br><span class="line">373</span><br><span class="line">374</span><br><span class="line">375</span><br><span class="line">376</span><br><span class="line">377</span><br><span class="line">378</span><br><span class="line">379</span><br><span class="line">380</span><br><span class="line">381</span><br><span class="line">382</span><br><span class="line">383</span><br><span class="line">384</span><br><span class="line">385</span><br><span class="line">386</span><br><span class="line">387</span><br><span class="line">388</span><br><span class="line">389</span><br><span class="line">390</span><br><span class="line">391</span><br><span class="line">392</span><br><span class="line">393</span><br><span class="line">394</span><br><span class="line">395</span><br><span class="line">396</span><br><span class="line">397</span><br><span class="line">398</span><br><span class="line">399</span><br><span class="line">400</span><br><span class="line">401</span><br><span class="line">402</span><br><span class="line">403</span><br><span class="line">404</span><br><span class="line">405</span><br><span class="line">406</span><br><span class="line">407</span><br><span class="line">408</span><br><span class="line">409</span><br><span class="line">410</span><br><span class="line">411</span><br><span class="line">412</span><br><span class="line">413</span><br><span class="line">414</span><br><span class="line">415</span><br><span class="line">416</span><br><span class="line">417</span><br><span class="line">418</span><br><span class="line">419</span><br><span class="line">420</span><br><span class="line">421</span><br><span class="line">422</span><br><span class="line">423</span><br><span class="line">424</span><br><span class="line">425</span><br><span class="line">426</span><br><span class="line">427</span><br><span class="line">428</span><br><span class="line">429</span><br><span class="line">430</span><br><span class="line">431</span><br><span class="line">432</span><br><span class="line">433</span><br><span class="line">434</span><br><span class="line">435</span><br><span class="line">436</span><br><span class="line">437</span><br><span class="line">438</span><br><span class="line">439</span><br><span class="line">440</span><br><span class="line">441</span><br><span class="line">442</span><br><span class="line">443</span><br><span class="line">444</span><br><span class="line">445</span><br><span class="line">446</span><br><span class="line">447</span><br><span class="line">448</span><br><span class="line">449</span><br><span class="line">450</span><br><span class="line">451</span><br><span class="line">452</span><br><span class="line">453</span><br><span class="line">454</span><br><span class="line">455</span><br><span class="line">456</span><br><span class="line">457</span><br><span class="line">458</span><br><span class="line">459</span><br><span class="line">460</span><br><span class="line">461</span><br><span class="line">462</span><br><span class="line">463</span><br><span class="line">464</span><br><span class="line">465</span><br><span class="line">466</span><br><span class="line">467</span><br><span class="line">468</span><br><span class="line">469</span><br><span class="line">470</span><br><span class="line">471</span><br><span class="line">472</span><br><span class="line">473</span><br><span class="line">474</span><br><span class="line">475</span><br><span class="line">476</span><br><span class="line">477</span><br><span class="line">478</span><br><span class="line">479</span><br><span class="line">480</span><br><span class="line">481</span><br><span class="line">482</span><br><span class="line">483</span><br><span class="line">484</span><br><span class="line">485</span><br><span class="line">486</span><br><span class="line">487</span><br><span class="line">488</span><br><span class="line">489</span><br><span class="line">490</span><br><span class="line">491</span><br><span class="line">492</span><br><span class="line">493</span><br><span class="line">494</span><br><span class="line">495</span><br><span class="line">496</span><br><span class="line">497</span><br><span class="line">498</span><br><span class="line">499</span><br><span class="line">500</span><br><span class="line">501</span><br><span class="line">502</span><br><span class="line">503</span><br><span class="line">504</span><br><span class="line">505</span><br><span class="line">506</span><br><span class="line">507</span><br><span class="line">508</span><br><span class="line">509</span><br><span class="line">510</span><br><span class="line">511</span><br><span class="line">512</span><br><span class="line">513</span><br><span class="line">514</span><br><span class="line">515</span><br><span class="line">516</span><br><span class="line">517</span><br><span class="line">518</span><br><span class="line">519</span><br><span class="line">520</span><br><span class="line">521</span><br><span class="line">522</span><br><span class="line">523</span><br><span class="line">524</span><br><span class="line">525</span><br><span class="line">526</span><br><span class="line">527</span><br><span class="line">528</span><br><span class="line">529</span><br><span class="line">530</span><br><span class="line">531</span><br><span class="line">532</span><br><span class="line">533</span><br><span class="line">534</span><br><span class="line">535</span><br><span class="line">536</span><br><span class="line">537</span><br><span class="line">538</span><br><span class="line">539</span><br><span class="line">540</span><br><span class="line">541</span><br><span class="line">542</span><br><span class="line">543</span><br><span class="line">544</span><br><span class="line">545</span><br><span class="line">546</span><br><span class="line">547</span><br><span class="line">548</span><br><span class="line">549</span><br><span class="line">550</span><br><span class="line">551</span><br><span class="line">552</span><br><span class="line">553</span><br><span class="line">554</span><br><span class="line">555</span><br><span class="line">556</span><br><span class="line">557</span><br><span class="line">558</span><br><span class="line">559</span><br><span class="line">560</span><br><span class="line">561</span><br><span class="line">562</span><br><span class="line">563</span><br><span class="line">564</span><br><span class="line">565</span><br><span class="line">566</span><br><span class="line">567</span><br><span class="line">568</span><br><span class="line">569</span><br><span class="line">570</span><br><span class="line">571</span><br><span class="line">572</span><br><span class="line">573</span><br><span class="line">574</span><br><span class="line">575</span><br><span class="line">576</span><br><span class="line">577</span><br><span class="line">578</span><br><span class="line">579</span><br><span class="line">580</span><br><span class="line">581</span><br><span class="line">582</span><br><span class="line">583</span><br><span class="line">584</span><br><span class="line">585</span><br><span class="line">586</span><br><span class="line">587</span><br><span class="line">588</span><br><span class="line">589</span><br><span class="line">590</span><br><span class="line">591</span><br><span class="line">592</span><br><span class="line">593</span><br><span class="line">594</span><br><span class="line">595</span><br><span class="line">596</span><br><span class="line">597</span><br><span class="line">598</span><br><span class="line">599</span><br><span class="line">600</span><br><span class="line">601</span><br><span class="line">602</span><br><span class="line">603</span><br><span class="line">604</span><br><span class="line">605</span><br><span class="line">606</span><br><span class="line">607</span><br><span class="line">608</span><br><span class="line">609</span><br><span class="line">610</span><br><span class="line">611</span><br><span class="line">612</span><br><span class="line">613</span><br><span class="line">614</span><br><span class="line">615</span><br><span class="line">616</span><br><span class="line">617</span><br><span class="line">618</span><br><span class="line">619</span><br><span class="line">620</span><br><span class="line">621</span><br><span class="line">622</span><br><span class="line">623</span><br><span class="line">624</span><br><span class="line">625</span><br><span class="line">626</span><br><span class="line">627</span><br><span class="line">628</span><br><span class="line">629</span><br><span class="line">630</span><br><span class="line">631</span><br><span class="line">632</span><br><span class="line">633</span><br><span class="line">634</span><br><span class="line">635</span><br><span class="line">636</span><br><span class="line">637</span><br><span class="line">638</span><br><span class="line">639</span><br><span class="line">640</span><br><span class="line">641</span><br><span class="line">642</span><br><span class="line">643</span><br><span class="line">644</span><br><span class="line">645</span><br><span class="line">646</span><br><span class="line">647</span><br><span class="line">648</span><br><span class="line">649</span><br><span class="line">650</span><br><span class="line">651</span><br><span class="line">652</span><br><span class="line">653</span><br><span class="line">654</span><br><span class="line">655</span><br><span class="line">656</span><br><span class="line">657</span><br><span class="line">658</span><br><span class="line">659</span><br></pre></td><td class="code"><pre><span class="line">package io.netty.channel;  </span><br><span class="line">  </span><br><span class="line">import io.netty.buffer.ByteBuf;  </span><br><span class="line">import io.netty.util.concurrent.DefaultEventExecutorGroup;  </span><br><span class="line">import io.netty.util.concurrent.EventExecutorGroup;  </span><br><span class="line">  </span><br><span class="line">import java.net.SocketAddress;  </span><br><span class="line">import java.nio.ByteBuffer;  </span><br><span class="line">import java.nio.channels.SocketChannel;  </span><br><span class="line">import java.util.List;  </span><br><span class="line">import java.util.Map;  </span><br><span class="line">import java.util.Map.Entry;  </span><br><span class="line">import java.util.NoSuchElementException;  </span><br><span class="line">  </span><br><span class="line">  </span><br><span class="line">/** </span><br><span class="line"> * A list of &#123;@link ChannelHandler&#125;s which handles or intercepts inbound events and outbound operations of a </span><br><span class="line"> * &#123;@link Channel&#125;.  &#123;@link ChannelPipeline&#125; implements an advanced form of the </span><br><span class="line"> * [url=http://www.oracle.com/technetwork/java/interceptingfilter-142169.html]Intercepting Filter[/url] pattern </span><br><span class="line"> * to give a user full control over how an event is handled and how the &#123;@link ChannelHandler&#125;s in a pipeline </span><br><span class="line"> * interact with each other. </span><br><span class="line"> *通道处理器集合ChannelPipeline可以处理或拦截关联通道的Inbound事件和Outbound操作。管道线实现了拦截过滤器模式， </span><br><span class="line"> 使开发者可以完全控制事件如何处理，以及通道处理器在管道中如何交互。 </span><br><span class="line"> * &lt;h3&gt;Creation of a pipeline&lt;/h3&gt; </span><br><span class="line"> *创建管道 </span><br><span class="line"> * Each channel has its own pipeline and it is created automatically when a new channel is created. </span><br><span class="line"> *每个通道拥有自己的管道，当通道创建时，管道自动创建 </span><br><span class="line"> * &lt;h3&gt;How an event flows in a pipeline&lt;/h3&gt; </span><br><span class="line"> *管道事件流 </span><br><span class="line"> * The following diagram describes how I/O events are processed by &#123;@link ChannelHandler&#125;s in a &#123;@link ChannelPipeline&#125; </span><br><span class="line"> * typically. An I/O event is handled by either a &#123;@link ChannelInboundHandler&#125; or a &#123;@link ChannelOutboundHandler&#125; </span><br><span class="line"> * and be forwarded to its closest handler by calling the event propagation methods defined in </span><br><span class="line"> * &#123;@link ChannelHandlerContext&#125;, such as &#123;@link ChannelHandlerContext#fireChannelRead(Object)&#125; and </span><br><span class="line"> * &#123;@link ChannelHandlerContext#write(Object)&#125;. </span><br><span class="line"> *下图描述事件如何被管道中的通道处理器处理过程。一个IO事件被Inbound或Outbound通道处理器处理时，可以通过通道 </span><br><span class="line"> 的上下文的相关事件传播方法，将事件转发给相邻的通道处理器，比如 ChannelHandlerContext#fireChannelRead(Object)和 </span><br><span class="line">ChannelHandlerContext#write(Object)方法。 </span><br><span class="line"> * &lt;pre&gt; </span><br><span class="line"> *                                                 I/O Request </span><br><span class="line"> *                                            via &#123;@link Channel&#125; or </span><br><span class="line"> *                                        &#123;@link ChannelHandlerContext&#125; </span><br><span class="line"> *                                                      | </span><br><span class="line"> *  +---------------------------------------------------+---------------+ </span><br><span class="line"> *  |                           ChannelPipeline         |               | </span><br><span class="line"> *  |                                                  \|/              | </span><br><span class="line"> *  |    +---------------------+            +-----------+----------+    | </span><br><span class="line"> *  |    | Inbound Handler  N  |            | Outbound Handler  1  |    | </span><br><span class="line"> *  |    +----------+----------+            +-----------+----------+    | </span><br><span class="line"> *  |              /|\                                  |               | </span><br><span class="line"> *  |               |                                  \|/              | </span><br><span class="line"> *  |    +----------+----------+            +-----------+----------+    | </span><br><span class="line"> *  |    | Inbound Handler N-1 |            | Outbound Handler  2  |    | </span><br><span class="line"> *  |    +----------+----------+            +-----------+----------+    | </span><br><span class="line"> *  |              /|\                                  .               | </span><br><span class="line"> *  |               .                                   .               | </span><br><span class="line"> *  | ChannelHandlerContext.fireIN_EVT() ChannelHandlerContext.OUT_EVT()| </span><br><span class="line"> *  |        [ method call]                       [method call]         | </span><br><span class="line"> *  |               .                                   .               | </span><br><span class="line"> *  |               .                                  \|/              | </span><br><span class="line"> *  |    +----------+----------+            +-----------+----------+    | </span><br><span class="line"> *  |    | Inbound Handler  2  |            | Outbound Handler M-1 |    | </span><br><span class="line"> *  |    +----------+----------+            +-----------+----------+    | </span><br><span class="line"> *  |              /|\                                  |               | </span><br><span class="line"> *  |               |                                  \|/              | </span><br><span class="line"> *  |    +----------+----------+            +-----------+----------+    | </span><br><span class="line"> *  |    | Inbound Handler  1  |            | Outbound Handler  M  |    | </span><br><span class="line"> *  |    +----------+----------+            +-----------+----------+    | </span><br><span class="line"> *  |              /|\                                  |               | </span><br><span class="line"> *  +---------------+-----------------------------------+---------------+ </span><br><span class="line"> *                  |                                  \|/ </span><br><span class="line"> *  +---------------+-----------------------------------+---------------+ </span><br><span class="line"> *  |               |                                   |               | </span><br><span class="line"> *  |       [ Socket.read() ]                    [ Socket.write() ]     | </span><br><span class="line"> *  |                                                                   | </span><br><span class="line"> *  |  Netty Internal I/O Threads (Transport Implementation)            | </span><br><span class="line"> *  +-------------------------------------------------------------------+ </span><br><span class="line"> * &lt;/pre&gt; </span><br><span class="line"> * An inbound event is handled by the inbound handlers in the bottom-up direction as shown on the left side of the </span><br><span class="line"> * diagram.  An inbound handler usually handles the inbound data generated by the I/O thread on the bottom of the </span><br><span class="line"> * diagram.  The inbound data is often read from a remote peer via the actual input operation such as </span><br><span class="line"> * &#123;@link SocketChannel#read(ByteBuffer)&#125;.  If an inbound event goes beyond the top inbound handler, it is discarded </span><br><span class="line"> * silently, or logged if it needs your attention. </span><br><span class="line"> 在上图中左边，一个inbound事件，由下向上被Inbound通道处理器处理。一个Inbound通道处理器，一般处理来自IO线程的数据。 </span><br><span class="line"> Inbound数据，通常通过实际的输入操作，如SocketChannel#read，从远端peer读取。如果inbound事件到达Inbound处理器的顶部， </span><br><span class="line"> 默认将会被抛弃，如果需要关注，可以log </span><br><span class="line"> * &lt;p&gt; </span><br><span class="line"> * An outbound event is handled by the outbound handler in the top-down direction as shown on the right side of the </span><br><span class="line"> * diagram.  An outbound handler usually generates or transforms the outbound traffic such as write requests. </span><br><span class="line"> * If an outbound event goes beyond the bottom outbound handler, it is handled by an I/O thread associated with the </span><br><span class="line"> * &#123;@link Channel&#125;. The I/O thread often performs the actual output operation such as </span><br><span class="line"> * &#123;@link SocketChannel#write(ByteBuffer)&#125;. </span><br><span class="line">在上图中的右边， 一个Outbound事件，被Outbound通道处理器从上到下处理。一个Outbound通道处理器通常产生或者转发Outbound数据， </span><br><span class="line">不如写请求。如果outbound事件到达Outbound通道处理器的底部，那么将会被通道关联的Io线程处理。IO线程执行实际的输出操作， </span><br><span class="line">如SocketChannel#write。 </span><br><span class="line"> * &lt;p&gt; </span><br><span class="line"> * For example, let us assume that we created the following pipeline: </span><br><span class="line"> 来看一个例子，假设创建管道如下 </span><br><span class="line"> * &lt;pre&gt; </span><br><span class="line"> * &#123;@link ChannelPipeline&#125; p = ...; </span><br><span class="line"> * p.addLast(&quot;1&quot;, new InboundHandlerA()); </span><br><span class="line"> * p.addLast(&quot;2&quot;, new InboundHandlerB()); </span><br><span class="line"> * p.addLast(&quot;3&quot;, new OutboundHandlerA()); </span><br><span class="line"> * p.addLast(&quot;4&quot;, new OutboundHandlerB()); </span><br><span class="line"> * p.addLast(&quot;5&quot;, new InboundOutboundHandlerX()); </span><br><span class="line"> * &lt;/pre&gt; </span><br><span class="line"> * In the example above, the class whose name starts with &#123;@code Inbound&#125; means it is an inbound handler. </span><br><span class="line"> * The class whose name starts with &#123;@code Outbound&#125; means it is a outbound handler. </span><br><span class="line"> 在上述示例中，Inbound开头的为Inbound处理器，Outbound开头的为Outbound处理器 </span><br><span class="line"> * &lt;p&gt; </span><br><span class="line"> * In the given example configuration, the handler evaluation order is 1, 2, 3, 4, 5 when an event goes inbound. </span><br><span class="line"> * When an event goes outbound, the order is 5, 4, 3, 2, 1.  On top of this principle, &#123;@link ChannelPipeline&#125; skips </span><br><span class="line"> * the evaluation of certain handlers to shorten the stack depth: </span><br><span class="line"> inbound事件处理的顺序为1, 2, 3, 4, 5，outbound事件为5, 4, 3, 2, 1。基于管道的top原则将会跳过一些无用的处理器， </span><br><span class="line"> 以缩短通道处理器栈的深度。 </span><br><span class="line"> * [list] </span><br><span class="line"> * &lt;li&gt;3 and 4 don&apos;t implement &#123;@link ChannelInboundHandler&#125;, and therefore the actual evaluation order of an inbound </span><br><span class="line"> *     event will be: 1, 2, and 5.&lt;/li&gt;  </span><br><span class="line">   由于3,4没有实现inbound通道处理器，因此实际inbound通道处理器的顺序为1,2,5. </span><br><span class="line"> * &lt;li&gt;1 and 2 don&apos;t implement &#123;@link ChannelOutboundHandler&#125;, and therefore the actual evaluation order of a </span><br><span class="line"> *     outbound event will be: 5, 4, and 3.&lt;/li&gt; </span><br><span class="line">    由于1,2没有实现inbound通道处理器，因此实际inbound通道处理器的顺序为5, 4, 3. </span><br><span class="line"> * &lt;li&gt;If 5 implements both &#123;@link ChannelInboundHandler&#125; and &#123;@link ChannelOutboundHandler&#125;, the evaluation order of </span><br><span class="line"> *     an inbound and a outbound event could be 125 and 543 respectively.&lt;/li&gt; </span><br><span class="line"> 如果5实现了inbound和Outbound，则inbound事件，处理器顺序为125，oubound事件为543. </span><br><span class="line"> * [/list] </span><br><span class="line"> * </span><br><span class="line"> * &lt;h3&gt;Forwarding an event to the next handler&lt;/h3&gt; </span><br><span class="line"> *转发事件到下一个处理器 </span><br><span class="line"> * As you might noticed in the diagram shows, a handler has to invoke the event propagation methods in </span><br><span class="line"> * &#123;@link ChannelHandlerContext&#125; to forward an event to its next handler.  Those methods include: </span><br><span class="line"> 在上图中，你可能已经注意到，一个处理器不得不调用关联的上下文的事件传播方法，将事件传播给下一个处理器。 </span><br><span class="line"> 这些方法如下： </span><br><span class="line"> * [list] </span><br><span class="line"> * &lt;li&gt;Inbound event propagation methods: </span><br><span class="line"> *     [list] </span><br><span class="line"> *     [*]&#123;@link ChannelHandlerContext#fireChannelRegistered()&#125; </span><br><span class="line"> </span><br><span class="line"> *     [*]&#123;@link ChannelHandlerContext#fireChannelActive()&#125; </span><br><span class="line"> </span><br><span class="line"> *     [*]&#123;@link ChannelHandlerContext#fireChannelRead(Object)&#125; </span><br><span class="line"> </span><br><span class="line"> *     [*]&#123;@link ChannelHandlerContext#fireChannelReadComplete()&#125; </span><br><span class="line"> </span><br><span class="line"> *     [*]&#123;@link ChannelHandlerContext#fireExceptionCaught(Throwable)&#125; </span><br><span class="line"> </span><br><span class="line"> *     [*]&#123;@link ChannelHandlerContext#fireUserEventTriggered(Object)&#125; </span><br><span class="line"> </span><br><span class="line"> *     [*]&#123;@link ChannelHandlerContext#fireChannelWritabilityChanged()&#125; </span><br><span class="line"> </span><br><span class="line"> *     [*]&#123;@link ChannelHandlerContext#fireChannelInactive()&#125; </span><br><span class="line"> </span><br><span class="line"> *     [*]&#123;@link ChannelHandlerContext#fireChannelUnregistered()&#125; </span><br><span class="line"> </span><br><span class="line"> *     [/list] </span><br><span class="line"> * &lt;/li&gt; </span><br><span class="line"> * &lt;li&gt;Outbound event propagation methods: </span><br><span class="line"> *     [list] </span><br><span class="line"> *     [*]&#123;@link ChannelHandlerContext#bind(SocketAddress, ChannelPromise)&#125; </span><br><span class="line"> </span><br><span class="line"> *     [*]&#123;@link ChannelHandlerContext#connect(SocketAddress, SocketAddress, ChannelPromise)&#125; </span><br><span class="line"> </span><br><span class="line"> *     [*]&#123;@link ChannelHandlerContext#write(Object, ChannelPromise)&#125; </span><br><span class="line"> </span><br><span class="line"> *     [*]&#123;@link ChannelHandlerContext#flush()&#125; </span><br><span class="line"> </span><br><span class="line"> *     [*]&#123;@link ChannelHandlerContext#read()&#125; </span><br><span class="line"> </span><br><span class="line"> *     [*]&#123;@link ChannelHandlerContext#disconnect(ChannelPromise)&#125; </span><br><span class="line"> </span><br><span class="line"> *     [*]&#123;@link ChannelHandlerContext#close(ChannelPromise)&#125; </span><br><span class="line"> </span><br><span class="line"> *     [*]&#123;@link ChannelHandlerContext#deregister(ChannelPromise)&#125; </span><br><span class="line"> </span><br><span class="line"> *     [/list] </span><br><span class="line"> * &lt;/li&gt; </span><br><span class="line"> * [/list] </span><br><span class="line"> * </span><br><span class="line"> * and the following example shows how the event propagation is usually done: </span><br><span class="line"> *下面的实例展示事件如何传播 </span><br><span class="line"> * &lt;pre&gt; </span><br><span class="line"> * public class MyInboundHandler extends &#123;@link ChannelInboundHandlerAdapter&#125; &#123; </span><br><span class="line"> *     &#123;@code @Override&#125; </span><br><span class="line"> *     public void channelActive(&#123;@link ChannelHandlerContext&#125; ctx) &#123; </span><br><span class="line"> *         System.out.println(&quot;Connected!&quot;); </span><br><span class="line"> *         ctx.fireChannelActive(); </span><br><span class="line"> *     &#125; </span><br><span class="line"> * &#125; </span><br><span class="line"> * </span><br><span class="line"> * public class MyOutboundHandler extends &#123;@link ChannelOutboundHandlerAdapter&#125; &#123; </span><br><span class="line"> *     &#123;@code @Override&#125; </span><br><span class="line"> *     public void close(&#123;@link ChannelHandlerContext&#125; ctx, &#123;@link ChannelPromise&#125; promise) &#123; </span><br><span class="line"> *         System.out.println(&quot;Closing ..&quot;); </span><br><span class="line"> *         ctx.close(promise); </span><br><span class="line"> *     &#125; </span><br><span class="line"> * &#125; </span><br><span class="line"> * &lt;/pre&gt; </span><br><span class="line"> * </span><br><span class="line"> * &lt;h3&gt;Building a pipeline&lt;/h3&gt; </span><br><span class="line"> * &lt;p&gt;构建管道 </span><br><span class="line"> * A user is supposed to have one or more &#123;@link ChannelHandler&#125;s in a pipeline to receive I/O events (e.g. read) and </span><br><span class="line"> * to request I/O operations (e.g. write and close).  For example, a typical server will have the following handlers </span><br><span class="line"> * in each channel&apos;s pipeline, but your mileage may vary depending on the complexity and characteristics of the </span><br><span class="line"> * protocol and business logic: </span><br><span class="line"> 用户可能在管道中有多个通道处理器，处理IO事件和IO请求操作(write and close)。比如，一个典型的服务器，在每个通道的 </span><br><span class="line"> 管道中有如下handler，处理过程可能因为不同的协议和业务逻辑而不同 </span><br><span class="line"> * </span><br><span class="line"> * [list=1] </span><br><span class="line"> * [*]Protocol Decoder - translates binary data (e.g. &#123;@link ByteBuf&#125;) into a Java object. </span><br><span class="line"> </span><br><span class="line"> * [*]Protocol Encoder - translates a Java object into binary data. </span><br><span class="line"> </span><br><span class="line"> * [*]Business Logic Handler - performs the actual business logic (e.g. database access). </span><br><span class="line"> </span><br><span class="line"> 解码器，编码器，业务逻辑Handler </span><br><span class="line"> * [/list] </span><br><span class="line"> * </span><br><span class="line"> * and it could be represented as shown in the following example: </span><br><span class="line"> *下面为一个实例 </span><br><span class="line"> * &lt;pre&gt;IO事件操作执行器组 </span><br><span class="line"> * static final &#123;@link EventExecutorGroup&#125; group = new &#123;@link DefaultEventExecutorGroup&#125;(16); </span><br><span class="line"> * ... </span><br><span class="line"> *获取通道的管道 </span><br><span class="line"> * &#123;@link ChannelPipeline&#125; pipeline = ch.pipeline(); </span><br><span class="line"> *添加解码器和编码器 </span><br><span class="line"> * pipeline.addLast(&quot;decoder&quot;, new MyProtocolDecoder()); </span><br><span class="line"> * pipeline.addLast(&quot;encoder&quot;, new MyProtocolEncoder()); </span><br><span class="line"> * </span><br><span class="line"> * // Tell the pipeline to run MyBusinessLogicHandler&apos;s event handler methods </span><br><span class="line"> * // in a different thread than an I/O thread so that the I/O thread is not blocked by </span><br><span class="line"> * // a time-consuming task. </span><br><span class="line"> * // If your business logic is fully asynchronous or finished very quickly, you don&apos;t </span><br><span class="line"> * // need to specify a group. </span><br><span class="line"> 告诉管道，在不同于IO线程的事件执行器组中，执行通道处理器的事件执行方法，以保证IO线程不会被 </span><br><span class="line"> 一个耗时任务阻塞。如果你的业务逻辑完全异步或能够快速的完成，你不要添加一个事件执行器组。 </span><br><span class="line"> * pipeline.addLast(group, &quot;handler&quot;, new MyBusinessLogicHandler()); </span><br><span class="line"> * &lt;/pre&gt; </span><br><span class="line"> * </span><br><span class="line"> * &lt;h3&gt;Thread safety&lt;/h3&gt; </span><br><span class="line"> * &lt;p&gt;线程安全 </span><br><span class="line"> * A &#123;@link ChannelHandler&#125; can be added or removed at any time because a &#123;@link ChannelPipeline&#125; is thread safe. </span><br><span class="line"> * For example, you can insert an encryption handler when sensitive information is about to be exchanged, and remove it </span><br><span class="line"> * after the exchange. </span><br><span class="line"> 由于管道时线程安全的，通道处理器可以在任何时候，添加或移除。比如：当有一些敏感数据要交换时，插入加密Handler， </span><br><span class="line"> 在交换后，移除。 </span><br><span class="line"> */  </span><br><span class="line">public interface ChannelPipeline  </span><br><span class="line">        extends ChannelInboundInvoker, ChannelOutboundInvoker, Iterable&lt;Entry&lt;String, ChannelHandler&gt;&gt; &#123;  </span><br><span class="line">  </span><br><span class="line">    /** </span><br><span class="line">     * Inserts a &#123;@link ChannelHandler&#125; at the first position of this pipeline. </span><br><span class="line">     *添加通道处理器到管道的头部 </span><br><span class="line">     * @param name     the name of the handler to insert first </span><br><span class="line">     * @param handler  the handler to insert first </span><br><span class="line">     * </span><br><span class="line">     * @throws IllegalArgumentException </span><br><span class="line">     *         if there&apos;s an entry with the same name already in the pipeline </span><br><span class="line">     * @throws NullPointerException </span><br><span class="line">     *         if the specified handler is &#123;@code null&#125; </span><br><span class="line">     */  </span><br><span class="line">    ChannelPipeline addFirst(String name, ChannelHandler handler);  </span><br><span class="line">  </span><br><span class="line">    /** </span><br><span class="line">     * Inserts a &#123;@link ChannelHandler&#125; at the first position of this pipeline. </span><br><span class="line">     *与上面方法不同的是，则增加了一个事件执行器组参数 </span><br><span class="line">     * @param group    the &#123;@link EventExecutorGroup&#125; which will be used to execute the &#123;@link ChannelHandler&#125; </span><br><span class="line">     *                 methods </span><br><span class="line">     * @param name     the name of the handler to insert first </span><br><span class="line">     * @param handler  the handler to insert first </span><br><span class="line">     * </span><br><span class="line">     * @throws IllegalArgumentException </span><br><span class="line">     *         if there&apos;s an entry with the same name already in the pipeline </span><br><span class="line">     * @throws NullPointerException </span><br><span class="line">     *         if the specified handler is &#123;@code null&#125; </span><br><span class="line">     */  </span><br><span class="line">    ChannelPipeline addFirst(EventExecutorGroup group, String name, ChannelHandler handler);  </span><br><span class="line">  </span><br><span class="line">    /** </span><br><span class="line">     * Appends a &#123;@link ChannelHandler&#125; at the last position of this pipeline. </span><br><span class="line">     *添加通道处理器到管道的尾部 </span><br><span class="line">     * @param name     the name of the handler to append </span><br><span class="line">     * @param handler  the handler to append </span><br><span class="line">     * </span><br><span class="line">     * @throws IllegalArgumentException </span><br><span class="line">     *         if there&apos;s an entry with the same name already in the pipeline </span><br><span class="line">     * @throws NullPointerException </span><br><span class="line">     *         if the specified handler is &#123;@code null&#125; </span><br><span class="line">     */  </span><br><span class="line">    ChannelPipeline addLast(String name, ChannelHandler handler);  </span><br><span class="line">  </span><br><span class="line">    /** </span><br><span class="line">     * Appends a &#123;@link ChannelHandler&#125; at the last position of this pipeline. </span><br><span class="line">     *与上面方法不同的是，则增加了一个事件执行器组参数 </span><br><span class="line">     * @param group    the &#123;@link EventExecutorGroup&#125; which will be used to execute the &#123;@link ChannelHandler&#125; </span><br><span class="line">     *                 methods </span><br><span class="line">     * @param name     the name of the handler to append </span><br><span class="line">     * @param handler  the handler to append </span><br><span class="line">     * </span><br><span class="line">     * @throws IllegalArgumentException </span><br><span class="line">     *         if there&apos;s an entry with the same name already in the pipeline </span><br><span class="line">     * @throws NullPointerException </span><br><span class="line">     *         if the specified handler is &#123;@code null&#125; </span><br><span class="line">     */  </span><br><span class="line">    ChannelPipeline addLast(EventExecutorGroup group, String name, ChannelHandler handler);  </span><br><span class="line">  </span><br><span class="line">    /** </span><br><span class="line">     * Inserts a &#123;@link ChannelHandler&#125; before an existing handler of this </span><br><span class="line">     * pipeline. </span><br><span class="line">     *添加通道处理器到管道的指定通道处理器的前面 </span><br><span class="line">     * @param baseName  the name of the existing handler </span><br><span class="line">     * @param name      the name of the handler to insert before </span><br><span class="line">     * @param handler   the handler to insert before </span><br><span class="line">     * </span><br><span class="line">     * @throws NoSuchElementException </span><br><span class="line">     *         if there&apos;s no such entry with the specified &#123;@code baseName&#125; </span><br><span class="line">     * @throws IllegalArgumentException </span><br><span class="line">     *         if there&apos;s an entry with the same name already in the pipeline </span><br><span class="line">     * @throws NullPointerException </span><br><span class="line">     *         if the specified baseName or handler is &#123;@code null&#125; </span><br><span class="line">     */  </span><br><span class="line">    ChannelPipeline addBefore(String baseName, String name, ChannelHandler handler);  </span><br><span class="line">  </span><br><span class="line">    /** </span><br><span class="line">     * Inserts a &#123;@link ChannelHandler&#125; before an existing handler of this </span><br><span class="line">     * pipeline. </span><br><span class="line">     *与上面方法不同的是，则增加了一个事件执行器组参数 </span><br><span class="line">     * @param group     the &#123;@link EventExecutorGroup&#125; which will be used to execute the &#123;@link ChannelHandler&#125; </span><br><span class="line">     *                  methods </span><br><span class="line">     * @param baseName  the name of the existing handler </span><br><span class="line">     * @param name      the name of the handler to insert before </span><br><span class="line">     * @param handler   the handler to insert before </span><br><span class="line">     * </span><br><span class="line">     * @throws NoSuchElementException </span><br><span class="line">     *         if there&apos;s no such entry with the specified &#123;@code baseName&#125; </span><br><span class="line">     * @throws IllegalArgumentException </span><br><span class="line">     *         if there&apos;s an entry with the same name already in the pipeline </span><br><span class="line">     * @throws NullPointerException </span><br><span class="line">     *         if the specified baseName or handler is &#123;@code null&#125; </span><br><span class="line">     */  </span><br><span class="line">    ChannelPipeline addBefore(EventExecutorGroup group, String baseName, String name, ChannelHandler handler);  </span><br><span class="line">  </span><br><span class="line">    /** </span><br><span class="line">     * Inserts a &#123;@link ChannelHandler&#125; after an existing handler of this </span><br><span class="line">     * pipeline. </span><br><span class="line">     *添加通道处理器到管道的指定通道处理器的后面 </span><br><span class="line">     * @param baseName  the name of the existing handler </span><br><span class="line">     * @param name      the name of the handler to insert after </span><br><span class="line">     * @param handler   the handler to insert after </span><br><span class="line">     * </span><br><span class="line">     * @throws NoSuchElementException </span><br><span class="line">     *         if there&apos;s no such entry with the specified &#123;@code baseName&#125; </span><br><span class="line">     * @throws IllegalArgumentException </span><br><span class="line">     *         if there&apos;s an entry with the same name already in the pipeline </span><br><span class="line">     * @throws NullPointerException </span><br><span class="line">     *         if the specified baseName or handler is &#123;@code null&#125; </span><br><span class="line">     */  </span><br><span class="line">    ChannelPipeline addAfter(String baseName, String name, ChannelHandler handler);  </span><br><span class="line">  </span><br><span class="line">    /** </span><br><span class="line">     * Inserts a &#123;@link ChannelHandler&#125; after an existing handler of this </span><br><span class="line">     * pipeline. </span><br><span class="line">     *与上面方法不同的是，则增加了一个事件执行器组参数 </span><br><span class="line">     * @param group     the &#123;@link EventExecutorGroup&#125; which will be used to execute the &#123;@link ChannelHandler&#125; </span><br><span class="line">     *                  methods </span><br><span class="line">     * @param baseName  the name of the existing handler </span><br><span class="line">     * @param name      the name of the handler to insert after </span><br><span class="line">     * @param handler   the handler to insert after </span><br><span class="line">     * </span><br><span class="line">     * @throws NoSuchElementException </span><br><span class="line">     *         if there&apos;s no such entry with the specified &#123;@code baseName&#125; </span><br><span class="line">     * @throws IllegalArgumentException </span><br><span class="line">     *         if there&apos;s an entry with the same name already in the pipeline </span><br><span class="line">     * @throws NullPointerException </span><br><span class="line">     *         if the specified baseName or handler is &#123;@code null&#125; </span><br><span class="line">     */  </span><br><span class="line">    ChannelPipeline addAfter(EventExecutorGroup group, String baseName, String name, ChannelHandler handler);  </span><br><span class="line">  </span><br><span class="line">    /** </span><br><span class="line">     * Inserts &#123;@link ChannelHandler&#125;s at the first position of this pipeline. </span><br><span class="line">     *添加多个通道处理器到管道的头部 </span><br><span class="line">     * @param handlers  the handlers to insert first </span><br><span class="line">     * </span><br><span class="line">     */  </span><br><span class="line">    ChannelPipeline addFirst(ChannelHandler... handlers);  </span><br><span class="line">  </span><br><span class="line">    /** </span><br><span class="line">     * Inserts &#123;@link ChannelHandler&#125;s at the first position of this pipeline. </span><br><span class="line">     *与上面方法不同的是，则增加了一个事件执行器组参数 </span><br><span class="line">     * @param group     the &#123;@link EventExecutorGroup&#125; which will be used to execute the &#123;@link ChannelHandler&#125;s </span><br><span class="line">     *                  methods. </span><br><span class="line">     * @param handlers  the handlers to insert first </span><br><span class="line">     * </span><br><span class="line">     */  </span><br><span class="line">    ChannelPipeline addFirst(EventExecutorGroup group, ChannelHandler... handlers);  </span><br><span class="line">  </span><br><span class="line">    /** </span><br><span class="line">     * Inserts &#123;@link ChannelHandler&#125;s at the last position of this pipeline. </span><br><span class="line">     *添加多个通道处理器到管道的尾部 </span><br><span class="line">     * @param handlers  the handlers to insert last </span><br><span class="line">     * </span><br><span class="line">     */  </span><br><span class="line">    ChannelPipeline addLast(ChannelHandler... handlers);  </span><br><span class="line">  </span><br><span class="line">    /** </span><br><span class="line">     * Inserts &#123;@link ChannelHandler&#125;s at the last position of this pipeline. </span><br><span class="line">     *与上面方法不同的是，则增加了一个事件执行器组参数 </span><br><span class="line">     * @param group     the &#123;@link EventExecutorGroup&#125; which will be used to execute the &#123;@link ChannelHandler&#125;s </span><br><span class="line">     *                  methods. </span><br><span class="line">     * @param handlers  the handlers to insert last </span><br><span class="line">     * </span><br><span class="line">     */  </span><br><span class="line">    ChannelPipeline addLast(EventExecutorGroup group, ChannelHandler... handlers);  </span><br><span class="line">  </span><br><span class="line">    /** </span><br><span class="line">     * Removes the specified &#123;@link ChannelHandler&#125; from this pipeline. </span><br><span class="line">     *从管道线移除指定的通道处理器 </span><br><span class="line">     * @param  handler          the &#123;@link ChannelHandler&#125; to remove </span><br><span class="line">     * </span><br><span class="line">     * @throws NoSuchElementException </span><br><span class="line">     *         if there&apos;s no such handler in this pipeline </span><br><span class="line">     * @throws NullPointerException </span><br><span class="line">     *         if the specified handler is &#123;@code null&#125; </span><br><span class="line">     */  </span><br><span class="line">    ChannelPipeline remove(ChannelHandler handler);  </span><br><span class="line">  </span><br><span class="line">    /** </span><br><span class="line">     * Removes the &#123;@link ChannelHandler&#125; with the specified name from this pipeline. </span><br><span class="line">     根据通道处理器名，从管道中移除对应通道处理器 </span><br><span class="line">     * </span><br><span class="line">     * @param  name             the name under which the &#123;@link ChannelHandler&#125; was stored. </span><br><span class="line">     * </span><br><span class="line">     * @return the removed handler </span><br><span class="line">     * </span><br><span class="line">     * @throws NoSuchElementException </span><br><span class="line">     *         if there&apos;s no such handler with the specified name in this pipeline </span><br><span class="line">     * @throws NullPointerException </span><br><span class="line">     *         if the specified name is &#123;@code null&#125; </span><br><span class="line">     */  </span><br><span class="line">    ChannelHandler remove(String name);  </span><br><span class="line">  </span><br><span class="line">    /** </span><br><span class="line">     * Removes the &#123;@link ChannelHandler&#125; of the specified type from this pipeline. </span><br><span class="line">     *移除指定的类型的通道处理器 </span><br><span class="line">     * @param &lt;T&gt;           the type of the handler </span><br><span class="line">     * @param handlerType   the type of the handler </span><br><span class="line">     * </span><br><span class="line">     * @return the removed handler </span><br><span class="line">     * </span><br><span class="line">     * @throws NoSuchElementException </span><br><span class="line">     *         if there&apos;s no such handler of the specified type in this pipeline </span><br><span class="line">     * @throws NullPointerException </span><br><span class="line">     *         if the specified handler type is &#123;@code null&#125; </span><br><span class="line">     */  </span><br><span class="line">    &lt;T extends ChannelHandler&gt; T remove(Class&lt;T&gt; handlerType);  </span><br><span class="line">  </span><br><span class="line">    /** </span><br><span class="line">     * Removes the first &#123;@link ChannelHandler&#125; in this pipeline. </span><br><span class="line">     *移除管道线头部的通道处理器 </span><br><span class="line">     * @return the removed handler </span><br><span class="line">     * </span><br><span class="line">     * @throws NoSuchElementException </span><br><span class="line">     *         if this pipeline is empty </span><br><span class="line">     */  </span><br><span class="line">    ChannelHandler removeFirst();  </span><br><span class="line">  </span><br><span class="line">    /** </span><br><span class="line">     * Removes the last &#123;@link ChannelHandler&#125; in this pipeline. </span><br><span class="line">     *移除管道线尾部的通道处理器 </span><br><span class="line">     * @return the removed handler </span><br><span class="line">     * </span><br><span class="line">     * @throws NoSuchElementException </span><br><span class="line">     *         if this pipeline is empty </span><br><span class="line">     */  </span><br><span class="line">    ChannelHandler removeLast();  </span><br><span class="line">  </span><br><span class="line">    /** </span><br><span class="line">     * Replaces the specified &#123;@link ChannelHandler&#125; with a new handler in this pipeline. </span><br><span class="line">     *替换管道中旧的通道处理器 </span><br><span class="line">     * @param  oldHandler    the &#123;@link ChannelHandler&#125; to be replaced </span><br><span class="line">     * @param  newName       the name under which the replacement should be added </span><br><span class="line">     * @param  newHandler    the &#123;@link ChannelHandler&#125; which is used as replacement </span><br><span class="line">     * </span><br><span class="line">     * @return itself </span><br><span class="line"> </span><br><span class="line">     * @throws NoSuchElementException </span><br><span class="line">     *         if the specified old handler does not exist in this pipeline </span><br><span class="line">     * @throws IllegalArgumentException </span><br><span class="line">     *         if a handler with the specified new name already exists in this </span><br><span class="line">     *         pipeline, except for the handler to be replaced </span><br><span class="line">     * @throws NullPointerException </span><br><span class="line">     *         if the specified old handler or new handler is </span><br><span class="line">     *         &#123;@code null&#125; </span><br><span class="line">     */  </span><br><span class="line">    ChannelPipeline replace(ChannelHandler oldHandler, String newName, ChannelHandler newHandler);  </span><br><span class="line">  </span><br><span class="line">    /** </span><br><span class="line">     * Replaces the &#123;@link ChannelHandler&#125; of the specified name with a new handler in this pipeline. </span><br><span class="line">     *与上面方法不同的，指定原始通道处理器的名字 </span><br><span class="line">     * @param  oldName       the name of the &#123;@link ChannelHandler&#125; to be replaced </span><br><span class="line">     * @param  newName       the name under which the replacement should be added </span><br><span class="line">     * @param  newHandler    the &#123;@link ChannelHandler&#125; which is used as replacement </span><br><span class="line">     * </span><br><span class="line">     * @return the removed handler </span><br><span class="line">     * </span><br><span class="line">     * @throws NoSuchElementException </span><br><span class="line">     *         if the handler with the specified old name does not exist in this pipeline </span><br><span class="line">     * @throws IllegalArgumentException </span><br><span class="line">     *         if a handler with the specified new name already exists in this </span><br><span class="line">     *         pipeline, except for the handler to be replaced </span><br><span class="line">     * @throws NullPointerException </span><br><span class="line">     *         if the specified old handler or new handler is </span><br><span class="line">     *         &#123;@code null&#125; </span><br><span class="line">     */  </span><br><span class="line">    ChannelHandler replace(String oldName, String newName, ChannelHandler newHandler);  </span><br><span class="line">  </span><br><span class="line">    /** </span><br><span class="line">     * Replaces the &#123;@link ChannelHandler&#125; of the specified type with a new handler in this pipeline. </span><br><span class="line">     *与上面方法不同的，指定原始通道处理器的类型 </span><br><span class="line">     * @param  oldHandlerType   the type of the handler to be removed </span><br><span class="line">     * @param  newName          the name under which the replacement should be added </span><br><span class="line">     * @param  newHandler       the &#123;@link ChannelHandler&#125; which is used as replacement </span><br><span class="line">     * </span><br><span class="line">     * @return the removed handler </span><br><span class="line">     * </span><br><span class="line">     * @throws NoSuchElementException </span><br><span class="line">     *         if the handler of the specified old handler type does not exist </span><br><span class="line">     *         in this pipeline </span><br><span class="line">     * @throws IllegalArgumentException </span><br><span class="line">     *         if a handler with the specified new name already exists in this </span><br><span class="line">     *         pipeline, except for the handler to be replaced </span><br><span class="line">     * @throws NullPointerException </span><br><span class="line">     *         if the specified old handler or new handler is </span><br><span class="line">     *         &#123;@code null&#125; </span><br><span class="line">     */  </span><br><span class="line">    &lt;T extends ChannelHandler&gt; T replace(Class&lt;T&gt; oldHandlerType, String newName,  </span><br><span class="line">                                         ChannelHandler newHandler);  </span><br><span class="line">  </span><br><span class="line">    /** </span><br><span class="line">     * Returns the first &#123;@link ChannelHandler&#125; in this pipeline. </span><br><span class="line">     *返回管道头部的通道处理器 </span><br><span class="line">     * @return the first handler.  &#123;@code null&#125; if this pipeline is empty. </span><br><span class="line">     */  </span><br><span class="line">    ChannelHandler first();  </span><br><span class="line">  </span><br><span class="line">    /** </span><br><span class="line">     * Returns the context of the first &#123;@link ChannelHandler&#125; in this pipeline. </span><br><span class="line">     *返回管道头部的通道处理器的上下文 </span><br><span class="line">     * @return the context of the first handler.  &#123;@code null&#125; if this pipeline is empty. </span><br><span class="line">     */  </span><br><span class="line">    ChannelHandlerContext firstContext();  </span><br><span class="line">  </span><br><span class="line">    /** </span><br><span class="line">     * Returns the last &#123;@link ChannelHandler&#125; in this pipeline. </span><br><span class="line">     *返回管道尾部的通道处理器 </span><br><span class="line">     * @return the last handler.  &#123;@code null&#125; if this pipeline is empty. </span><br><span class="line">     */  </span><br><span class="line">    ChannelHandler last();  </span><br><span class="line">  </span><br><span class="line">    /** </span><br><span class="line">     * Returns the context of the last &#123;@link ChannelHandler&#125; in this pipeline. </span><br><span class="line">     *返回管道尾部的通道处理器的上下文 </span><br><span class="line">     * @return the context of the last handler.  &#123;@code null&#125; if this pipeline is empty. </span><br><span class="line">     */  </span><br><span class="line">    ChannelHandlerContext lastContext();  </span><br><span class="line">  </span><br><span class="line">    /** </span><br><span class="line">     * Returns the &#123;@link ChannelHandler&#125; with the specified name in this </span><br><span class="line">     * pipeline. </span><br><span class="line">     *根据名字获取管道中的对应的通道处理器 </span><br><span class="line">     * @return the handler with the specified name. </span><br><span class="line">     *         &#123;@code null&#125; if there&apos;s no such handler in this pipeline. </span><br><span class="line">     */  </span><br><span class="line">    ChannelHandler get(String name);  </span><br><span class="line">  </span><br><span class="line">    /** </span><br><span class="line">     * Returns the &#123;@link ChannelHandler&#125; of the specified type in this </span><br><span class="line">     * pipeline. </span><br><span class="line">     *根据通道处理器类型获取管道中的对应的通道处理器 </span><br><span class="line">     * @return the handler of the specified handler type. </span><br><span class="line">     *         &#123;@code null&#125; if there&apos;s no such handler in this pipeline. </span><br><span class="line">     */  </span><br><span class="line">    &lt;T extends ChannelHandler&gt; T get(Class&lt;T&gt; handlerType);  </span><br><span class="line">  </span><br><span class="line">    /** </span><br><span class="line">     * Returns the context object of the specified &#123;@link ChannelHandler&#125; in </span><br><span class="line">     * this pipeline. </span><br><span class="line">     *获取管道中指定通道处理器的上下文 </span><br><span class="line">     * @return the context object of the specified handler. </span><br><span class="line">     *         &#123;@code null&#125; if there&apos;s no such handler in this pipeline. </span><br><span class="line">     */  </span><br><span class="line">    ChannelHandlerContext context(ChannelHandler handler);  </span><br><span class="line">  </span><br><span class="line">    /** </span><br><span class="line">     * Returns the context object of the &#123;@link ChannelHandler&#125; with the </span><br><span class="line">     * specified name in this pipeline. </span><br><span class="line">     *获取管道中指定名字对应的通道处理器的上下文 </span><br><span class="line">     * @return the context object of the handler with the specified name. </span><br><span class="line">     *         &#123;@code null&#125; if there&apos;s no such handler in this pipeline. </span><br><span class="line">     */  </span><br><span class="line">    ChannelHandlerContext context(String name);  </span><br><span class="line">  </span><br><span class="line">    /** </span><br><span class="line">     * Returns the context object of the &#123;@link ChannelHandler&#125; of the </span><br><span class="line">     * specified type in this pipeline. </span><br><span class="line">     *获取管道中指定类型对应的通道处理器的上下文 </span><br><span class="line">     * @return the context object of the handler of the specified type. </span><br><span class="line">     *         &#123;@code null&#125; if there&apos;s no such handler in this pipeline. </span><br><span class="line">     */  </span><br><span class="line">    ChannelHandlerContext context(Class&lt;? extends ChannelHandler&gt; handlerType);  </span><br><span class="line">  </span><br><span class="line">    /** </span><br><span class="line">     * Returns the &#123;@link Channel&#125; that this pipeline is attached to. </span><br><span class="line">     *返回管道所属的Channel </span><br><span class="line">     * @return the channel. &#123;@code null&#125; if this pipeline is not attached yet. </span><br><span class="line">     */  </span><br><span class="line">    Channel channel();  </span><br><span class="line">  </span><br><span class="line">    /** </span><br><span class="line">     * Returns the &#123;@link List&#125; of the handler names. </span><br><span class="line">     获取管道中所有通道处理器的名字 </span><br><span class="line">     */  </span><br><span class="line">    List&lt;String&gt; names();  </span><br><span class="line">  </span><br><span class="line">    /** </span><br><span class="line">     * Converts this pipeline into an ordered &#123;@link Map&#125; whose keys are </span><br><span class="line">     * handler names and whose values are handlers. </span><br><span class="line">     将管道的中通道处理器，转换为name与Handler的Entry Map </span><br><span class="line">     */  </span><br><span class="line">    Map&lt;String, ChannelHandler&gt; toMap();  </span><br><span class="line">  </span><br><span class="line">    @Override  </span><br><span class="line">    ChannelPipeline fireChannelRegistered();  </span><br><span class="line">  </span><br><span class="line">     @Override  </span><br><span class="line">    ChannelPipeline fireChannelUnregistered();  </span><br><span class="line">  </span><br><span class="line">    @Override  </span><br><span class="line">    ChannelPipeline fireChannelActive();  </span><br><span class="line">  </span><br><span class="line">    @Override  </span><br><span class="line">    ChannelPipeline fireChannelInactive();  </span><br><span class="line">  </span><br><span class="line">    @Override  </span><br><span class="line">    ChannelPipeline fireExceptionCaught(Throwable cause);  </span><br><span class="line">  </span><br><span class="line">    @Override  </span><br><span class="line">    ChannelPipeline fireUserEventTriggered(Object event);  </span><br><span class="line">  </span><br><span class="line">    @Override  </span><br><span class="line">    ChannelPipeline fireChannelRead(Object msg);  </span><br><span class="line">  </span><br><span class="line">    @Override  </span><br><span class="line">    ChannelPipeline fireChannelReadComplete();  </span><br><span class="line">  </span><br><span class="line">    @Override  </span><br><span class="line">    ChannelPipeline fireChannelWritabilityChanged();  </span><br><span class="line">  </span><br><span class="line">    @Override  </span><br><span class="line">    ChannelPipeline flush();  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>从Channel管道线ChannelPipeline定义来看，Channle管道线继承了Inbound、OutBound通道Invoker和Iterable&lt;Entry&lt;String, ChannelHandler&gt;&gt;接口，Channel管道线主要是管理Channel的通道处理器，每个通道有一个Channle管道线。Channle管道线主要定义了添加移除替换通道处理器的相关方法，在添加通道处理器的相关方法中，有一个事件执行器group参数，用于中Inbound和Outbound的相关事件，告诉管道，在不同于IO线程的事件执行器组中，执行通道处理器的事件执行方法，以保证IO线程不会被一个耗时任务阻塞，如果你的业务逻辑完全异步或能够快速的完成，可以添加一个事件执行器组。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Netty/" rel="tag"><i class="fa fa-tag"></i> Netty</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2021/01/18/netty-框架/" rel="next" title="netty-框架">
+                <i class="fa fa-chevron-left"></i> netty-框架
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  <div>
+    
+    <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:14px;">------ 本文结束------</div>
+    
+</div>
+    
+ </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+		  <div id="music163player">
+			<iframe frameborder="no" border="0" marginwidth="0" marginheight="0" width="330" height="86" src="//music.163.com/outchain/player?type=2&id=28285910&auto=1&height=66">
+			</iframe>
+		  </div>
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/sliver.jpg" alt="wei xy">
+            
+              <p class="site-author-name" itemprop="name">wei xy</p>
+              <p class="site-description motion-element" itemprop="description">一步一步似爪牙</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">64</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">22</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">54</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/yourname" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="mailto:yourname@gmail.com" target="_blank" title="E-Mail">
+                      
+                        <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="https://plus.google.com/yourname" target="_blank" title="Google">
+                      
+                        <i class="fa fa-fw fa-google"></i>Google</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="https://twitter.com/yourname" target="_blank" title="Twitter">
+                      
+                        <i class="fa fa-fw fa-twitter"></i>Twitter</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="https://www.facebook.com/yourname" target="_blank" title="FB Page">
+                      
+                        <i class="fa fa-fw fa-facebook"></i>FB Page</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="https://vk.com/yourname" target="_blank" title="VK Group">
+                      
+                        <i class="fa fa-fw fa-vk"></i>VK Group</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="https://stackoverflow.com/yourname" target="_blank" title="StackOverflow">
+                      
+                        <i class="fa fa-fw fa-stack-overflow"></i>StackOverflow</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="https://youtube.com/yourname" target="_blank" title="YouTube">
+                      
+                        <i class="fa fa-fw fa-youtube"></i>YouTube</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="https://instagram.com/yourname" target="_blank" title="Instagram">
+                      
+                        <i class="fa fa-fw fa-instagram"></i>Instagram</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="skype:yourname?call|chat" target="_blank" title="Skype">
+                      
+                        <i class="fa fa-fw fa-skype"></i>Skype</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#通道处理器-ChannelHandle"><span class="nav-number">1.</span> <span class="nav-text">通道处理器-ChannelHandle</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#通道线-ChannelPipeline"><span class="nav-number">2.</span> <span class="nav-text">通道线-ChannelPipeline</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+        <div class="back-to-top">
+          <i class="fa fa-arrow-up"></i>
+          
+            <span id="scrollpercent"><span>0</span>%</span>
+          
+        </div>
+      
+
+    </div>
+  </aside>
+
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<div class="copyright">&copy; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">wei xy</span>
+
+  
+</div>
+	<!--div class="powered-by">
+		<i class="fa fa-user-md"></i>
+		<span id="busuanzi_container_site_uv">
+			本站访客数:<span id="busuanzi_value_site_uv"></span>
+		</span>
+	</div -->
+
+<!-- 
+  <div class="powered-by">由  强力驱动</div>
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash;  v5.1.4</div>
+
+-->
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+	<!-- 代码块复制功能 -->
+	<script type="text/javascript" src="/js/src/clipboard.min.js"></script>  
+	<script type="text/javascript" src="/js/src/clipboard-use.js"></script>
+	<!--动态标题-->
+	<script type="text/javascript" src="/js/src/dytitle.js"></script>
+	<!-- 樱花特效 -->
+    <script async src="/js/src/fairyDustCursor.js"></script>
+
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"symbols":true,"time":true,"total_symbols":true,"total_time":true,"log":false});</script></body>
+</html>
+<!-- 页面点击小红心 -->
+<script type="text/javascript" src="/js/src/love.js"></script>
