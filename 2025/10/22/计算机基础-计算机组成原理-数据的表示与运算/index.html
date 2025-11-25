@@ -1,0 +1,297 @@
+<!DOCTYPE html><html lang="en" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>计算机基础-计算机组成原理-数据的表示与运算 | Hexo</title><meta name="author" content="david"><meta name="copyright" content="david"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="数据的表示与运算计算机内部的所有信息——无论是数字、字符还是指令——都以二进制的形式进行存储和处理。理解计算机如何表示和运算数据，是深入学习计算机科学的基础。 1. 数值数据1.1 定点数 (Fixed-point Number)定点数是指小数点位置固定的数。通常，我们用它来表示整数或纯小数。 原码、反码、补码 这三种表示法主要用于解决带符号整数的存储和运算问题。在计算机中，通常用最高位作为符号位">
+<meta property="og:type" content="article">
+<meta property="og:title" content="计算机基础-计算机组成原理-数据的表示与运算">
+<meta property="og:url" content="http://example.com/2025/10/22/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80-%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BB%84%E6%88%90%E5%8E%9F%E7%90%86-%E6%95%B0%E6%8D%AE%E7%9A%84%E8%A1%A8%E7%A4%BA%E4%B8%8E%E8%BF%90%E7%AE%97/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="数据的表示与运算计算机内部的所有信息——无论是数字、字符还是指令——都以二进制的形式进行存储和处理。理解计算机如何表示和运算数据，是深入学习计算机科学的基础。 1. 数值数据1.1 定点数 (Fixed-point Number)定点数是指小数点位置固定的数。通常，我们用它来表示整数或纯小数。 原码、反码、补码 这三种表示法主要用于解决带符号整数的存储和运算问题。在计算机中，通常用最高位作为符号位">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://example.com/img/butterfly-icon.png">
+<meta property="article:published_time" content="2025-10-22T02:00:00.000Z">
+<meta property="article:modified_time" content="2025-10-31T07:03:04.513Z">
+<meta property="article:author" content="david">
+<meta property="article:tag" content="计算机组成原理">
+<meta property="article:tag" content="数据表示">
+<meta property="article:tag" content="补码">
+<meta property="article:tag" content="浮点数">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/img/butterfly-icon.png"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "计算机基础-计算机组成原理-数据的表示与运算",
+  "url": "http://example.com/2025/10/22/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80-%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BB%84%E6%88%90%E5%8E%9F%E7%90%86-%E6%95%B0%E6%8D%AE%E7%9A%84%E8%A1%A8%E7%A4%BA%E4%B8%8E%E8%BF%90%E7%AE%97/",
+  "image": "http://example.com/img/butterfly-icon.png",
+  "datePublished": "2025-10-22T02:00:00.000Z",
+  "dateModified": "2025-10-31T07:03:04.513Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "david",
+      "url": "http://example.com"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://example.com/2025/10/22/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80-%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BB%84%E6%88%90%E5%8E%9F%E7%90%86-%E6%95%B0%E6%8D%AE%E7%9A%84%E8%A1%A8%E7%A4%BA%E4%B8%8E%E8%BF%90%E7%AE%97/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: 'Copy Successful',
+    error: 'Copy Failed',
+    noSupport: 'Browser Not Supported'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: 'Just now',
+    min: 'minutes ago',
+    hour: 'hours ago',
+    day: 'days ago',
+    month: 'months ago'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid/dist/infinitegrid.min.js',
+    buttonText: 'Load More'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '计算机基础-计算机组成原理-数据的表示与运算',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Hexo</span></a><a class="nav-page-title" href="/"><span class="site-name">计算机基础-计算机组成原理-数据的表示与运算</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  Back to Home</span></span></a></span><div id="menus"></div></nav><div id="post-info"><h1 class="post-title">计算机基础-计算机组成原理-数据的表示与运算</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">Created</span><time class="post-meta-date-created" datetime="2025-10-22T02:00:00.000Z" title="Created 2025-10-22 10:00:00">2025-10-22</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">Updated</span><time class="post-meta-date-updated" datetime="2025-10-31T07:03:04.513Z" title="Updated 2025-10-31 15:03:04">2025-10-31</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E6%A0%B8%E5%BF%83Java%E4%B8%8EJVM%E7%B2%BE%E9%80%9A/">核心Java与JVM精通</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E6%A0%B8%E5%BF%83Java%E4%B8%8EJVM%E7%B2%BE%E9%80%9A/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/">计算机基础</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">Post Views:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h2 id="数据的表示与运算"><a href="#数据的表示与运算" class="headerlink" title="数据的表示与运算"></a>数据的表示与运算</h2><p>计算机内部的所有信息——无论是数字、字符还是指令——都以二进制的形式进行存储和处理。理解计算机如何表示和运算数据，是深入学习计算机科学的基础。</p>
+<h3 id="1-数值数据"><a href="#1-数值数据" class="headerlink" title="1. 数值数据"></a>1. 数值数据</h3><h4 id="1-1-定点数-Fixed-point-Number"><a href="#1-1-定点数-Fixed-point-Number" class="headerlink" title="1.1 定点数 (Fixed-point Number)"></a>1.1 定点数 (Fixed-point Number)</h4><p>定点数是指小数点位置固定的数。通常，我们用它来表示整数或纯小数。</p>
+<p><strong>原码、反码、补码</strong></p>
+<p>这三种表示法主要用于解决带符号整数的存储和运算问题。在计算机中，通常用最高位作为符号位（0 表示正数，1 表示负数）。</p>
+<p>以 8 位二进制数为例：</p>
+<table>
+<thead>
+<tr>
+<th align="left">数值</th>
+<th align="left">原码 (Sign-Magnitude)</th>
+<th align="left">反码 (1’s Complement)</th>
+<th align="left">补码 (2’s Complement)</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>+7</strong></td>
+<td align="left"><code>0000 0111</code></td>
+<td align="left"><code>0000 0111</code></td>
+<td align="left"><code>0000 0111</code></td>
+</tr>
+<tr>
+<td align="left"><strong>-7</strong></td>
+<td align="left"><code>1000 0111</code></td>
+<td align="left"><code>1111 1000</code></td>
+<td align="left"><code>1111 1001</code></td>
+</tr>
+</tbody></table>
+<ul>
+<li><strong>原码</strong>: 简单直观，但有两个零（<code>+0</code> 和 <code>-0</code>），且加减法运算复杂。</li>
+<li><strong>反码</strong>: 负数的反码是其原码除符号位外，按位取反。它同样有两个零，运算也不够方便。</li>
+<li><strong>补码</strong>: <strong>现代计算机普遍采用补码来表示和运算整数。</strong><ul>
+<li>正数的补码就是其原码。</li>
+<li>负数的补码是其反码加 1。</li>
+<li><strong>优势</strong>:<ol>
+<li><strong>唯一的零</strong>: 只有一个 <code>0000 0000</code> 表示 0。</li>
+<li><strong>统一加减法</strong>: 减法可以转换为加法来处理。例如，<code>A - B</code> 可以看作 <code>A + (-B)</code>，只需将 A 和 -B 的补码相加即可，这大大简化了 CPU 的设计。</li>
+</ol>
+</li>
+</ul>
+</li>
+</ul>
+<h4 id="1-2-浮点数-Floating-point-Number"><a href="#1-2-浮点数-Floating-point-Number" class="headerlink" title="1.2 浮点数 (Floating-point Number)"></a>1.2 浮点数 (Floating-point Number)</h4><p>浮点数用于表示带有小数的实数，其小数点位置是“浮动”的。</p>
+<p><strong>IEEE 754 标准</strong></p>
+<p>这是目前最广泛使用的浮点数表示标准。它将一个浮点数 <code>V</code> 表示为：</p>
+<p><code>V = (-1)^S × M × 2^E</code></p>
+<ul>
+<li><strong>S (Sign)</strong>: 符号位（1 位），0 表示正数，1 表示负数。</li>
+<li><strong>E (Exponent)</strong>: 阶码（8 位或 11 位），用于表示指数，采用<strong>移码</strong>表示，以支持正负指数。</li>
+<li><strong>M (Mantissa&#x2F;Significand)</strong>: 尾数（23 位或 52 位），表示数字的精度。</li>
+</ul>
+<p><strong>两种常见精度</strong>:</p>
+<ol>
+<li><strong>单精度 (float)</strong>: 32 位<ul>
+<li>1 位符号位 (S)</li>
+<li>8 位阶码 (E)</li>
+<li>23 位尾数 (M)</li>
+</ul>
+</li>
+<li><strong>双精度 (double)</strong>: 64 位<ul>
+<li>1 位符号位 (S)</li>
+<li>11 位阶码 (E)</li>
+<li>52 位尾数 (M)</li>
+</ul>
+</li>
+</ol>
+<p><strong>精度问题</strong>: 由于尾数的位数是有限的，浮点数无法精确表示所有的实数，这会导致精度丢失。这就是为什么在需要高精度计算的场景（如金融领域）不推荐直接使用 <code>float</code> 或 <code>double</code>，而应使用 <code>BigDecimal</code> 等专门的类。</p>
+<h3 id="2-非数值数据"><a href="#2-非数值数据" class="headerlink" title="2. 非数值数据"></a>2. 非数值数据</h3><h4 id="字符编码-Character-Encoding"><a href="#字符编码-Character-Encoding" class="headerlink" title="字符编码 (Character Encoding)"></a>字符编码 (Character Encoding)</h4><ul>
+<li><p><strong>ASCII (American Standard Code for Information Interchange)</strong>: 最早的编码标准，使用 7 位二进制数（通常存放在 1 个字节中）表示 128 个字符，包括英文字母、数字和控制符号。</p>
+</li>
+<li><p><strong>Unicode</strong>: 为了统一全世界所有语言的编码，Unicode 应运而生。它是一个字符集，为每种语言中的每个字符设定了统一并且唯一的二进制编码。</p>
+<ul>
+<li><strong>UTF-8 (Unicode Transformation Format-8)</strong>: 是 Unicode 的一种<strong>可变长度</strong>实现方式。它使用 1 到 4 个字节来表示一个字符。对于英文字符，它只用 1 个字节（与 ASCII 兼容），对于中文字符，通常使用 3 个字节。UTF-8 是目前互联网上使用最广泛的编码方案。</li>
+<li><strong>UTF-16</strong>: 使用 2 或 4 个字节来表示一个字符。Java 内部的 <code>char</code> 类型就是基于 UTF-16 的。</li>
+</ul>
+</li>
+</ul>
+<h3 id="3-数据校验-Data-error-Checking"><a href="#3-数据校验-Data-error-Checking" class="headerlink" title="3. 数据校验 (Data-error Checking)"></a>3. 数据校验 (Data-error Checking)</h3><p>数据在存储或传输过程中可能会因为干扰而出错。数据校验码是为了检测甚至纠正这种错误而设计的。</p>
+<ul>
+<li><p><strong>奇偶校验码 (Parity Check)</strong>: 在数据位的末尾增加一个校验位，使得整个码字中 “1” 的个数为奇数（奇校验）或偶数（偶校验）。它只能检测出奇数位的错误，无法纠正错误。</p>
+</li>
+<li><p><strong>海明码 (Hamming Code)</strong>: 一种更复杂的校验码，它不仅能检测出错误，还能在一定程度上<strong>纠正错误</strong>。它通过在数据位之间插入多个校验位，并将这些校验位与数据位的不同子集进行异或运算来实现。当某一位出错时，会引起多个校验位的变化，通过变化的校验位组合就可以定位到出错的位，从而进行纠正。</p>
+</li>
+</ul>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>Author: </span><span class="post-copyright-info"><a href="http://example.com">david</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>Link: </span><span class="post-copyright-info"><a href="http://example.com/2025/10/22/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80-%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BB%84%E6%88%90%E5%8E%9F%E7%90%86-%E6%95%B0%E6%8D%AE%E7%9A%84%E8%A1%A8%E7%A4%BA%E4%B8%8E%E8%BF%90%E7%AE%97/">http://example.com/2025/10/22/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80-%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BB%84%E6%88%90%E5%8E%9F%E7%90%86-%E6%95%B0%E6%8D%AE%E7%9A%84%E8%A1%A8%E7%A4%BA%E4%B8%8E%E8%BF%90%E7%AE%97/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>Copyright Notice: </span><span class="post-copyright-info">All articles on this blog are licensed under <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> unless otherwise stated.</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BB%84%E6%88%90%E5%8E%9F%E7%90%86/">计算机组成原理</a><a class="post-meta__tags" href="/tags/%E6%95%B0%E6%8D%AE%E8%A1%A8%E7%A4%BA/">数据表示</a><a class="post-meta__tags" href="/tags/%E8%A1%A5%E7%A0%81/">补码</a><a class="post-meta__tags" href="/tags/%E6%B5%AE%E7%82%B9%E6%95%B0/">浮点数</a></div><div class="post-share"><div class="social-share" data-image="/img/butterfly-icon.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2025/10/22/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80-%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BB%84%E6%88%90%E5%8E%9F%E7%90%86-%E8%99%9A%E6%8B%9F%E5%AD%98%E5%82%A8%E5%99%A8/" title="计算机基础-计算机组成原理-虚拟存储器"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">Previous</div><div class="info-item-2">计算机基础-计算机组成原理-虚拟存储器</div></div><div class="info-2"><div class="info-item-1">虚拟存储器 (Virtual Memory)虚拟存储器是现代计算机系统内存管理的一项核心技术。它为每个进程提供了一个独立的、连续的、巨大的逻辑地址空间，而无需关心物理内存的实际大小和碎片化情况。这使得程序员可以编写和运行远大于实际物理内存的程序。 虚拟存储器的实现主要依赖于主存-辅存这一层次的数据交换，并由硬件和操作系统共同完成。 1. 基本概念 逻辑地址 (Logical Address) &#x2F; 虚拟地址 (Virtual Address): CPU 生成的、程序员视角下的地址。它位于虚拟地址空间中。 物理地址 (Physical Address): 物理内存中真实的地址。 内存管理单元 (Memory Management Unit, MMU): CPU 内部的一个硬件单元，负责将逻辑地址实时地转换为物理地址。  2. 虚拟存储器的实现方式主要有三种方式：页式、段式和段页式。其中，页式虚拟存储是目前最主流的方式。 2.1 页式存储管理 (Paging) 基本思想:   将进程的逻辑地址空间划分为大小相等的页 (Page)。 将物理内存划分为与页大小相等的页框 (Pag...</div></div></div></a><a class="pagination-related" href="/2025/10/22/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80-%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BB%84%E6%88%90%E5%8E%9F%E7%90%86-%E6%8C%87%E4%BB%A4%E6%B5%81%E6%B0%B4%E7%BA%BF/" title="计算机基础-计算机组成原理-指令流水线"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">Next</div><div class="info-item-2">计算机基础-计算机组成原理-指令流水线</div></div><div class="info-2"><div class="info-item-1">指令流水线 (Instruction Pipelining)指令流水线是现代处理器中用于提升性能的一项关键技术。它的核心思想类似于工厂里的“流水线”，将一条指令的执行过程分解为多个相互独立的阶段（Stage），并让这些阶段可以并行处理不同指令的不同部分，从而提高指令的吞吐率。 1. 流水线的基本概念假设一条指令的执行需要 3 个时钟周期，如果不使用流水线，执行 3 条指令就需要 3 * 3 = 9 个时钟周期。 现在，我们将一条指令的执行过程分解为 3 个阶段，每个阶段耗时 1 个时钟周期：  取指 (Fetch, IF): 从内存中取出指令。 译码 (Decode, ID): 分析指令，确定操作类型和操作数。 执行 (Execute, EX): 执行指令所规定的操作。  通过流水线技术，CPU 可以在第一个时钟周期取第一条指令，在第二个时钟周期取第二条指令并同时译码第一条指令，在第三个时钟周期取第三条指令、译码第二条指令并同时执行第一条指令。此后，每个时钟周期都能完成一条指令的执行。 非流水线 vs. 流水线对比:  非流水线 (9个周期): 123指令1: | IF | ID...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>Related Articles</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/2025/10/22/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80-%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BB%84%E6%88%90%E5%8E%9F%E7%90%86-CPU%E7%9A%84%E5%8A%9F%E8%83%BD%E5%92%8C%E5%9F%BA%E6%9C%AC%E7%BB%93%E6%9E%84/" title="计算机基础-计算机组成原理-CPU的功能和基本结构"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-10-22</div><div class="info-item-2">计算机基础-计算机组成原理-CPU的功能和基本结构</div></div><div class="info-2"><div class="info-item-1">CPU 的功能和基本结构中央处理器（Central Processing Unit, CPU）是计算机的运算和控制核心。它的主要功能是解释计算机指令以及处理计算机软件中的数据。CPU 的工作可以概括为：取指令、分析指令、执行指令。 1. CPU 的两大核心功能 指令控制: 控制程序的执行顺序。CPU 通过程序计数器（PC）来确定下一条指令的地址，实现程序的顺序执行、分支、循环和跳转。 操作控制: 一条指令可以分解为多个微操作。CPU 的控制器负责产生每个微操作所需的控制命令，并将它们发送到相应的部件，以控制这些部件执行相应的操作。  2. CPU 的基本结构CPU 主要由运算器 (ALU) 和控制器 (Control Unit) 两大部分组成。 2.1 运算器 (Arithmetic Logic Unit, ALU)运算器是 CPU 中负责执行数据处理的部分，即执行算术运算和逻辑运算。  功能:  算术运算: 加、减、乘、除等。 逻辑运算: 与、或、非、异或等。   核心组成: 算术逻辑单元 (ALU): 是运算器的核心，负责执行具体的算术和逻辑操作。 累加寄存器 (Accumu...</div></div></div></a><a class="pagination-related" href="/2025/10/22/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80-%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BB%84%E6%88%90%E5%8E%9F%E7%90%86-%E4%B8%BB%E5%AD%98%E5%82%A8%E5%99%A8/" title="计算机基础-计算机组成原理-主存储器"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-10-22</div><div class="info-item-2">计算机基础-计算机组成原理-主存储器</div></div><div class="info-2"><div class="info-item-1">主存储器 (Main Memory)主存储器（简称主存或内存）是计算机存储器层次结构中的核心组成部分，位于高速缓存（Cache）和辅助存储器（硬盘）之间。它用于存放 CPU 当前正在执行的程序和处理的数据。CPU 可以直接对主存进行读写访问。 现代计算机的主存主要由半导体存储器构成，根据其工作原理的不同，主要分为两大类：静态随机存取存储器 (SRAM) 和动态随机存取存储器 (DRAM)。 1. 静态随机存取存储器 (SRAM - Static RAM) 工作原理: SRAM 使用触发器 (Flip-flop) 来存储每一位（bit）的数据。一个触发器通常由 6 个晶体管构成。只要有持续的电源供应，触发器就能一直保持其状态（0 或 1），无需刷新。  特点:  速度快: 由于其结构简单，无需刷新操作，SRAM 的存取速度非常快，接近 CPU 的速度。 价格昂贵: 每个 bit 需要多个晶体管，集成度低，单位容量的成本非常高。 功耗较大: 在保持数据时，触发器一直处于工作状态，因此功耗相对较高。   主要用途: 因其高速特性，SRAM 主要用于制造高速缓存 (Cache) 和 CP...</div></div></div></a><a class="pagination-related" href="/2025/10/22/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80-%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BB%84%E6%88%90%E5%8E%9F%E7%90%86-%E5%A4%9A%E5%A4%84%E7%90%86%E5%99%A8%E7%B3%BB%E7%BB%9F/" title="计算机基础-计算机组成原理-多处理器系统"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-10-22</div><div class="info-item-2">计算机基础-计算机组成原理-多处理器系统</div></div><div class="info-2"><div class="info-item-1">多处理器系统 (Multiprocessor Systems)随着单个处理器性能提升遭遇物理瓶颈，通过集成多个处理器（核心）来提升计算能力成为主流，这就是多处理器系统。这类系统通过并行处理来显著提高计算机的吞吐率和性能。 1. 并行处理概念：Flynn 分类法Flynn 分类法是基于指令流 (Instruction Stream) 和数据流 (Data Stream) 的数量，对计算机体系结构进行分类的一种经典方法。  指令流: 机器执行的指令序列。 数据流: 由指令流调用的数据序列。  根据此分类，计算机体系结构可以分为四类：  SISD (Single Instruction, Single Data Stream) - 单指令流单数据流  描述: 传统的单处理器计算机，一个时刻只执行一条指令，处理一个数据。 示例: 早期的冯·诺依曼体系计算机。   SIMD (Single Instruction, Multiple Data Stream) - 单指令流多数据流  描述: 用一条指令同时对多个不同的数据执行相同的操作。这种并行方式也称为数据级并行。 示例: 现代 CPU ...</div></div></div></a><a class="pagination-related" href="/2025/10/22/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80-%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BB%84%E6%88%90%E5%8E%9F%E7%90%86-%E5%AD%98%E5%82%A8%E5%99%A8%E5%B1%82%E6%AC%A1%E7%BB%93%E6%9E%84/" title="计算机基础-计算机组成原理-存储器层次结构"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-10-22</div><div class="info-item-2">计算机基础-计算机组成原理-存储器层次结构</div></div><div class="info-2"><div class="info-item-1">存储器层次结构 (Memory Hierarchy)在计算机系统中，我们对存储器的期望是：速度快、容量大、价格便宜。然而，这三个目标在物理上是相互矛盾的。速度越快的存储器，通常价格越贵，容量也越小。为了解决这个矛盾，现代计算机系统采用了存储器层次结构 (Memory Hierarchy) 的设计。 1. 为什么需要层次结构？存储器层次结构的基本思想是，在 CPU 和主存之间，以及主存和辅存之间，设置不同速度、容量和价格的存储层次，并将数据在这些层次之间进行调度，以尽可能地达到高速、大容量和低成本的统一。 这种设计的有效性，主要依赖于一个重要的程序行为特性——局部性原理 (Principle of Locality)。  时间局部性 (Temporal Locality): 如果一个数据项被访问了，那么在不久的将来，它很可能再次被访问。例如，循环中的变量、函数中的局部变量。 空间局部性 (Spatial Locality): 如果一个数据项被访问了，那么与它地址相邻的数据项也很可能很快被访问。例如，数组的顺序访问、指令的顺序执行。  正是因为局部性原理的存在，我们可以将 CPU 当...</div></div></div></a><a class="pagination-related" href="/2025/10/22/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80-%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BB%84%E6%88%90%E5%8E%9F%E7%90%86-IO%E6%8E%A7%E5%88%B6%E6%96%B9%E5%BC%8F/" title="计算机基础-计算机组成原理-IO控制方式"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-10-22</div><div class="info-item-2">计算机基础-计算机组成原理-IO控制方式</div></div><div class="info-2"><div class="info-item-1">I&#x2F;O 控制方式I&#x2F;O 控制方式是指 CPU 如何管理和控制与外部设备（如硬盘、键盘、网络接口）之间的数据交换。由于 I&#x2F;O 设备的速度远远慢于 CPU，因此采用高效的 I&#x2F;O 控制方式对于提升整个计算机系统的性能至关重要。主要有以下三种方式，它们是逐步演进的。 1. 程序查询方式 (Programmed I&#x2F;O)这是最早期、最简单的一种 I&#x2F;O 控制方式。  工作流程:  CPU 向 I&#x2F;O 控制器发出一个 I&#x2F;O 请求（例如，读数据）。 CPU 进入一个循环，不断地查询 I&#x2F;O 控制器中的状态寄存器，检查 I&#x2F;O 操作是否已经完成。 如果操作完成，CPU 从 I&#x2F;O 控制器的数据寄存器中取出数据。 CPU 继续执行后续指令。   图示: 12345678910CPU                                I/O 设备 | -- 发出读指令 --&gt;                  | |                          ...</div></div></div></a><a class="pagination-related" href="/2025/10/22/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80-%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BB%84%E6%88%90%E5%8E%9F%E7%90%86-%E6%8C%87%E4%BB%A4%E7%B3%BB%E7%BB%9F/" title="计算机基础-计算机组成原理-指令系统"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-10-22</div><div class="info-item-2">计算机基础-计算机组成原理-指令系统</div></div><div class="info-2"><div class="info-item-1">指令系统 (Instruction Set Architecture - ISA)指令系统（ISA）是计算机体系结构中与程序设计有关的部分，它是软件和硬件之间的关键接口。它定义了 CPU 能识别和执行的指令集合，规定了指令的格式、寻址方式以及指令的功能。 1. 指令格式一条指令就是机器语言的一个语句，它规定了计算机要执行的某种操作。一条指令通常由两部分组成：  操作码 (Opcode): 指明该指令要执行的操作，如加、减、取数、存数等。操作码的位数决定了计算机的指令集大小（例如，n 位操作码最多可以表示 2^n 条指令）。 地址码 (Address Code): 指明操作的对象（操作数）的地址。根据地址码的数量，指令可以分为零地址、一地址、二地址、三地址指令。     操作码 (Opcode) 地址码 1 (A1) 地址码 2 (A2) …     三地址指令: OP A1, A2, A3 -&gt; (A1) OP (A2) -&gt; A3 (例如，ADD R1, R2, R3) 二地址指令: OP A1, A2 -&gt; (A1) OP (A2) -&gt; A1 (例如...</div></div></div></a></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/butterfly-icon.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">david</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">71</div></a><a href="/tags/"><div class="headline">Tags</div><div class="length-num">152</div></a><a href="/categories/"><div class="headline">Categories</div><div class="length-num">14</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>Announcement</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>Contents</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E7%9A%84%E8%A1%A8%E7%A4%BA%E4%B8%8E%E8%BF%90%E7%AE%97"><span class="toc-number">1.</span> <span class="toc-text">数据的表示与运算</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E6%95%B0%E5%80%BC%E6%95%B0%E6%8D%AE"><span class="toc-number">1.1.</span> <span class="toc-text">1. 数值数据</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-1-%E5%AE%9A%E7%82%B9%E6%95%B0-Fixed-point-Number"><span class="toc-number">1.1.1.</span> <span class="toc-text">1.1 定点数 (Fixed-point Number)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#1-2-%E6%B5%AE%E7%82%B9%E6%95%B0-Floating-point-Number"><span class="toc-number">1.1.2.</span> <span class="toc-text">1.2 浮点数 (Floating-point Number)</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E9%9D%9E%E6%95%B0%E5%80%BC%E6%95%B0%E6%8D%AE"><span class="toc-number">1.2.</span> <span class="toc-text">2. 非数值数据</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AD%97%E7%AC%A6%E7%BC%96%E7%A0%81-Character-Encoding"><span class="toc-number">1.2.1.</span> <span class="toc-text">字符编码 (Character Encoding)</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-%E6%95%B0%E6%8D%AE%E6%A0%A1%E9%AA%8C-Data-error-Checking"><span class="toc-number">1.3.</span> <span class="toc-text">3. 数据校验 (Data-error Checking)</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>Recent Posts</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/10/22/JavaSE-%E5%B8%B8%E7%94%A8API/" title="JavaSE-常用API">JavaSE-常用API</a><time datetime="2025-10-22T02:00:00.000Z" title="Created 2025-10-22 10:00:00">2025-10-22</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/10/22/JavaSE-%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/" title="JavaSE-异常处理">JavaSE-异常处理</a><time datetime="2025-10-22T02:00:00.000Z" title="Created 2025-10-22 10:00:00">2025-10-22</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/10/22/JavaSE-%E9%9B%86%E5%90%88%E6%A1%86%E6%9E%B6/" title="JavaSE-集合框架(索引)">JavaSE-集合框架(索引)</a><time datetime="2025-10-22T02:00:00.000Z" title="Created 2025-10-22 10:00:00">2025-10-22</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/10/22/JavaSE-%E9%9D%A2%E5%90%91%E5%AF%B9%E8%B1%A1%E7%BC%96%E7%A8%8B/" title="JavaSE-面向对象编程">JavaSE-面向对象编程</a><time datetime="2025-10-22T02:00:00.000Z" title="Created 2025-10-22 10:00:00">2025-10-22</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/10/22/JavaSE-%E5%85%A8%E9%9D%A2%E6%8E%8C%E6%8F%A1/" title="JavaSE-全面掌握">JavaSE-全面掌握</a><time datetime="2025-10-22T02:00:00.000Z" title="Created 2025-10-22 10:00:00">2025-10-22</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 By david</span><span class="framework-info"><span>Framework </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>Theme </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.4.3</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="Reading Mode"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="Toggle Between Light and Dark Mode"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="Toggle Between Single-column and Double-column"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="Settings"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="Table of Contents"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="Back to Top"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><div class="js-pjax"><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (false) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>

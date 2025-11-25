@@ -1,0 +1,611 @@
+<!DOCTYPE html><html lang="en" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Java数据结构-Map接口 | Hexo</title><meta name="author" content="david"><meta name="copyright" content="david"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="Java 集合框架：Map 接口详解在 Java 集合框架中，Map 接口代表了一种键值对 (key-value) 的映射关系。它与 Collection 接口不同，Map 存储的是两组成员：一组是唯一的键 (Key)，另一组是可重复的值 (Value)。每个键最多只能映射到一个值。 1. Map 接口的核心特性 键值对存储: Map 中的每个元素都包含一个键和一个值。 键的唯一性: Map 不允">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Java数据结构-Map接口">
+<meta property="og:url" content="http://example.com/2025/09/16/Java%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84-Map/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="Java 集合框架：Map 接口详解在 Java 集合框架中，Map 接口代表了一种键值对 (key-value) 的映射关系。它与 Collection 接口不同，Map 存储的是两组成员：一组是唯一的键 (Key)，另一组是可重复的值 (Value)。每个键最多只能映射到一个值。 1. Map 接口的核心特性 键值对存储: Map 中的每个元素都包含一个键和一个值。 键的唯一性: Map 不允">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://example.com/img/butterfly-icon.png">
+<meta property="article:published_time" content="2025-09-16T08:00:00.000Z">
+<meta property="article:modified_time" content="2025-10-31T06:48:32.401Z">
+<meta property="article:author" content="david">
+<meta property="article:tag" content="Java">
+<meta property="article:tag" content="集合框架">
+<meta property="article:tag" content="Map">
+<meta property="article:tag" content="数据结构">
+<meta property="article:tag" content="HashMap">
+<meta property="article:tag" content="LinkedHashMap">
+<meta property="article:tag" content="TreeMap">
+<meta property="article:tag" content="ConcurrentHashMap">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/img/butterfly-icon.png"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Java数据结构-Map接口",
+  "url": "http://example.com/2025/09/16/Java%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84-Map/",
+  "image": "http://example.com/img/butterfly-icon.png",
+  "datePublished": "2025-09-16T08:00:00.000Z",
+  "dateModified": "2025-10-31T06:48:32.401Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "david",
+      "url": "http://example.com"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://example.com/2025/09/16/Java%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84-Map/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: 'Copy Successful',
+    error: 'Copy Failed',
+    noSupport: 'Browser Not Supported'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: 'Just now',
+    min: 'minutes ago',
+    hour: 'hours ago',
+    day: 'days ago',
+    month: 'months ago'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid/dist/infinitegrid.min.js',
+    buttonText: 'Load More'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Java数据结构-Map接口',
+  isHighlightShrink: true,
+  isToc: true,
+  pageType: 'post'
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Hexo</span></a><a class="nav-page-title" href="/"><span class="site-name">Java数据结构-Map接口</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  Back to Home</span></span></a></span><div id="menus"></div></nav><div id="post-info"><h1 class="post-title">Java数据结构-Map接口</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">Created</span><time class="post-meta-date-created" datetime="2025-09-16T08:00:00.000Z" title="Created 2025-09-16 16:00:00">2025-09-16</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">Updated</span><time class="post-meta-date-updated" datetime="2025-10-31T06:48:32.401Z" title="Updated 2025-10-31 14:48:32">2025-10-31</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E6%A0%B8%E5%BF%83Java%E4%B8%8EJVM%E7%B2%BE%E9%80%9A/">核心Java与JVM精通</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E6%A0%B8%E5%BF%83Java%E4%B8%8EJVM%E7%B2%BE%E9%80%9A/Java%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/">Java数据结构</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">Post Views:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h2 id="Java-集合框架：Map-接口详解"><a href="#Java-集合框架：Map-接口详解" class="headerlink" title="Java 集合框架：Map 接口详解"></a>Java 集合框架：Map 接口详解</h2><p>在 Java 集合框架中，<code>Map</code> 接口代表了一种<strong>键值对 (key-value)</strong> 的映射关系。它与 <code>Collection</code> 接口不同，<code>Map</code> 存储的是两组成员：一组是唯一的键 (Key)，另一组是可重复的值 (Value)。每个键最多只能映射到一个值。</p>
+<h3 id="1-Map-接口的核心特性"><a href="#1-Map-接口的核心特性" class="headerlink" title="1. Map 接口的核心特性"></a>1. <code>Map</code> 接口的核心特性</h3><ul>
+<li><strong>键值对存储:</strong> <code>Map</code> 中的每个元素都包含一个键和一个值。</li>
+<li><strong>键的唯一性:</strong> <code>Map</code> 不允许有重复的键。如果你用一个已经存在的键去存入一个新的值，新的值会覆盖旧的值，<code>put</code> 方法会返回旧的值。</li>
+<li><strong>值的可重复性:</strong> <code>Map</code> 中的值可以重复。</li>
+<li><strong>非 <code>Collection</code> 子接口:</strong> <code>Map</code> 自身是一个顶层接口，它不继承自 <code>Collection</code> 接口。</li>
+</ul>
+<hr>
+<h3 id="2-HashMap：最常用的-Map-实现"><a href="#2-HashMap：最常用的-Map-实现" class="headerlink" title="2. HashMap：最常用的 Map 实现"></a>2. <code>HashMap</code>：最常用的 <code>Map</code> 实现</h3><p><code>HashMap</code> 是 <code>Map</code> 接口最核心和最常用的实现类，它提供了 O(1) 的平均时间复杂度的性能。</p>
+<h4 id="内部原理-JDK-8"><a href="#内部原理-JDK-8" class="headerlink" title="内部原理 (JDK 8+)"></a>内部原理 (JDK 8+)</h4><p><code>HashMap</code> 的成功关键在于其高效的哈希算法和精妙的存储结构。其底层结构可以概括为<strong>数组 + 链表 + 红黑树</strong>。</p>
+<h5 id="哈希算法与散列分布"><a href="#哈希算法与散列分布" class="headerlink" title="哈希算法与散列分布"></a>哈希算法与散列分布</h5><p><code>HashMap</code> 如何为任意的 <code>key</code> 计算出它在数组中的存储位置？这个过程分为三步，目的是让键值对尽可能<strong>均匀地散列</strong>在数组中，以减少哈希冲突。</p>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+    graph LR
+    A[&quot;Key Object&quot;] -- &quot;1. key.hashCode()&quot; --&gt; B[&quot;原始哈希值 (32-bit int)&lt;br&#x2F;&gt;int h &#x3D; key.hashCode()&quot;] 
+    B -- &quot;2. 高位扰动 (Disturbance Function)&lt;br&#x2F;&gt;h ^ (h &gt;&gt;&gt; 16)&quot; --&gt; C[&quot;最终哈希值&lt;br&#x2F;&gt;混合高16位和低16位&quot;] 
+    C -- &quot;3. 计算索引 (Bitwise AND)&lt;br&#x2F;&gt;(n - 1) &amp; hash&quot; --&gt; D[&quot;数组索引&lt;br&#x2F;&gt;n 为数组长度 (必须是2的幂)&quot;]
+
+    style A fill:#E3F2FD,stroke:#2196F3
+    style B fill:#E0F2F1,stroke:#009688
+    style C fill:#FFFDE7,stroke:#FBC02D
+    style D fill:#FBE9E7,stroke:#FF5722
+  </pre></div>
+
+<ol>
+<li><p><strong>获取原始哈希值:</strong> 首先，调用 <code>key</code> 对象的 <code>hashCode()</code> 方法，获得一个32位的 <code>int</code> 型哈希值。</p>
+</li>
+<li><p><strong>高位扰动&#x2F;混合:</strong> <code>HashMap</code> 并不直接使用这个原始哈希值。它将原始哈希值 <code>h</code> 右移16位，然后将原始哈希值与右移后的值进行<strong>异或(XOR)运算</strong>。即 <code>(h ^ (h &gt;&gt;&gt; 16))</code>。这样做的目的是将哈希值的高16位信息混合到低16位中，使得即使 <code>hashCode()</code> 实现得不够好，也能在后续计算中产生更均匀的散列效果，减少冲突。</p>
+</li>
+<li><p><strong>计算数组索引:</strong> <code>HashMap</code> 的数组长度 <code>n</code> 始终是2的幂。因此，它可以通过 <code>(n - 1) &amp; hash</code> 这个位运算来代替取模运算（<code>hash % n</code>），效率极高。因为 <code>n</code> 是2的幂，所以 <code>n-1</code> 的二进制表示就是一串连续的1（例如 <code>n=16</code>, <code>n-1=15</code>, 二进制为 <code>0000...1111</code>），这确保了 <code>&amp;</code> 运算的结果范围总是在 <code>[0, n-1]</code> 之内。</p>
+</li>
+</ol>
+<div class="note info flat"><p><strong>深入理解：为什么 <code>(n - 1) &amp; hash</code> 等价于 <code>hash % n</code>？</strong></p>
+<p>我们的目标是做<strong>取模运算</strong>（求余数），比如 <code>hash % 16</code>，结果范围是 <code>0</code> 到 <code>15</code>。计算机做 <code>%</code> 运算的效率较低，而 <code>&amp;</code> 位运算是计算机最快的运算之一。<code>HashMap</code> 的设计者发现，<strong>当 <code>n</code> 是2的幂时，<code>hash % n</code> 和 <code>(n - 1) &amp; hash</code> 的结果是完全等价的。</strong></p>
+<p><strong>关键在于二进制：</strong></p>
+<ol>
+<li><strong>当 n 是 2 的幂</strong>，比如 <code>n = 16</code>，其二进制是 <code>10000</code>。</li>
+<li>那么 <code>n - 1</code> (也就是 <code>15</code>) 的二进制就是 <code>01111</code>。这个 <code>01111</code> 就成了一个完美的**“低位掩码”**。</li>
+</ol>
+<p><strong>案例：<code>hash = 25</code>, <code>n = 16</code></strong></p>
+<ul>
+<li><strong>取模运算 (<code>%</code>)</strong>: <code>25 % 16 = 9</code></li>
+<li><strong>位运算 (<code>&amp;</code>)</strong>:<ul>
+<li><code>25</code> 的二进制是 <code>0001 1001</code></li>
+<li><code>15</code> 的二进制是 <code>0000 1111</code></li>
+<li>进行 <code>&amp;</code> 运算：</li>
+</ul>
+  <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">  0001 1001  (25)</span><br><span class="line">&amp; 0000 1111  (15)</span><br><span class="line">-----------</span><br><span class="line">  0000 1001  (结果是 9)</span><br></pre></td></tr></table></figure>
+<p>两者结果完全相同！<code>&amp; 15</code> 这个操作，就像一把“剪刀”，把 <code>25</code> 的二进制 <code>00011001</code> 中，所有超出后四位的部分（高位）都“剪掉”了，只保留了后四位 <code>1001</code>，也就是 <code>9</code>。这和取余的本质是一样的。</p>
+</li>
+</ul>
+</div>
+
+<h5 id="什么是哈希碰撞？"><a href="#什么是哈希碰撞？" class="headerlink" title="什么是哈希碰撞？"></a>什么是哈希碰撞？</h5><p>理想情况下，每个键都映射到数组中一个唯一的索引。但实际上，两个不同的键（如 <code>&quot;Aa&quot;</code> 和 <code>&quot;BB&quot;</code>，它们的 <code>hashCode</code> 往往相同）通过哈希算法计算后，可能会得到完全相同的数组索引。这种情况就叫做 <strong>哈希碰撞 (Hash Collision)</strong>。<code>HashMap</code> 使用 <strong>“链地址法”</strong> 来解决这个问题。</p>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+    graph TD
+    subgraph &quot;不同的输入键&quot;
+        K1(&quot;Key 1&lt;br&#x2F;&gt;e.g., &#39;Aa&#39;&quot;)
+        K2(&quot;Key 2&lt;br&#x2F;&gt;e.g., &#39;BB&#39;&quot;)
+    end
+
+    subgraph &quot;哈希过程&quot;
+        HP1[&quot;hash(&#39;Aa&#39;) &amp; (n-1)&quot;]
+        HP2[&quot;hash(&#39;BB&#39;) &amp; (n-1)&quot;]
+    end
+
+    subgraph &quot;HashMap 数组 (哈希桶)&quot;
+        B0[&quot;Index 0&quot;]
+        B1[&quot;Index 1&quot;]
+        B2[&quot;Index 2&quot;]
+        B3[&quot;Index 3&quot;]
+        B4[&quot;...&quot;]
+    end
+
+    subgraph &quot;Index 3 处的链表结构&quot;
+        Node1[&quot;Node(&#39;Aa&#39;, val1)&quot;] --&gt; Node2[&quot;Node(&#39;BB&#39;, val2)&quot;]
+    end
+
+    K1 --&gt; HP1 -- &quot;结果为 3&quot; --&gt; B3
+    K2 --&gt; HP2 -- &quot;结果也为 3&quot; --&gt; B3
+
+    B3 -- &quot;发生碰撞, 形成链表&quot; --&gt; Node1
+
+    style K1 fill:#B3E5FC,stroke:#03A9F4
+    style K2 fill:#B3E5FC,stroke:#03A9F4
+    style B3 fill:#FFCDD2,stroke:#F44336
+  </pre></div>
+
+<p>如上图所示，<code>&#39;Aa&#39;</code> 和 <code>&#39;BB&#39;</code> 经过哈希计算后都定位到了 <code>Index 3</code>。<code>HashMap</code> 不会丢弃任何一个，而是将它们以链表的形式串联起来，共同存放在 <code>Index 3</code> 这个哈希桶中。当需要查找时，会先定位到 <code>Index 3</code>，然后遍历这个链表，通过 <code>equals()</code> 方法找到正确的键值对。</p>
+<h5 id="存储结构"><a href="#存储结构" class="headerlink" title="存储结构"></a>存储结构</h5><p>计算出索引后，键值对就存储在数组对应索引的位置上，这个位置被称为“哈希桶 (Bucket)”。</p>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+    graph TD
+    subgraph &quot;HashMap Internal Structure&quot;
+        direction LR
+        Array --&gt; B0[&quot;Bucket 0&quot;]
+        Array --&gt; B1[&quot;Bucket 1&quot;]
+        Array --&gt; B2[&quot;Bucket 2&lt;br&#x2F;&gt;(LinkedList)&quot;]
+        Array --&gt; B3[&quot;... &quot;]
+        Array --&gt; B4[&quot;Bucket N&lt;br&#x2F;&gt;(Red-Black Tree)&quot;]
+    end
+
+    B2 --&gt; N1(&quot;Key1:Val1&quot;) --&gt; N2(&quot;Key2:Val2&quot;) --&gt; N3(&quot;...&quot;)
+    
+    subgraph &quot;Red-Black Tree at Bucket N&quot;
+        TN1(K:V) --&gt; TN2(K:V)
+        TN1 --&gt; TN3(K:V)
+        TN3 --&gt; TN4(K:V)
+    end
+
+    B4 --&gt; TN1
+
+    style B2 fill:#D1C4E9,stroke:#7E57C2
+    style B4 fill:#ffcccb,stroke:#f00
+  </pre></div>
+
+<ul>
+<li><strong>数组 (Buckets):</strong> <code>HashMap</code> 内部维护一个 <code>Node[]</code> 类型的数组，是其主体结构。</li>
+<li><strong>链表:</strong> 如果多个不同的键计算出的索引位置相同（哈希冲突），这些键值对会以<strong>链表</strong>的形式存储在该哈希桶中。</li>
+<li><strong>红黑树:</strong> 为了优化极端情况下的性能，从 JDK 8 开始，当某个哈希桶中的链表长度超过一个阈值（默认为 8）并且数组的总容量大于 64 时，这个链表会转化为一个<strong>红黑树</strong>。这样做可以将该位置的查找时间复杂度从 O(n) 优化到 O(log n)。</li>
+</ul>
+<h4 id="性能特点"><a href="#性能特点" class="headerlink" title="性能特点"></a>性能特点</h4><ul>
+<li><strong>增删查改快:</strong> 对于 <code>put</code>, <code>get</code>, <code>remove</code> 等操作，平均时间复杂度都是 <strong>O(1)</strong>。</li>
+<li><strong>无序:</strong> 它不保证键值对的任何特定顺序。</li>
+<li><strong>线程不安全:</strong> 在多线程环境下使用需要手动同步或使用 <code>ConcurrentHashMap</code>。</li>
+</ul>
+<hr>
+<h5 id="源码解析：put-方法核心流程"><a href="#源码解析：put-方法核心流程" class="headerlink" title="源码解析：put 方法核心流程"></a>源码解析：put 方法核心流程</h5><p><code>HashMap</code> 的 <code>put(K key, V value)</code> 方法其实是一个“门面”，它内部直接调用了核心的 <code>putVal(...)</code> 方法。下面我们来逐行拆解 <code>putVal</code> 的实现逻辑。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// java.util.HashMap</span></span><br><span class="line"><span class="keyword">final</span> V <span class="title function_">putVal</span><span class="params">(<span class="type">int</span> hash, K key, V value, <span class="type">boolean</span> onlyIfAbsent, <span class="type">boolean</span> evict)</span> &#123;</span><br><span class="line">    Node&lt;K,V&gt;[] tab; Node&lt;K,V&gt; p; <span class="type">int</span> n, i;</span><br><span class="line">    <span class="comment">// ... 源码实现 ...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>第 1 步：初始化哈希表</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> ((tab = table) == <span class="literal">null</span> || (n = tab.length) == <span class="number">0</span>)</span><br><span class="line">    n = (tab = resize()).length;</span><br></pre></td></tr></table></figure>
+<ul>
+<li><strong>逻辑：</strong> 检查内部的数组 <code>table</code> (哈希桶) 是否为空。如果是，说明这是第一次 <code>put</code> 操作，此时会调用 <code>resize()</code> 方法进行初始化，创建一个默认容量为 16 的数组。</li>
+</ul>
+<p><strong>第 2 步：计算索引，处理无冲突情况</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> ((p = tab[i = (n - <span class="number">1</span>) &amp; hash]) == <span class="literal">null</span>)</span><br><span class="line">    tab[i] = newNode(hash, key, value, <span class="literal">null</span>);</span><br></pre></td></tr></table></figure>
+<ul>
+<li><strong>逻辑：</strong> 计算出键值对应当存放在数组中的哪个索引位置 <code>i</code>，并检查这个桶是否为空。如果是空的（无哈希冲突），则直接创建一个新节点 <code>Node</code> 并放入。这是最理想、最快的情况。</li>
+</ul>
+<p><strong>第 3 步：处理哈希冲突</strong><br>如果上一步的 <code>p != null</code>，说明该位置已被占用，代码进入 <code>else</code> 块。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">else</span> &#123;</span><br><span class="line">    Node&lt;K,V&gt; e; K k;</span><br><span class="line">    <span class="comment">// 3a. 冲突节点的 key 和要放入的 key 完全一样</span></span><br><span class="line">    <span class="keyword">if</span> (p.hash == hash &amp;&amp;</span><br><span class="line">        ((k = p.key) == key || (key != <span class="literal">null</span> &amp;&amp; key.equals(k))))</span><br><span class="line">        e = p;</span><br><span class="line">    <span class="comment">// 3b. 冲突节点是红黑树</span></span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span> (p <span class="keyword">instanceof</span> TreeNode)</span><br><span class="line">        e = ((TreeNode&lt;K,V&gt;)p).putTreeVal(<span class="built_in">this</span>, tab, hash, key, value);</span><br><span class="line">    <span class="comment">// 3c. 冲突节点是链表</span></span><br><span class="line">    <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">binCount</span> <span class="operator">=</span> <span class="number">0</span>; ; ++binCount) &#123;</span><br><span class="line">            <span class="keyword">if</span> ((e = p.next) == <span class="literal">null</span>) &#123;</span><br><span class="line">                p.next = newNode(hash, key, value, <span class="literal">null</span>); <span class="comment">// 插入到链表尾部</span></span><br><span class="line">                <span class="keyword">if</span> (binCount &gt;= TREEIFY_THRESHOLD - <span class="number">1</span>) <span class="comment">// 检查是否需要树化</span></span><br><span class="line">                    treeifyBin(tab, hash);</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span> (e.hash == hash &amp;&amp;</span><br><span class="line">                ((k = e.key) == key || (key != <span class="literal">null</span> &amp;&amp; key.equals(k))))</span><br><span class="line">                <span class="keyword">break</span>; <span class="comment">// 找到了 key 相同的节点</span></span><br><span class="line">            p = e;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li><p><strong>3a：</strong> 检查桶里第一个节点 <code>p</code> 的 <code>key</code> 是否和当前要放入的 <code>key</code> 完全相同。如果是，直接用 <code>e = p</code> 记录下这个节点，后续直接更新它的 <code>value</code>。</p>
+</li>
+<li><p><strong>3b：</strong> 如果不是，则检查它是不是一个 <code>TreeNode</code>。如果是，说明这个桶已经是一个红黑树了，就调用红黑树专属的 <code>putTreeVal</code> 方法把新节点放进去。</p>
+</li>
+<li><p><strong>3c：</strong> 如果还不是红黑树，那它就是一个普通的链表。遍历这个链表，如果在末尾还没找到相同的 <code>key</code>，就把新节点链接到末尾，并检查是否需要“树化”；如果在中途找到了，就记录下来并跳出循环。</p>
+<div class="note success 关于“树化”的完整条件 flat"><p>将链表转化为红黑树，需要同时满足以下 <strong>两个</strong> 条件：</p>
+<ol>
+<li><strong>链表长度达到阈值：</strong> 链表中的节点数必须大于等于 <code>TREEIFY_THRESHOLD</code>（默认为 <strong>8</strong>）。</li>
+<li><strong>哈希表容量达到阈值：</strong> <code>HashMap</code> 内部的数组 <code>table</code> 的长度必须大于等于 <code>MIN_TREEIFY_CAPACITY</code>（默认为 <strong>64</strong>）。</li>
+</ol>
+<p><strong>为什么需要第二个条件？</strong><br>如果只满足了条件1，但 <code>HashMap</code> 的总容量还很小（&lt; 64），<code>HashMap</code> 会认为当前更紧要的任务是<strong>通过扩容 <code>resize()</code> 来减少哈希冲突</strong>，而不是进行树化。只有当总容量足够大时，单个桶的超长链表才被认为是“值得”树化的。</p>
+</div></li>
+</ul>
+<p><strong>第 4 步：更新值并返回</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (e != <span class="literal">null</span>) &#123; <span class="comment">// 如果找到了 key 相同的节点</span></span><br><span class="line">    <span class="type">V</span> <span class="variable">oldValue</span> <span class="operator">=</span> e.value;</span><br><span class="line">    <span class="keyword">if</span> (!onlyIfAbsent || oldValue == <span class="literal">null</span>)</span><br><span class="line">        e.value = value; <span class="comment">// 覆盖旧值</span></span><br><span class="line">    afterNodeAccess(e);</span><br><span class="line">    <span class="keyword">return</span> oldValue; <span class="comment">// 返回旧值</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li><strong>逻辑：</strong> 如果经过第 3 步后，<code>e</code> 不为 <code>null</code>，说明在表中找到了一个 <code>key</code> 完全相同的节点 <code>e</code>。此时，用新的 <code>value</code> 覆盖 <code>e</code> 的旧 <code>value</code>，并把 <code>oldValue</code> 返回。</li>
+</ul>
+<p><strong>第 5 步：收尾工作</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">++modCount;</span><br><span class="line"><span class="keyword">if</span> (++size &gt; threshold)</span><br><span class="line">    resize();</span><br><span class="line">afterNodeInsertion(evict);</span><br><span class="line"><span class="keyword">return</span> <span class="literal">null</span>;</span><br></pre></td></tr></table></figure>
+<ul>
+<li><strong>逻辑：</strong> 如果代码能执行到这里，说明之前没有找到相同的 <code>key</code>，并且成功插入了一个<strong>全新的节点</strong>。<ol>
+<li><code>modCount++</code>：修改次数加一。</li>
+<li><code>if (++size &gt; threshold)</code>：<code>HashMap</code> 的总元素数量 <code>size</code> 加一，并检查是否超过了扩容阈值 <code>threshold</code>。如果超过，就调用 <code>resize()</code> 方法对整个哈希表进行扩容。</li>
+<li><code>return null</code>：因为是新插入的，没有旧值，所以返回 <code>null</code>。</li>
+</ol>
+</li>
+</ul>
+<h5 id="深入扩容：resize-方法"><a href="#深入扩容：resize-方法" class="headerlink" title="深入扩容：resize 方法"></a>深入扩容：resize 方法</h5><p><code>resize()</code> (扩容) 是 <code>HashMap</code> 的另一个核心机制，它在哈希表容量不足时被调用，以保证性能。这是一个高成本操作，但其内部实现非常巧妙。</p>
+<p><strong><code>resize()</code> 的触发条件</strong></p>
+<ol>
+<li><strong>初始化创建：</strong> 第一次调用 <code>put</code> 时，哈希桶数组 <code>table</code> 为 <code>null</code>，此时会调用 <code>resize()</code> 创建初始数组（默认容量16）。</li>
+<li><strong>元素数量超过阈值（最常见）：</strong> 成功插入一个<strong>新</strong>元素后，若 <code>size &gt; threshold</code> (容量 * 负载因子)，则必须调用 <code>resize()</code> 进行扩容。</li>
+<li><strong>树化前的检查：</strong> 当链表长度达到8，但数组总容量小于64时，<code>HashMap</code> 会放弃树化，转而优先进行 <code>resize()</code> 扩容。</li>
+</ol>
+<p><strong><code>resize()</code> 的工作流程 (JDK 8+)</strong></p>
+<ol>
+<li><p><strong>创建新数组：</strong> 创建一个容量是<strong>原先两倍</strong>的新哈希桶数组 <code>newTab</code>。</p>
+</li>
+<li><p><strong>遍历旧数组并迁移元素：</strong> 遍历旧数组 <code>oldTab</code> 的每一个哈希桶，将其中的节点迁移到新数组。最巧妙之处在于，<code>HashMap</code> 并不需要为每个元素重新计算哈希索引。</p>
+</li>
+<li><p><strong>高效迁移算法：</strong> 由于容量是2的幂，一个旧桶里的所有元素在扩容后，只可能分布到新数组的 <strong>两个</strong> 位置上：<strong><code>原索引位置 j</code></strong> 和 <strong><code>j + oldCapacity</code> (原索引 + 旧容量)的位置</strong>。<br><code>HashMap</code> 通过检查元素 <code>hash</code> 值的特定 bit 位 <code>(e.hash &amp; oldCap)</code> 来决定：</p>
+<ul>
+<li>如果结果为 <code>0</code>，元素在新数组中的索引<strong>保持不变</strong>。</li>
+<li>如果结果不为 <code>0</code>，元素的索引就变为 <strong><code>原索引 + 旧容量</code></strong>。<br>通过这种方式，<code>HashMap</code> 只需将一个旧桶的链表拆分成两个子链表，然后分别移动到新数组的对应位置即可，极大地提高了扩容效率。</li>
+</ul>
+<div class="note info 案例分析：高效迁移 flat"><pre><code>假设 `oldCapacity` = 16，扩容后 `newCapacity` = 32。现在要迁移 `index = 5` 的桶，里面有4个元素（Key A, B, C, D）。
+
+**关键技巧：** `resize` 只需检查每个元素 `hash` 值和 `oldCapacity` (16, 二进制 `0001 0000`) 的 `&amp;` 运算结果。
+
+| Key | Hash 值 | 二进制表示 | `hash &amp; 16` 的结果 | 新位置 | 
+</code></pre>
+<p>| :– | :— | :— | :— | :— |<br>| <strong>A</strong> | 5 | <code>0000 0101</code> | <code>... &amp; 0001 0000</code> &#x3D; 0 | <strong>不变</strong> (low) |<br>| <strong>B</strong> | 21 | <code>0001 0101</code> | <code>... &amp; 0001 0000</code> &#x3D; 16 | <strong>改变</strong> (high) |<br>| <strong>C</strong> | 37 | <code>0010 0101</code> | <code>... &amp; 0001 0000</code> &#x3D; 0 | <strong>不变</strong> (low) |<br>| <strong>D</strong> | 53 | <code>0011 0101</code> | <code>... &amp; 0001 0000</code> &#x3D; 16 | <strong>改变</strong> (high) |</p>
+<pre><code>**迁移过程：**
+1.  `resize` 方法遍历旧桶中的链表，根据 `hash &amp; 16` 的结果，将链表拆分成两个子链表：`low` 链表 (`A -&gt; C`) 和 `high` 链表 (`B -&gt; D`)。
+2.  将 `low` 链表整个放入新数组的**原索引位置** `newTab[5]`。
+3.  将 `high` 链表整个放入新数组的**“原索引 + 旧容量”**位置 `newTab[5 + 16]`，即 `newTab[21]`。
+
+**结论：** 通过一次遍历和一次位运算，`HashMap` 就完成了旧桶到新桶的迁移，避免了对每个元素重新计算完整哈希的开销。
+</code></pre>
+</div></li>
+</ol>
+<h3 id="3-LinkedHashMap：维持插入或访问顺序的-Map"><a href="#3-LinkedHashMap：维持插入或访问顺序的-Map" class="headerlink" title="3. LinkedHashMap：维持插入或访问顺序的 Map"></a>3. <code>LinkedHashMap</code>：维持插入或访问顺序的 <code>Map</code></h3><p><code>LinkedHashMap</code> 是 <code>HashMap</code> 的一个子类。</p>
+<h4 id="内部原理"><a href="#内部原理" class="headerlink" title="内部原理"></a>内部原理</h4><p>它继承了 <code>HashMap</code> 的所有特性（数组+链表+红黑树），并额外维护一个<strong>双向链表</strong>，用于记录键值对的顺序。</p>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+    graph TD
+    subgraph &quot;HashMap Part (哈希桶)&quot;
+        B0[&quot;Bucket 0&quot;] --&gt; E2(&quot;Key B:Val 2&quot;)
+        B1[&quot;Bucket 1&quot;]
+        B2[&quot;Bucket 2&quot;] --&gt; E1(&quot;Key A:Val 1&quot;)
+        B3[&quot;Bucket 3&quot;] --&gt; E3(&quot;Key C:Val 3&quot;)
+    end
+
+    subgraph &quot;LinkedList Part (双向链表保证插入顺序)&quot;
+        direction LR
+        E1 -- &quot;after&quot; --&gt; E2 -- &quot;after&quot; --&gt; E3
+    end
+
+    style E1 fill:#C8E6C9,stroke:#388E3C
+    style E2 fill:#C8E6C9,stroke:#388E3C
+    style E3 fill:#C8E6C9,stroke:#388E3C
+  </pre></div>
+
+<p>如上图所示，所有节点（Entry）在哈希桶中的位置是由其 <code>hash</code> 值决定的（HashMap特性），但同时，所有节点又通过一个独立的双向链表串联起来，这个链表保证了迭代时的顺序与插入顺序一致。</p>
+<ul>
+<li><strong>插入顺序 (默认):</strong> 每次 <code>put</code> 一个新的键值对时，它会被添加到双向链表的末尾。遍历时，按插入顺序返回。</li>
+<li><strong>访问顺序:</strong> <code>LinkedHashMap</code> 有一个特殊的构造函数 <code>LinkedHashMap(int initialCapacity, float loadFactor, boolean accessOrder)</code>。如果最后一个参数 <code>accessOrder</code> 为 <code>true</code>，那么每次调用 <code>get</code> 方法访问一个已存在的键值对时，该键值对会被移动到双向链表的末尾。这个特性非常适合用来实现 <strong>LRU (Least Recently Used) 缓存</strong>。</li>
+</ul>
+<hr>
+<h3 id="4-TreeMap：自动排序的-Map"><a href="#4-TreeMap：自动排序的-Map" class="headerlink" title="4. TreeMap：自动排序的 Map"></a>4. <code>TreeMap</code>：自动排序的 <code>Map</code></h3><p><code>TreeMap</code> 能确保其中的键值对始终根据键 (Key) 处于<strong>排序状态</strong>。</p>
+<h4 id="内部原理-1"><a href="#内部原理-1" class="headerlink" title="内部原理"></a>内部原理</h4><p><code>TreeMap</code> 的底层是一个<strong>红黑树 (Red-Black Tree)</strong> 数据结构。所有的键值对都作为红黑树的节点存在。</p>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+    graph TD
+    subgraph &quot;TreeMap (红黑树结构)&quot;
+        N50(&quot;Key:50 (Black)&quot;) --&gt; N25(&quot;Key:25 (Red)&quot;)
+        N50 --&gt; N75(&quot;Key:75 (Black)&quot;)
+        N25 --&gt; N10(&quot;Key:10 (Black)&quot;)
+        N25 --&gt; N30(&quot;Key:30 (Black)&quot;)
+    end
+
+    subgraph &quot;遍历顺序 (中序遍历)&quot;
+        direction LR
+        A(10) --&gt; B(25) --&gt; C(30) --&gt; D(50) --&gt; E(75)
+    end
+
+    style N50 fill:#616161,stroke:#000,color:white
+    style N75 fill:#616161,stroke:#000,color:white
+    style N10 fill:#616161,stroke:#000,color:white
+    style N30 fill:#616161,stroke:#000,color:white
+    style N25 fill:#EF9A9A,stroke:#D32F2F
+  </pre></div>
+
+<p>上图展示了 <code>TreeMap</code> 的核心机制：元素在内部被组织成一棵红黑树，这棵树始终保持平衡，确保了元素的排序性和 O(log n) 的操作性能。当你遍历 <code>TreeMap</code> 时，它会按照树的中序遍历顺序进行，从而得到一个有序的结果。</p>
+<ul>
+<li><strong>排序机制:</strong><ol>
+<li><strong>自然排序:</strong> 键 (Key) 必须实现 <code>Comparable</code> 接口。</li>
+<li><strong>定制排序:</strong> 创建 <code>TreeMap</code> 时传入一个 <code>Comparator</code> 对象。</li>
+</ol>
+</li>
+</ul>
+<h4 id="性能特点-1"><a href="#性能特点-1" class="headerlink" title="性能特点"></a>性能特点</h4><ul>
+<li><strong>有序:</strong> 键总是按照自然顺序或 <code>Comparator</code> 定义的顺序排列。</li>
+<li><strong>性能稳定:</strong> <code>put</code>, <code>get</code>, <code>remove</code> 等操作的时间复杂度都是 <strong>O(log n)</strong>。</li>
+</ul>
+<hr>
+<h3 id="5-ConcurrentHashMap：线程安全的-Map"><a href="#5-ConcurrentHashMap：线程安全的-Map" class="headerlink" title="5. ConcurrentHashMap：线程安全的 Map"></a>5. <code>ConcurrentHashMap</code>：线程安全的 <code>Map</code></h3><p><code>ConcurrentHashMap</code> 是 <code>java.util.concurrent</code> 包下的一个类，是高并发场景下 <code>Map</code> 的首选。</p>
+<h4 id="内部原理-JDK-8-1"><a href="#内部原理-JDK-8-1" class="headerlink" title="内部原理 (JDK 8+)"></a>内部原理 (JDK 8+)</h4><p>它借鉴了 <code>HashMap</code> 的结构（数组+链表+红黑树），但通过使用 <code>CAS (Compare-And-Swap)</code> 操作和 <code>synchronized</code> 关键字实现了高效的线程安全。</p>
+<ul>
+<li><strong>分段锁思想:</strong> 它不是对整个 <code>Map</code> 加锁，而是只对哈希桶数组中的某个位置（即链表或红黑树的头节点）加锁。当不同线程操作不同哈希桶时，它们之间不会产生竞争，从而大大提高了并发性能。</li>
+<li>只有当多个线程同时要修改完全相同的哈希桶时，才会有一个线程被 <code>synchronized</code> 阻塞，其他线程不受影响。</li>
+</ul>
+<hr>
+<h3 id="历史的尘埃：Hashtable"><a href="#历史的尘埃：Hashtable" class="headerlink" title="历史的尘埃：Hashtable"></a>历史的尘埃：Hashtable</h3><p><code>Hashtable</code> 是一个源自 JDK 1.0 的、古老的键值对数据结构，可以看作是 <code>HashMap</code> 的一个<strong>线程安全</strong>的早期版本。虽然现在已不推荐使用，但了解它有助于理解 Java 集合框架的演进。</p>
+<h4 id="核心特性与-HashMap-的主要区别"><a href="#核心特性与-HashMap-的主要区别" class="headerlink" title="核心特性与 HashMap 的主要区别"></a>核心特性与 <code>HashMap</code> 的主要区别</h4><ol>
+<li><p><strong>线程安全 (Thread-Safety)</strong></p>
+<ul>
+<li><strong><code>Hashtable</code> 是线程安全的。</strong> 它通过在几乎所有公开方法（如 <code>put</code>, <code>get</code>）上添加 <code>synchronized</code> 关键字来实现，这相当于给整个数据结构上了一把大锁。虽然保证了数据一致性，但在高并发环境下性能极差。</li>
+</ul>
+</li>
+<li><p><strong>对 <code>null</code> 值的支持</strong></p>
+<ul>
+<li><strong><code>Hashtable</code> 不允许 <code>null</code> 键和 <code>null</code> 值。</strong> 任何 <code>null</code> 存入都会抛出 <code>NullPointerException</code>。</li>
+<li><code>HashMap</code> 则允许一个 <code>null</code> 键和多个 <code>null</code> 值。</li>
+</ul>
+</li>
+<li><p><strong>继承体系</strong></p>
+<ul>
+<li><code>Hashtable</code> 继承自一个现已废弃的 <code>Dictionary</code> 类。</li>
+<li><code>HashMap</code> 继承自 <code>AbstractMap</code>，是更现代的设计。</li>
+</ul>
+</li>
+</ol>
+<h4 id="为什么-Hashtable-被“淘汰”了？"><a href="#为什么-Hashtable-被“淘汰”了？" class="headerlink" title="为什么 Hashtable 被“淘汰”了？"></a>为什么 <code>Hashtable</code> 被“淘汰”了？</h4><p><code>Hashtable</code> 提供的全局锁机制性能太差，无法满足现代高并发应用的需求。在需要线程安全的场景下，我们现在有了更好的选择：<strong><code>ConcurrentHashMap</code></strong>，它通过 CAS 和分段&#x2F;桶锁等技术实现了高得多的并发性能。</p>
+<h4 id="总结对比"><a href="#总结对比" class="headerlink" title="总结对比"></a>总结对比</h4><table>
+<thead>
+<tr>
+<th align="left">特性</th>
+<th align="left"><code>Hashtable</code></th>
+<th align="left"><code>HashMap</code></th>
+<th align="left"><code>ConcurrentHashMap</code></th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>线程安全</strong></td>
+<td align="left"><strong>是</strong> (全局锁)</td>
+<td align="left"><strong>否</strong></td>
+<td align="left"><strong>是</strong> (分段&#x2F;桶锁)</td>
+</tr>
+<tr>
+<td align="left"><strong>性能</strong></td>
+<td align="left">差</td>
+<td align="left">好</td>
+<td align="left"><strong>极好</strong></td>
+</tr>
+<tr>
+<td align="left"><strong>Null 支持</strong></td>
+<td align="left"><strong>否</strong></td>
+<td align="left"><strong>是</strong> (key 和 value)</td>
+<td align="left"><strong>否</strong></td>
+</tr>
+<tr>
+<td align="left"><strong>推荐使用</strong></td>
+<td align="left"><strong>不推荐</strong></td>
+<td align="left">单线程环境</td>
+<td align="left"><strong>多线程环境</strong></td>
+</tr>
+</tbody></table>
+<hr>
+<h3 id="附录：哈希冲突的常见解决方法"><a href="#附录：哈希冲突的常见解决方法" class="headerlink" title="附录：哈希冲突的常见解决方法"></a>附录：哈希冲突的常见解决方法</h3><p>当不同键计算出相同地址时，如何存放和查找它们，就是“哈希冲突解决方法”要处理的问题。主要分为两大类：<strong>开放寻址法 (Open Addressing)</strong> 和 <strong>链地址法 (Separate Chaining)</strong>。</p>
+<h4 id="1-开放寻址法-Open-Addressing"><a href="#1-开放寻址法-Open-Addressing" class="headerlink" title="1. 开放寻址法 (Open Addressing)"></a>1. 开放寻址法 (Open Addressing)</h4><p>这种方法不创建任何外部数据结构（如链表），而是坚持将所有元素都存放在哈希表数组内部。如果一个位置 <code>index</code> 被占用了，就按照某种规则去探测下一个可用的空位。</p>
+<ul>
+<li><strong>a. 线性探测 (Linear Probing):</strong> 如果 <code>index</code> 位置被占用，就尝试 <code>index+1</code>；如果还被占用，就尝试 <code>index+2</code>，以此类推。这种方法实现简单，但容易产生“一次聚集”现象，即冲突的元素在数组中连成一片，影响效率。</li>
+<li><strong>b. 二次方探测 (Quadratic Probing):</strong> 如果 <code>index</code> 位置被占用，就依次尝试 <code>index+1²</code>, <code>index-1²</code>, <code>index+2²</code>… 能有效缓解“一次聚集”，但会产生“二次聚集”。</li>
+<li><strong>c. 再哈希法 (Double Hashing):</strong> 使用两个哈希函数，<code>hash1()</code> 计算初始地址，<code>hash2()</code> 计算探测的步长。这是开放寻址法中效果最好的一种，能有效避免聚集。</li>
+</ul>
+<h4 id="2-链地址法-Separate-Chaining"><a href="#2-链地址法-Separate-Chaining" class="headerlink" title="2. 链地址法 (Separate Chaining)"></a>2. 链地址法 (Separate Chaining)</h4><p><strong>这是 <code>java.util.HashMap</code> 所采用的方法。</strong> 它将哈希表的每个数组单元（哈希桶）作为一个“头指针”。所有哈希到这个位置的元素，都以<strong>链表</strong>（或 <code>HashMap</code> 中的红黑树）的形式串联在这个“头指针”后面。</p>
+<h4 id="总结对比-1"><a href="#总结对比-1" class="headerlink" title="总结对比"></a>总结对比</h4><table>
+<thead>
+<tr>
+<th align="left">方法</th>
+<th align="left">原理</th>
+<th align="left">优点</th>
+<th align="left">缺点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>线性探测</strong></td>
+<td align="left"><code>(hash(k) + i) % n</code></td>
+<td align="left">实现简单，缓存友好</td>
+<td align="left">一次聚集</td>
+</tr>
+<tr>
+<td align="left"><strong>二次方探测</strong></td>
+<td align="left"><code>(hash(k) + i²) % n</code></td>
+<td align="left">缓解一次聚集</td>
+<td align="left">二次聚集</td>
+</tr>
+<tr>
+<td align="left"><strong>再哈希法</strong></td>
+<td align="left"><code>(hash1(k) + i*hash2(k)) % n</code></td>
+<td align="left">聚集问题最少</td>
+<td align="left">计算成本高</td>
+</tr>
+<tr>
+<td align="left"><strong>链地址法</strong></td>
+<td align="left">数组 + 链表&#x2F;红黑树</td>
+<td align="left">直观，删除方便，负载高时表现好</td>
+<td align="left">额外空间开销，对缓存不友好</td>
+</tr>
+</tbody></table>
+<h3 id="6-高频面试题"><a href="#6-高频面试题" class="headerlink" title="6. 高频面试题"></a>6. 高频面试题</h3><h4 id="Q1-HashMap-的-put-方法流程是怎样的？"><a href="#Q1-HashMap-的-put-方法流程是怎样的？" class="headerlink" title="Q1: HashMap 的 put 方法流程是怎样的？"></a>Q1: <code>HashMap</code> 的 <code>put</code> 方法流程是怎样的？</h4><p><strong>A:</strong></p>
+<ol>
+<li>计算 <code>key</code> 的哈希值，定位到哈希桶数组的索引。</li>
+<li>如果该位置为 <code>null</code>，直接创建一个新节点存入。</li>
+<li>如果该位置不为 <code>null</code>，遍历该位置的链表或红黑树。</li>
+<li>在遍历过程中，如果发现一个节点的 <code>key</code> 与当前要存入的 <code>key</code> 相同（<code>hashCode</code> 相同且 <code>equals</code> 为 <code>true</code>），则用新 <code>value</code> 覆盖旧 <code>value</code>，并返回旧 <code>value</code>。</li>
+<li>如果遍历完所有节点都没有发现相同的 <code>key</code>，则将新节点添加到链表的末尾或红黑树中。</li>
+<li>添加后，检查链表长度是否达到树化阈值（8），如果达到则将链表转化为红黑树。</li>
+</ol>
+<h4 id="Q2-HashMap-和-Hashtable-有什么区别？"><a href="#Q2-HashMap-和-Hashtable-有什么区别？" class="headerlink" title="Q2: HashMap 和 Hashtable 有什么区别？"></a>Q2: <code>HashMap</code> 和 <code>Hashtable</code> 有什么区别？</h4><p><strong>A:</strong></p>
+<ul>
+<li><strong>线程安全:</strong> <code>HashMap</code> 是线程不安全的，<code>Hashtable</code> 是线程安全的。<code>Hashtable</code> 几乎所有方法都用了 <code>synchronized</code> 修饰，性能较差。</li>
+<li><strong>null 值:</strong> <code>HashMap</code> 允许一个 <code>null</code> 键和多个 <code>null</code> 值。<code>Hashtable</code> 不允许 <code>null</code> 键或 <code>null</code> 值。</li>
+<li><strong>父类:</strong> <code>HashMap</code> 继承自 <code>AbstractMap</code>，<code>Hashtable</code> 继承自 <code>Dictionary</code> (一个已被废弃的类)。</li>
+<li><strong>性能:</strong> 由于锁机制，<code>HashMap</code> 的性能远高于 <code>Hashtable</code>。在需要线程安全时，应使用 <code>ConcurrentHashMap</code> 而不是 <code>Hashtable</code>。</li>
+</ul>
+<h4 id="Q3-HashMap-的默认初始容量和负载因子是多少？为什么？"><a href="#Q3-HashMap-的默认初始容量和负载因子是多少？为什么？" class="headerlink" title="Q3: HashMap 的默认初始容量和负载因子是多少？为什么？"></a>Q3: <code>HashMap</code> 的默认初始容量和负载因子是多少？为什么？</h4><p><strong>A:</strong></p>
+<ul>
+<li><strong>默认初始容量 (initial capacity):</strong> 16。</li>
+<li><strong>默认负载因子 (load factor):</strong> 0.75。</li>
+<li><strong>原因:</strong> 这是时间和空间成本之间的一个权衡。容量太小容易导致频繁的哈希冲突和扩容，影响性能。容量太大浪费内存。负载因子 <code>0.75</code> 是一个经验值，统计学上表明它能很好地平衡哈希冲突的概率和内存的使用率。</li>
+</ul>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>Author: </span><span class="post-copyright-info"><a href="http://example.com">david</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>Link: </span><span class="post-copyright-info"><a href="http://example.com/2025/09/16/Java%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84-Map/">http://example.com/2025/09/16/Java%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84-Map/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>Copyright Notice: </span><span class="post-copyright-info">All articles on this blog are licensed under <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> unless otherwise stated.</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Java/">Java</a><a class="post-meta__tags" href="/tags/%E9%9B%86%E5%90%88%E6%A1%86%E6%9E%B6/">集合框架</a><a class="post-meta__tags" href="/tags/Map/">Map</a><a class="post-meta__tags" href="/tags/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/">数据结构</a><a class="post-meta__tags" href="/tags/HashMap/">HashMap</a><a class="post-meta__tags" href="/tags/LinkedHashMap/">LinkedHashMap</a><a class="post-meta__tags" href="/tags/TreeMap/">TreeMap</a><a class="post-meta__tags" href="/tags/ConcurrentHashMap/">ConcurrentHashMap</a></div><div class="post-share"><div class="social-share" data-image="/img/butterfly-icon.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2025/09/16/Java%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84-Queue/" title="Java数据结构-Queue接口"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">Previous</div><div class="info-item-2">Java数据结构-Queue接口</div></div><div class="info-2"><div class="info-item-1">Java 集合框架：Queue 接口详解在 Java 集合框架中，Queue (队列) 接口是一种特殊的线性数据结构，它遵循 先进先出 (FIFO - First-In, First-Out) 的原则。这意味着最先进入队列的元素将最先被移出。队列在计算机科学中应用广泛，常用于模拟排队、任务调度、广度优先搜索等场景。 1. Queue 接口的核心方法Queue 接口定义了一系列操作队列的方法，这些方法分为两组，其行为略有不同：一组在操作失败时会抛出异常，另一组则会返回特殊值（如 null 或 false）。    操作 抛出异常 返回特殊值 描述    入队 (Insert) add(e) offer(e) 将元素 e 添加到队尾。offer 在队列满时返回 false，add 则抛出异常。   出队 (Remove) remove() poll() 移除并返回队首的元素。poll 在队列为空时返回 null，remove 则抛出异常。   检查队首 (Examine) element() peek() 返回队首的元素，但不移除它。peek 在队列为空时返回 null，elemen...</div></div></div></a><a class="pagination-related" href="/2025/09/10/Java%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84-Set/" title="Java数据结构-Set接口"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">Next</div><div class="info-item-2">Java数据结构-Set接口</div></div><div class="info-2"><div class="info-item-1">Java 集合框架：Set 接口详解在 Java 集合框架中，Set 接口是另一个至关重要的组成部分。与 List 不同，Set 代表一个不包含重复元素的集合。它模拟了数学中“集合”的概念，强调元素的唯一性。 1. Set 接口的核心特性 唯一性 (Uniqueness): 这是 Set 最核心的特性。当你尝试向 Set 中添加一个已经存在的元素时，添加操作会失败，add() 方法会返回 false。元素的唯一性通常是通过元素的 equals() 和 hashCode() 方法来保证的。 无序性 (Unordered) (通常): 大多数 Set 的实现类（如 HashSet）不保证元素的存储和迭代顺序。这意味着元素的顺序可能会随着时间的推移而改变，你不能依赖于它们的顺序。但是，也有一些实现类（如 LinkedHashSet 和 TreeSet）可以维持特定的顺序。 非基于索引 (Not Index-based): 与 List 不同，你不能通过索引来访问 Set 中的元素。要访问 Set 中的元素，你必须遍历它。   2. HashSet：最常用的 Set 实现HashSet ...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>Related Articles</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/2025/10/22/JavaSE-%E9%9B%86%E5%90%88%E6%A1%86%E6%9E%B6/" title="JavaSE-集合框架(索引)"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-10-22</div><div class="info-item-2">JavaSE-集合框架(索引)</div></div><div class="info-2"><div class="info-item-1">JavaSE - 集合框架 (Collections Framework)Java 集合框架（JCF）是一个用来存储和操作对象集合的统一架构。它包含了一系列的接口、实现类和算法，极大地简化了对数据集合的处理。这是 JavaSE 中最核心、最重要的部分之一。 本篇笔记将作为集合框架学习的索引和枢纽，您可以点击以下链接，跳转到各个核心接口的详细学习笔记中。 1. 集合框架核心接口     %%{init: {&#39;theme&#39;: &#39;neutral&#39;}}%% graph TD     subgraph Collection 接口         A[Iterable] --&gt; B(Collection)         B --&gt; C{List}         B --&gt; D{Set}         B --&gt; E{Queue}     end     subgraph Map 接口         F(Map)     end      C --&gt; G[ArrayList]     C --&gt; H[LinkedLis...</div></div></div></a><a class="pagination-related" href="/2025/09/16/Java%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84-Queue/" title="Java数据结构-Queue接口"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-09-16</div><div class="info-item-2">Java数据结构-Queue接口</div></div><div class="info-2"><div class="info-item-1">Java 集合框架：Queue 接口详解在 Java 集合框架中，Queue (队列) 接口是一种特殊的线性数据结构，它遵循 先进先出 (FIFO - First-In, First-Out) 的原则。这意味着最先进入队列的元素将最先被移出。队列在计算机科学中应用广泛，常用于模拟排队、任务调度、广度优先搜索等场景。 1. Queue 接口的核心方法Queue 接口定义了一系列操作队列的方法，这些方法分为两组，其行为略有不同：一组在操作失败时会抛出异常，另一组则会返回特殊值（如 null 或 false）。    操作 抛出异常 返回特殊值 描述    入队 (Insert) add(e) offer(e) 将元素 e 添加到队尾。offer 在队列满时返回 false，add 则抛出异常。   出队 (Remove) remove() poll() 移除并返回队首的元素。poll 在队列为空时返回 null，remove 则抛出异常。   检查队首 (Examine) element() peek() 返回队首的元素，但不移除它。peek 在队列为空时返回 null，elemen...</div></div></div></a><a class="pagination-related" href="/2025/09/10/Java%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84-Set/" title="Java数据结构-Set接口"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-09-10</div><div class="info-item-2">Java数据结构-Set接口</div></div><div class="info-2"><div class="info-item-1">Java 集合框架：Set 接口详解在 Java 集合框架中，Set 接口是另一个至关重要的组成部分。与 List 不同，Set 代表一个不包含重复元素的集合。它模拟了数学中“集合”的概念，强调元素的唯一性。 1. Set 接口的核心特性 唯一性 (Uniqueness): 这是 Set 最核心的特性。当你尝试向 Set 中添加一个已经存在的元素时，添加操作会失败，add() 方法会返回 false。元素的唯一性通常是通过元素的 equals() 和 hashCode() 方法来保证的。 无序性 (Unordered) (通常): 大多数 Set 的实现类（如 HashSet）不保证元素的存储和迭代顺序。这意味着元素的顺序可能会随着时间的推移而改变，你不能依赖于它们的顺序。但是，也有一些实现类（如 LinkedHashSet 和 TreeSet）可以维持特定的顺序。 非基于索引 (Not Index-based): 与 List 不同，你不能通过索引来访问 Set 中的元素。要访问 Set 中的元素，你必须遍历它。   2. HashSet：最常用的 Set 实现HashSet ...</div></div></div></a><a class="pagination-related" href="/2025/09/04/Java%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84-List/" title="Java数据结构-List接口"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-09-04</div><div class="info-item-2">Java数据结构-List接口</div></div><div class="info-2"><div class="info-item-1">Java 集合框架：List 接口详解在 Java 的集合框架 (Collections Framework) 中，List 是一个核心接口，它代表一个有序的集合，并且允许包含重复的元素。它是我们日常开发中最常打交道的集合类型之一。 1. List 接口的核心特性 有序性 (Ordered): List 会维护元素的插入顺序。你以什么顺序添加元素，遍历时就会得到什么顺序。 允许重复 (Allows Duplicates): 你可以向 List 中添加多个相同（通过 equals() 方法判断）的元素。 基于索引 (Index-based): List 中的每个元素都有一个唯一的、从 0 开始的整数索引，可以通过索引精确地访问、修改或删除元素。  常用方法List 接口提供了一系列基于索引的操作方法：  void add(int index, E element): 在指定索引处插入元素。 E get(int index): 获取指定索引处的元素。 E set(int index, E element): 替换指定索引处的元素。 E remove(int index): 移除指定索...</div></div></div></a><a class="pagination-related" href="/2025/09/24/%E7%AE%97%E6%B3%95%E5%AE%9E%E6%88%98-%E5%B8%83%E9%9A%86%E8%BF%87%E6%BB%A4%E5%99%A8/" title="算法实战-布隆过滤器"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-09-24</div><div class="info-item-2">算法实战-布隆过滤器</div></div><div class="info-2"><div class="info-item-1">1. 缘起：一个棘手的问题想象一个场景：黑客想要攻击我们的系统，他会故意请求缓存中绝对不存在的数据。由于缓存中没有，请求会直接打到数据库上。如果这类请求数量巨大，数据库的压力会骤增，甚至可能导致崩溃。这就是所谓的**“缓存穿透”**。 我们该如何高效地拦截这些“不存在”的请求，避免它们穿透到数据库呢？ 一个朴素的想法是，把所有合法的数据键（比如所有商品ID）都存入一个哈希集合（HashSet）中，每次请求先进来判断一下。但这在海量数据面前是不可行的，比如你有 1 亿个商品，每个 ID 占 8 字节，光是存储这些 ID 就需要将近 800MB 的内存，成本太高。 有没有一种方法，可以用极小的内存，来“大概”地判断一个元素是否存在呢？布隆过滤器 (Bloom Filter) 正是为此而生。  2. 核心原理：位数组与哈希函数布隆过滤器是一种巧妙的概率型数据结构，它的核心思想非常简洁，由两个基本部分组成：  一个很长的位数组 (Bit Array)：数组的每一位都只能是 0 或 1。 几个不同的哈希函数：这些哈希函数可以将同一个输入均匀地映射到不同的位置。  a. 添加元素 (add)...</div></div></div></a><a class="pagination-related" href="/2025/10/22/%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B-JUC%E6%A0%B8%E5%BF%83%E5%B7%A5%E5%85%B7/" title="并发编程-JUC核心工具"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-10-22</div><div class="info-item-2">并发编程-JUC核心工具</div></div><div class="info-2"><div class="info-item-1">并发编程 - java.util.concurrent (JUC) 核心工具java.util.concurrent 包（简称 JUC）是 Java 并发编程的核心，由并发大师 Doug Lea 设计，提供了比 synchronized 和 volatile 更高级、更丰富的并发工具。掌握 JUC 是成为 Java 高级工程师的必备技能。 1. 线程池 (ExecutorService)线程池用于统一管理和复用线程，避免因频繁创建和销毁线程而带来的性能开销。  核心实现: ThreadPoolExecutor。 7大核心参数: corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue, threadFactory, handler。 工作原理: 核心线程 -&gt; 任务队列 -&gt; 最大线程 -&gt; 拒绝策略。 Executors 风险: newFixedThreadPool 和 newCachedThreadPool 等预设线程池可能因使用无界队列或无界最大线程数而导致 OOM，生产环境建议手动创建 T...</div></div></div></a></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/butterfly-icon.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">david</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">71</div></a><a href="/tags/"><div class="headline">Tags</div><div class="length-num">152</div></a><a href="/categories/"><div class="headline">Categories</div><div class="length-num">14</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>Announcement</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>Contents</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Java-%E9%9B%86%E5%90%88%E6%A1%86%E6%9E%B6%EF%BC%9AMap-%E6%8E%A5%E5%8F%A3%E8%AF%A6%E8%A7%A3"><span class="toc-number">1.</span> <span class="toc-text">Java 集合框架：Map 接口详解</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-Map-%E6%8E%A5%E5%8F%A3%E7%9A%84%E6%A0%B8%E5%BF%83%E7%89%B9%E6%80%A7"><span class="toc-number">1.1.</span> <span class="toc-text">1. Map 接口的核心特性</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-HashMap%EF%BC%9A%E6%9C%80%E5%B8%B8%E7%94%A8%E7%9A%84-Map-%E5%AE%9E%E7%8E%B0"><span class="toc-number">1.2.</span> <span class="toc-text">2. HashMap：最常用的 Map 实现</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%86%85%E9%83%A8%E5%8E%9F%E7%90%86-JDK-8"><span class="toc-number">1.2.1.</span> <span class="toc-text">内部原理 (JDK 8+)</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E5%93%88%E5%B8%8C%E7%AE%97%E6%B3%95%E4%B8%8E%E6%95%A3%E5%88%97%E5%88%86%E5%B8%83"><span class="toc-number">1.2.1.1.</span> <span class="toc-text">哈希算法与散列分布</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E5%93%88%E5%B8%8C%E7%A2%B0%E6%92%9E%EF%BC%9F"><span class="toc-number">1.2.1.2.</span> <span class="toc-text">什么是哈希碰撞？</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E5%AD%98%E5%82%A8%E7%BB%93%E6%9E%84"><span class="toc-number">1.2.1.3.</span> <span class="toc-text">存储结构</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%80%A7%E8%83%BD%E7%89%B9%E7%82%B9"><span class="toc-number">1.2.2.</span> <span class="toc-text">性能特点</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E6%BA%90%E7%A0%81%E8%A7%A3%E6%9E%90%EF%BC%9Aput-%E6%96%B9%E6%B3%95%E6%A0%B8%E5%BF%83%E6%B5%81%E7%A8%8B"><span class="toc-number">1.2.2.1.</span> <span class="toc-text">源码解析：put 方法核心流程</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E6%B7%B1%E5%85%A5%E6%89%A9%E5%AE%B9%EF%BC%9Aresize-%E6%96%B9%E6%B3%95"><span class="toc-number">1.2.2.2.</span> <span class="toc-text">深入扩容：resize 方法</span></a></li></ol></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-LinkedHashMap%EF%BC%9A%E7%BB%B4%E6%8C%81%E6%8F%92%E5%85%A5%E6%88%96%E8%AE%BF%E9%97%AE%E9%A1%BA%E5%BA%8F%E7%9A%84-Map"><span class="toc-number">1.3.</span> <span class="toc-text">3. LinkedHashMap：维持插入或访问顺序的 Map</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%86%85%E9%83%A8%E5%8E%9F%E7%90%86"><span class="toc-number">1.3.1.</span> <span class="toc-text">内部原理</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-TreeMap%EF%BC%9A%E8%87%AA%E5%8A%A8%E6%8E%92%E5%BA%8F%E7%9A%84-Map"><span class="toc-number">1.4.</span> <span class="toc-text">4. TreeMap：自动排序的 Map</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%86%85%E9%83%A8%E5%8E%9F%E7%90%86-1"><span class="toc-number">1.4.1.</span> <span class="toc-text">内部原理</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%80%A7%E8%83%BD%E7%89%B9%E7%82%B9-1"><span class="toc-number">1.4.2.</span> <span class="toc-text">性能特点</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-ConcurrentHashMap%EF%BC%9A%E7%BA%BF%E7%A8%8B%E5%AE%89%E5%85%A8%E7%9A%84-Map"><span class="toc-number">1.5.</span> <span class="toc-text">5. ConcurrentHashMap：线程安全的 Map</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%86%85%E9%83%A8%E5%8E%9F%E7%90%86-JDK-8-1"><span class="toc-number">1.5.1.</span> <span class="toc-text">内部原理 (JDK 8+)</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8E%86%E5%8F%B2%E7%9A%84%E5%B0%98%E5%9F%83%EF%BC%9AHashtable"><span class="toc-number">1.6.</span> <span class="toc-text">历史的尘埃：Hashtable</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%A0%B8%E5%BF%83%E7%89%B9%E6%80%A7%E4%B8%8E-HashMap-%E7%9A%84%E4%B8%BB%E8%A6%81%E5%8C%BA%E5%88%AB"><span class="toc-number">1.6.1.</span> <span class="toc-text">核心特性与 HashMap 的主要区别</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88-Hashtable-%E8%A2%AB%E2%80%9C%E6%B7%98%E6%B1%B0%E2%80%9D%E4%BA%86%EF%BC%9F"><span class="toc-number">1.6.2.</span> <span class="toc-text">为什么 Hashtable 被“淘汰”了？</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%80%BB%E7%BB%93%E5%AF%B9%E6%AF%94"><span class="toc-number">1.6.3.</span> <span class="toc-text">总结对比</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%99%84%E5%BD%95%EF%BC%9A%E5%93%88%E5%B8%8C%E5%86%B2%E7%AA%81%E7%9A%84%E5%B8%B8%E8%A7%81%E8%A7%A3%E5%86%B3%E6%96%B9%E6%B3%95"><span class="toc-number">1.7.</span> <span class="toc-text">附录：哈希冲突的常见解决方法</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-%E5%BC%80%E6%94%BE%E5%AF%BB%E5%9D%80%E6%B3%95-Open-Addressing"><span class="toc-number">1.7.1.</span> <span class="toc-text">1. 开放寻址法 (Open Addressing)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-%E9%93%BE%E5%9C%B0%E5%9D%80%E6%B3%95-Separate-Chaining"><span class="toc-number">1.7.2.</span> <span class="toc-text">2. 链地址法 (Separate Chaining)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%80%BB%E7%BB%93%E5%AF%B9%E6%AF%94-1"><span class="toc-number">1.7.3.</span> <span class="toc-text">总结对比</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-%E9%AB%98%E9%A2%91%E9%9D%A2%E8%AF%95%E9%A2%98"><span class="toc-number">1.8.</span> <span class="toc-text">6. 高频面试题</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Q1-HashMap-%E7%9A%84-put-%E6%96%B9%E6%B3%95%E6%B5%81%E7%A8%8B%E6%98%AF%E6%80%8E%E6%A0%B7%E7%9A%84%EF%BC%9F"><span class="toc-number">1.8.1.</span> <span class="toc-text">Q1: HashMap 的 put 方法流程是怎样的？</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Q2-HashMap-%E5%92%8C-Hashtable-%E6%9C%89%E4%BB%80%E4%B9%88%E5%8C%BA%E5%88%AB%EF%BC%9F"><span class="toc-number">1.8.2.</span> <span class="toc-text">Q2: HashMap 和 Hashtable 有什么区别？</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Q3-HashMap-%E7%9A%84%E9%BB%98%E8%AE%A4%E5%88%9D%E5%A7%8B%E5%AE%B9%E9%87%8F%E5%92%8C%E8%B4%9F%E8%BD%BD%E5%9B%A0%E5%AD%90%E6%98%AF%E5%A4%9A%E5%B0%91%EF%BC%9F%E4%B8%BA%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="toc-number">1.8.3.</span> <span class="toc-text">Q3: HashMap 的默认初始容量和负载因子是多少？为什么？</span></a></li></ol></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>Recent Posts</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/10/22/JavaSE-%E5%B8%B8%E7%94%A8API/" title="JavaSE-常用API">JavaSE-常用API</a><time datetime="2025-10-22T02:00:00.000Z" title="Created 2025-10-22 10:00:00">2025-10-22</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/10/22/JavaSE-%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/" title="JavaSE-异常处理">JavaSE-异常处理</a><time datetime="2025-10-22T02:00:00.000Z" title="Created 2025-10-22 10:00:00">2025-10-22</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/10/22/JavaSE-%E9%9B%86%E5%90%88%E6%A1%86%E6%9E%B6/" title="JavaSE-集合框架(索引)">JavaSE-集合框架(索引)</a><time datetime="2025-10-22T02:00:00.000Z" title="Created 2025-10-22 10:00:00">2025-10-22</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/10/22/JavaSE-%E9%9D%A2%E5%90%91%E5%AF%B9%E8%B1%A1%E7%BC%96%E7%A8%8B/" title="JavaSE-面向对象编程">JavaSE-面向对象编程</a><time datetime="2025-10-22T02:00:00.000Z" title="Created 2025-10-22 10:00:00">2025-10-22</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/10/22/JavaSE-%E5%85%A8%E9%9D%A2%E6%8E%8C%E6%8F%A1/" title="JavaSE-全面掌握">JavaSE-全面掌握</a><time datetime="2025-10-22T02:00:00.000Z" title="Created 2025-10-22 10:00:00">2025-10-22</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 By david</span><span class="framework-info"><span>Framework </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>Theme </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.4.3</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="Reading Mode"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="Toggle Between Light and Dark Mode"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="Toggle Between Single-column and Double-column"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="Settings"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="Table of Contents"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="Back to Top"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><div class="js-pjax"><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (false) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>

@@ -1,0 +1,641 @@
+<!DOCTYPE html><html lang="en" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Java P7 工程师学习路线图 (最终版) | Hexo</title><meta name="author" content="david"><meta name="copyright" content="david"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="Java P7 工程师学习路线图 (最终版)这份学习路线图旨在提供一个全面、深入的路径，帮助您达到阿里P7级别Java工程师的要求。它涵盖了从核心Java到分布式系统、云原生、大数据、AI大模型以及软技能等多个关键领域。 学习路径概览     %%{init: {&#39;theme&#39;: &#39;neutral&#39;}}%% graph TD     classDef phase1">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Java P7 工程师学习路线图 (最终版)">
+<meta property="og:url" content="http://example.com/2025/10/22/java-p7%E5%AD%A6%E4%B9%A0%E8%AE%A1%E5%88%92/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="Java P7 工程师学习路线图 (最终版)这份学习路线图旨在提供一个全面、深入的路径，帮助您达到阿里P7级别Java工程师的要求。它涵盖了从核心Java到分布式系统、云原生、大数据、AI大模型以及软技能等多个关键领域。 学习路径概览     %%{init: {&#39;theme&#39;: &#39;neutral&#39;}}%% graph TD     classDef phase1">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://example.com/img/butterfly-icon.png">
+<meta property="article:published_time" content="2025-10-22T02:00:00.000Z">
+<meta property="article:modified_time" content="2025-11-25T08:04:01.200Z">
+<meta property="article:author" content="david">
+<meta property="article:tag" content="Java">
+<meta property="article:tag" content="学习路线">
+<meta property="article:tag" content="P7">
+<meta property="article:tag" content="Roadmap">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/img/butterfly-icon.png"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Java P7 工程师学习路线图 (最终版)",
+  "url": "http://example.com/2025/10/22/java-p7%E5%AD%A6%E4%B9%A0%E8%AE%A1%E5%88%92/",
+  "image": "http://example.com/img/butterfly-icon.png",
+  "datePublished": "2025-10-22T02:00:00.000Z",
+  "dateModified": "2025-11-25T08:04:01.200Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "david",
+      "url": "http://example.com"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://example.com/2025/10/22/java-p7%E5%AD%A6%E4%B9%A0%E8%AE%A1%E5%88%92/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: 'Copy Successful',
+    error: 'Copy Failed',
+    noSupport: 'Browser Not Supported'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: 'Just now',
+    min: 'minutes ago',
+    hour: 'hours ago',
+    day: 'days ago',
+    month: 'months ago'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid/dist/infinitegrid.min.js',
+    buttonText: 'Load More'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Java P7 工程师学习路线图 (最终版)',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Hexo</span></a><a class="nav-page-title" href="/"><span class="site-name">Java P7 工程师学习路线图 (最终版)</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  Back to Home</span></span></a></span><div id="menus"></div></nav><div id="post-info"><h1 class="post-title">Java P7 工程师学习路线图 (最终版)</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">Created</span><time class="post-meta-date-created" datetime="2025-10-22T02:00:00.000Z" title="Created 2025-10-22 10:00:00">2025-10-22</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">Updated</span><time class="post-meta-date-updated" datetime="2025-11-25T08:04:01.200Z" title="Updated 2025-11-25 16:04:01">2025-11-25</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E5%AD%A6%E4%B9%A0%E8%AE%A1%E5%88%92/">学习计划</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">Post Views:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h2 id="Java-P7-工程师学习路线图-最终版"><a href="#Java-P7-工程师学习路线图-最终版" class="headerlink" title="Java P7 工程师学习路线图 (最终版)"></a>Java P7 工程师学习路线图 (最终版)</h2><p>这份学习路线图旨在提供一个全面、深入的路径，帮助您达到阿里P7级别Java工程师的要求。它涵盖了从核心Java到分布式系统、云原生、大数据、AI大模型以及软技能等多个关键领域。</p>
+<h3 id="学习路径概览"><a href="#学习路径概览" class="headerlink" title="学习路径概览"></a>学习路径概览</h3><div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+    %%{init: {&#39;theme&#39;: &#39;neutral&#39;}}%%
+graph TD
+    classDef phase1 fill:#f9f,stroke:#333,stroke-width:2px;
+    classDef phase2 fill:#bbf,stroke:#333,stroke-width:2px;
+    classDef phase3 fill:#bfb,stroke:#333,stroke-width:2px;
+    classDef phase4 fill:#ffb,stroke:#333,stroke-width:2px;
+    classDef phase5 fill:#fbb,stroke:#333,stroke-width:2px;
+    classDef phase6 fill:#ccf,stroke:#333,stroke-width:2px;
+    classDef phase7 fill:#cfc,stroke:#333,stroke-width:2px;
+    classDef phase8 fill:#fcc,stroke:#333,stroke-width:2px;
+    classDef phase9 fill:#cff,stroke:#333,stroke-width:2px;
+
+    I[I. 核心 Java 与 JVM 精通]:::phase1
+    II[II. 高级 Java 生态系统与框架]:::phase2
+    III[III. 数据管理]:::phase3
+    IV[IV. 系统设计与架构]:::phase4
+    V[V. 云原生与 DevOps]:::phase5
+    VI[VI. 大数据技术]:::phase6
+    VII[VII. AI 大模型]:::phase7
+    VIII[VIII. 算法与数据结构]:::phase8
+    IX[IX. 软技能与工程实践]:::phase9
+
+    I --&gt; II
+    II --&gt; III
+    III --&gt; IV
+    IV --&gt; V
+    IV --&gt; VI
+    IV --&gt; VII
+    V --&gt; IV
+    VI --&gt; IV
+    VII --&gt; IV
+    VIII --&gt; IV
+    IX --&gt; IV
+  </pre></div>
+
+<h2 id="详细学习计划"><a href="#详细学习计划" class="headerlink" title="详细学习计划"></a>详细学习计划</h2><h3 id="I-核心-Java-与-JVM-精通-深度与原理"><a href="#I-核心-Java-与-JVM-精通-深度与原理" class="headerlink" title="I. 核心 Java 与 JVM 精通 (深度与原理)"></a>I. 核心 Java 与 JVM 精通 (深度与原理)</h3><p>本模块是成为一名优秀 Java 工程师的基石。它旨在深入理解 Java 语言的底层原理、JVM 的工作机制、操作系统与计算机网络的基础知识，以及现代并发编程的核心技术。掌握这些内容，将使你不仅知其然，更知其所以然，为后续学习高级框架、进行系统设计和性能调优打下坚实的基础。</p>
+<h4 id="学习路径概览-1"><a href="#学习路径概览-1" class="headerlink" title="学习路径概览"></a>学习路径概览</h4><div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+    
+%%{init: {&#39;theme&#39;: &#39;neutral&#39;}}%%
+
+graph TD
+
+    subgraph A [1. 计算机基础]
+
+        A1[计算机操作系统]
+
+        A2[计算机网络]
+
+        A3[计算机组成原理]
+
+        A4[计算机编译原理]
+
+    end
+
+
+
+    subgraph B [2. Java 语言基础与高级特性]
+
+        B1[JavaSE 全面掌握]
+
+        B2[OOP 深入]
+
+        B3[集合框架源码分析]
+
+        B4[I&#x2F;O 与 NIO&#x2F;AIO]
+
+        B5[Java 8+ 新特性]
+
+    end
+
+
+
+    subgraph C [3. JVM 内部原理]
+
+        C1[内存模型]
+
+        C2[垃圾回收 (GC)]
+
+        C3[类加载机制]
+
+        C4[JVM 性能调优]
+
+    end
+
+
+
+    subgraph D [4. 并发编程与多线程]
+
+        D1[线程基础与JMM]
+
+        D2[锁机制 (synchronized, Lock)]
+
+        D3[java.util.concurrent 包]
+
+        D4[线程池]
+
+        D5[虚拟线程]
+
+    end
+
+
+
+    A --&gt; B
+
+    B --&gt; C
+
+    B --&gt; D
+
+    C --&gt; D
+
+
+
+  </pre></div>
+
+
+
+<h4 id="详细学习计划-1"><a href="#详细学习计划-1" class="headerlink" title="详细学习计划"></a>详细学习计划</h4><ol>
+<li><p><strong>计算机基础</strong></p>
+<ul>
+<li><a href="/2025/10/22/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80-%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/" title="计算机基础-操作系统">计算机操作系统</a>
+</li>
+<li><p><strong>计算机组成原理</strong>:</p>
+<ul>
+<li><p><strong>第一部分：基础概念与数据表示</strong></p>
+<ul>
+<li><a href="/2025/10/22/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80-%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BB%84%E6%88%90%E5%8E%9F%E7%90%86-%E6%A6%82%E8%AE%BA/" title="计算机基础-计算机组成原理-概论">计算机系统概论：冯·诺依曼体系结构、计算机基本组成、性能指标</a>
+</li>
+<li><a href="/2025/10/22/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80-%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BB%84%E6%88%90%E5%8E%9F%E7%90%86-%E6%95%B0%E6%8D%AE%E7%9A%84%E8%A1%A8%E7%A4%BA%E4%B8%8E%E8%BF%90%E7%AE%97/" title="计算机基础-计算机组成原理-数据的表示与运算">数据的表示与运算：定点数与浮点数 (IEEE 754)、字符编码、数据校验 (海明码)</a></li>
+</ul>
+</li>
+<li><p><strong>第二部分：中央处理器 (CPU)</strong></p>
+<ul>
+<li><a href="/2025/10/22/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80-%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BB%84%E6%88%90%E5%8E%9F%E7%90%86-%E6%8C%87%E4%BB%A4%E7%B3%BB%E7%BB%9F/" title="计算机基础-计算机组成原理-指令系统">指令系统 (ISA)：指令格式、寻址方式、RISC vs. CISC</a>
+</li>
+<li><a href="/2025/10/22/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80-%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BB%84%E6%88%90%E5%8E%9F%E7%90%86-CPU%E7%9A%84%E5%8A%9F%E8%83%BD%E5%92%8C%E5%9F%BA%E6%9C%AC%E7%BB%93%E6%9E%84/" title="计算机基础-计算机组成原理-CPU的功能和基本结构">CPU 的功能和基本结构：运算器 (ALU)、控制器 (Control Unit)</a>
+</li>
+<li><a href="/2025/10/22/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80-%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BB%84%E6%88%90%E5%8E%9F%E7%90%86-%E6%8E%A7%E5%88%B6%E5%99%A8%E8%AE%BE%E8%AE%A1/" title="计算机基础-计算机组成原理-控制器设计">控制器设计：硬布线与微程序</a></li>
+</ul>
+</li>
+<li><p><strong>第三部分：存储系统</strong></p>
+<ul>
+<li><a href="/2025/10/22/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80-%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BB%84%E6%88%90%E5%8E%9F%E7%90%86-%E5%AD%98%E5%82%A8%E5%99%A8%E5%B1%82%E6%AC%A1%E7%BB%93%E6%9E%84/" title="计算机基础-计算机组成原理-存储器层次结构">存储器层次结构：寄存器 -&gt; Cache -&gt; 主存 -&gt; 辅存</a>
+</li>
+<li><a href="/2025/10/22/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80-%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BB%84%E6%88%90%E5%8E%9F%E7%90%86-%E4%B8%BB%E5%AD%98%E5%82%A8%E5%99%A8/" title="计算机基础-计算机组成原理-主存储器">主存储器：SRAM, DRAM</a>
+</li>
+<li><a href="/2025/10/22/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80-%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BB%84%E6%88%90%E5%8E%9F%E7%90%86-%E9%AB%98%E9%80%9F%E7%BC%93%E5%86%B2%E5%AD%98%E5%82%A8%E5%99%A8/" title="计算机基础-计算机组成原理-高速缓冲存储器">高速缓冲存储器 (Cache)：工作原理、映射方式、替换算法、写策略</a>
+</li>
+<li><a href="/2025/10/22/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80-%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BB%84%E6%88%90%E5%8E%9F%E7%90%86-%E8%99%9A%E6%8B%9F%E5%AD%98%E5%82%A8%E5%99%A8/" title="计算机基础-计算机组成原理-虚拟存储器">虚拟存储器：页式、段式、段页式、页表与快表 (TLB)</a></li>
+</ul>
+</li>
+<li><p><strong>第四部分：输入&#x2F;输出 (I&#x2F;O) 系统</strong></p>
+<ul>
+<li><a href="/2025/10/22/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80-%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BB%84%E6%88%90%E5%8E%9F%E7%90%86-IO%E6%8E%A7%E5%88%B6%E6%96%B9%E5%BC%8F/" title="计算机基础-计算机组成原理-IO控制方式">I&#x2F;O 控制方式：程序查询、中断、DMA</a></li>
+</ul>
+</li>
+<li><p><strong>第五部分：性能提升技术</strong></p>
+<ul>
+<li><a href="/2025/10/22/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80-%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BB%84%E6%88%90%E5%8E%9F%E7%90%86-%E6%8C%87%E4%BB%A4%E6%B5%81%E6%B0%B4%E7%BA%BF/" title="计算机基础-计算机组成原理-指令流水线">指令流水线：流水线冲突与解决方案</a>
+</li>
+<li><a href="/2025/10/22/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80-%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BB%84%E6%88%90%E5%8E%9F%E7%90%86-%E5%A4%9A%E5%A4%84%E7%90%86%E5%99%A8%E7%B3%BB%E7%BB%9F/" title="计算机基础-计算机组成原理-多处理器系统">多处理器系统：并行处理概念、缓存一致性</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><strong>计算机网络</strong>:</p>
+<ul>
+<li><a href="/2025/10/22/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80-%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C-%E7%BD%91%E7%BB%9C%E5%8D%8F%E8%AE%AE%E5%88%86%E5%B1%82%E6%A8%A1%E5%9E%8B/" title="计算机基础-计算机网络-网络协议分层模型">网络协议分层模型</a>
+</li>
+<li><a href="/2025/10/22/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80-%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C-TCP%E5%8D%8F%E8%AE%AE/" title="计算机基础-计算机网络-TCP协议">TCP协议</a>
+</li>
+<li><a href="/2025/10/22/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80-%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C-HTTP%E5%8D%8F%E8%AE%AE/" title="计算机基础-计算机网络-HTTP协议">HTTP&#x2F;HTTPS协议</a></li>
+</ul>
+</li>
+<li><p>计算机编译原理</p>
+</li>
+</ul>
+</li>
+<li><p><strong>Java 语言基础与高级特性</strong></p>
+<ul>
+<li><a href="/2025/10/22/JavaSE-%E5%85%A8%E9%9D%A2%E6%8E%8C%E6%8F%A1/" title="JavaSE-全面掌握">JavaSE 全面掌握</a></li>
+<li><a href="/2025/10/22/Java%E5%9F%BA%E7%A1%80-Java%E5%9F%BA%E6%9C%AC%E8%AF%AD%E6%B3%95/" title="Java基础-Java基本语法">Java基础-Java基本语法</a></li>
+<li><a href="/2025/10/22/JavaSE-%E9%9D%A2%E5%90%91%E5%AF%B9%E8%B1%A1%E7%BC%96%E7%A8%8B/" title="JavaSE-面向对象编程">JavaSE-面向对象编程 (OOP)</a></li>
+<li><a href="/2025/10/22/JavaSE-%E5%B8%B8%E7%94%A8API/" title="JavaSE-常用API">JavaSE-常用API</a></li>
+<li><a href="/2025/10/22/JavaSE-%E9%9B%86%E5%90%88%E6%A1%86%E6%9E%B6/" title="JavaSE-集合框架(索引)">JavaSE-集合框架 (Collections Framework)</a></li>
+<li><a href="/2025/10/22/JavaSE-%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/" title="JavaSE-异常处理">JavaSE-异常处理</a></li>
+<li><a href="/2025/10/22/JavaSE-IO%E4%B8%8ENIO/" title="JavaSE-IO与NIO">I&#x2F;O 与 NIO&#x2F;AIO: 传统 I&#x2F;O 模型、NIO (Selector, Buffer, Channel) 和 AIO 的原理与实践</a></li>
+<li><a href="/2025/10/22/JavaSE-%E5%8F%8D%E5%B0%84/" title="JavaSE-反射">反射 (Reflection): 原理、应用场景与性能考量</a></li>
+<li><a href="/2025/10/22/JavaSE-%E6%B3%A8%E8%A7%A3/" title="JavaSE-注解">注解 (Annotations): 了解 Java 内置注解，并学习如何自定义注解。</a></li>
+<li><a href="/2025/10/22/JavaSE-Java8%E6%96%B0%E7%89%B9%E6%80%A7/" title="JavaSE-Java 8+ 新特性">Java 8+ 新特性: Lambda 表达式、Stream API (高级用法、并行流)、Optional、日期时间 API。</a></li>
+<li><a href="/2025/10/22/JavaSE-%E6%B3%9B%E5%9E%8B/" title="JavaSE-泛型">泛型 (Generics): 理解泛型的概念、优势，以及类型擦除、通配符等关键机制。</a></li>
+</ul>
+</li>
+<li><p><strong>JVM 内部原理</strong></p>
+<ul>
+<li><a href="/2025/10/22/JVM-%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B/" title="JVM-内存模型">内存模型: 堆、栈、方法区&#x2F;元空间、程序计数器、本地方法栈的详细结构与作用。</a>
+</li>
+<li><a href="/2025/10/22/JVM-%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6/" title="JVM-垃圾回收">垃圾回收 (GC): 常见垃圾回收算法 (标记-清除、复制、标记-整理、分代收集)、垃圾收集器 (Serial, ParNew, Parallel Scavenge, CMS, G1, ZGC, Shenandoah) 的工作原理、优缺点及调优。</a>
+</li>
+<li><a href="/2025/10/22/JVM-%E7%B1%BB%E5%8A%A0%E8%BD%BD%E6%9C%BA%E5%88%B6/" title="JVM-类加载机制">类加载机制: 类加载过程 (加载、验证、准备、解析、初始化)、双亲委派模型、自定义类加载器。</a>
+</li>
+<li><a href="/2025/10/22/JVM-%E6%80%A7%E8%83%BD%E8%B0%83%E4%BC%98/" title="JVM-性能调优">JVM 性能调优: 常用工具 (JConsole, VisualVM, JProfiler, Arthas)、GC 日志分析、内存泄漏排查、死锁诊断。</a></li>
+</ul>
+</li>
+<li><p><strong>并发编程与多线程</strong></p>
+<ul>
+<li><a href="/2025/10/22/%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B-%E7%BA%BF%E7%A8%8B%E5%9F%BA%E7%A1%80%E4%B8%8EJMM/" title="并发编程-线程基础与JMM">线程基础与JMM: 线程生命周期、线程状态转换、Java内存模型 (JMM) 的可见性、原子性、有序性。</a>
+</li>
+<li><p><strong><code>synchronized</code> 关键字</strong>: 底层实现 (Monitor)、锁升级 (偏向锁、轻量级锁、重量级锁)。</p>
+</li>
+<li><p><strong><code>volatile</code> 关键字</strong>: 原理与应用。</p>
+</li>
+<li><a href="/2025/10/22/%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B-JUC%E6%A0%B8%E5%BF%83%E5%B7%A5%E5%85%B7/" title="并发编程-JUC核心工具">java.util.concurrent 包: 深入理解 JUC 的核心组件，包括线程池、并发容器、原子操作类和各种同步工具。</a>
+</li>
+<li><p><strong>死锁、活锁、饥饿</strong>: 产生原因、检测与避免。</p>
+</li>
+<li><p><strong>虚拟线程 (JDK 19+)</strong>: 了解其原理与优势。</p>
+</li>
+<li><a href="/2025/10/22/%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B-%E6%A0%B8%E5%BF%83%E9%9D%A2%E8%AF%95%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/" title="并发编程-核心面试知识点汇总">核心面试知识点汇总: 整理并回顾本模块的所有高频面试题和核心知识点。</a></li>
+</ul>
+</li>
+</ol>
+<h3 id="II-高级-Java-生态系统与框架-Advanced-Java-Ecosystem-Frameworks"><a href="#II-高级-Java-生态系统与框架-Advanced-Java-Ecosystem-Frameworks" class="headerlink" title="II. 高级 Java 生态系统与框架 (Advanced Java Ecosystem &amp; Frameworks)"></a>II. 高级 Java 生态系统与框架 (Advanced Java Ecosystem &amp; Frameworks)</h3><ol>
+<li><p><strong>Web 技术栈</strong></p>
+<ul>
+<li><a href="/2025/10/22/Web%E6%8A%80%E6%9C%AF%E6%A0%88-%E6%A0%B8%E5%BF%83%E6%A6%82%E5%BF%B5/" title="Web技术栈-核心概念">核心概念: Servlet&#x2F;JSP、Filter、Listener、HTTP&#x2F;HTTPS、Web服务器、RESTful API</a></li>
+</ul>
+</li>
+<li><p><strong>Spring 全家桶</strong></p>
+<ul>
+<li><strong>Spring Core</strong>: IoC 容器 (Bean 的生命周期、作用域、循环依赖)、AOP (动态代理、切面编程)、事件机制。</li>
+<li><strong>Spring MVC&#x2F;WebFlux</strong>: RESTful API 设计规范、数据绑定、拦截器、过滤器、异常处理、响应式编程。</li>
+<li><strong>Spring Boot</strong>: 自动配置原理、Starter 机制、Actuator、外部化配置、自定义 Starter。</li>
+<li><strong>Spring Cloud Alibaba</strong>:<ul>
+<li><strong>服务治理</strong>: Nacos (服务注册&#x2F;发现、配置中心)。</li>
+<li><strong>网关</strong>: Spring Cloud Gateway (路由、过滤器)。</li>
+<li><strong>服务间调用</strong>: OpenFeign&#x2F;Dubbo。</li>
+<li><strong>熔断限流</strong>: Sentinel。</li>
+<li><strong>分布式事务</strong>: Seata (AT, TCC, Saga 模式)。</li>
+<li><strong>链路追踪</strong>: SkyWalking&#x2F;Zipkin。</li>
+</ul>
+</li>
+<li><strong>Spring Security</strong>: 认证 (Authentication)、授权 (Authorization)、OAuth2, JWT。</li>
+</ul>
+</li>
+<li><p><strong>消息队列</strong></p>
+<ul>
+<li><strong>Kafka</strong>: 架构、核心概念 (Producer, Consumer, Broker, Topic, Partition, Offset, Consumer Group)、消息可靠性、顺序性、重复消费、积压处理、Kafka Streams&#x2F;Flink。</li>
+<li><strong>RabbitMQ&#x2F;RocketMQ</strong>: 核心概念、消息模型、高可用、消息确认机制。</li>
+<li><strong>Pulsar</strong>: 了解其特性。</li>
+</ul>
+</li>
+<li><p><strong>核心框架源码分析</strong></p>
+<ul>
+<li>Spring 源码</li>
+<li>SpringMVC 源码</li>
+<li>Mybatis 源码</li>
+<li>Springboot 源码</li>
+<li>SpringSecurity 源码</li>
+<li>SpringCloud&#x2F;Alibaba 源码</li>
+<li>Dubbo 源码</li>
+<li>Netty 源码</li>
+<li>RocketMQ&#x2F;Kafka 源码</li>
+<li>Hotspot 源码</li>
+<li>Redis 源码</li>
+<li>Zookeeper 源码</li>
+<li>ELK 源码</li>
+</ul>
+</li>
+</ol>
+<h3 id="III-数据管理-Data-Management"><a href="#III-数据管理-Data-Management" class="headerlink" title="III. 数据管理 (Data Management)"></a>III. 数据管理 (Data Management)</h3><ol>
+<li><p><strong>关系型数据库 (MySQL)</strong></p>
+<ul>
+<li><strong>基础</strong>: SQL 语法、JDBC。</li>
+<li><strong>SQL 优化</strong>: 慢查询分析、索引优化、执行计划分析。</li>
+<li><strong>事务</strong>: ACID 特性、隔离级别 (读未提交、读已提交、可重复读、串行化) 及实现原理。</li>
+<li><strong>索引</strong>: B+树索引原理、聚簇索引与非聚簇索引、复合索引、覆盖索引。</li>
+<li><strong>锁</strong>: 行锁、表锁、间隙锁、死锁。</li>
+<li><strong>数据库设计</strong>: 范式、反范式、分库分表策略 (Mycat, ShardingSphere)。</li>
+<li><strong>高可用</strong>: 主从复制、读写分离。</li>
+</ul>
+</li>
+<li><p><strong>NoSQL 数据库</strong></p>
+<ul>
+<li><strong>Redis</strong>:<ul>
+<li><strong>数据结构</strong>: String, Hash, List, Set, ZSet 及其应用场景。</li>
+<li><strong>持久化</strong>: RDB, AOF。</li>
+<li><strong>高可用</strong>: 主从复制、哨兵模式、集群模式。</li>
+<li><strong>常见应用</strong>: 缓存、分布式锁、计数器、排行榜。</li>
+</ul>
+</li>
+<li><strong>MongoDB&#x2F;HBase&#x2F;Neo4j</strong>: 了解其数据模型、应用场景及基本操作。</li>
+</ul>
+</li>
+<li><p><strong>分布式事务</strong>: 深入理解 2PC, TCC, Saga 等分布式事务解决方案的原理、优缺点及适用场景。</p>
+</li>
+</ol>
+<h3 id="IV-系统设计与架构-System-Design-Architecture"><a href="#IV-系统设计与架构-System-Design-Architecture" class="headerlink" title="IV. 系统设计与架构 (System Design &amp; Architecture)"></a>IV. 系统设计与架构 (System Design &amp; Architecture)</h3><ol>
+<li><p><strong>微服务架构</strong></p>
+<ul>
+<li><strong>设计原则</strong>: 领域驱动设计 (DDD)、限界上下文、服务拆分策略。</li>
+<li><strong>服务治理</strong>: 服务注册与发现、配置管理、负载均衡、熔断、降级、限流。</li>
+<li><strong>API 网关</strong>: 作用、选型与实现。</li>
+<li><strong>服务通信</strong>: RPC (Dubbo, gRPC) 与 RESTful 的选择与实践。</li>
+</ul>
+</li>
+<li><p><strong>分布式系统理论</strong></p>
+<ul>
+<li><strong>CAP 定理</strong>: 一致性、可用性、分区容错性。</li>
+<li><strong>BASE 理论</strong>: 基本可用、软状态、最终一致性。</li>
+<li><strong>一致性算法</strong>: Paxos, Raft (原理与应用)。</li>
+<li><strong>分布式锁</strong>: 基于 Redis, Zookeeper 的实现。</li>
+<li><strong>分布式 ID</strong>: 常见生成方案 (雪花算法、美团 Leaf)。</li>
+</ul>
+</li>
+<li><p><strong>高并发与高可用</strong></p>
+<ul>
+<li><strong>性能优化</strong>: 缓存、异步、消息队列、读写分离、分库分表。</li>
+<li><strong>容灾与备份</strong>: 多活架构、异地多活、数据备份与恢复。</li>
+<li><strong>全链路压测</strong>: 概念与实践。</li>
+</ul>
+</li>
+<li><p><strong>架构模式与设计原则</strong></p>
+<ul>
+<li><strong>GoF 设计模式</strong>: 熟练掌握 23 种设计模式，并能在实际项目中灵活运用。<ul>
+<li><strong>创建型模式</strong>:<ul>
+<li><a href="/2025/10/17/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E5%8D%95%E4%BE%8B%E6%A8%A1%E5%BC%8F/" title="设计模式-单例模式">单例模式</a></li>
+<li><a href="/2025/10/22/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E5%B7%A5%E5%8E%82%E6%96%B9%E6%B3%95%E6%A8%A1%E5%BC%8F/" title="设计模式-工厂方法模式">工厂方法模式</a></li>
+<li><a href="/2025/10/22/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E6%8A%BD%E8%B1%A1%E5%B7%A5%E5%8E%82%E6%A8%A1%E5%BC%8F/" title="设计模式-抽象工厂模式">抽象工厂模式</a></li>
+<li><a href="/2025/10/22/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E5%BB%BA%E9%80%A0%E8%80%85%E6%A8%A1%E5%BC%8F/" title="设计模式-建造者模式">建造者模式</a></li>
+<li><a href="/2025/10/22/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E5%8E%9F%E5%9E%8B%E6%A8%A1%E5%BC%8F/" title="设计模式-原型模式">原型模式</a></li>
+</ul>
+</li>
+<li><strong>结构型模式</strong>: <a href="/2025/10/22/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E9%80%82%E9%85%8D%E5%99%A8%E6%A8%A1%E5%BC%8F/" title="设计模式-适配器模式">适配器模式</a>、<a href="/2025/10/22/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E8%A3%85%E9%A5%B0%E5%99%A8%E6%A8%A1%E5%BC%8F/" title="设计模式-装饰器模式">装饰器模式</a>、<a href="/2025/10/22/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E4%BB%A3%E7%90%86%E6%A8%A1%E5%BC%8F/" title="设计模式-代理模式">代理模式</a>、<a href="/2025/10/22/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E5%A4%96%E8%A7%82%E6%A8%A1%E5%BC%8F/" title="设计模式-外观模式">外观模式</a>、<a href="/2025/10/22/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E6%A1%A5%E6%8E%A5%E6%A8%A1%E5%BC%8F/" title="设计模式-桥接模式">桥接模式</a>、<a href="/2025/10/22/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E7%BB%84%E5%90%88%E6%A8%A1%E5%BC%8F/" title="设计模式-组合模式">组合模式</a>、<a href="/2025/10/22/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E4%BA%AB%E5%85%83%E6%A8%A1%E5%BC%8F/" title="设计模式-享元模式">享元模式</a></li>
+<li><strong>行为型模式</strong>: <a href="/2025/10/22/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E7%AD%96%E7%95%A5%E6%A8%A1%E5%BC%8F/" title="设计模式-策略模式">策略模式</a>、<a href="/2025/10/22/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E8%A7%82%E5%AF%9F%E8%80%85%E6%A8%A1%E5%BC%8F/" title="设计模式-观察者模式">观察者模式</a>、<a href="/2025/10/22/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E6%A8%A1%E6%9D%BF%E6%96%B9%E6%B3%95%E6%A8%A1%E5%BC%8F/" title="设计模式-模板方法模式">模板方法模式</a>、<a href="/2025/10/22/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E8%B4%A3%E4%BB%BB%E9%93%BE%E6%A8%A1%E5%BC%8F/" title="设计模式-责任链模式">责任链模式</a>、<a href="/2025/10/22/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E5%91%BD%E4%BB%A4%E6%A8%A1%E5%BC%8F/" title="设计模式-命令模式">命令模式</a>、<a href="/2025/10/22/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E8%BF%AD%E4%BB%A3%E5%99%A8%E6%A8%A1%E5%BC%8F/" title="设计模式-迭代器模式">迭代器模式</a>、<a href="/2025/10/22/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E4%B8%AD%E4%BB%8B%E8%80%85%E6%A8%A1%E5%BC%8F/" title="设计模式-中介者模式">中介者模式</a>、<a href="/2025/10/22/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E5%A4%87%E5%BF%98%E5%BD%95%E6%A8%A1%E5%BC%8F/" title="设计模式-备忘录模式">备忘录模式</a>、<a href="/2025/10/22/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E8%A7%A3%E9%87%8A%E5%99%A8%E6%A8%A1%E5%BC%8F/" title="设计模式-解释器模式">解释器模式</a>、<a href="/2025/10/22/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E7%8A%B6%E6%80%81%E6%A8%A1%E5%BC%8F/" title="设计模式-状态模式">状态模式</a>、<a href="/2025/10/22/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E8%AE%BF%E9%97%AE%E8%80%85%E6%A8%A1%E5%BC%8F/" title="设计模式-访问者模式">访问者模式</a></li>
+</ul>
+</li>
+<li><strong>架构模式</strong>: 分层架构、事件驱动架构、CQRS、EDA。</li>
+<li><strong>SOLID 原则</strong>: 单一职责、开闭、里氏替换、接口隔离、依赖倒置。</li>
+<li><strong>整洁架构 (Clean Architecture)</strong> &#x2F; <strong>领域驱动设计 (DDD)</strong>。</li>
+</ul>
+</li>
+<li><p><strong>案例设计与分析</strong></p>
+<ul>
+<li>用户系统、网关系统、订单系统、开放平台 API 设计。</li>
+<li>微信用户管理、消息传递、共享位置、对讲机设计。</li>
+<li>高并发系统设计：直播弹幕、电商红包、票务系统、秒杀系统。</li>
+<li>异地多活、中台建设方案。</li>
+</ul>
+</li>
+</ol>
+<h3 id="V-云原生与-DevOps-Cloud-Native-DevOps"><a href="#V-云原生与-DevOps-Cloud-Native-DevOps" class="headerlink" title="V. 云原生与 DevOps (Cloud-Native &amp; DevOps)"></a>V. 云原生与 DevOps (Cloud-Native &amp; DevOps)</h3><ol>
+<li><strong>云服务模型</strong>: IaaS, PaaS, SaaS, FaaS, BaaS。</li>
+<li><strong>容器化与编排</strong><ul>
+<li><strong>Docker</strong>: 镜像构建 (Dockerfile 最佳实践)、容器网络、数据卷、Docker Compose。</li>
+<li><strong>Kubernetes (K8s)</strong>: 核心概念 (Pod, Deployment, Service, Ingress, ConfigMap, Secret, Volume)、部署与管理应用、Helm。</li>
+<li><strong>服务网格</strong>: Istio (流量管理、策略执行、可观测性)。</li>
+</ul>
+</li>
+<li><strong>云平台</strong><ul>
+<li><strong>阿里云 (Aliyun)</strong>: 熟悉 ECS, RDS, OSS, SLB, ACK (Kubernetes), EDAS (微服务应用平台) 等核心服务。</li>
+</ul>
+</li>
+<li><strong>可观测性</strong><ul>
+<li><strong>监控</strong>: Prometheus, Grafana (指标收集与可视化)。</li>
+<li><strong>日志</strong>: ELK Stack (Elasticsearch, Logstash, Kibana) 或 Loki (集中式日志管理)。</li>
+<li><strong>追踪</strong>: SkyWalking, Zipkin (分布式链路追踪)。</li>
+</ul>
+</li>
+<li><strong>CI&#x2F;CD</strong><ul>
+<li><strong>持续集成&#x2F;持续部署</strong>: Jenkins, GitLab CI, GitHub Actions 的配置与实践。</li>
+<li><strong>自动化测试</strong>: 单元测试、集成测试、契约测试、性能测试。</li>
+<li><strong>基础设施即代码 (IaC)</strong>: Terraform。</li>
+<li><strong>代码质量</strong>: SonarCube。</li>
+</ul>
+</li>
+<li><strong>Serverless 与混沌工程</strong>: Knative&#x2F;OpenFaaS, 故障注入与容灾演练。</li>
+</ol>
+<h3 id="VI-大数据技术-Big-Data"><a href="#VI-大数据技术-Big-Data" class="headerlink" title="VI. 大数据技术 (Big Data)"></a>VI. 大数据技术 (Big Data)</h3><ol>
+<li><strong>大数据存储</strong><ul>
+<li><strong>分布式文件系统</strong>: HDFS。</li>
+<li><strong>数据仓库</strong>: Hive。</li>
+<li><strong>列式存储</strong>: HBase。</li>
+<li><strong>对象存储</strong>: MinIO。</li>
+<li><strong>搜索引擎</strong>: Elasticsearch。</li>
+</ul>
+</li>
+<li><strong>大数据计算</strong><ul>
+<li><strong>批处理</strong>: Hadoop MapReduce。</li>
+<li><strong>资源调度</strong>: YARN。</li>
+<li><strong>流处理与批处理</strong>: Spark (SQL, Streaming), Flink (实时数仓、状态计算)。</li>
+<li><strong>架构模式</strong>: Lambda, Kappa。</li>
+</ul>
+</li>
+<li><strong>大数据项目实战</strong><ul>
+<li>电商日志分析、实时交通监控、商品推荐系统、音乐数据中心。</li>
+</ul>
+</li>
+</ol>
+<h3 id="VII-AI-大模型-AI-Large-Models"><a href="#VII-AI-大模型-AI-Large-Models" class="headerlink" title="VII. AI 大模型 (AI &amp; Large Models)"></a>VII. AI 大模型 (AI &amp; Large Models)</h3><ol>
+<li><strong>AI 基础知识</strong>: NLP, CV, 语音技术, 推荐系统, 知识图谱。</li>
+<li><strong>大模型核心原理</strong>: Transformer, 推理与优化, 预训练与微调, 人类反馈强化学习 (RLHF)。</li>
+<li><strong>大模型平台与框架</strong><ul>
+<li><strong>模型平台</strong>: OpenAI, 通义千问, 文心大模型等。</li>
+<li><strong>本地化部署</strong>: Ollama。</li>
+<li><strong>Java 集成</strong>: Spring AI, LangChain4j。</li>
+</ul>
+</li>
+<li><strong>AI 项目实战</strong><ul>
+<li>智能客服、数据分析助手、智能推荐、知识库、模拟面试。</li>
+</ul>
+</li>
+</ol>
+<h3 id="VIII-算法与数据结构-Algorithms-Data-Structures"><a href="#VIII-算法与数据结构-Algorithms-Data-Structures" class="headerlink" title="VIII. 算法与数据结构 (Algorithms &amp; Data Structures)"></a>VIII. 算法与数据结构 (Algorithms &amp; Data Structures)</h3><ol>
+<li><strong>高级算法</strong>: 动态规划、回溯、贪心、图算法 (最短路径、最小生成树)、字符串匹配算法。</li>
+<li><strong>数据结构</strong>: 树 (B树、B+树、红黑树)、图、堆、Trie 树、布隆过滤器。</li>
+<li><strong>LeetCode 刷题</strong>: 能够独立解决中等偏上难度的算法题，并能分析时间&#x2F;空间复杂度。</li>
+</ol>
+<h3 id="IX-软技能与工程实践-Soft-Skills-Engineering-Practices"><a href="#IX-软技能与工程实践-Soft-Skills-Engineering-Practices" class="headerlink" title="IX. 软技能与工程实践 (Soft Skills &amp; Engineering Practices)"></a>IX. 软技能与工程实践 (Soft Skills &amp; Engineering Practices)</h3><ol>
+<li><strong>沟通与协作</strong>: 跨团队沟通、技术分享、需求澄清。</li>
+<li><strong>技术领导力</strong>: 方案设计、技术选型、项目推动、Code Review、指导新人。</li>
+<li><strong>问题解决能力</strong>: 复杂系统故障排查、性能瓶颈分析。</li>
+<li><strong>代码质量</strong>: 编码规范、代码整洁、重构。</li>
+<li><strong>测试策略</strong>: 单元测试、集成测试、契约测试、性能测试、混沌工程。</li>
+<li><strong>团队与项目管理</strong>: JIRA&#x2F;禅道。</li>
+</ol>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>Author: </span><span class="post-copyright-info"><a href="http://example.com">david</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>Link: </span><span class="post-copyright-info"><a href="http://example.com/2025/10/22/java-p7%E5%AD%A6%E4%B9%A0%E8%AE%A1%E5%88%92/">http://example.com/2025/10/22/java-p7%E5%AD%A6%E4%B9%A0%E8%AE%A1%E5%88%92/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>Copyright Notice: </span><span class="post-copyright-info">All articles on this blog are licensed under <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> unless otherwise stated.</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Java/">Java</a><a class="post-meta__tags" href="/tags/%E5%AD%A6%E4%B9%A0%E8%B7%AF%E7%BA%BF/">学习路线</a><a class="post-meta__tags" href="/tags/P7/">P7</a><a class="post-meta__tags" href="/tags/Roadmap/">Roadmap</a></div><div class="post-share"><div class="social-share" data-image="/img/butterfly-icon.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2025/10/22/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80-%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/" title="计算机基础-操作系统"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">Previous</div><div class="info-item-2">计算机基础-操作系统</div></div><div class="info-2"><div class="info-item-1">计算机操作系统核心知识操作系统（Operating System, OS）是管理计算机硬件与软件资源的系统软件，同时也是计算机系统的内核与基石。它为用户和其他软件提供了与硬件交互的接口。理解操作系统的核心概念，对于编写高性能、高可靠性的应用程序至关重要。 1. 进程与线程 (Process &amp; Thread)这是操作系统中最核心、最基本的概念，也是理解并发编程的基础。 进程 (Process) 定义: 进程是程序的一次执行过程，是系统进行资源分配和调度的基本单位。每个进程都有自己独立的内存空间。 组成: 主要由程序代码、数据、进程控制块 (PCB) 组成。PCB 是进程存在的唯一标识。 特性:  动态性: 进程是程序的一次执行，有生命周期。 独立性: 作为资源分配的基本单位，各进程的地址空间相互独立。 并发性: 多个进程可以在单个处理器上并发执行。   状态: 创建 (New)、就绪 (Ready)、运行 (Running)、阻塞 (Blocked)、终止 (Terminated)。  线程 (Thread) 定义: 线程是进程的一个执行实体，是 CPU 调度和分派的基本...</div></div></div></a><a class="pagination-related" href="/2025/10/22/Java%E5%9F%BA%E7%A1%80-Java%E5%9F%BA%E6%9C%AC%E8%AF%AD%E6%B3%95/" title="Java基础-Java基本语法"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">Next</div><div class="info-item-2">Java基础-Java基本语法</div></div><div class="info-2"><div class="info-item-1">Java 基础语法Java 语言作为一门面向对象的编程语言，其基础语法是构建一切复杂应用的基础。本章将系统回顾 Java 的核心语法要素。 1. 关键字与标识符 关键字 (Keywords): Java 语言预先定义并赋予特殊含义的单词，如 public, class, static, void, int, if, else, for, while 等。关键字不能作为标识符使用。 标识符 (Identifiers): 程序员在程序中自定义的名称，用于命名变量、类、方法、包等。命名规则： 由字母、下划线 _ 或美元符号 $ 开头。 后续字符可以是字母、数字、下划线 _ 或美元符号 $。 不能是 Java 关键字。 区分大小写。 建议遵循“驼峰命名法”：类名首字母大写，变量名和方法名首字母小写，常量全大写并用下划线分隔。    2. 变量与数据类型2.1 变量 (Variables)变量是程序中存储数据的基本单元。在使用前必须先声明后赋值。  声明: 数据类型 变量名; (例如: int age;) 赋值: 变量名 = 值; (例如: age = 25;) 声明并赋值: 数据类型 变...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>Related Articles</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/2025/10/22/JavaSE-%E5%B8%B8%E7%94%A8API/" title="JavaSE-常用API"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-10-22</div><div class="info-item-2">JavaSE-常用API</div></div><div class="info-2"><div class="info-item-1">JavaSE - 常用 APIJava Development Kit (JDK) 提供了大量功能强大的 API (Application Programming Interface)，这些 API 是我们日常开发的基础工具。熟练掌握常用 API 能极大地提高开发效率和代码质量。 1. String 类String 是 Java 中最重要、最常用的类之一，用于表示字符串。String 对象是不可变的 (immutable)，一旦创建，其内容就不能被修改。 1.1 String 的不可变性 优点:  线程安全: 因为不可变，所以可以在多线程环境中安全共享，无需同步。 可作为 HashMap 的键: String 的 hashCode() 是缓存的，因为字符串内容不变，所以哈希码也不变，提高了 HashMap 的性能。 字符串常量池 (String Pool): 不可变性是字符串常量池实现的基础，可以节省大量内存。   缺点: 每次对 String 对象进行修改（如拼接、替换），都会创建一个新的 String 对象，这在大量操作时会产生性能开销和内存垃圾。  1.2 常用方法 int...</div></div></div></a><a class="pagination-related" href="/2025/10/22/JavaSE-%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/" title="JavaSE-异常处理"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-10-22</div><div class="info-item-2">JavaSE-异常处理</div></div><div class="info-2"><div class="info-item-1">JavaSE - 异常处理 (Exception Handling)异常处理是 Java 语言中一个强大的机制，它提供了一种结构化的方式来处理程序在运行时可能出现的错误或“异常”情况，从而增强程序的健壮性和容错性。 1. 异常体系结构Java 中所有的异常都派生自 java.lang.Throwable 类。Throwable 有两个主要的子类：Error 和 Exception。      graph TD     A(Throwable) --&gt; B(Error)     A --&gt; C(Exception)      B --&gt; D[OutOfMemoryError]     B --&gt; E[StackOverflowError]      C --&gt; F(Checked Exception)     C --&gt; G(RuntimeException)      F --&gt; H[IOException]     F --&gt; I[SQLException]     G --&gt; J[NullPointerException]...</div></div></div></a><a class="pagination-related" href="/2025/10/22/JavaSE-%E9%9B%86%E5%90%88%E6%A1%86%E6%9E%B6/" title="JavaSE-集合框架(索引)"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-10-22</div><div class="info-item-2">JavaSE-集合框架(索引)</div></div><div class="info-2"><div class="info-item-1">JavaSE - 集合框架 (Collections Framework)Java 集合框架（JCF）是一个用来存储和操作对象集合的统一架构。它包含了一系列的接口、实现类和算法，极大地简化了对数据集合的处理。这是 JavaSE 中最核心、最重要的部分之一。 本篇笔记将作为集合框架学习的索引和枢纽，您可以点击以下链接，跳转到各个核心接口的详细学习笔记中。 1. 集合框架核心接口     %%{init: {&#39;theme&#39;: &#39;neutral&#39;}}%% graph TD     subgraph Collection 接口         A[Iterable] --&gt; B(Collection)         B --&gt; C{List}         B --&gt; D{Set}         B --&gt; E{Queue}     end     subgraph Map 接口         F(Map)     end      C --&gt; G[ArrayList]     C --&gt; H[LinkedLis...</div></div></div></a><a class="pagination-related" href="/2025/10/22/JavaSE-%E9%9D%A2%E5%90%91%E5%AF%B9%E8%B1%A1%E7%BC%96%E7%A8%8B/" title="JavaSE-面向对象编程"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-10-22</div><div class="info-item-2">JavaSE-面向对象编程</div></div><div class="info-2"><div class="info-item-1">JavaSE - 面向对象编程 (OOP)面向对象编程（Object-Oriented Programming, OOP）是 Java 语言的核心思想。它是一种程序设计范式，将程序组织为“对象”的集合，每个对象都包含数据（属性）和操作数据的方法（行为）。OOP 的核心优势在于其模块化、可重用性和易于维护性。 1. 类与对象 (Class and Object) 类 (Class): 类是对象的模板或蓝图，它定义了对象的属性（数据）和行为（方法）。类是抽象的，不占用内存空间。 1234567891011121314public class Dog &#123;    // 属性 (成员变量)    String name;    int age;    // 行为 (成员方法)    public void bark() &#123;        System.out.println(name + &quot;汪汪叫！&quot;);    &#125;    public void eat() &#123;        System.out.println(name + &q...</div></div></div></a><a class="pagination-related" href="/2025/10/22/JavaSE-%E5%85%A8%E9%9D%A2%E6%8E%8C%E6%8F%A1/" title="JavaSE-全面掌握"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-10-22</div><div class="info-item-2">JavaSE-全面掌握</div></div><div class="info-2"><div class="info-item-1">JavaSE 全面掌握Java SE (Standard Edition) 是 Java 语言的核心和基础。精通 Java SE 是学习 Java EE、Android 开发以及各种高级框架（如 Spring、MyBatis）的前提。本部分旨在全面、系统地巩固 Java 的核心知识体系，为后续深入学习 JVM、并发编程和框架源码打下坚实的基础。 学习路径我们将遵循一条从基础到进阶的路径，逐步深入 Java 的世界：  基础语法: 回顾变量、数据类型、运算符、流程控制等基础知识 面向对象编程 (OOP): 深入理解封装、继承、多态三大特性，以及类、对象、接口、抽象类的设计与实现 常用 API: 掌握 &#96;String&#96;、&#96;StringBuilder&#96;、&#96;Math&#96;、日期时间 API (&#96;LocalDate&#96;, &#96;LocalDateTime&#96;) 等核心类的使用 集合框架 (Collections Framework): 这是 JavaSE 的重中之重。我们将深入学习 &#96;List&#96;, &#96...</div></div></div></a><a class="pagination-related" href="/2025/10/22/JavaSE-IO%E4%B8%8ENIO/" title="JavaSE-IO与NIO"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-10-22</div><div class="info-item-2">JavaSE-IO与NIO</div></div><div class="info-2"><div class="info-item-1">JavaSE - I&#x2F;O 与 NIOJava 的 I&#x2F;O (Input&#x2F;Output) 机制是程序与外部世界进行数据交换的桥梁。它允许程序从各种来源（如文件、网络、内存）读取数据，并将数据写入到各种目的地。随着技术的发展，Java 引入了 NIO (New I&#x2F;O) 来提供更高效、非阻塞的 I&#x2F;O 操作。 1. 传统 I&#x2F;O (BIO - Blocking I&#x2F;O)传统 I&#x2F;O 基于流 (Stream) 的概念，其主要特点是阻塞式 (Blocking)。当程序调用一个 I&#x2F;O 操作（如 read()）时，如果数据尚未准备好，线程就会被阻塞，直到操作完成。这种模式在连接数少时简单易用，但在高并发场景下，一个线程对应一个连接的方式会因大量线程阻塞和上下文切换而导致性能瓶颈。 2. NIO (New I&#x2F;O - Non-Blocking I&#x2F;O)Java NIO 是在 JDK 1.4 中引入的，它基于通道 (Channel)、缓冲区 (Buffer) 和选择器 (Selecto...</div></div></div></a></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/butterfly-icon.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">david</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">71</div></a><a href="/tags/"><div class="headline">Tags</div><div class="length-num">152</div></a><a href="/categories/"><div class="headline">Categories</div><div class="length-num">14</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>Announcement</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>Contents</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Java-P7-%E5%B7%A5%E7%A8%8B%E5%B8%88%E5%AD%A6%E4%B9%A0%E8%B7%AF%E7%BA%BF%E5%9B%BE-%E6%9C%80%E7%BB%88%E7%89%88"><span class="toc-number">1.</span> <span class="toc-text">Java P7 工程师学习路线图 (最终版)</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AD%A6%E4%B9%A0%E8%B7%AF%E5%BE%84%E6%A6%82%E8%A7%88"><span class="toc-number">1.1.</span> <span class="toc-text">学习路径概览</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AF%A6%E7%BB%86%E5%AD%A6%E4%B9%A0%E8%AE%A1%E5%88%92"><span class="toc-number">2.</span> <span class="toc-text">详细学习计划</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#I-%E6%A0%B8%E5%BF%83-Java-%E4%B8%8E-JVM-%E7%B2%BE%E9%80%9A-%E6%B7%B1%E5%BA%A6%E4%B8%8E%E5%8E%9F%E7%90%86"><span class="toc-number">2.1.</span> <span class="toc-text">I. 核心 Java 与 JVM 精通 (深度与原理)</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AD%A6%E4%B9%A0%E8%B7%AF%E5%BE%84%E6%A6%82%E8%A7%88-1"><span class="toc-number">2.1.1.</span> <span class="toc-text">学习路径概览</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%AF%A6%E7%BB%86%E5%AD%A6%E4%B9%A0%E8%AE%A1%E5%88%92-1"><span class="toc-number">2.1.2.</span> <span class="toc-text">详细学习计划</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#II-%E9%AB%98%E7%BA%A7-Java-%E7%94%9F%E6%80%81%E7%B3%BB%E7%BB%9F%E4%B8%8E%E6%A1%86%E6%9E%B6-Advanced-Java-Ecosystem-Frameworks"><span class="toc-number">2.2.</span> <span class="toc-text">II. 高级 Java 生态系统与框架 (Advanced Java Ecosystem &amp; Frameworks)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#III-%E6%95%B0%E6%8D%AE%E7%AE%A1%E7%90%86-Data-Management"><span class="toc-number">2.3.</span> <span class="toc-text">III. 数据管理 (Data Management)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#IV-%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1%E4%B8%8E%E6%9E%B6%E6%9E%84-System-Design-Architecture"><span class="toc-number">2.4.</span> <span class="toc-text">IV. 系统设计与架构 (System Design &amp; Architecture)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#V-%E4%BA%91%E5%8E%9F%E7%94%9F%E4%B8%8E-DevOps-Cloud-Native-DevOps"><span class="toc-number">2.5.</span> <span class="toc-text">V. 云原生与 DevOps (Cloud-Native &amp; DevOps)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#VI-%E5%A4%A7%E6%95%B0%E6%8D%AE%E6%8A%80%E6%9C%AF-Big-Data"><span class="toc-number">2.6.</span> <span class="toc-text">VI. 大数据技术 (Big Data)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#VII-AI-%E5%A4%A7%E6%A8%A1%E5%9E%8B-AI-Large-Models"><span class="toc-number">2.7.</span> <span class="toc-text">VII. AI 大模型 (AI &amp; Large Models)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#VIII-%E7%AE%97%E6%B3%95%E4%B8%8E%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84-Algorithms-Data-Structures"><span class="toc-number">2.8.</span> <span class="toc-text">VIII. 算法与数据结构 (Algorithms &amp; Data Structures)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#IX-%E8%BD%AF%E6%8A%80%E8%83%BD%E4%B8%8E%E5%B7%A5%E7%A8%8B%E5%AE%9E%E8%B7%B5-Soft-Skills-Engineering-Practices"><span class="toc-number">2.9.</span> <span class="toc-text">IX. 软技能与工程实践 (Soft Skills &amp; Engineering Practices)</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>Recent Posts</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/10/22/JavaSE-%E5%B8%B8%E7%94%A8API/" title="JavaSE-常用API">JavaSE-常用API</a><time datetime="2025-10-22T02:00:00.000Z" title="Created 2025-10-22 10:00:00">2025-10-22</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/10/22/JavaSE-%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/" title="JavaSE-异常处理">JavaSE-异常处理</a><time datetime="2025-10-22T02:00:00.000Z" title="Created 2025-10-22 10:00:00">2025-10-22</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/10/22/JavaSE-%E9%9B%86%E5%90%88%E6%A1%86%E6%9E%B6/" title="JavaSE-集合框架(索引)">JavaSE-集合框架(索引)</a><time datetime="2025-10-22T02:00:00.000Z" title="Created 2025-10-22 10:00:00">2025-10-22</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/10/22/JavaSE-%E9%9D%A2%E5%90%91%E5%AF%B9%E8%B1%A1%E7%BC%96%E7%A8%8B/" title="JavaSE-面向对象编程">JavaSE-面向对象编程</a><time datetime="2025-10-22T02:00:00.000Z" title="Created 2025-10-22 10:00:00">2025-10-22</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/10/22/JavaSE-%E5%85%A8%E9%9D%A2%E6%8E%8C%E6%8F%A1/" title="JavaSE-全面掌握">JavaSE-全面掌握</a><time datetime="2025-10-22T02:00:00.000Z" title="Created 2025-10-22 10:00:00">2025-10-22</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 By david</span><span class="framework-info"><span>Framework </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>Theme </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.4.3</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="Reading Mode"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="Toggle Between Light and Dark Mode"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="Toggle Between Single-column and Double-column"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="Settings"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="Table of Contents"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="Back to Top"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><div class="js-pjax"><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (false) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>

@@ -1,0 +1,294 @@
+<!DOCTYPE html><html lang="en" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>设计模式-工厂方法模式 | Hexo</title><meta name="author" content="david"><meta name="copyright" content="david"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="什么是工厂方法模式？工厂方法模式 (Factory Method Pattern) 是一种创建型设计模式，它定义了一个用于创建对象的接口，但让子类决定实例化哪一个类。工厂方法使一个类的实例化延迟到其子类。 这听起来可能有点抽象，简单来说，就是将创建具体“产品”的责任从“主工厂”下放到“子工厂”中。每个“子工厂”都只负责生产一种特定的“产品”。 模式结构工厂方法模式包含以下四个核心角色：  Prod">
+<meta property="og:type" content="article">
+<meta property="og:title" content="设计模式-工厂方法模式">
+<meta property="og:url" content="http://example.com/2025/10/22/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E5%B7%A5%E5%8E%82%E6%96%B9%E6%B3%95%E6%A8%A1%E5%BC%8F/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="什么是工厂方法模式？工厂方法模式 (Factory Method Pattern) 是一种创建型设计模式，它定义了一个用于创建对象的接口，但让子类决定实例化哪一个类。工厂方法使一个类的实例化延迟到其子类。 这听起来可能有点抽象，简单来说，就是将创建具体“产品”的责任从“主工厂”下放到“子工厂”中。每个“子工厂”都只负责生产一种特定的“产品”。 模式结构工厂方法模式包含以下四个核心角色：  Prod">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://example.com/img/butterfly-icon.png">
+<meta property="article:published_time" content="2025-10-22T02:00:00.000Z">
+<meta property="article:modified_time" content="2025-10-29T12:04:32.518Z">
+<meta property="article:author" content="david">
+<meta property="article:tag" content="Java">
+<meta property="article:tag" content="设计模式">
+<meta property="article:tag" content="Creational">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/img/butterfly-icon.png"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "设计模式-工厂方法模式",
+  "url": "http://example.com/2025/10/22/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E5%B7%A5%E5%8E%82%E6%96%B9%E6%B3%95%E6%A8%A1%E5%BC%8F/",
+  "image": "http://example.com/img/butterfly-icon.png",
+  "datePublished": "2025-10-22T02:00:00.000Z",
+  "dateModified": "2025-10-29T12:04:32.518Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "david",
+      "url": "http://example.com"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://example.com/2025/10/22/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E5%B7%A5%E5%8E%82%E6%96%B9%E6%B3%95%E6%A8%A1%E5%BC%8F/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: 'Copy Successful',
+    error: 'Copy Failed',
+    noSupport: 'Browser Not Supported'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: 'Just now',
+    min: 'minutes ago',
+    hour: 'hours ago',
+    day: 'days ago',
+    month: 'months ago'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid/dist/infinitegrid.min.js',
+    buttonText: 'Load More'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '设计模式-工厂方法模式',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Hexo</span></a><a class="nav-page-title" href="/"><span class="site-name">设计模式-工厂方法模式</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  Back to Home</span></span></a></span><div id="menus"></div></nav><div id="post-info"><h1 class="post-title">设计模式-工厂方法模式</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">Created</span><time class="post-meta-date-created" datetime="2025-10-22T02:00:00.000Z" title="Created 2025-10-22 10:00:00">2025-10-22</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">Updated</span><time class="post-meta-date-updated" datetime="2025-10-29T12:04:32.518Z" title="Updated 2025-10-29 20:04:32">2025-10-29</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E7%AE%97%E6%B3%95%E4%B8%8E%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/">算法与设计模式</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E7%AE%97%E6%B3%95%E4%B8%8E%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E5%88%9B%E5%BB%BA%E5%9E%8B/">设计模式-创建型</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">Post Views:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h2 id="什么是工厂方法模式？"><a href="#什么是工厂方法模式？" class="headerlink" title="什么是工厂方法模式？"></a>什么是工厂方法模式？</h2><p><strong>工厂方法模式 (Factory Method Pattern)</strong> 是一种创建型设计模式，它定义了一个用于创建对象的接口，但让子类决定实例化哪一个类。工厂方法使一个类的实例化延迟到其子类。</p>
+<p>这听起来可能有点抽象，简单来说，就是将创建具体“产品”的责任从“主工厂”下放到“子工厂”中。每个“子工厂”都只负责生产一种特定的“产品”。</p>
+<h2 id="模式结构"><a href="#模式结构" class="headerlink" title="模式结构"></a>模式结构</h2><p>工厂方法模式包含以下四个核心角色：</p>
+<ol>
+<li><strong>Product (抽象产品)</strong>: 定义了工厂方法所创建的对象的接口。</li>
+<li><strong>ConcreteProduct (具体产品)</strong>: 实现了抽象产品接口，是工厂方法创建的目标。</li>
+<li><strong>Creator (抽象创建者&#x2F;工厂)</strong>: 声明了工厂方法 <code>factoryMethod()</code>，其返回类型是 Product 接口。它也可以包含依赖于抽象产品的业务逻辑。</li>
+<li><strong>ConcreteCreator (具体创建者&#x2F;工厂)</strong>: 重写了工厂方法，以返回一个 ConcreteProduct 的实例。</li>
+</ol>
+<h3 id="结构图"><a href="#结构图" class="headerlink" title="结构图"></a>结构图</h3><p>下面是基于日志记录器 (<code>Logger</code>) 示例的类图，直观地展示了工厂方法模式的结构：</p>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+    %%{init: {&#39;theme&#39;: &#39;neutral&#39;}}%%
+classDiagram
+    direction LR
+
+    class Logger {
+        &lt;&lt;Interface&gt;&gt;
+        +log(message)
+    }
+
+    class FileLogger {
+        +log(message)
+    }
+    class DatabaseLogger {
+        +log(message)
+    }
+
+    class LoggerFactory {
+        &lt;&lt;Abstract&gt;&gt;
+        +createLogger()$ Logger
+        +logMessage(message)
+    }
+
+    class FileLoggerFactory {
+        +createLogger() Logger
+    }
+    class DatabaseLoggerFactory {
+        +createLogger() Logger
+    }
+
+    Logger &lt;|-- FileLogger
+    Logger &lt;|-- DatabaseLogger
+
+    LoggerFactory &lt;|-- FileLoggerFactory
+    LoggerFactory &lt;|-- DatabaseLoggerFactory
+
+    FileLoggerFactory ..&gt; FileLogger : creates
+    DatabaseLoggerFactory ..&gt; DatabaseLogger : creates
+  </pre></div>
+
+<h2 id="代码示例"><a href="#代码示例" class="headerlink" title="代码示例"></a>代码示例</h2><p>让我们通过一个具体的例子来理解：假设我们有一个日志记录器 (Logger) 的需求，我们可能需要将日志记录到文件，也可能记录到数据库。我们可以使用工厂方法模式来创建不同类型的日志记录器。</p>
+<h3 id="1-定义抽象产品-Product"><a href="#1-定义抽象产品-Product" class="headerlink" title="1. 定义抽象产品 (Product)"></a>1. 定义抽象产品 (Product)</h3><p>首先，我们定义一个 <code>Logger</code> 接口，它有一个 <code>log</code> 方法。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 抽象产品：Logger</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">Logger</span> &#123;</span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">log</span><span class="params">(String message)</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-创建具体产品-ConcreteProduct"><a href="#2-创建具体产品-ConcreteProduct" class="headerlink" title="2. 创建具体产品 (ConcreteProduct)"></a>2. 创建具体产品 (ConcreteProduct)</h3><p>然后，我们创建两个实现了 <code>Logger</code> 接口的具体产品：<code>FileLogger</code> 和 <code>DatabaseLogger</code>。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 具体产品：文件日志记录器</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">FileLogger</span> <span class="keyword">implements</span> <span class="title class_">Logger</span> &#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">log</span><span class="params">(String message)</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;File Logger: &quot;</span> + message);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 具体产品：数据库日志记录器</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">DatabaseLogger</span> <span class="keyword">implements</span> <span class="title class_">Logger</span> &#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">log</span><span class="params">(String message)</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;Database Logger: &quot;</span> + message);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-定义抽象创建者-Creator"><a href="#3-定义抽象创建者-Creator" class="headerlink" title="3. 定义抽象创建者 (Creator)"></a>3. 定义抽象创建者 (Creator)</h3><p>接下来，我们定义一个抽象的 <code>LoggerFactory</code>，它包含一个抽象的工厂方法 <code>createLogger()</code>。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 抽象创建者：日志记录器工厂</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">class</span> <span class="title class_">LoggerFactory</span> &#123;</span><br><span class="line">    <span class="comment">// 核心工厂方法</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">abstract</span> Logger <span class="title function_">createLogger</span><span class="params">()</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">logMessage</span><span class="params">(String message)</span> &#123;</span><br><span class="line">        <span class="type">Logger</span> <span class="variable">logger</span> <span class="operator">=</span> createLogger();</span><br><span class="line">        logger.log(message);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="4-创建具体创建者-ConcreteCreator"><a href="#4-创建具体创建者-ConcreteCreator" class="headerlink" title="4. 创建具体创建者 (ConcreteCreator)"></a>4. 创建具体创建者 (ConcreteCreator)</h3><p>最后，我们创建两个具体的工厂，每个工厂负责创建一个特定的 <code>Logger</code>。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 具体创建者：文件日志记录器工厂</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">FileLoggerFactory</span> <span class="keyword">extends</span> <span class="title class_">LoggerFactory</span> &#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> Logger <span class="title function_">createLogger</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="comment">// 创建并返回 FileLogger 实例</span></span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">FileLogger</span>();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 具体创建者：数据库日志记录器工厂</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">DatabaseLoggerFactory</span> <span class="keyword">extends</span> <span class="title class_">LoggerFactory</span> &#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> Logger <span class="title function_">createLogger</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="comment">// 创建并返回 DatabaseLogger 实例</span></span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">DatabaseLogger</span>();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="如何使用？"><a href="#如何使用？" class="headerlink" title="如何使用？"></a>如何使用？</h3><p>客户端代码可以根据需要选择使用哪个工厂，从而获得对应的产品，而无需关心产品的具体创建过程。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Application</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="comment">// 使用文件日志工厂</span></span><br><span class="line">        <span class="type">LoggerFactory</span> <span class="variable">fileFactory</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">FileLoggerFactory</span>();</span><br><span class="line">        fileFactory.logMessage(<span class="string">&quot;This is a test message.&quot;</span>); <span class="comment">// 输出: File Logger: This is a test message.</span></span><br><span class="line"></span><br><span class="line">        <span class="comment">// 使用数据库日志工厂</span></span><br><span class="line">        <span class="type">LoggerFactory</span> <span class="variable">dbFactory</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">DatabaseLoggerFactory</span>();</span><br><span class="line">        dbFactory.logMessage(<span class="string">&quot;This is another test message.&quot;</span>); <span class="comment">// 输出: Database Logger: This is another test message.</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="优缺点"><a href="#优缺点" class="headerlink" title="优缺点"></a>优缺点</h2><h3 id="优点"><a href="#优点" class="headerlink" title="优点"></a>优点</h3><ol>
+<li><strong>开闭原则 (Open&#x2F;Closed Principle)</strong>: 如果需要添加新的产品（例如，<code>EventViewerLogger</code>），只需创建一个新的具体产品类和一个新的具体工厂类即可，无需修改现有代码。</li>
+<li><strong>单一职责原则 (Single Responsibility Principle)</strong>: 将产品创建代码从业务逻辑代码中分离出来，放在专门的工厂类中。</li>
+<li><strong>松耦合</strong>: 客户端代码只依赖于抽象的产品和创建者接口，与具体实现解耦。</li>
+</ol>
+<h3 id="缺点"><a href="#缺点" class="headerlink" title="缺点"></a>缺点</h3><ol>
+<li><strong>代码复杂度增加</strong>: 每增加一个产品，就需要额外增加一个具体产品类和一个具体工厂类，导致类的数量成倍增加。</li>
+</ol>
+<h2 id="适用场景"><a href="#适用场景" class="headerlink" title="适用场景"></a>适用场景</h2><ol>
+<li>当一个类不知道它所必须创建的对象的类时。</li>
+<li>当一个类希望由它的子类来指定它所创建的对象时。</li>
+<li>当类将创建对象的职责委托给多个帮助子类中的某一个，并且你希望将哪一个帮助子类是代理者这一信息局部化的时候。</li>
+</ol>
+<hr>
+<p>工厂方法模式是简单工厂模式（非 GoF 设计模式）的进一步抽象和推广，它解决了简单工厂不符合开闭原则的问题。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>Author: </span><span class="post-copyright-info"><a href="http://example.com">david</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>Link: </span><span class="post-copyright-info"><a href="http://example.com/2025/10/22/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E5%B7%A5%E5%8E%82%E6%96%B9%E6%B3%95%E6%A8%A1%E5%BC%8F/">http://example.com/2025/10/22/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E5%B7%A5%E5%8E%82%E6%96%B9%E6%B3%95%E6%A8%A1%E5%BC%8F/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>Copyright Notice: </span><span class="post-copyright-info">All articles on this blog are licensed under <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> unless otherwise stated.</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Java/">Java</a><a class="post-meta__tags" href="/tags/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/">设计模式</a><a class="post-meta__tags" href="/tags/Creational/">Creational</a></div><div class="post-share"><div class="social-share" data-image="/img/butterfly-icon.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2025/10/22/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E5%A4%96%E8%A7%82%E6%A8%A1%E5%BC%8F/" title="设计模式-外观模式"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">Previous</div><div class="info-item-2">设计模式-外观模式</div></div><div class="info-2"><div class="info-item-1">什么是外观模式？外观模式 (Facade Pattern) 是一种结构型设计模式，它为复杂子系统中的一组接口提供了一个简化的、统一的入口。外观模式定义了一个高层接口，这个接口使得子系统更加容易使用。 通俗地讲，外观模式就像一个“一键启动”的按钮。想象一下，启动一个家庭影院系统（子系统），你需要按顺序打开投影仪、放下幕布、调暗灯光、打开音响、打开 DVD 播放器。这个过程非常繁琐。现在，你买了一个智能遥控器（外观），它上面只有一个“观影模式”按钮。当你按下这个按钮，遥控器会自动帮你完成上述所有操作。这个智能遥控器就是外观，它简化了你与复杂家庭影院系统的交互。 模式结构外观模式的结构非常简单，主要包含两个角色：  Facade (外观): 知道哪些子系统类负责处理请求，并将客户端的请求代理给适当的子系统对象。它为子系统提供了一个简化的接口。 Subsystem (子系统): 实现子系统的功能，处理由外观对象指派的任务。子系统对外观一无所知。  结构图     %%{init: {&#39;theme&#39;: &#39;neutral&#39;}}%% classDiagram  ...</div></div></div></a><a class="pagination-related" href="/2025/10/22/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E5%91%BD%E4%BB%A4%E6%A8%A1%E5%BC%8F/" title="设计模式-命令模式"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">Next</div><div class="info-item-2">设计模式-命令模式</div></div><div class="info-2"><div class="info-item-1">什么是命令模式？命令模式 (Command Pattern) 是一种行为型设计模式，它将一个请求封装为一个对象，从而使你可用不同的请求对客户进行参数化，对请求排队或记录请求日志，以及支持可撤销的操作。 通俗地讲，命令模式就像你去餐厅吃饭。你（客户端）看好菜单后，告诉服务员（调用者）你要点什么菜（比如“一份宫保鸡丁”）。服务员将你的点单写在订单（命令对象）上，然后把订单交给后厨的厨师（接收者）。 在这个过程中：  你无需关心厨师是谁，也不用关心宫保鸡丁具体怎么做。 服务员无需知道如何做菜，他只负责传递订单。 厨师无需知道是谁点的菜，他只负责根据订单做菜。 订单本身（命令）成为了一个独立的对象，它包含了所有必要信息（“做一份宫保鸡丁”）。这个订单可以被排队、记录，甚至在厨师还没开始做之前被取消（撤销）。  模式结构命令模式主要包含以下角色：  Command (命令接口): 定义了所有具体命令的统一接口，通常包含一个 execute() 方法。 ConcreteCommand (具体命令): 实现了命令接口。它持有一个 Receiver (接收者) 的引用，并调用接收者的相应方法来完...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>Related Articles</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/2025/10/22/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E5%8E%9F%E5%9E%8B%E6%A8%A1%E5%BC%8F/" title="设计模式-原型模式"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-10-22</div><div class="info-item-2">设计模式-原型模式</div></div><div class="info-2"><div class="info-item-1">什么是原型模式？原型模式 (Prototype Pattern) 是一种创建型设计模式，它允许你通过复制现有对象来创建新对象，而不是通过实例化类。这种模式适用于创建成本较高或过程复杂的对象，通过克隆现有对象可以提高效率。 原型模式的核心思想是“克隆”或“复制”一个已有的对象来生成新的对象。Java 中通过实现 Cloneable 接口并重写 clone() 方法来支持原型模式。 模式结构原型模式包含以下核心角色：  Prototype (抽象原型): 声明一个克隆自身的接口。 ConcretePrototype (具体原型): 实现抽象原型接口，并实现克隆操作。 Client (客户端): 使用抽象原型接口来克隆对象。  结构图下面是原型模式的结构图：      %%{init: {&#39;theme&#39;: &#39;neutral&#39;}}%% classDiagram     direction LR      class Prototype {         &lt;&lt;Interface&gt;&gt;         +clone() Prototyp...</div></div></div></a><a class="pagination-related" href="/2025/10/17/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E5%8D%95%E4%BE%8B%E6%A8%A1%E5%BC%8F/" title="设计模式-单例模式"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-10-17</div><div class="info-item-2">设计模式-单例模式</div></div><div class="info-2"><div class="info-item-1">经典场景：唯一的配置管理器想象一下，在您的应用程序中，需要一个统一的配置管理器（ConfigManager），它负责从文件或数据库加载配置信息（如数据库URL、线程池大小等），并提供给系统的所有部分使用。 问题来了：如果系统中任何部分都可以随意 new ConfigManager()，会导致什么后果？  状态不一致：每个实例都可能持有不同的配置信息。 资源浪费：多次从文件或数据库加载配置，造成不必要的 I&#x2F;O 和内存开销。  因此，我们必须保证 ConfigManager 这个类在整个应用程序的生命周期中，只有一个实例。这就是单例模式的用武之地。  什么是单例模式 (Singleton Pattern)？ 单例模式是一种创建型设计模式，它确保一个类只有一个实例，并为该实例提供一个全局访问点。  核心要素要实现单例模式，一个类必须做到以下三点：  拥有一个私有的构造函数，以防止外部代码通过 new 操作符直接创建实例。 拥有一个私有的、静态的该类自身的引用变量，用于持有唯一的实例。 拥有一个公共的、静态的方法（通常命名为 getInstance()），用于获取这个唯一的实...</div></div></div></a><a class="pagination-related" href="/2025/10/22/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E6%8A%BD%E8%B1%A1%E5%B7%A5%E5%8E%82%E6%A8%A1%E5%BC%8F/" title="设计模式-抽象工厂模式"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-10-22</div><div class="info-item-2">设计模式-抽象工厂模式</div></div><div class="info-2"><div class="info-item-1">什么是抽象工厂模式？抽象工厂模式 (Abstract Factory Pattern) 是一种创建型设计模式，它提供一个接口，用于创建相关或依赖对象的家族，而无需指定它们的具体类。 简单来说，抽象工厂模式是工厂方法模式的升级版。工厂方法模式负责生产一类产品（例如，一个日志记录器），而抽象工厂模式则负责生产一个“产品家族”（例如，一个日志记录器家族，包含文件日志记录器和数据库日志记录器，以及它们各自的解析器）。 模式结构抽象工厂模式包含以下核心角色：  AbstractFactory (抽象工厂): 声明了一组用于创建抽象产品对象的工厂方法。 ConcreteFactory (具体工厂): 实现了抽象工厂接口中声明的工厂方法，负责创建具体产品对象。 AbstractProduct (抽象产品): 声明了一组产品对象的接口。 ConcreteProduct (具体产品): 实现了抽象产品接口，由具体工厂创建。 Client (客户端): 使用抽象工厂和抽象产品接口来操作产品，而无需知道具体工厂和具体产品的类。  结构图下面是抽象工厂模式的结构图：      %%{init: {&#3...</div></div></div></a><a class="pagination-related" href="/2025/10/22/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E5%BB%BA%E9%80%A0%E8%80%85%E6%A8%A1%E5%BC%8F/" title="设计模式-建造者模式"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-10-22</div><div class="info-item-2">设计模式-建造者模式</div></div><div class="info-2"><div class="info-item-1">什么是建造者模式？建造者模式 (Builder Pattern) 是一种创建型设计模式，它允许你分步骤创建复杂对象。该模式可以将复杂对象的构造过程与其表示分离，使得同样的构造过程可以创建不同的表示。 当一个对象的构造函数参数过多，或者构造过程复杂且包含多个可选步骤时，建造者模式就显得非常有用。它提供了一种更清晰、更可读的方式来构建对象，避免了“ Telescoping Constructor ”（望远镜式构造函数）的出现。 模式结构建造者模式包含以下核心角色：  Builder (抽象建造者): 定义创建产品各个部件的抽象接口。 ConcreteBuilder (具体建造者): 实现 Builder 接口，构建和装配产品的各个部件，并提供一个方法返回最终产品。 Product (产品): 表示被构造的复杂对象。它通常包含多个部件，这些部件由建造者创建。 Director (指挥者): 负责安排复杂对象的建造次序，它与 Builder 接口交互，指导建造者完成产品的建造。  结构图下面是建造者模式的结构图：      %%{init: {&#39;theme&#39;: &#39;...</div></div></div></a><a class="pagination-related" href="/2025/10/22/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E4%B8%AD%E4%BB%8B%E8%80%85%E6%A8%A1%E5%BC%8F/" title="设计模式-中介者模式"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-10-22</div><div class="info-item-2">设计模式-中介者模式</div></div><div class="info-2"><div class="info-item-1">什么是中介者模式？中介者模式 (Mediator Pattern) 是一种行为型设计模式，它提供了一个中介对象来封装一系列对象（同事类）之间的交互。中介者模式使得这些对象不需要显式地相互引用，从而使它们的耦合松散，并且可以独立地改变它们之间的交互。 通俗地讲，中介者模式就像是机场的控制塔。每架飞机（同事类）都无需与其他飞机直接通信来协调起飞和降落。相反，所有飞机都只与控制塔（中介者）通信。控制塔负责协调所有飞机的行动，避免冲突。如果没有控制塔，每架飞机都需要知道其他所有飞机的位置和状态，这将形成一个极其复杂的网状通信结构，非常混乱且危险。 模式结构中介者模式主要包含以下角色：  Mediator (中介者接口): 定义了同事类对象之间进行通信的接口。 ConcreteMediator (具体中介者): 实现了中介者接口。它了解并维护所有的同事类，并负责协调它们之间的交互关系。 Colleague (同事类接口): 定义了每个同事类的接口，它通常持有一个中介者对象的引用。 ConcreteColleague (具体同事类): 实现了同事类接口。每个同事类只知道自己的行为，它不与其他...</div></div></div></a><a class="pagination-related" href="/2025/10/22/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E4%BB%A3%E7%90%86%E6%A8%A1%E5%BC%8F/" title="设计模式-代理模式"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-10-22</div><div class="info-item-2">设计模式-代理模式</div></div><div class="info-2"><div class="info-item-1">什么是代理模式？代理模式 (Proxy Pattern) 是一种结构型设计模式，它为你提供了一个对象的替代品或占位符，以便控制对该对象的访问。使用代理，你可以在将请求传递给实际服务对象之前或之后，执行某些操作。 通俗地讲，代理就像一个“中介”或“经纪人”。比如，你想买一套国外的房子（目标对象），但你对当地的法律、市场都不了解，直接去买会很麻烦。于是你找到了一个当地的房产中介（代理）。你所有的购房请求都先发给中介，中介会帮你处理各种琐事（如验证房源、办理手续），然后再去和房主进行实际的交易。这个中介就控制和管理了你对房子的直接访问。 模式结构代理模式主要包含以下角色：  Subject (主题接口): 定义了真实对象和代理对象的共同接口。这样，任何使用真实对象的地方都可以使用代理对象。 RealSubject (真实主题): 实现了主题接口，是代理所代表的真实对象，是最终执行业务逻辑的实体。 Proxy (代理): 实现了主题接口，并持有一个真实主题的引用。它可以在将请求委派给真实主题之前或之后，执行额外的操作。  结构图     %%{init: {&#39;theme&#39;...</div></div></div></a></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/butterfly-icon.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">david</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">71</div></a><a href="/tags/"><div class="headline">Tags</div><div class="length-num">152</div></a><a href="/categories/"><div class="headline">Categories</div><div class="length-num">14</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>Announcement</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>Contents</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E5%B7%A5%E5%8E%82%E6%96%B9%E6%B3%95%E6%A8%A1%E5%BC%8F%EF%BC%9F"><span class="toc-number">1.</span> <span class="toc-text">什么是工厂方法模式？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A8%A1%E5%BC%8F%E7%BB%93%E6%9E%84"><span class="toc-number">2.</span> <span class="toc-text">模式结构</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BB%93%E6%9E%84%E5%9B%BE"><span class="toc-number">2.1.</span> <span class="toc-text">结构图</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%A3%E7%A0%81%E7%A4%BA%E4%BE%8B"><span class="toc-number">3.</span> <span class="toc-text">代码示例</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E5%AE%9A%E4%B9%89%E6%8A%BD%E8%B1%A1%E4%BA%A7%E5%93%81-Product"><span class="toc-number">3.1.</span> <span class="toc-text">1. 定义抽象产品 (Product)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E5%88%9B%E5%BB%BA%E5%85%B7%E4%BD%93%E4%BA%A7%E5%93%81-ConcreteProduct"><span class="toc-number">3.2.</span> <span class="toc-text">2. 创建具体产品 (ConcreteProduct)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-%E5%AE%9A%E4%B9%89%E6%8A%BD%E8%B1%A1%E5%88%9B%E5%BB%BA%E8%80%85-Creator"><span class="toc-number">3.3.</span> <span class="toc-text">3. 定义抽象创建者 (Creator)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-%E5%88%9B%E5%BB%BA%E5%85%B7%E4%BD%93%E5%88%9B%E5%BB%BA%E8%80%85-ConcreteCreator"><span class="toc-number">3.4.</span> <span class="toc-text">4. 创建具体创建者 (ConcreteCreator)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A6%82%E4%BD%95%E4%BD%BF%E7%94%A8%EF%BC%9F"><span class="toc-number">3.5.</span> <span class="toc-text">如何使用？</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BC%98%E7%BC%BA%E7%82%B9"><span class="toc-number">4.</span> <span class="toc-text">优缺点</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BC%98%E7%82%B9"><span class="toc-number">4.1.</span> <span class="toc-text">优点</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BC%BA%E7%82%B9"><span class="toc-number">4.2.</span> <span class="toc-text">缺点</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%80%82%E7%94%A8%E5%9C%BA%E6%99%AF"><span class="toc-number">5.</span> <span class="toc-text">适用场景</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>Recent Posts</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/10/22/JavaSE-%E5%B8%B8%E7%94%A8API/" title="JavaSE-常用API">JavaSE-常用API</a><time datetime="2025-10-22T02:00:00.000Z" title="Created 2025-10-22 10:00:00">2025-10-22</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/10/22/JavaSE-%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/" title="JavaSE-异常处理">JavaSE-异常处理</a><time datetime="2025-10-22T02:00:00.000Z" title="Created 2025-10-22 10:00:00">2025-10-22</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/10/22/JavaSE-%E9%9B%86%E5%90%88%E6%A1%86%E6%9E%B6/" title="JavaSE-集合框架(索引)">JavaSE-集合框架(索引)</a><time datetime="2025-10-22T02:00:00.000Z" title="Created 2025-10-22 10:00:00">2025-10-22</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/10/22/JavaSE-%E9%9D%A2%E5%90%91%E5%AF%B9%E8%B1%A1%E7%BC%96%E7%A8%8B/" title="JavaSE-面向对象编程">JavaSE-面向对象编程</a><time datetime="2025-10-22T02:00:00.000Z" title="Created 2025-10-22 10:00:00">2025-10-22</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/10/22/JavaSE-%E5%85%A8%E9%9D%A2%E6%8E%8C%E6%8F%A1/" title="JavaSE-全面掌握">JavaSE-全面掌握</a><time datetime="2025-10-22T02:00:00.000Z" title="Created 2025-10-22 10:00:00">2025-10-22</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 By david</span><span class="framework-info"><span>Framework </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>Theme </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.4.3</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="Reading Mode"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="Toggle Between Light and Dark Mode"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="Toggle Between Single-column and Double-column"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="Settings"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="Table of Contents"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="Back to Top"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><div class="js-pjax"><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (false) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>

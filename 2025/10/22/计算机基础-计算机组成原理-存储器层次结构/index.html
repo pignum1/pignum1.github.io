@@ -1,0 +1,312 @@
+<!DOCTYPE html><html lang="en" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>计算机基础-计算机组成原理-存储器层次结构 | Hexo</title><meta name="author" content="david"><meta name="copyright" content="david"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="存储器层次结构 (Memory Hierarchy)在计算机系统中，我们对存储器的期望是：速度快、容量大、价格便宜。然而，这三个目标在物理上是相互矛盾的。速度越快的存储器，通常价格越贵，容量也越小。为了解决这个矛盾，现代计算机系统采用了存储器层次结构 (Memory Hierarchy) 的设计。 1. 为什么需要层次结构？存储器层次结构的基本思想是，在 CPU 和主存之间，以及主存和辅存之间，设">
+<meta property="og:type" content="article">
+<meta property="og:title" content="计算机基础-计算机组成原理-存储器层次结构">
+<meta property="og:url" content="http://example.com/2025/10/22/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80-%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BB%84%E6%88%90%E5%8E%9F%E7%90%86-%E5%AD%98%E5%82%A8%E5%99%A8%E5%B1%82%E6%AC%A1%E7%BB%93%E6%9E%84/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="存储器层次结构 (Memory Hierarchy)在计算机系统中，我们对存储器的期望是：速度快、容量大、价格便宜。然而，这三个目标在物理上是相互矛盾的。速度越快的存储器，通常价格越贵，容量也越小。为了解决这个矛盾，现代计算机系统采用了存储器层次结构 (Memory Hierarchy) 的设计。 1. 为什么需要层次结构？存储器层次结构的基本思想是，在 CPU 和主存之间，以及主存和辅存之间，设">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://example.com/img/butterfly-icon.png">
+<meta property="article:published_time" content="2025-10-22T02:00:00.000Z">
+<meta property="article:modified_time" content="2025-10-31T08:10:34.169Z">
+<meta property="article:author" content="david">
+<meta property="article:tag" content="计算机组成原理">
+<meta property="article:tag" content="存储系统">
+<meta property="article:tag" content="内存">
+<meta property="article:tag" content="Cache">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/img/butterfly-icon.png"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "计算机基础-计算机组成原理-存储器层次结构",
+  "url": "http://example.com/2025/10/22/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80-%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BB%84%E6%88%90%E5%8E%9F%E7%90%86-%E5%AD%98%E5%82%A8%E5%99%A8%E5%B1%82%E6%AC%A1%E7%BB%93%E6%9E%84/",
+  "image": "http://example.com/img/butterfly-icon.png",
+  "datePublished": "2025-10-22T02:00:00.000Z",
+  "dateModified": "2025-10-31T08:10:34.169Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "david",
+      "url": "http://example.com"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://example.com/2025/10/22/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80-%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BB%84%E6%88%90%E5%8E%9F%E7%90%86-%E5%AD%98%E5%82%A8%E5%99%A8%E5%B1%82%E6%AC%A1%E7%BB%93%E6%9E%84/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: 'Copy Successful',
+    error: 'Copy Failed',
+    noSupport: 'Browser Not Supported'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: 'Just now',
+    min: 'minutes ago',
+    hour: 'hours ago',
+    day: 'days ago',
+    month: 'months ago'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid/dist/infinitegrid.min.js',
+    buttonText: 'Load More'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '计算机基础-计算机组成原理-存储器层次结构',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Hexo</span></a><a class="nav-page-title" href="/"><span class="site-name">计算机基础-计算机组成原理-存储器层次结构</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  Back to Home</span></span></a></span><div id="menus"></div></nav><div id="post-info"><h1 class="post-title">计算机基础-计算机组成原理-存储器层次结构</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">Created</span><time class="post-meta-date-created" datetime="2025-10-22T02:00:00.000Z" title="Created 2025-10-22 10:00:00">2025-10-22</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">Updated</span><time class="post-meta-date-updated" datetime="2025-10-31T08:10:34.169Z" title="Updated 2025-10-31 16:10:34">2025-10-31</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E6%A0%B8%E5%BF%83Java%E4%B8%8EJVM%E7%B2%BE%E9%80%9A/">核心Java与JVM精通</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E6%A0%B8%E5%BF%83Java%E4%B8%8EJVM%E7%B2%BE%E9%80%9A/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/">计算机基础</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">Post Views:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h2 id="存储器层次结构-Memory-Hierarchy"><a href="#存储器层次结构-Memory-Hierarchy" class="headerlink" title="存储器层次结构 (Memory Hierarchy)"></a>存储器层次结构 (Memory Hierarchy)</h2><p>在计算机系统中，我们对存储器的期望是：<strong>速度快、容量大、价格便宜</strong>。然而，这三个目标在物理上是相互矛盾的。速度越快的存储器，通常价格越贵，容量也越小。为了解决这个矛盾，现代计算机系统采用了<strong>存储器层次结构 (Memory Hierarchy)</strong> 的设计。</p>
+<h3 id="1-为什么需要层次结构？"><a href="#1-为什么需要层次结构？" class="headerlink" title="1. 为什么需要层次结构？"></a>1. 为什么需要层次结构？</h3><p>存储器层次结构的基本思想是，在 CPU 和主存之间，以及主存和辅存之间，设置不同速度、容量和价格的存储层次，并将数据在这些层次之间进行调度，以尽可能地达到高速、大容量和低成本的统一。</p>
+<p>这种设计的有效性，主要依赖于一个重要的程序行为特性——<strong>局部性原理 (Principle of Locality)</strong>。</p>
+<ul>
+<li><strong>时间局部性 (Temporal Locality)</strong>: 如果一个数据项被访问了，那么在不久的将来，它很可能再次被访问。例如，循环中的变量、函数中的局部变量。</li>
+<li><strong>空间局部性 (Spatial Locality)</strong>: 如果一个数据项被访问了，那么与它地址相邻的数据项也很可能很快被访问。例如，数组的顺序访问、指令的顺序执行。</li>
+</ul>
+<p>正是因为局部性原理的存在，我们可以将 CPU 当前最需要的数据存放在速度最快的存储器中，将较少需要的数据存放在较慢的存储器中，从而在整体上获得接近高速存储器的性能。</p>
+<h3 id="2-典型的存储器层次结构"><a href="#2-典型的存储器层次结构" class="headerlink" title="2. 典型的存储器层次结构"></a>2. 典型的存储器层次结构</h3><p>一个典型的存储器层次结构从上到下通常分为三到四层：</p>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+    graph TD
+    A[CPU 寄存器] --&gt; B(高速缓冲存储器 - Cache)
+    B --&gt; C(主存储器 - Main Memory)
+    C --&gt; D(辅助存储器 - Secondary Storage)
+
+    style A fill:#f9f,stroke:#333,stroke-width:2px
+    style B fill:#bbf,stroke:#333,stroke-width:2px
+    style C fill:#bfb,stroke:#333,stroke-width:2px
+    style D fill:#ffb,stroke:#333,stroke-width:2px
+  </pre></div>
+
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+    graph TD
+    A[CPU 寄存器] --&gt; B(高速缓冲存储器 - Cache)
+    B --&gt; C(主存储器 - Main Memory)
+    C --&gt; D(辅助存储器 - Secondary Storage)
+
+    style A fill:#f9f,stroke:#333,stroke-width:2px
+    style B fill:#bbf,stroke:#333,stroke-width:2px
+    style C fill:#bfb,stroke:#333,stroke-width:2px
+    style D fill:#ffb,stroke:#333,stroke-width:2px
+  </pre></div>
+
+<table>
+<thead>
+<tr>
+<th align="left">层次</th>
+<th align="left">存储器类型</th>
+<th align="left">速度</th>
+<th align="left">容量</th>
+<th align="left">价格&#x2F;位</th>
+<th align="left">与CPU的连接</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>最高层</strong></td>
+<td align="left"><strong>CPU 寄存器</strong></td>
+<td align="left">最快</td>
+<td align="left">最小 (KB)</td>
+<td align="left">最高</td>
+<td align="left">CPU 内部</td>
+</tr>
+<tr>
+<td align="left"><strong>中间层</strong></td>
+<td align="left"><strong>高速缓存 (Cache)</strong></td>
+<td align="left">较快</td>
+<td align="left">较小 (MB)</td>
+<td align="left">较高</td>
+<td align="left">CPU 与主存之间</td>
+</tr>
+<tr>
+<td align="left"><strong>次低层</strong></td>
+<td align="left"><strong>主存储器 (Memory)</strong></td>
+<td align="left">一般</td>
+<td align="left">中等 (GB)</td>
+<td align="left">中等</td>
+<td align="left">直接连接 CPU</td>
+</tr>
+<tr>
+<td align="left"><strong>最底层</strong></td>
+<td align="left"><strong>辅助存储器 (Disk)</strong></td>
+<td align="left">最慢</td>
+<td align="left">最大 (TB)</td>
+<td align="left">最低</td>
+<td align="left">通过 I&#x2F;O 接口</td>
+</tr>
+</tbody></table>
+<h4 id="各层次的功能"><a href="#各层次的功能" class="headerlink" title="各层次的功能"></a>各层次的功能</h4><ul>
+<li><p><strong>CPU 寄存器</strong>: 直接与 CPU 的运算器和控制器交互，是 CPU 执行指令时暂存数据和地址的地方，速度与 CPU 同步。</p>
+</li>
+<li><p><strong>高速缓存 (Cache)</strong>: 位于 CPU 和主存之间，用于存放当前 CPU 最频繁访问的数据和指令的副本。它的存在对程序员是<strong>透明</strong>的。当 CPU 需要数据时，它会先在 Cache 中查找：</p>
+<ul>
+<li><strong>缓存命中 (Cache Hit)</strong>: 如果找到，则直接从 Cache 中获取，速度极快。</li>
+<li><strong>缓存未命中 (Cache Miss)</strong>: 如果未找到，CPU 会从主存中读取数据，并将该数据及其相邻的数据块一起加载到 Cache 中，以备将来使用。</li>
+</ul>
+</li>
+<li><p><strong>主存储器 (Memory)</strong>: 即我们常说的内存 (RAM)。用于存放正在运行的程序和数据。CPU 可以直接对其进行寻址和访问。</p>
+</li>
+<li><p><strong>辅助存储器 (Secondary Storage)</strong>: 即硬盘 (HDD) 或固态硬盘 (SSD)。用于长期存放大量的程序和数据。它的内容在断电后不会丢失（非易失性）。主存中的数据通常来自于辅存。</p>
+</li>
+</ul>
+<h3 id="3-层次结构中的数据流动"><a href="#3-层次结构中的数据流动" class="headerlink" title="3. 层次结构中的数据流动"></a>3. 层次结构中的数据流动</h3><ul>
+<li><p><strong>Cache-主存层次</strong>: 这一层的数据交换是由<strong>硬件</strong>自动完成的，对程序员透明。其目标是解决 CPU 与主存之间的速度差异问题。</p>
+</li>
+<li><p><strong>主存-辅存层次</strong>: 这一层的数据交换是在<strong>操作系统</strong>的管理下完成的（例如，虚拟内存技术中的页面调入&#x2F;调出）。其目标是解决主存容量不足的问题，为用户提供一个容量远大于物理主存的“虚拟存储空间”。</p>
+</li>
+</ul>
+<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>存储器层次结构是计算机系统设计中的一个核心折衷方案。它通过巧妙地利用局部性原理，将不同特性的存储器组合在一起，使得整个存储系统在成本可控的前提下，获得了接近于顶层高速存储器的平均访问速度和底层大容量存储器的存储空间。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>Author: </span><span class="post-copyright-info"><a href="http://example.com">david</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>Link: </span><span class="post-copyright-info"><a href="http://example.com/2025/10/22/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80-%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BB%84%E6%88%90%E5%8E%9F%E7%90%86-%E5%AD%98%E5%82%A8%E5%99%A8%E5%B1%82%E6%AC%A1%E7%BB%93%E6%9E%84/">http://example.com/2025/10/22/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80-%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BB%84%E6%88%90%E5%8E%9F%E7%90%86-%E5%AD%98%E5%82%A8%E5%99%A8%E5%B1%82%E6%AC%A1%E7%BB%93%E6%9E%84/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>Copyright Notice: </span><span class="post-copyright-info">All articles on this blog are licensed under <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> unless otherwise stated.</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BB%84%E6%88%90%E5%8E%9F%E7%90%86/">计算机组成原理</a><a class="post-meta__tags" href="/tags/%E5%AD%98%E5%82%A8%E7%B3%BB%E7%BB%9F/">存储系统</a><a class="post-meta__tags" href="/tags/%E5%86%85%E5%AD%98/">内存</a><a class="post-meta__tags" href="/tags/Cache/">Cache</a></div><div class="post-share"><div class="social-share" data-image="/img/butterfly-icon.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2025/10/22/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80-%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BB%84%E6%88%90%E5%8E%9F%E7%90%86-IO%E6%8E%A7%E5%88%B6%E6%96%B9%E5%BC%8F/" title="计算机基础-计算机组成原理-IO控制方式"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">Previous</div><div class="info-item-2">计算机基础-计算机组成原理-IO控制方式</div></div><div class="info-2"><div class="info-item-1">I&#x2F;O 控制方式I&#x2F;O 控制方式是指 CPU 如何管理和控制与外部设备（如硬盘、键盘、网络接口）之间的数据交换。由于 I&#x2F;O 设备的速度远远慢于 CPU，因此采用高效的 I&#x2F;O 控制方式对于提升整个计算机系统的性能至关重要。主要有以下三种方式，它们是逐步演进的。 1. 程序查询方式 (Programmed I&#x2F;O)这是最早期、最简单的一种 I&#x2F;O 控制方式。  工作流程:  CPU 向 I&#x2F;O 控制器发出一个 I&#x2F;O 请求（例如，读数据）。 CPU 进入一个循环，不断地查询 I&#x2F;O 控制器中的状态寄存器，检查 I&#x2F;O 操作是否已经完成。 如果操作完成，CPU 从 I&#x2F;O 控制器的数据寄存器中取出数据。 CPU 继续执行后续指令。   图示: 12345678910CPU                                I/O 设备 | -- 发出读指令 --&gt;                  | |                          ...</div></div></div></a><a class="pagination-related" href="/2025/10/22/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80-%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BB%84%E6%88%90%E5%8E%9F%E7%90%86-%E5%A4%9A%E5%A4%84%E7%90%86%E5%99%A8%E7%B3%BB%E7%BB%9F/" title="计算机基础-计算机组成原理-多处理器系统"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">Next</div><div class="info-item-2">计算机基础-计算机组成原理-多处理器系统</div></div><div class="info-2"><div class="info-item-1">多处理器系统 (Multiprocessor Systems)随着单个处理器性能提升遭遇物理瓶颈，通过集成多个处理器（核心）来提升计算能力成为主流，这就是多处理器系统。这类系统通过并行处理来显著提高计算机的吞吐率和性能。 1. 并行处理概念：Flynn 分类法Flynn 分类法是基于指令流 (Instruction Stream) 和数据流 (Data Stream) 的数量，对计算机体系结构进行分类的一种经典方法。  指令流: 机器执行的指令序列。 数据流: 由指令流调用的数据序列。  根据此分类，计算机体系结构可以分为四类：  SISD (Single Instruction, Single Data Stream) - 单指令流单数据流  描述: 传统的单处理器计算机，一个时刻只执行一条指令，处理一个数据。 示例: 早期的冯·诺依曼体系计算机。   SIMD (Single Instruction, Multiple Data Stream) - 单指令流多数据流  描述: 用一条指令同时对多个不同的数据执行相同的操作。这种并行方式也称为数据级并行。 示例: 现代 CPU ...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>Related Articles</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/2025/10/22/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80-%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BB%84%E6%88%90%E5%8E%9F%E7%90%86-%E4%B8%BB%E5%AD%98%E5%82%A8%E5%99%A8/" title="计算机基础-计算机组成原理-主存储器"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-10-22</div><div class="info-item-2">计算机基础-计算机组成原理-主存储器</div></div><div class="info-2"><div class="info-item-1">主存储器 (Main Memory)主存储器（简称主存或内存）是计算机存储器层次结构中的核心组成部分，位于高速缓存（Cache）和辅助存储器（硬盘）之间。它用于存放 CPU 当前正在执行的程序和处理的数据。CPU 可以直接对主存进行读写访问。 现代计算机的主存主要由半导体存储器构成，根据其工作原理的不同，主要分为两大类：静态随机存取存储器 (SRAM) 和动态随机存取存储器 (DRAM)。 1. 静态随机存取存储器 (SRAM - Static RAM) 工作原理: SRAM 使用触发器 (Flip-flop) 来存储每一位（bit）的数据。一个触发器通常由 6 个晶体管构成。只要有持续的电源供应，触发器就能一直保持其状态（0 或 1），无需刷新。  特点:  速度快: 由于其结构简单，无需刷新操作，SRAM 的存取速度非常快，接近 CPU 的速度。 价格昂贵: 每个 bit 需要多个晶体管，集成度低，单位容量的成本非常高。 功耗较大: 在保持数据时，触发器一直处于工作状态，因此功耗相对较高。   主要用途: 因其高速特性，SRAM 主要用于制造高速缓存 (Cache) 和 CP...</div></div></div></a><a class="pagination-related" href="/2025/10/22/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80-%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BB%84%E6%88%90%E5%8E%9F%E7%90%86-%E9%AB%98%E9%80%9F%E7%BC%93%E5%86%B2%E5%AD%98%E5%82%A8%E5%99%A8/" title="计算机基础-计算机组成原理-高速缓冲存储器"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-10-22</div><div class="info-item-2">计算机基础-计算机组成原理-高速缓冲存储器</div></div><div class="info-2"><div class="info-item-1">高速缓冲存储器 (Cache)高速缓冲存储器（Cache）是位于 CPU 和主存之间的一种容量小、速度快的高速存储器。它的存在是为了缓解 CPU 与主存之间巨大的速度差异。Cache 的设计和性能是现代计算机体系结构中的核心问题之一。 1. 工作原理：局部性原理Cache 的有效性完全建立在局部性原理之上：  时间局部性: 最近被访问的数据很可能在不久的将来再次被访问。 空间局部性: 一个数据被访问时，其地址相邻的数据也很可能即将被访问。  基于此，当 CPU 访问内存时，它会先在 Cache 中查找。如果找到（缓存命中, Cache Hit），则直接从 Cache 中获取数据，速度极快。如果未找到（缓存未命中, Cache Miss），则需要从主存中读取数据，同时会将该数据及其相邻数据组成一个数据块 (Cache Line) 加载到 Cache 中，以备将来使用。 2. 映射方式 (Mapping)映射方式规定了主存中的一个数据块可以被放置到 Cache 中的哪个位置。主要有三种映射方式： 2.1 直接映射 (Direct Mapped) 规则: 主存中的每一个块只能映射到 C...</div></div></div></a><a class="pagination-related" href="/2025/10/22/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80-%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BB%84%E6%88%90%E5%8E%9F%E7%90%86-%E8%99%9A%E6%8B%9F%E5%AD%98%E5%82%A8%E5%99%A8/" title="计算机基础-计算机组成原理-虚拟存储器"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-10-22</div><div class="info-item-2">计算机基础-计算机组成原理-虚拟存储器</div></div><div class="info-2"><div class="info-item-1">虚拟存储器 (Virtual Memory)虚拟存储器是现代计算机系统内存管理的一项核心技术。它为每个进程提供了一个独立的、连续的、巨大的逻辑地址空间，而无需关心物理内存的实际大小和碎片化情况。这使得程序员可以编写和运行远大于实际物理内存的程序。 虚拟存储器的实现主要依赖于主存-辅存这一层次的数据交换，并由硬件和操作系统共同完成。 1. 基本概念 逻辑地址 (Logical Address) &#x2F; 虚拟地址 (Virtual Address): CPU 生成的、程序员视角下的地址。它位于虚拟地址空间中。 物理地址 (Physical Address): 物理内存中真实的地址。 内存管理单元 (Memory Management Unit, MMU): CPU 内部的一个硬件单元，负责将逻辑地址实时地转换为物理地址。  2. 虚拟存储器的实现方式主要有三种方式：页式、段式和段页式。其中，页式虚拟存储是目前最主流的方式。 2.1 页式存储管理 (Paging) 基本思想:   将进程的逻辑地址空间划分为大小相等的页 (Page)。 将物理内存划分为与页大小相等的页框 (Pag...</div></div></div></a><a class="pagination-related" href="/2025/10/22/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80-%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BB%84%E6%88%90%E5%8E%9F%E7%90%86-CPU%E7%9A%84%E5%8A%9F%E8%83%BD%E5%92%8C%E5%9F%BA%E6%9C%AC%E7%BB%93%E6%9E%84/" title="计算机基础-计算机组成原理-CPU的功能和基本结构"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-10-22</div><div class="info-item-2">计算机基础-计算机组成原理-CPU的功能和基本结构</div></div><div class="info-2"><div class="info-item-1">CPU 的功能和基本结构中央处理器（Central Processing Unit, CPU）是计算机的运算和控制核心。它的主要功能是解释计算机指令以及处理计算机软件中的数据。CPU 的工作可以概括为：取指令、分析指令、执行指令。 1. CPU 的两大核心功能 指令控制: 控制程序的执行顺序。CPU 通过程序计数器（PC）来确定下一条指令的地址，实现程序的顺序执行、分支、循环和跳转。 操作控制: 一条指令可以分解为多个微操作。CPU 的控制器负责产生每个微操作所需的控制命令，并将它们发送到相应的部件，以控制这些部件执行相应的操作。  2. CPU 的基本结构CPU 主要由运算器 (ALU) 和控制器 (Control Unit) 两大部分组成。 2.1 运算器 (Arithmetic Logic Unit, ALU)运算器是 CPU 中负责执行数据处理的部分，即执行算术运算和逻辑运算。  功能:  算术运算: 加、减、乘、除等。 逻辑运算: 与、或、非、异或等。   核心组成: 算术逻辑单元 (ALU): 是运算器的核心，负责执行具体的算术和逻辑操作。 累加寄存器 (Accumu...</div></div></div></a><a class="pagination-related" href="/2025/10/22/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80-%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BB%84%E6%88%90%E5%8E%9F%E7%90%86-%E5%A4%9A%E5%A4%84%E7%90%86%E5%99%A8%E7%B3%BB%E7%BB%9F/" title="计算机基础-计算机组成原理-多处理器系统"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-10-22</div><div class="info-item-2">计算机基础-计算机组成原理-多处理器系统</div></div><div class="info-2"><div class="info-item-1">多处理器系统 (Multiprocessor Systems)随着单个处理器性能提升遭遇物理瓶颈，通过集成多个处理器（核心）来提升计算能力成为主流，这就是多处理器系统。这类系统通过并行处理来显著提高计算机的吞吐率和性能。 1. 并行处理概念：Flynn 分类法Flynn 分类法是基于指令流 (Instruction Stream) 和数据流 (Data Stream) 的数量，对计算机体系结构进行分类的一种经典方法。  指令流: 机器执行的指令序列。 数据流: 由指令流调用的数据序列。  根据此分类，计算机体系结构可以分为四类：  SISD (Single Instruction, Single Data Stream) - 单指令流单数据流  描述: 传统的单处理器计算机，一个时刻只执行一条指令，处理一个数据。 示例: 早期的冯·诺依曼体系计算机。   SIMD (Single Instruction, Multiple Data Stream) - 单指令流多数据流  描述: 用一条指令同时对多个不同的数据执行相同的操作。这种并行方式也称为数据级并行。 示例: 现代 CPU ...</div></div></div></a><a class="pagination-related" href="/2025/10/22/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80-%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BB%84%E6%88%90%E5%8E%9F%E7%90%86-IO%E6%8E%A7%E5%88%B6%E6%96%B9%E5%BC%8F/" title="计算机基础-计算机组成原理-IO控制方式"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-10-22</div><div class="info-item-2">计算机基础-计算机组成原理-IO控制方式</div></div><div class="info-2"><div class="info-item-1">I&#x2F;O 控制方式I&#x2F;O 控制方式是指 CPU 如何管理和控制与外部设备（如硬盘、键盘、网络接口）之间的数据交换。由于 I&#x2F;O 设备的速度远远慢于 CPU，因此采用高效的 I&#x2F;O 控制方式对于提升整个计算机系统的性能至关重要。主要有以下三种方式，它们是逐步演进的。 1. 程序查询方式 (Programmed I&#x2F;O)这是最早期、最简单的一种 I&#x2F;O 控制方式。  工作流程:  CPU 向 I&#x2F;O 控制器发出一个 I&#x2F;O 请求（例如，读数据）。 CPU 进入一个循环，不断地查询 I&#x2F;O 控制器中的状态寄存器，检查 I&#x2F;O 操作是否已经完成。 如果操作完成，CPU 从 I&#x2F;O 控制器的数据寄存器中取出数据。 CPU 继续执行后续指令。   图示: 12345678910CPU                                I/O 设备 | -- 发出读指令 --&gt;                  | |                          ...</div></div></div></a></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/butterfly-icon.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">david</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">71</div></a><a href="/tags/"><div class="headline">Tags</div><div class="length-num">152</div></a><a href="/categories/"><div class="headline">Categories</div><div class="length-num">14</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>Announcement</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>Contents</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AD%98%E5%82%A8%E5%99%A8%E5%B1%82%E6%AC%A1%E7%BB%93%E6%9E%84-Memory-Hierarchy"><span class="toc-number">1.</span> <span class="toc-text">存储器层次结构 (Memory Hierarchy)</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E4%B8%BA%E4%BB%80%E4%B9%88%E9%9C%80%E8%A6%81%E5%B1%82%E6%AC%A1%E7%BB%93%E6%9E%84%EF%BC%9F"><span class="toc-number">1.1.</span> <span class="toc-text">1. 为什么需要层次结构？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E5%85%B8%E5%9E%8B%E7%9A%84%E5%AD%98%E5%82%A8%E5%99%A8%E5%B1%82%E6%AC%A1%E7%BB%93%E6%9E%84"><span class="toc-number">1.2.</span> <span class="toc-text">2. 典型的存储器层次结构</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%90%84%E5%B1%82%E6%AC%A1%E7%9A%84%E5%8A%9F%E8%83%BD"><span class="toc-number">1.2.1.</span> <span class="toc-text">各层次的功能</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-%E5%B1%82%E6%AC%A1%E7%BB%93%E6%9E%84%E4%B8%AD%E7%9A%84%E6%95%B0%E6%8D%AE%E6%B5%81%E5%8A%A8"><span class="toc-number">1.3.</span> <span class="toc-text">3. 层次结构中的数据流动</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-number">1.4.</span> <span class="toc-text">总结</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>Recent Posts</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/10/22/JavaSE-%E5%B8%B8%E7%94%A8API/" title="JavaSE-常用API">JavaSE-常用API</a><time datetime="2025-10-22T02:00:00.000Z" title="Created 2025-10-22 10:00:00">2025-10-22</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/10/22/JavaSE-%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/" title="JavaSE-异常处理">JavaSE-异常处理</a><time datetime="2025-10-22T02:00:00.000Z" title="Created 2025-10-22 10:00:00">2025-10-22</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/10/22/JavaSE-%E9%9B%86%E5%90%88%E6%A1%86%E6%9E%B6/" title="JavaSE-集合框架(索引)">JavaSE-集合框架(索引)</a><time datetime="2025-10-22T02:00:00.000Z" title="Created 2025-10-22 10:00:00">2025-10-22</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/10/22/JavaSE-%E9%9D%A2%E5%90%91%E5%AF%B9%E8%B1%A1%E7%BC%96%E7%A8%8B/" title="JavaSE-面向对象编程">JavaSE-面向对象编程</a><time datetime="2025-10-22T02:00:00.000Z" title="Created 2025-10-22 10:00:00">2025-10-22</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/10/22/JavaSE-%E5%85%A8%E9%9D%A2%E6%8E%8C%E6%8F%A1/" title="JavaSE-全面掌握">JavaSE-全面掌握</a><time datetime="2025-10-22T02:00:00.000Z" title="Created 2025-10-22 10:00:00">2025-10-22</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 By david</span><span class="framework-info"><span>Framework </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>Theme </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.4.3</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="Reading Mode"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="Toggle Between Light and Dark Mode"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="Toggle Between Single-column and Double-column"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="Settings"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="Table of Contents"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="Back to Top"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><div class="js-pjax"><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (false) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>

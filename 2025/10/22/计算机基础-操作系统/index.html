@@ -1,0 +1,310 @@
+<!DOCTYPE html><html lang="en" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>计算机基础-操作系统 | Hexo</title><meta name="author" content="david"><meta name="copyright" content="david"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="计算机操作系统核心知识操作系统（Operating System, OS）是管理计算机硬件与软件资源的系统软件，同时也是计算机系统的内核与基石。它为用户和其他软件提供了与硬件交互的接口。理解操作系统的核心概念，对于编写高性能、高可靠性的应用程序至关重要。 1. 进程与线程 (Process &amp; Thread)这是操作系统中最核心、最基本的概念，也是理解并发编程的基础。 进程 (Proces">
+<meta property="og:type" content="article">
+<meta property="og:title" content="计算机基础-操作系统">
+<meta property="og:url" content="http://example.com/2025/10/22/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80-%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="计算机操作系统核心知识操作系统（Operating System, OS）是管理计算机硬件与软件资源的系统软件，同时也是计算机系统的内核与基石。它为用户和其他软件提供了与硬件交互的接口。理解操作系统的核心概念，对于编写高性能、高可靠性的应用程序至关重要。 1. 进程与线程 (Process &amp; Thread)这是操作系统中最核心、最基本的概念，也是理解并发编程的基础。 进程 (Proces">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://example.com/img/butterfly-icon.png">
+<meta property="article:published_time" content="2025-10-22T02:00:00.000Z">
+<meta property="article:modified_time" content="2025-10-31T07:03:04.472Z">
+<meta property="article:author" content="david">
+<meta property="article:tag" content="计算机基础">
+<meta property="article:tag" content="操作系统">
+<meta property="article:tag" content="OS">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/img/butterfly-icon.png"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "计算机基础-操作系统",
+  "url": "http://example.com/2025/10/22/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80-%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/",
+  "image": "http://example.com/img/butterfly-icon.png",
+  "datePublished": "2025-10-22T02:00:00.000Z",
+  "dateModified": "2025-10-31T07:03:04.472Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "david",
+      "url": "http://example.com"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://example.com/2025/10/22/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80-%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: 'Copy Successful',
+    error: 'Copy Failed',
+    noSupport: 'Browser Not Supported'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: 'Just now',
+    min: 'minutes ago',
+    hour: 'hours ago',
+    day: 'days ago',
+    month: 'months ago'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid/dist/infinitegrid.min.js',
+    buttonText: 'Load More'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '计算机基础-操作系统',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Hexo</span></a><a class="nav-page-title" href="/"><span class="site-name">计算机基础-操作系统</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  Back to Home</span></span></a></span><div id="menus"></div></nav><div id="post-info"><h1 class="post-title">计算机基础-操作系统</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">Created</span><time class="post-meta-date-created" datetime="2025-10-22T02:00:00.000Z" title="Created 2025-10-22 10:00:00">2025-10-22</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">Updated</span><time class="post-meta-date-updated" datetime="2025-10-31T07:03:04.472Z" title="Updated 2025-10-31 15:03:04">2025-10-31</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E6%A0%B8%E5%BF%83Java%E4%B8%8EJVM%E7%B2%BE%E9%80%9A/">核心Java与JVM精通</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E6%A0%B8%E5%BF%83Java%E4%B8%8EJVM%E7%B2%BE%E9%80%9A/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/">计算机基础</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">Post Views:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h2 id="计算机操作系统核心知识"><a href="#计算机操作系统核心知识" class="headerlink" title="计算机操作系统核心知识"></a>计算机操作系统核心知识</h2><p>操作系统（Operating System, OS）是管理计算机硬件与软件资源的系统软件，同时也是计算机系统的内核与基石。它为用户和其他软件提供了与硬件交互的接口。理解操作系统的核心概念，对于编写高性能、高可靠性的应用程序至关重要。</p>
+<h3 id="1-进程与线程-Process-Thread"><a href="#1-进程与线程-Process-Thread" class="headerlink" title="1. 进程与线程 (Process &amp; Thread)"></a>1. 进程与线程 (Process &amp; Thread)</h3><p>这是操作系统中最核心、最基本的概念，也是理解并发编程的基础。</p>
+<h4 id="进程-Process"><a href="#进程-Process" class="headerlink" title="进程 (Process)"></a>进程 (Process)</h4><ul>
+<li><strong>定义</strong>: 进程是程序的一次执行过程，是系统进行资源分配和调度的基本单位。每个进程都有自己独立的内存空间。</li>
+<li><strong>组成</strong>: 主要由程序代码、数据、进程控制块 (PCB) 组成。PCB 是进程存在的唯一标识。</li>
+<li><strong>特性</strong>: <ul>
+<li><strong>动态性</strong>: 进程是程序的一次执行，有生命周期。</li>
+<li><strong>独立性</strong>: 作为资源分配的基本单位，各进程的地址空间相互独立。</li>
+<li><strong>并发性</strong>: 多个进程可以在单个处理器上并发执行。</li>
+</ul>
+</li>
+<li><strong>状态</strong>: 创建 (New)、就绪 (Ready)、运行 (Running)、阻塞 (Blocked)、终止 (Terminated)。</li>
+</ul>
+<h4 id="线程-Thread"><a href="#线程-Thread" class="headerlink" title="线程 (Thread)"></a>线程 (Thread)</h4><ul>
+<li><strong>定义</strong>: 线程是进程的一个执行实体，是 CPU 调度和分派的基本单位。它是比进程更小的能独立运行的基本单位。</li>
+<li><strong>关系</strong>: 一个进程可以包含多个线程，这些线程共享该进程的内存空间和资源（如代码段、数据段、打开的文件）。但每个线程有自己独立的程序计数器、栈和局部变量。</li>
+<li><strong>优势</strong>:<ul>
+<li><strong>开销小</strong>: 创建和切换线程的开销远小于进程。</li>
+<li><strong>并发度高</strong>: 在多核 CPU 环境下，多线程可以真正地并行执行。</li>
+<li><strong>资源共享方便</strong>: 线程间共享数据无需复杂的进程间通信 (IPC)。</li>
+</ul>
+</li>
+</ul>
+<h4 id="进程与线程的区别"><a href="#进程与线程的区别" class="headerlink" title="进程与线程的区别"></a>进程与线程的区别</h4><table>
+<thead>
+<tr>
+<th align="left">特性</th>
+<th align="left">进程</th>
+<th align="left">线程</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>资源分配</strong></td>
+<td align="left">资源分配的基本单位</td>
+<td align="left">不拥有资源，但可访问隶属进程的资源</td>
+</tr>
+<tr>
+<td align="left"><strong>调度</strong></td>
+<td align="left">独立调度的基本单位</td>
+<td align="left">CPU 调度的基本单位</td>
+</tr>
+<tr>
+<td align="left"><strong>系统开销</strong></td>
+<td align="left">创建、销毁、切换开销大</td>
+<td align="left">创建、销毁、切换开销小</td>
+</tr>
+<tr>
+<td align="left"><strong>内存空间</strong></td>
+<td align="left">拥有独立的内存空间</td>
+<td align="left">共享进程的内存空间</td>
+</tr>
+<tr>
+<td align="left"><strong>通信</strong></td>
+<td align="left">需通过 IPC (管道, 消息队列, 共享内存)</td>
+<td align="left">可直接读写共享变量，但需注意同步问题</td>
+</tr>
+</tbody></table>
+<h3 id="2-内存管理-Memory-Management"><a href="#2-内存管理-Memory-Management" class="headerlink" title="2. 内存管理 (Memory Management)"></a>2. 内存管理 (Memory Management)</h3><p>内存管理的主要职责是有效地分配和管理内存资源，确保进程可以安全、高效地使用内存。</p>
+<h4 id="内存分配方式"><a href="#内存分配方式" class="headerlink" title="内存分配方式"></a>内存分配方式</h4><ul>
+<li><strong>连续分配</strong>: 为用户进程分配一块连续的内存空间。包括单一连续分配、固定分区分配、动态分区分配。</li>
+<li><strong>非连续分配</strong>: 允许将一个进程分散地装入许多不相邻的内存分区。<ul>
+<li><strong>分页 (Paging)</strong>: 将内存空间划分为大小相等的“页框”，将进程的逻辑地址空间也划分为大小相等的“页”。通过页表来记录逻辑页到物理页框的映射关系。</li>
+<li><strong>分段 (Segmentation)</strong>: 按程序的逻辑结构（如代码段、数据段、堆栈段）来划分内存，段的长度可变。通过段表来记录段号到物理地址的映射。</li>
+<li><strong>段页式 (Segmentation with Paging)</strong>: 先分段，再将每个段分页。</li>
+</ul>
+</li>
+</ul>
+<h4 id="虚拟内存-Virtual-Memory"><a href="#虚拟内存-Virtual-Memory" class="headerlink" title="虚拟内存 (Virtual Memory)"></a>虚拟内存 (Virtual Memory)</h4><ul>
+<li><strong>定义</strong>: 虚拟内存是一种内存管理技术，它为每个进程提供了一个大的、连续的、私有的地址空间，使其看起来拥有比物理内存更多的内存。它通过将部分暂时不用的内存数据存放到磁盘上，在需要时再调入内存来实现。</li>
+<li><strong>核心技术</strong>: 请求分页、页面置换算法。</li>
+<li><strong>页面置换算法</strong>: 当发生缺页中断且没有空闲页框时，需要选择一个页面进行淘汰。<ul>
+<li><strong>OPT (最佳置换算法)</strong>: 理论最优，但无法实现。</li>
+<li><strong>FIFO (先进先出)</strong>: 实现简单，但可能产生“贝拉迪异常”。</li>
+<li><strong>LRU (最近最少使用)</strong>: 性能好，但实现开销大。通常使用近似算法，如时钟算法 (Clock)。</li>
+<li><strong>LFU (最不经常使用)</strong>: 考虑了使用频率，但实现复杂。</li>
+</ul>
+</li>
+</ul>
+<h3 id="3-文件系统-File-System"><a href="#3-文件系统-File-System" class="headerlink" title="3. 文件系统 (File System)"></a>3. 文件系统 (File System)</h3><p>文件系统是操作系统中负责管理和组织文件的方法。</p>
+<ul>
+<li><strong>文件的逻辑结构</strong>: 流式文件、记录式文件。</li>
+<li><strong>目录结构</strong>: 单级目录、两级目录、树形目录。</li>
+<li><strong>文件分配方式</strong>: 连续分配、链接分配（隐式&#x2F;显式）、索引分配。</li>
+<li><strong>磁盘空间管理</strong>: 空闲区表、空闲链表、位示图。</li>
+</ul>
+<h3 id="4-I-O-Input-Output"><a href="#4-I-O-Input-Output" class="headerlink" title="4. I&#x2F;O (Input&#x2F;Output)"></a>4. I&#x2F;O (Input&#x2F;Output)</h3><p>I&#x2F;O 管理是操作系统的重要组成部分，负责管理 I&#x2F;O 设备和完成 I&#x2F;O 操作。</p>
+<h4 id="I-O-模型"><a href="#I-O-模型" class="headerlink" title="I&#x2F;O 模型"></a>I&#x2F;O 模型</h4><ul>
+<li><strong>阻塞 I&#x2F;O (Blocking I&#x2F;O)</strong>: 发起 I&#x2F;O 请求后，进程阻塞直到数据准备好并从内核复制到用户空间。</li>
+<li><strong>非阻塞 I&#x2F;O (Non-blocking I&#x2F;O)</strong>: 发起 I&#x2F;O 请求后，立即返回。进程需要不断轮询内核，检查数据是否准备好。</li>
+<li><strong>I&#x2F;O 多路复用 (I&#x2F;O Multiplexing)</strong>: 通过 <code>select</code>, <code>poll</code>, <code>epoll</code> 等机制，单个进程可以同时监视多个文件描述符（Socket），一旦某个描述符就绪，就通知应用程序进行读写操作。这是实现高并发网络编程的关键（如 Netty, Redis）。</li>
+<li><strong>信号驱动 I&#x2F;O (Signal-driven I&#x2F;O)</strong>: 进程发起请求后立即返回，当数据准备好时，内核向进程发送一个信号，进程在信号处理函数中进行 I&#x2F;O 操作。</li>
+<li><strong>异步 I&#x2F;O (Asynchronous I&#x2F;O)</strong>: 进程发起 I&#x2F;O 请求后立即返回，内核在完成所有操作（包括将数据从内核复制到用户空间）后，再通知进程。</li>
+</ul>
+<h4 id="零拷贝-Zero-copy"><a href="#零拷贝-Zero-copy" class="headerlink" title="零拷贝 (Zero-copy)"></a>零拷贝 (Zero-copy)</h4><ul>
+<li><strong>定义</strong>: 零拷贝是一种避免 CPU 将数据从一块内存复制到另一块内存的技术，从而减少上下文切换和 CPU 拷贝次数，以提高性能。</li>
+<li><strong>常见实现</strong>: <code>mmap</code> (内存映射)、<code>sendfile</code> (Linux 系统调用)。Kafka、Netty 等高性能框架都广泛使用了零拷贝技术。</li>
+</ul>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>Author: </span><span class="post-copyright-info"><a href="http://example.com">david</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>Link: </span><span class="post-copyright-info"><a href="http://example.com/2025/10/22/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80-%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/">http://example.com/2025/10/22/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80-%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>Copyright Notice: </span><span class="post-copyright-info">All articles on this blog are licensed under <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> unless otherwise stated.</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/">计算机基础</a><a class="post-meta__tags" href="/tags/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/">操作系统</a><a class="post-meta__tags" href="/tags/OS/">OS</a></div><div class="post-share"><div class="social-share" data-image="/img/butterfly-icon.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2025/10/22/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80-%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BB%84%E6%88%90%E5%8E%9F%E7%90%86-CPU%E7%9A%84%E5%8A%9F%E8%83%BD%E5%92%8C%E5%9F%BA%E6%9C%AC%E7%BB%93%E6%9E%84/" title="计算机基础-计算机组成原理-CPU的功能和基本结构"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">Previous</div><div class="info-item-2">计算机基础-计算机组成原理-CPU的功能和基本结构</div></div><div class="info-2"><div class="info-item-1">CPU 的功能和基本结构中央处理器（Central Processing Unit, CPU）是计算机的运算和控制核心。它的主要功能是解释计算机指令以及处理计算机软件中的数据。CPU 的工作可以概括为：取指令、分析指令、执行指令。 1. CPU 的两大核心功能 指令控制: 控制程序的执行顺序。CPU 通过程序计数器（PC）来确定下一条指令的地址，实现程序的顺序执行、分支、循环和跳转。 操作控制: 一条指令可以分解为多个微操作。CPU 的控制器负责产生每个微操作所需的控制命令，并将它们发送到相应的部件，以控制这些部件执行相应的操作。  2. CPU 的基本结构CPU 主要由运算器 (ALU) 和控制器 (Control Unit) 两大部分组成。 2.1 运算器 (Arithmetic Logic Unit, ALU)运算器是 CPU 中负责执行数据处理的部分，即执行算术运算和逻辑运算。  功能:  算术运算: 加、减、乘、除等。 逻辑运算: 与、或、非、异或等。   核心组成: 算术逻辑单元 (ALU): 是运算器的核心，负责执行具体的算术和逻辑操作。 累加寄存器 (Accumu...</div></div></div></a><a class="pagination-related" href="/2025/10/22/java-p7%E5%AD%A6%E4%B9%A0%E8%AE%A1%E5%88%92/" title="Java P7 工程师学习路线图 (最终版)"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">Next</div><div class="info-item-2">Java P7 工程师学习路线图 (最终版)</div></div><div class="info-2"><div class="info-item-1">Java P7 工程师学习路线图 (最终版)这份学习路线图旨在提供一个全面、深入的路径，帮助您达到阿里P7级别Java工程师的要求。它涵盖了从核心Java到分布式系统、云原生、大数据、AI大模型以及软技能等多个关键领域。 学习路径概览     %%{init: {&#39;theme&#39;: &#39;neutral&#39;}}%% graph TD     classDef phase1 fill:#f9f,stroke:#333,stroke-width:2px;     classDef phase2 fill:#bbf,stroke:#333,stroke-width:2px;     classDef phase3 fill:#bfb,stroke:#333,stroke-width:2px;     classDef phase4 fill:#ffb,stroke:#333,stroke-width:2px;     classDef phase5 fill:#fbb,stroke:#333,stroke-width:2px;     classDef phas...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>Related Articles</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/2025/10/22/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80-%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BB%84%E6%88%90%E5%8E%9F%E7%90%86-%E6%A6%82%E8%AE%BA/" title="计算机基础-计算机组成原理-概论"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-10-22</div><div class="info-item-2">计算机基础-计算机组成原理-概论</div></div><div class="info-2"><div class="info-item-1">计算机系统概论计算机组成原理研究的是计算机硬件系统的基本组成部分以及它们之间如何协同工作。理解这些底层概念是编写高效代码、进行系统性能分析和优化的基础。 1. 冯·诺依曼体系结构 (Von Neumann Architecture)冯·诺依曼体系结构是现代计算机的基础。它由美籍匈牙利数学家冯·诺依曼于1945年提出，其核心思想是**“存储程序” (Stored-Program Computer)**。 五大核心组成部分 运算器 (Arithmetic Logic Unit, ALU): 负责执行算术运算（加、减、乘、除）和逻辑运算（与、或、非、异或）。 控制器 (Control Unit, CU): 计算机的指挥中心。它负责从内存中取出指令、分析指令并发出控制信号，协调其他所有组件的工作。 存储器 (Memory): 用于存放程序（指令）和数据。冯·诺依曼结构的关键在于，指令和数据以同等地位存放在同一存储器中，并可按地址寻访。 输入设备 (Input Device): 将外部世界的信息（如键盘敲击、鼠标移动）转换成计算机能识别的二进制代码。例如：键盘、鼠标、扫描仪。 输出设备 (...</div></div></div></a></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/butterfly-icon.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">david</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">71</div></a><a href="/tags/"><div class="headline">Tags</div><div class="length-num">152</div></a><a href="/categories/"><div class="headline">Categories</div><div class="length-num">14</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>Announcement</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>Contents</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AE%A1%E7%AE%97%E6%9C%BA%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E6%A0%B8%E5%BF%83%E7%9F%A5%E8%AF%86"><span class="toc-number">1.</span> <span class="toc-text">计算机操作系统核心知识</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E8%BF%9B%E7%A8%8B%E4%B8%8E%E7%BA%BF%E7%A8%8B-Process-Thread"><span class="toc-number">1.1.</span> <span class="toc-text">1. 进程与线程 (Process &amp; Thread)</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%BF%9B%E7%A8%8B-Process"><span class="toc-number">1.1.1.</span> <span class="toc-text">进程 (Process)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%BA%BF%E7%A8%8B-Thread"><span class="toc-number">1.1.2.</span> <span class="toc-text">线程 (Thread)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%BF%9B%E7%A8%8B%E4%B8%8E%E7%BA%BF%E7%A8%8B%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="toc-number">1.1.3.</span> <span class="toc-text">进程与线程的区别</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86-Memory-Management"><span class="toc-number">1.2.</span> <span class="toc-text">2. 内存管理 (Memory Management)</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%86%85%E5%AD%98%E5%88%86%E9%85%8D%E6%96%B9%E5%BC%8F"><span class="toc-number">1.2.1.</span> <span class="toc-text">内存分配方式</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%99%9A%E6%8B%9F%E5%86%85%E5%AD%98-Virtual-Memory"><span class="toc-number">1.2.2.</span> <span class="toc-text">虚拟内存 (Virtual Memory)</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F-File-System"><span class="toc-number">1.3.</span> <span class="toc-text">3. 文件系统 (File System)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-I-O-Input-Output"><span class="toc-number">1.4.</span> <span class="toc-text">4. I&#x2F;O (Input&#x2F;Output)</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#I-O-%E6%A8%A1%E5%9E%8B"><span class="toc-number">1.4.1.</span> <span class="toc-text">I&#x2F;O 模型</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%9B%B6%E6%8B%B7%E8%B4%9D-Zero-copy"><span class="toc-number">1.4.2.</span> <span class="toc-text">零拷贝 (Zero-copy)</span></a></li></ol></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>Recent Posts</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/10/22/JavaSE-%E5%B8%B8%E7%94%A8API/" title="JavaSE-常用API">JavaSE-常用API</a><time datetime="2025-10-22T02:00:00.000Z" title="Created 2025-10-22 10:00:00">2025-10-22</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/10/22/JavaSE-%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/" title="JavaSE-异常处理">JavaSE-异常处理</a><time datetime="2025-10-22T02:00:00.000Z" title="Created 2025-10-22 10:00:00">2025-10-22</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/10/22/JavaSE-%E9%9B%86%E5%90%88%E6%A1%86%E6%9E%B6/" title="JavaSE-集合框架(索引)">JavaSE-集合框架(索引)</a><time datetime="2025-10-22T02:00:00.000Z" title="Created 2025-10-22 10:00:00">2025-10-22</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/10/22/JavaSE-%E9%9D%A2%E5%90%91%E5%AF%B9%E8%B1%A1%E7%BC%96%E7%A8%8B/" title="JavaSE-面向对象编程">JavaSE-面向对象编程</a><time datetime="2025-10-22T02:00:00.000Z" title="Created 2025-10-22 10:00:00">2025-10-22</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/10/22/JavaSE-%E5%85%A8%E9%9D%A2%E6%8E%8C%E6%8F%A1/" title="JavaSE-全面掌握">JavaSE-全面掌握</a><time datetime="2025-10-22T02:00:00.000Z" title="Created 2025-10-22 10:00:00">2025-10-22</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 By david</span><span class="framework-info"><span>Framework </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>Theme </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.4.3</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="Reading Mode"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="Toggle Between Light and Dark Mode"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="Toggle Between Single-column and Double-column"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="Settings"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="Table of Contents"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="Back to Top"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><div class="js-pjax"><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (false) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>

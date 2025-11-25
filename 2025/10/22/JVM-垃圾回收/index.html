@@ -1,0 +1,522 @@
+<!DOCTYPE html><html lang="en" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>JVM-垃圾回收 | Hexo</title><meta name="author" content="david"><meta name="copyright" content="david"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="JVM - 垃圾回收 (Garbage Collection, GC)垃圾回收（GC）是 Java 语言的一大特性，它自动管理内存，使得程序员无需手动释放对象，从而专注于业务逻辑。理解 GC 的工作原理，对于编写高性能、低延迟的 Java 应用，以及排查线上内存问题至关重要。 GC 的核心任务是回答三个问题：  哪些内存需要回收？ 什么时候回收？ 如何回收？  1. 如何判断对象已“死”？1.1">
+<meta property="og:type" content="article">
+<meta property="og:title" content="JVM-垃圾回收">
+<meta property="og:url" content="http://example.com/2025/10/22/JVM-%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="JVM - 垃圾回收 (Garbage Collection, GC)垃圾回收（GC）是 Java 语言的一大特性，它自动管理内存，使得程序员无需手动释放对象，从而专注于业务逻辑。理解 GC 的工作原理，对于编写高性能、低延迟的 Java 应用，以及排查线上内存问题至关重要。 GC 的核心任务是回答三个问题：  哪些内存需要回收？ 什么时候回收？ 如何回收？  1. 如何判断对象已“死”？1.1">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://example.com/img/butterfly-icon.png">
+<meta property="article:published_time" content="2025-10-22T02:00:00.000Z">
+<meta property="article:modified_time" content="2025-11-11T05:14:36.364Z">
+<meta property="article:author" content="david">
+<meta property="article:tag" content="JVM">
+<meta property="article:tag" content="GC">
+<meta property="article:tag" content="垃圾回收">
+<meta property="article:tag" content="G1">
+<meta property="article:tag" content="CMS">
+<meta property="article:tag" content="ZGC">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/img/butterfly-icon.png"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "JVM-垃圾回收",
+  "url": "http://example.com/2025/10/22/JVM-%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6/",
+  "image": "http://example.com/img/butterfly-icon.png",
+  "datePublished": "2025-10-22T02:00:00.000Z",
+  "dateModified": "2025-11-11T05:14:36.364Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "david",
+      "url": "http://example.com"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://example.com/2025/10/22/JVM-%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: 'Copy Successful',
+    error: 'Copy Failed',
+    noSupport: 'Browser Not Supported'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: 'Just now',
+    min: 'minutes ago',
+    hour: 'hours ago',
+    day: 'days ago',
+    month: 'months ago'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid/dist/infinitegrid.min.js',
+    buttonText: 'Load More'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'JVM-垃圾回收',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Hexo</span></a><a class="nav-page-title" href="/"><span class="site-name">JVM-垃圾回收</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  Back to Home</span></span></a></span><div id="menus"></div></nav><div id="post-info"><h1 class="post-title">JVM-垃圾回收</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">Created</span><time class="post-meta-date-created" datetime="2025-10-22T02:00:00.000Z" title="Created 2025-10-22 10:00:00">2025-10-22</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">Updated</span><time class="post-meta-date-updated" datetime="2025-11-11T05:14:36.364Z" title="Updated 2025-11-11 13:14:36">2025-11-11</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E6%A0%B8%E5%BF%83Java%E4%B8%8EJVM%E7%B2%BE%E9%80%9A/">核心Java与JVM精通</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E6%A0%B8%E5%BF%83Java%E4%B8%8EJVM%E7%B2%BE%E9%80%9A/JVM%E5%86%85%E9%83%A8%E5%8E%9F%E7%90%86/">JVM内部原理</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">Post Views:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h2 id="JVM-垃圾回收-Garbage-Collection-GC"><a href="#JVM-垃圾回收-Garbage-Collection-GC" class="headerlink" title="JVM - 垃圾回收 (Garbage Collection, GC)"></a>JVM - 垃圾回收 (Garbage Collection, GC)</h2><p>垃圾回收（GC）是 Java 语言的一大特性，它自动管理内存，使得程序员无需手动释放对象，从而专注于业务逻辑。理解 GC 的工作原理，对于编写高性能、低延迟的 Java 应用，以及排查线上内存问题至关重要。</p>
+<p>GC 的核心任务是回答三个问题：</p>
+<ol>
+<li>哪些内存需要回收？</li>
+<li>什么时候回收？</li>
+<li>如何回收？</li>
+</ol>
+<h3 id="1-如何判断对象已“死”？"><a href="#1-如何判断对象已“死”？" class="headerlink" title="1. 如何判断对象已“死”？"></a>1. 如何判断对象已“死”？</h3><h4 id="1-1-引用计数法-Reference-Counting"><a href="#1-1-引用计数法-Reference-Counting" class="headerlink" title="1.1 引用计数法 (Reference Counting)"></a>1.1 引用计数法 (Reference Counting)</h4><ul>
+<li><strong>原理</strong>: 给对象中添加一个引用计数器，每当有一个地方引用它时，计数器值就加 1；当引用失效时，计数器值就减 1。任何时刻计数器为 0 的对象就是不可能再被使用的。</li>
+<li><strong>优点</strong>: 实现简单，判定效率高。</li>
+<li><strong>缺点</strong>: <strong>无法解决对象之间循环引用的问题</strong>。例如，对象 A 和 B 相互引用，但没有其他任何外部引用指向它们，此时它们的引用计数都不为 0，导致无法被回收。<strong>主流的 Java 虚拟机都没有选用引用计数法来管理内存</strong>。</li>
+</ul>
+<h4 id="1-2-可达性分析算法-Reachability-Analysis"><a href="#1-2-可达性分析算法-Reachability-Analysis" class="headerlink" title="1.2 可达性分析算法 (Reachability Analysis)"></a>1.2 可达性分析算法 (Reachability Analysis)</h4><p>这是主流商用程序语言（如 Java、C#）所采用的方法。</p>
+<ul>
+<li><strong>原理</strong>: 通过一系列的称为 <strong>“GC Roots”</strong> 的对象作为起始点，从这些节点开始向下搜索，搜索所走过的路径称为<strong>引用链 (Reference Chain)</strong>。当一个对象到 GC Roots 没有任何引用链相连时，则证明此对象是不可用的。</li>
+</ul>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+    %%{init: {&#39;theme&#39;: &#39;neutral&#39;}}%%
+graph TD
+    classDef gc_root fill:#9f9,stroke:#333,stroke-width:2px;
+    classDef reachable fill:#cff,stroke:#333,stroke-width:1px;
+    classDef unreachable fill:#fcc,stroke:#333,stroke-width:1px;
+
+    A[GC Root: 栈中引用]:::gc_root --&gt; D[对象D]:::reachable
+    B[GC Root: 静态属性引用]:::gc_root --&gt; G[对象G]:::reachable
+    
+    D -- 引用 --&gt; E[对象E]:::reachable
+    E -- 循环引用 --&gt; F[对象F]:::reachable
+    F -- 循环引用 --&gt; E
+    
+    G -- 引用 --&gt; H[对象H]:::reachable
+    
+    I[对象I]:::unreachable -- 引用 --&gt; J[对象J]:::unreachable
+    J -- 引用 --&gt; I
+  </pre></div>
+
+<ul>
+<li><p><strong>图解</strong>:</p>
+<ul>
+<li><strong>绿色部分</strong>: 对象 D, E, F, G, H 都是<strong>可达的</strong>。虽然对象 E 和 F 之间存在循环引用，但由于可以从 GC Root (A) 通过对象 D 到达它们，所以它们是存活对象，不能被回收。</li>
+<li><strong>红色部分</strong>: 对象 I 和 J 虽然相互引用，但它们与任何 GC Roots 之间都没有引用链，因此它们是<strong>不可达的</strong>，被视为可回收的垃圾。</li>
+</ul>
+</li>
+<li><p><strong>哪些对象可以作为 GC Roots？</strong></p>
+<ul>
+<li><strong>虚拟机栈</strong>（栈帧中的本地变量表）中引用的对象。</li>
+<li><strong>本地方法栈</strong>中 JNI（即一般说的 Native 方法）引用的对象。</li>
+<li><strong>方法区</strong>中类静态属性引用的对象。</li>
+<li><strong>方法区</strong>中常量引用的对象。</li>
+<li>被同步锁（<code>synchronized</code> 关键字）持有的对象。</li>
+</ul>
+</li>
+<li><p><strong>GC Roots 是如何被确认的？</strong></p>
+<ul>
+<li><strong>概念层面</strong>: GC Roots 是一组在当前时间点<strong>必须存活</strong>的对象引用，它们是垃圾回收器进行可达性分析的<strong>起点</strong>。</li>
+<li><strong>实现层面</strong>: JVM 并不是在 GC 时去动态“搜索”GC Roots，而是在一个称为<strong>安全点 (Safepoint)</strong> 的特定位置，通过一个名为 <strong>OopMap</strong> 的数据结构来<strong>直接获取</strong>这些根引用的信息。<ul>
+<li><strong>OopMap</strong>: 在 JIT 编译器编译代码时，它会分析并在代码的特定位置（安全点）记录下当前栈上和寄存器中哪些位置是对象引用。</li>
+<li><strong>安全点 (Safepoint)</strong>: 程序并不是在任意位置都可以停下来进行 GC，而是在预先定义好的“安全点”才能暂停（如循环末尾、方法调用后等）。</li>
+<li><strong>流程</strong>: 当 GC 发生时，所有线程运行到最近的安全点暂停。然后，GC 线程通过 OopMap <strong>立即知道</strong>了栈上的所有引用，再结合方法区的静态引用等，就构建起了完整的 GC Roots 集合，从而开始高效的可达性分析。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="2-常见的垃圾回收算法"><a href="#2-常见的垃圾回收算法" class="headerlink" title="2. 常见的垃圾回收算法"></a>2. 常见的垃圾回收算法</h3><h4 id="2-1-标记-清除算法-Mark-Sweep"><a href="#2-1-标记-清除算法-Mark-Sweep" class="headerlink" title="2.1 标记-清除算法 (Mark-Sweep)"></a>2.1 标记-清除算法 (Mark-Sweep)</h4><ul>
+<li><strong>过程</strong>:<ol>
+<li><strong>标记 (Mark)</strong>: 从 GC Roots 开始，标记所有可达的对象。</li>
+<li><strong>清除 (Sweep)</strong>: 遍历整个堆，清除所有未被标记的对象。</li>
+</ol>
+</li>
+<li><strong>缺点</strong>:<ol>
+<li><strong>效率问题</strong>: 标记和清除两个过程的效率都不高。</li>
+<li><strong>空间问题</strong>: 清除之后会产生大量不连续的<strong>内存碎片</strong>，可能导致以后需要分配较大对象时，无法找到足够的连续内存而不得不提前触发另一次垃圾收集。</li>
+</ol>
+</li>
+</ul>
+<h4 id="2-2-复制算法-Copying"><a href="#2-2-复制算法-Copying" class="headerlink" title="2.2 复制算法 (Copying)"></a>2.2 复制算法 (Copying)</h4><ul>
+<li><strong>过程</strong>: 将可用内存按容量划分为大小相等的两块，每次只使用其中的一块。当这一块的内存用完了，就将还存活着的对象<strong>复制</strong>到另外一块上面，然后再把已使用过的内存空间一次清理掉。</li>
+<li><strong>优点</strong>: 实现简单，运行高效，不会产生内存碎片。</li>
+<li><strong>缺点</strong>: <strong>内存利用率低</strong>，代价是牺牲了一半的内存。</li>
+<li><strong>应用</strong>: 主要用于<strong>新生代</strong>的垃圾回收。HotSpot VM 将新生代划分为一块较大的 Eden 空间和两块较小的 Survivor 空间（From 和 To），比例通常是 8:1:1。每次只使用 Eden 和其中一块 Survivor。</li>
+</ul>
+<h4 id="2-3-标记-整理算法-Mark-Compact"><a href="#2-3-标记-整理算法-Mark-Compact" class="headerlink" title="2.3 标记-整理算法 (Mark-Compact)"></a>2.3 标记-整理算法 (Mark-Compact)</h4><ul>
+<li><strong>过程</strong>:<ol>
+<li><strong>标记 (Mark)</strong>: 同标记-清除算法。</li>
+<li><strong>整理 (Compact)</strong>: 让所有存活的对象都向一端移动，然后直接清理掉边界以外的内存。</li>
+</ol>
+</li>
+<li><strong>优点</strong>: 解决了标记-清除算法的内存碎片问题。</li>
+<li><strong>缺点</strong>: 整理过程需要移动对象，效率相对较低。</li>
+<li><strong>应用</strong>: 主要用于<strong>老年代</strong>的垃圾回收。</li>
+</ul>
+<h4 id="2-4-分代收集算法-Generational-Collection"><a href="#2-4-分代收集算法-Generational-Collection" class="headerlink" title="2.4 分代收集算法 (Generational Collection)"></a>2.4 分代收集算法 (Generational Collection)</h4><p>这是当前商业虚拟机都采用的主流思想。</p>
+<ul>
+<li><strong>核心思想</strong>: 根据对象存活周期的不同将内存划分为几块，一般是把 Java 堆分为<strong>新生代 (Young Generation)</strong> 和<strong>老年代 (Old Generation)</strong>。</li>
+<li><strong>策略</strong>:<ul>
+<li><strong>新生代</strong>: 每次垃圾收集时都有大批对象死去，只有少量存活，选用<strong>复制算法</strong>。</li>
+<li><strong>老年代</strong>: 对象存活率高、没有额外空间对它进行分配担保，必须使用<strong>标记-清除</strong>或者<strong>标记-整理</strong>算法。</li>
+</ul>
+</li>
+</ul>
+<h3 id="3-HotSpot-VM-中的垃圾收集器"><a href="#3-HotSpot-VM-中的垃圾收集器" class="headerlink" title="3. HotSpot VM 中的垃圾收集器"></a>3. HotSpot VM 中的垃圾收集器</h3><p>垃圾收集器是内存回收的具体实现。理解它们的特性、优势和适用场景，是进行 JVM 调优的关键。</p>
+<h4 id="核心概念"><a href="#核心概念" class="headerlink" title="核心概念"></a>核心概念</h4><ul>
+<li><strong>Stop-The-World (STW)</strong>: 在执行垃圾回收时，所有用户线程都会被暂停。STW 的时间越短，用户感受到的卡顿就越少。</li>
+<li><strong>吞吐量 (Throughput)</strong>: <code>用户代码运行时间 / (用户代码运行时间 + 垃圾收集时间)</code>。高吞吐量意味着 CPU 能高效地执行用户代码，但可能会以较长的 STW 为代价。</li>
+<li><strong>延迟 (Latency)</strong>: 指的是单次 GC 的 STW 时间。低延迟意味着用户几乎感受不到卡顿，这对于交互式应用（如网站、桌面应用）至关重要。</li>
+<li><strong>串行 (Serial)</strong>: GC 过程由单个线程完成。</li>
+<li><strong>并行 (Parallel)</strong>: GC 过程由多个线程<strong>同时</strong>完成，但仍然会 STW。</li>
+<li><strong>并发 (Concurrent)</strong>: GC 的某些阶段可以与用户线程<strong>一起</strong>执行，从而显著减少 STW 时间。</li>
+</ul>
+<hr>
+<h3 id="垃圾收集器对比总表"><a href="#垃圾收集器对比总表" class="headerlink" title="垃圾收集器对比总表"></a>垃圾收集器对比总表</h3><table>
+<thead>
+<tr>
+<th align="left">收集器组合</th>
+<th align="left">新生代算法</th>
+<th align="left">老年代算法</th>
+<th align="left">特点</th>
+<th align="left">核心优势</th>
+<th align="left">适用场景</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>Serial &#x2F; Serial Old</strong></td>
+<td align="left">复制算法</td>
+<td align="left">标记-整理</td>
+<td align="left"><strong>串行</strong>，单线程 GC</td>
+<td align="left">简单高效，内存消耗小</td>
+<td align="left"><strong>客户端模式</strong>，单核 CPU，或对 GC 暂停不敏感的小型应用。</td>
+</tr>
+<tr>
+<td align="left"><strong>Parallel Scavenge &#x2F; Parallel Old</strong></td>
+<td align="left">复制算法</td>
+<td align="left">标记-整理</td>
+<td align="left"><strong>并行</strong>，多线程 GC</td>
+<td align="left"><strong>高吞吐量</strong></td>
+<td align="left"><strong>后台计算、数据处理</strong>等对吞吐量要求高，但对单次暂停时间不敏感的场景。<strong>JDK 8 默认</strong>。</td>
+</tr>
+<tr>
+<td align="left"><strong>ParNew &#x2F; CMS</strong></td>
+<td align="left">复制算法</td>
+<td align="left"><strong>标记-清除</strong></td>
+<td align="left"><strong>并发</strong> (老年代)</td>
+<td align="left"><strong>低延迟</strong></td>
+<td align="left"><strong>互联网应用、Web 服务器</strong>等对响应时间有高要求的场景。</td>
+</tr>
+<tr>
+<td align="left"><strong>G1 (Garbage-First)</strong></td>
+<td align="left">复制算法</td>
+<td align="left">标记-整理</td>
+<td align="left"><strong>分代、并发、并行</strong></td>
+<td align="left"><strong>延迟与吞吐量的平衡</strong></td>
+<td align="left"><strong>大堆内存</strong>（4G以上）的服务端应用，旨在取代 CMS。<strong>JDK 9+ 默认</strong>。</td>
+</tr>
+<tr>
+<td align="left"><strong>ZGC &#x2F; Shenandoah</strong></td>
+<td align="left">标记-整理</td>
+<td align="left">标记-整理</td>
+<td align="left"><strong>并发</strong>，Region-based</td>
+<td align="left"><strong>极低的延迟</strong> (ms 级)</td>
+<td align="left"><strong>超大堆内存</strong>（几十G到T级），对延迟要求极其苛刻的金融、交易等场景。</td>
+</tr>
+</tbody></table>
+<hr>
+<h3 id="各收集器详细说明"><a href="#各收集器详细说明" class="headerlink" title="各收集器详细说明"></a>各收集器详细说明</h3><ul>
+<li><p><strong>Serial &#x2F; Serial Old</strong>:</p>
+<ul>
+<li>最古老、最简单的收集器。想象成一个清洁工在打扫卫生，打扫期间，所有人（用户线程）都必须停下来等他扫完。虽然慢，但因为只有一个清洁工，所以管理成本最低。</li>
+</ul>
+</li>
+<li><p><strong>Parallel Scavenge &#x2F; Parallel Old</strong>:</p>
+<ul>
+<li><code>Parallel</code> 意味着“并行”。想象成一群清洁工（多线程）同时开始打扫卫生。虽然所有人仍然需要停下来等他们，但因为人多，打扫得更快，总的打扫时间（GC 时间）变短了，所以大家能更快地回去工作。这使得在单位时间内，工作的总产出（吞吐量）更高。</li>
+</ul>
+</li>
+<li><p><strong>CMS (Concurrent Mark Sweep)</strong>:</p>
+<ul>
+<li><code>Concurrent</code> 意味着“并发”。想象成一个聪明的清洁工团队，他们只在两个很短的时刻要求所有人停一下（初始标记、重新标记），其他大部分打扫时间（并发标记、并发清除）都允许大家继续工作。</li>
+<li><strong>优点</strong>: 极大地降低了 STW 时间，用户体验好。</li>
+<li><strong>缺点</strong>:<ol>
+<li><strong>CPU 敏感</strong>: 因为要和用户线程抢 CPU，所以在 CPU 核心数少的情况下，可能会影响用户程序的性能。</li>
+<li><strong>内存碎片</strong>: 基于“标记-清除”算法，会产生大量内存碎片。</li>
+<li><strong>浮动垃圾</strong>: 在并发清除阶段，用户线程可能又会产生新的垃圾，这些垃圾只能等到下一次 GC 再清理。</li>
+</ol>
+</li>
+</ul>
+</li>
+<li><p><strong>G1 (Garbage-First)</strong>:</p>
+<ul>
+<li>G1 是一个里程碑式的收集器。它不再将堆简单地划分为新生代和老年代，而是划分为上百个大小相等的独立区域 (Region)。</li>
+<li>它会跟踪每个 Region 中垃圾的价值（回收能释放多大空间），并优先回收那些“价值最高”的 Region。</li>
+<li><strong>优点</strong>:<ol>
+<li><strong>可预测的停顿</strong>: 允许用户设定一个期望的最大停顿时间（<code>-XX:MaxGCPauseMillis</code>），G1 会尽力满足。</li>
+<li><strong>无内存碎片</strong>: 整体上基于“标记-整理”算法，不会产生碎片。</li>
+<li>在延迟和吞吐量之间取得了很好的平衡。</li>
+</ol>
+</li>
+</ul>
+</li>
+<li><p><strong>ZGC &#x2F; Shenandoah (JDK 11+)</strong>:</p>
+<ul>
+<li>这两个是面向未来的、最前沿的收集器。它们通过更复杂的技术（如着色指针、读屏障），使得几乎所有的 GC 工作都能与用户线程并发执行，从而将 STW 时间压缩到惊人的毫秒甚至亚毫秒级别。它们是为解决超大堆内存和超低延迟这两个终极目标而生的。</li>
+</ul>
+</li>
+</ul>
+<h3 id="4-G1-与-ZGC-深度解析"><a href="#4-G1-与-ZGC-深度解析" class="headerlink" title="4. G1 与 ZGC 深度解析"></a>4. G1 与 ZGC 深度解析</h3><p>G1 和 ZGC 是现代垃圾收集器的代表，理解它们的内部细节对于进行高级 JVM 调优和构建高性能应用非常有帮助。</p>
+<h4 id="G1-Garbage-First"><a href="#G1-Garbage-First" class="headerlink" title="G1 (Garbage-First)"></a>G1 (Garbage-First)</h4><p>G1 的设计目标是在<strong>可预测的停顿时间</strong>模型下，实现高吞吐量。它不再将堆视为连续的新生代和老年代，而是引入了全新的 <strong>Region</strong> 模型。</p>
+<ul>
+<li><p><strong>核心设计：Region 模型</strong></p>
+<ol>
+<li><strong>化整为零</strong>: G1 将整个 Java 堆划分为多个大小相等（通常为 1MB~32MB）的独立区域 (Region)。</li>
+<li><strong>角色动态分配</strong>: 每个 Region 在运行时可以扮演不同的角色：Eden、Survivor、Old (老年代)。这种设计使得 GC 不再需要对整个新生代或老年代进行回收，而是可以按需回收一部分 Region。</li>
+<li><strong>Humongous Region</strong>: 对于超过 Region 容量一半的大对象，G1 会使用一个或多个连续的特殊 Region (Humongous Region) 来存储。</li>
+</ol>
+</li>
+<li><p><strong>回收策略：Garbage-First (垃圾优先)</strong></p>
+<ol>
+<li><strong>价值导向</strong>: G1 的核心思想是“垃圾优先”。它会跟踪每个 Region 中垃圾的价值——即回收这个 Region 能释放多少空间，以及预估的回收耗时。</li>
+<li><strong>构建回收价值集 (Collection Set)</strong>: 在进行 Mixed GC（混合回收）时，G1 会根据用户设定的最大停顿时间（<code>-XX:MaxGCPauseMillis</code>），选择性地将<strong>所有新生代 Region</strong> 和<strong>部分回收价值最高的老年代 Region</strong> 组成一个回收价值集 (CSet)。</li>
+<li><strong>增量回收</strong>: G1 的回收是以 CSet 为单位进行的，而不是回收整个堆。这使得单次 GC 的停顿时间更容易被控制在目标范围内。</li>
+</ol>
+</li>
+<li><p><strong>性能提升的关键技术</strong></p>
+<ol>
+<li><strong>记忆集 (Remembered Set)</strong>:<ul>
+<li><strong>问题</strong>: 在只回收部分 Region 时，如何知道其他 Region 是否有对象引用了当前 Region 中的对象？</li>
+<li><strong>解决</strong>: G1 为每个 Region 维护一个<strong>记忆集</strong>，该数据结构记录了“谁引用了我”。当 GC 一个 Region 时，只需扫描它的记忆集，就能找到所有的外部引用，而无需扫描整个堆。</li>
+</ul>
+</li>
+<li><strong>写屏障 (Write Barrier)</strong>:<ul>
+<li><strong>问题</strong>: 如何维护记忆集？</li>
+<li><strong>解决</strong>: G1 使用<strong>写屏障</strong>技术。当程序执行 <code>obj.field = another_obj</code> 这样的赋值操作时，JVM 会插入一小段代码（写屏障），这段代码会检查 <code>another_obj</code> 和 <code>obj</code> 是否位于不同的 Region。如果是，就会更新 <code>another_obj</code> 所在 Region 的记忆集，记录下这个新的引用关系。</li>
+</ul>
+</li>
+</ol>
+</li>
+</ul>
+<h4 id="ZGC-Z-Garbage-Collector"><a href="#ZGC-Z-Garbage-Collector" class="headerlink" title="ZGC (Z Garbage Collector)"></a>ZGC (Z Garbage Collector)</h4><p>ZGC 是为解决<strong>超大堆内存</strong>（TB 级别）和<strong>超低延迟</strong>（亚毫秒级 STW）这两个终极目标而设计的。它的几乎所有工作都是<strong>并发</strong>的。</p>
+<ul>
+<li><p><strong>核心设计：着色指针 (Colored Pointers)</strong></p>
+<ul>
+<li><strong>原理</strong>: ZGC 并没有使用传统的 Region 模型中的记忆集，而是巧妙地利用了 64 位操作系统中指针的高位。在 64 位系统中，一个指针只有低 40 多位用于寻址，高位通常是 0。ZGC 将这些高位挪作他用，用来存储元数据，如对象的标记状态。</li>
+<li><strong>元数据</strong>: ZGC 在指针上存储了 4 个 bit 的元数据：<code>Marked0</code>, <code>Marked1</code>, <code>Remapped</code>, <code>Finalizable</code>。</li>
+<li><strong>优势</strong>: 当 GC 需要知道一个对象的状态时，它<strong>不需要去访问对象头</strong>，只需看一下指向该对象的<strong>指针</strong>本身，就能获取信息。这使得 GC 的很多操作（如标记）可以和用户线程并发进行，而不会产生竞态条件。</li>
+</ul>
+</li>
+<li><p><strong>回收策略与并发处理</strong><br>ZGC 的整个 GC 过程几乎都是并发的，STW 只存在于几个非常短暂的瞬间（如初始标记）。</p>
+<ol>
+<li><strong>并发标记</strong>: GC 线程和用户线程并发执行。当用户线程访问一个对象时，ZGC 通过指针上的标记位就能知道该对象是否已被标记。</li>
+<li><strong>并发整理&#x2F;重定位</strong>: 这是 ZGC 最核心的技术。<ul>
+<li><strong>重定位集 (Relocation Set)</strong>: ZGC 选定一组需要被整理的 Region。</li>
+<li><strong>并发移动</strong>: ZGC 会将这些 Region 中的存活对象移动到新的 Region。</li>
+<li><strong>读屏障 (Read Barrier)</strong>: 在并发移动期间，如果用户线程访问了一个<strong>已经被移动</strong>的对象（通过旧地址），<strong>读屏障</strong>会拦截这次访问，从转发表 (Forwarding Table) 中找到对象的新地址，更新该引用，然后再让用户线程继续访问。</li>
+<li><strong>自愈 (Self-Healing)</strong>: 这种通过读屏障在访问时修复引用的机制，被称为“自愈”。它保证了即使对象正在被并发移动，用户线程也能正确地访问到它。</li>
+</ul>
+</li>
+</ol>
+</li>
+<li><p><strong>性能提升的关键技术</strong></p>
+<ol>
+<li><strong>着色指针</strong>: 实现了信息与指针的绑定，是所有并发操作的基础。</li>
+<li><strong>读屏障</strong>: 解决了并发移动对象时，用户线程如何安全访问的问题。这是 ZGC 能够实现并发整理的关键。</li>
+<li><strong>不分代</strong>: ZGC 目前是一个不分代的收集器（虽然未来的版本可能会引入分代），它对整个堆进行统一处理。</li>
+</ol>
+</li>
+</ul>
+<hr>
+<h3 id="G1-vs-ZGC-总结"><a href="#G1-vs-ZGC-总结" class="headerlink" title="G1 vs ZGC 总结"></a>G1 vs ZGC 总结</h3><table>
+<thead>
+<tr>
+<th align="left">特性</th>
+<th align="left">G1</th>
+<th align="left">ZGC</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>设计模型</strong></td>
+<td align="left">Region, 记忆集, 写屏障</td>
+<td align="left">Region, <strong>着色指针</strong>, <strong>读屏障</strong></td>
+</tr>
+<tr>
+<td align="left"><strong>核心思想</strong></td>
+<td align="left">垃圾优先，可预测停顿</td>
+<td align="left"><strong>并发一切</strong>，超低延迟</td>
+</tr>
+<tr>
+<td align="left"><strong>分代</strong></td>
+<td align="left">是 (逻辑分代)</td>
+<td align="left">否 (目前)</td>
+</tr>
+<tr>
+<td align="left"><strong>并发整理</strong></td>
+<td align="left">否 (整理阶段需要 STW)</td>
+<td align="left"><strong>是</strong></td>
+</tr>
+<tr>
+<td align="left"><strong>STW 时间</strong></td>
+<td align="left">十几到几十毫秒</td>
+<td align="left"><strong>亚毫秒级</strong></td>
+</tr>
+<tr>
+<td align="left"><strong>适用堆大小</strong></td>
+<td align="left">4G - 100G</td>
+<td align="left">几百 G - 几 T</td>
+</tr>
+</tbody></table>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>Author: </span><span class="post-copyright-info"><a href="http://example.com">david</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>Link: </span><span class="post-copyright-info"><a href="http://example.com/2025/10/22/JVM-%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6/">http://example.com/2025/10/22/JVM-%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>Copyright Notice: </span><span class="post-copyright-info">All articles on this blog are licensed under <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> unless otherwise stated.</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/JVM/">JVM</a><a class="post-meta__tags" href="/tags/GC/">GC</a><a class="post-meta__tags" href="/tags/%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6/">垃圾回收</a><a class="post-meta__tags" href="/tags/G1/">G1</a><a class="post-meta__tags" href="/tags/CMS/">CMS</a><a class="post-meta__tags" href="/tags/ZGC/">ZGC</a></div><div class="post-share"><div class="social-share" data-image="/img/butterfly-icon.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2025/10/22/JVM-%E7%B1%BB%E5%8A%A0%E8%BD%BD%E6%9C%BA%E5%88%B6/" title="JVM-类加载机制"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">Previous</div><div class="info-item-2">JVM-类加载机制</div></div><div class="info-2"><div class="info-item-1">JVM - 类加载机制 (Class Loading Mechanism)类加载机制是 Java 程序运行的第一个环节，它负责将 .class 文件中的二进制数据加载到内存中，并对其进行验证、准备、解析和初始化，最终形成可以被虚拟机直接使用的 Java 类型。理解类加载机制是理解 Java 动态性、排查类加载问题（如 ClassNotFoundException, NoClassDefFoundError）以及进行热部署、代码加密等高级操作的基础。 1. 类加载的生命周期一个类从被加载到 JVM 中到卸载出内存，会经历以下七个阶段：      %%{init: {&#39;theme&#39;: &#39;neutral&#39;}}%% graph LR     A[加载] --&gt; B[验证]     B --&gt; C[准备]     C --&gt; D[解析]     D --&gt; E[初始化]     E --&gt; F[使用]     F --&gt; G[卸载]     1.1 加载 (Loading) 作用: 将 .class 文件（或其他来源的二进...</div></div></div></a><a class="pagination-related" href="/2025/10/22/JavaSE-%E6%B3%A8%E8%A7%A3/" title="JavaSE-注解"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">Next</div><div class="info-item-2">JavaSE-注解</div></div><div class="info-2"><div class="info-item-1">JavaSE - 注解 (Annotations)注解（Annotations）是 Java 5 引入的一种元数据（metadata）机制。它提供了一种不影响程序逻辑的方式，为代码添加额外的信息。这些信息可以在编译时、类加载时或运行时被读取和处理，从而实现代码的自动化处理、检查或配置。 1. 注解的本质与作用 本质: 注解是一种特殊的接口，继承自 java.lang.annotation.Annotation 接口。 作用: 编译检查: 告诉编译器如何检查代码（如 @Override, @Deprecated）。 代码生成: 通过注解处理器在编译时生成新的代码（如 Lombok）。 运行时处理: 在运行时通过反射读取注解信息，进行动态配置或行为修改（如 Spring 的 @Autowired, @Transactional）。    2. Java 内置注解Java 提供了几个标准的内置注解，它们在日常开发中非常常见。  @Override:  作用: 标记一个方法是重写父类或实现接口的方法。 目的: 帮助编译器检查方法签名是否正确，如果父类中没有对应方法，则编译报错。   @D...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>Related Articles</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/2025/10/22/JVM-%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B/" title="JVM-内存模型"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-10-22</div><div class="info-item-2">JVM-内存模型</div></div><div class="info-2"><div class="info-item-1">JVM - 内存模型 (Runtime Data Areas)理解 JVM 内存模型是深入理解 Java 程序运行机制、排查内存问题、进行性能优化的基础。JVM 在执行 Java 程序时，会将其管理的内存划分为不同的数据区域。这些区域有各自的用途、创建和销毁时机，以及可能遇到的错误。 1. JVM 运行时数据区域概述JVM 内存主要分为两大类：线程私有和线程共享。      %%{init: {&#39;theme&#39;: &#39;neutral&#39;}}%% graph TD     A[JVM 内存区域] --&gt; B[线程私有]     A --&gt; C[线程共享]      B --&gt; B1[程序计数器]     B --&gt; B2[Java 虚拟机栈]     B --&gt; B3[本地方法栈]      C --&gt; C1[Java 堆]     C --&gt; C2[方法区]     C2 --&gt; C2_1[运行时常量池]     1.1 线程私有区域这些区域的生命周期与线程相同，随线程的创建而创建，随线程的销毁而销毁。  ...</div></div></div></a><a class="pagination-related" href="/2025/10/22/JVM-%E7%B1%BB%E5%8A%A0%E8%BD%BD%E6%9C%BA%E5%88%B6/" title="JVM-类加载机制"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-10-22</div><div class="info-item-2">JVM-类加载机制</div></div><div class="info-2"><div class="info-item-1">JVM - 类加载机制 (Class Loading Mechanism)类加载机制是 Java 程序运行的第一个环节，它负责将 .class 文件中的二进制数据加载到内存中，并对其进行验证、准备、解析和初始化，最终形成可以被虚拟机直接使用的 Java 类型。理解类加载机制是理解 Java 动态性、排查类加载问题（如 ClassNotFoundException, NoClassDefFoundError）以及进行热部署、代码加密等高级操作的基础。 1. 类加载的生命周期一个类从被加载到 JVM 中到卸载出内存，会经历以下七个阶段：      %%{init: {&#39;theme&#39;: &#39;neutral&#39;}}%% graph LR     A[加载] --&gt; B[验证]     B --&gt; C[准备]     C --&gt; D[解析]     D --&gt; E[初始化]     E --&gt; F[使用]     F --&gt; G[卸载]     1.1 加载 (Loading) 作用: 将 .class 文件（或其他来源的二进...</div></div></div></a><a class="pagination-related" href="/2025/10/22/JVM-%E6%80%A7%E8%83%BD%E8%B0%83%E4%BC%98/" title="JVM-性能调优"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-10-22</div><div class="info-item-2">JVM-性能调优</div></div><div class="info-2"><div class="info-item-1">JVM - 性能调优 (JVM Performance Tuning)JVM 性能调优是 Java 高级工程师必备的技能之一。它涉及通过调整 JVM 参数、优化代码和监控工具来提升 Java 应用程序的性能、稳定性和响应速度。调优是一个系统性的工程，需要结合具体的应用场景和业务需求。 1. JVM 调优的目标在开始调优之前，首先要明确目标，因为不同的目标可能需要不同的调优策略。  降低延迟 (Latency): 减少 GC 停顿时间，提高响应速度。这对于用户交互频繁的应用（如 Web 应用、GUI 应用）至关重要。 提高吞吐量 (Throughput): 提高单位时间内处理的请求数量。这对于后台批处理、数据分析等任务密集型应用更重要。 减少内存占用: 优化内存使用，降低 OutOfMemoryError (OOM) 风险，尤其是在内存受限的环境中。 提高稳定性: 减少 GC 频率，避免频繁 Full GC 导致的长时间停顿。  2. JVM 调优的步骤与策略调优不是一蹴而就的，通常遵循以下步骤：  明确目标: 根据应用类型和业务需求，确定是追求低延迟还是高吞吐量。 监控与分析: ...</div></div></div></a></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/butterfly-icon.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">david</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">71</div></a><a href="/tags/"><div class="headline">Tags</div><div class="length-num">152</div></a><a href="/categories/"><div class="headline">Categories</div><div class="length-num">14</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>Announcement</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>Contents</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#JVM-%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6-Garbage-Collection-GC"><span class="toc-number">1.</span> <span class="toc-text">JVM - 垃圾回收 (Garbage Collection, GC)</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E5%A6%82%E4%BD%95%E5%88%A4%E6%96%AD%E5%AF%B9%E8%B1%A1%E5%B7%B2%E2%80%9C%E6%AD%BB%E2%80%9D%EF%BC%9F"><span class="toc-number">1.1.</span> <span class="toc-text">1. 如何判断对象已“死”？</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-1-%E5%BC%95%E7%94%A8%E8%AE%A1%E6%95%B0%E6%B3%95-Reference-Counting"><span class="toc-number">1.1.1.</span> <span class="toc-text">1.1 引用计数法 (Reference Counting)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#1-2-%E5%8F%AF%E8%BE%BE%E6%80%A7%E5%88%86%E6%9E%90%E7%AE%97%E6%B3%95-Reachability-Analysis"><span class="toc-number">1.1.2.</span> <span class="toc-text">1.2 可达性分析算法 (Reachability Analysis)</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E5%B8%B8%E8%A7%81%E7%9A%84%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E7%AE%97%E6%B3%95"><span class="toc-number">1.2.</span> <span class="toc-text">2. 常见的垃圾回收算法</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#2-1-%E6%A0%87%E8%AE%B0-%E6%B8%85%E9%99%A4%E7%AE%97%E6%B3%95-Mark-Sweep"><span class="toc-number">1.2.1.</span> <span class="toc-text">2.1 标记-清除算法 (Mark-Sweep)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-2-%E5%A4%8D%E5%88%B6%E7%AE%97%E6%B3%95-Copying"><span class="toc-number">1.2.2.</span> <span class="toc-text">2.2 复制算法 (Copying)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-3-%E6%A0%87%E8%AE%B0-%E6%95%B4%E7%90%86%E7%AE%97%E6%B3%95-Mark-Compact"><span class="toc-number">1.2.3.</span> <span class="toc-text">2.3 标记-整理算法 (Mark-Compact)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-4-%E5%88%86%E4%BB%A3%E6%94%B6%E9%9B%86%E7%AE%97%E6%B3%95-Generational-Collection"><span class="toc-number">1.2.4.</span> <span class="toc-text">2.4 分代收集算法 (Generational Collection)</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-HotSpot-VM-%E4%B8%AD%E7%9A%84%E5%9E%83%E5%9C%BE%E6%94%B6%E9%9B%86%E5%99%A8"><span class="toc-number">1.3.</span> <span class="toc-text">3. HotSpot VM 中的垃圾收集器</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%A0%B8%E5%BF%83%E6%A6%82%E5%BF%B5"><span class="toc-number">1.3.1.</span> <span class="toc-text">核心概念</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9E%83%E5%9C%BE%E6%94%B6%E9%9B%86%E5%99%A8%E5%AF%B9%E6%AF%94%E6%80%BB%E8%A1%A8"><span class="toc-number">1.4.</span> <span class="toc-text">垃圾收集器对比总表</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%90%84%E6%94%B6%E9%9B%86%E5%99%A8%E8%AF%A6%E7%BB%86%E8%AF%B4%E6%98%8E"><span class="toc-number">1.5.</span> <span class="toc-text">各收集器详细说明</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-G1-%E4%B8%8E-ZGC-%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90"><span class="toc-number">1.6.</span> <span class="toc-text">4. G1 与 ZGC 深度解析</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#G1-Garbage-First"><span class="toc-number">1.6.1.</span> <span class="toc-text">G1 (Garbage-First)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#ZGC-Z-Garbage-Collector"><span class="toc-number">1.6.2.</span> <span class="toc-text">ZGC (Z Garbage Collector)</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#G1-vs-ZGC-%E6%80%BB%E7%BB%93"><span class="toc-number">1.7.</span> <span class="toc-text">G1 vs ZGC 总结</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>Recent Posts</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/10/22/JavaSE-%E5%B8%B8%E7%94%A8API/" title="JavaSE-常用API">JavaSE-常用API</a><time datetime="2025-10-22T02:00:00.000Z" title="Created 2025-10-22 10:00:00">2025-10-22</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/10/22/JavaSE-%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/" title="JavaSE-异常处理">JavaSE-异常处理</a><time datetime="2025-10-22T02:00:00.000Z" title="Created 2025-10-22 10:00:00">2025-10-22</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/10/22/JavaSE-%E9%9B%86%E5%90%88%E6%A1%86%E6%9E%B6/" title="JavaSE-集合框架(索引)">JavaSE-集合框架(索引)</a><time datetime="2025-10-22T02:00:00.000Z" title="Created 2025-10-22 10:00:00">2025-10-22</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/10/22/JavaSE-%E9%9D%A2%E5%90%91%E5%AF%B9%E8%B1%A1%E7%BC%96%E7%A8%8B/" title="JavaSE-面向对象编程">JavaSE-面向对象编程</a><time datetime="2025-10-22T02:00:00.000Z" title="Created 2025-10-22 10:00:00">2025-10-22</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/10/22/JavaSE-%E5%85%A8%E9%9D%A2%E6%8E%8C%E6%8F%A1/" title="JavaSE-全面掌握">JavaSE-全面掌握</a><time datetime="2025-10-22T02:00:00.000Z" title="Created 2025-10-22 10:00:00">2025-10-22</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 By david</span><span class="framework-info"><span>Framework </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>Theme </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.4.3</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="Reading Mode"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="Toggle Between Light and Dark Mode"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="Toggle Between Single-column and Double-column"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="Settings"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="Table of Contents"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="Back to Top"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><div class="js-pjax"><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (false) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>

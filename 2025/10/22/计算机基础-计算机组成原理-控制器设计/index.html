@@ -1,0 +1,296 @@
+<!DOCTYPE html><html lang="en" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>计算机基础-计算机组成原理-控制器设计 | Hexo</title><meta name="author" content="david"><meta name="copyright" content="david"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="控制器设计控制器（Control Unit, CU）是 CPU 的决策机构，其核心功能是根据指令寄存器（IR）中的指令，生成一系列的控制信号，发送给计算机的各个部件，以指挥它们完成指令所规定的操作。控制器设计的优劣直接影响 CPU 的性能。 设计控制器主要有两种方式：硬布线控制器和微程序控制器。 1. 硬布线控制器 (Hardwired Controller)硬布线控制器是基于组合逻辑电路来设计和">
+<meta property="og:type" content="article">
+<meta property="og:title" content="计算机基础-计算机组成原理-控制器设计">
+<meta property="og:url" content="http://example.com/2025/10/22/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80-%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BB%84%E6%88%90%E5%8E%9F%E7%90%86-%E6%8E%A7%E5%88%B6%E5%99%A8%E8%AE%BE%E8%AE%A1/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="控制器设计控制器（Control Unit, CU）是 CPU 的决策机构，其核心功能是根据指令寄存器（IR）中的指令，生成一系列的控制信号，发送给计算机的各个部件，以指挥它们完成指令所规定的操作。控制器设计的优劣直接影响 CPU 的性能。 设计控制器主要有两种方式：硬布线控制器和微程序控制器。 1. 硬布线控制器 (Hardwired Controller)硬布线控制器是基于组合逻辑电路来设计和">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://example.com/img/butterfly-icon.png">
+<meta property="article:published_time" content="2025-10-22T02:00:00.000Z">
+<meta property="article:modified_time" content="2025-10-31T07:41:57.426Z">
+<meta property="article:author" content="david">
+<meta property="article:tag" content="计算机组成原理">
+<meta property="article:tag" content="CPU">
+<meta property="article:tag" content="控制器">
+<meta property="article:tag" content="硬布线">
+<meta property="article:tag" content="微程序">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/img/butterfly-icon.png"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "计算机基础-计算机组成原理-控制器设计",
+  "url": "http://example.com/2025/10/22/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80-%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BB%84%E6%88%90%E5%8E%9F%E7%90%86-%E6%8E%A7%E5%88%B6%E5%99%A8%E8%AE%BE%E8%AE%A1/",
+  "image": "http://example.com/img/butterfly-icon.png",
+  "datePublished": "2025-10-22T02:00:00.000Z",
+  "dateModified": "2025-10-31T07:41:57.426Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "david",
+      "url": "http://example.com"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://example.com/2025/10/22/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80-%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BB%84%E6%88%90%E5%8E%9F%E7%90%86-%E6%8E%A7%E5%88%B6%E5%99%A8%E8%AE%BE%E8%AE%A1/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: 'Copy Successful',
+    error: 'Copy Failed',
+    noSupport: 'Browser Not Supported'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: 'Just now',
+    min: 'minutes ago',
+    hour: 'hours ago',
+    day: 'days ago',
+    month: 'months ago'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid/dist/infinitegrid.min.js',
+    buttonText: 'Load More'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '计算机基础-计算机组成原理-控制器设计',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Hexo</span></a><a class="nav-page-title" href="/"><span class="site-name">计算机基础-计算机组成原理-控制器设计</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  Back to Home</span></span></a></span><div id="menus"></div></nav><div id="post-info"><h1 class="post-title">计算机基础-计算机组成原理-控制器设计</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">Created</span><time class="post-meta-date-created" datetime="2025-10-22T02:00:00.000Z" title="Created 2025-10-22 10:00:00">2025-10-22</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">Updated</span><time class="post-meta-date-updated" datetime="2025-10-31T07:41:57.426Z" title="Updated 2025-10-31 15:41:57">2025-10-31</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E6%A0%B8%E5%BF%83Java%E4%B8%8EJVM%E7%B2%BE%E9%80%9A/">核心Java与JVM精通</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E6%A0%B8%E5%BF%83Java%E4%B8%8EJVM%E7%B2%BE%E9%80%9A/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/">计算机基础</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">Post Views:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h2 id="控制器设计"><a href="#控制器设计" class="headerlink" title="控制器设计"></a>控制器设计</h2><p>控制器（Control Unit, CU）是 CPU 的决策机构，其核心功能是根据指令寄存器（IR）中的指令，生成一系列的控制信号，发送给计算机的各个部件，以指挥它们完成指令所规定的操作。控制器设计的优劣直接影响 CPU 的性能。</p>
+<p>设计控制器主要有两种方式：<strong>硬布线控制器</strong>和<strong>微程序控制器</strong>。</p>
+<h3 id="1-硬布线控制器-Hardwired-Controller"><a href="#1-硬布线控制器-Hardwired-Controller" class="headerlink" title="1. 硬布线控制器 (Hardwired Controller)"></a>1. 硬布线控制器 (Hardwired Controller)</h3><p>硬布线控制器是基于<strong>组合逻辑电路</strong>来设计和实现的。它的基本思想是，对于每条机器指令，都用一个专门的、复杂的逻辑电路来产生其执行所需的控制信号。</p>
+<ul>
+<li><p><strong>实现原理</strong>: 控制信号是指令操作码、时钟信号以及各种状态标志的逻辑函数。一旦确定了这些逻辑关系，就可以用门电路（与门、或门、非门）和触发器等逻辑元件将它们“硬生生”地连接起来，形成一个固定的控制单元。</p>
+<p><code>控制信号 = f(操作码, 时钟, 状态标志)</code></p>
+</li>
+<li><p><strong>优点</strong>:</p>
+<ul>
+<li><strong>速度快</strong>: 由于是纯硬件的组合逻辑电路，指令执行速度非常快。</li>
+</ul>
+</li>
+<li><p><strong>缺点</strong>:</p>
+<ul>
+<li><strong>设计和实现复杂</strong>: 对于一个复杂的指令系统，设计出对应的组合逻辑电路非常困难和繁琐。</li>
+<li><strong>难以修改和扩展</strong>: 一旦设计完成，电路就固定了。如果需要增加一条新的指令，就需要重新设计和布线整个控制器，非常不灵活。</li>
+</ul>
+</li>
+<li><p><strong>适用场景</strong>: 主要用于<strong>精简指令集计算机 (RISC)</strong>，因为 RISC 的指令集数量少、格式规整、功能简单，使得设计对应的硬布线控制器相对容易。</p>
+</li>
+</ul>
+<h3 id="2-微程序控制器-Micro-programmed-Controller"><a href="#2-微程序控制器-Micro-programmed-Controller" class="headerlink" title="2. 微程序控制器 (Micro-programmed Controller)"></a>2. 微程序控制器 (Micro-programmed Controller)</h3><p>微程序控制器是基于<strong>存储逻辑</strong>来设计和实现的。它的基本思想是，将每条机器指令的执行过程分解为一系列最基本的操作，这些基本操作称为<strong>微操作</strong>。每一组实现特定功能的微操作序列，被编写成<strong>微指令</strong>，所有的微指令共同构成<strong>微程序</strong>，并存放在一个专门的存储器——<strong>控制存储器 (Control Memory, CM)</strong> 中。</p>
+<ul>
+<li><p><strong>实现原理</strong>: 当控制器取来一条机器指令后，它会根据该指令的操作码，找到存放在控制存储器中对应的微程序的入口地址。然后，控制器会逐条执行这个微程序中的微指令，每条微指令都会生成一组控制信号，从而完成该机器指令的功能。</p>
+<p><code>机器指令 -&gt; 微程序入口地址 -&gt; 执行微指令序列 -&gt; 产生控制信号</code></p>
+</li>
+<li><p><strong>核心组成</strong>:</p>
+<ul>
+<li><strong>控制存储器 (CM)</strong>: 用于存放全部微程序，通常是只读存储器 (ROM)。</li>
+<li><strong>微地址寄存器 (μAR)</strong>: 用于存放将要读取的下一条微指令的地址。</li>
+<li><strong>微指令寄存器 (μIR)</strong>: 用于存放从控制存储器中取出的当前正在执行的微指令。</li>
+</ul>
+</li>
+<li><p><strong>优点</strong>:</p>
+<ul>
+<li><strong>设计规整、易于实现</strong>: 将复杂的逻辑设计问题，转换成了相对简单的微程序编制问题。</li>
+<li><strong>灵活性高，易于修改和扩展</strong>: 如果需要增加一条新的机器指令，只需在控制存储器中增加一段对应的微程序即可，无需改动硬件电路。这使得修改指令集、甚至模拟其他计算机的指令集成为可能。</li>
+</ul>
+</li>
+<li><p><strong>缺点</strong>:</p>
+<ul>
+<li><strong>速度较慢</strong>: 因为执行一条机器指令需要从控制存储器中读取并执行多条微指令，相比硬布线方式，多了一层访存操作，因此速度较慢。</li>
+</ul>
+</li>
+<li><p><strong>适用场景</strong>: 主要用于<strong>复杂指令集计算机 (CISC)</strong>，因为 CISC 的指令功能复杂、数量庞大，用硬布线方式实现会极其困难，而用微程序方式则可以很好地应对这种复杂性。</p>
+</li>
+</ul>
+<h3 id="总结对比"><a href="#总结对比" class="headerlink" title="总结对比"></a>总结对比</h3><table>
+<thead>
+<tr>
+<th align="left">特性</th>
+<th align="left">硬布线控制器</th>
+<th align="left">微程序控制器</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>实现方式</strong></td>
+<td align="left">组合逻辑电路</td>
+<td align="left">存储逻辑（微程序）</td>
+</tr>
+<tr>
+<td align="left"><strong>执行速度</strong></td>
+<td align="left">快</td>
+<td align="left">慢</td>
+</tr>
+<tr>
+<td align="left"><strong>设计难度</strong></td>
+<td align="left">复杂</td>
+<td align="left">相对简单</td>
+</tr>
+<tr>
+<td align="left"><strong>灵活性</strong></td>
+<td align="left">差，不易修改</td>
+<td align="left">好，易于修改和扩展</td>
+</tr>
+<tr>
+<td align="left"><strong>应用</strong></td>
+<td align="left">RISC (精简指令集)</td>
+<td align="left">CISC (复杂指令集)</td>
+</tr>
+</tbody></table>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>Author: </span><span class="post-copyright-info"><a href="http://example.com">david</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>Link: </span><span class="post-copyright-info"><a href="http://example.com/2025/10/22/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80-%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BB%84%E6%88%90%E5%8E%9F%E7%90%86-%E6%8E%A7%E5%88%B6%E5%99%A8%E8%AE%BE%E8%AE%A1/">http://example.com/2025/10/22/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80-%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BB%84%E6%88%90%E5%8E%9F%E7%90%86-%E6%8E%A7%E5%88%B6%E5%99%A8%E8%AE%BE%E8%AE%A1/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>Copyright Notice: </span><span class="post-copyright-info">All articles on this blog are licensed under <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> unless otherwise stated.</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BB%84%E6%88%90%E5%8E%9F%E7%90%86/">计算机组成原理</a><a class="post-meta__tags" href="/tags/CPU/">CPU</a><a class="post-meta__tags" href="/tags/%E6%8E%A7%E5%88%B6%E5%99%A8/">控制器</a><a class="post-meta__tags" href="/tags/%E7%A1%AC%E5%B8%83%E7%BA%BF/">硬布线</a><a class="post-meta__tags" href="/tags/%E5%BE%AE%E7%A8%8B%E5%BA%8F/">微程序</a></div><div class="post-share"><div class="social-share" data-image="/img/butterfly-icon.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2025/10/22/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80-%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BB%84%E6%88%90%E5%8E%9F%E7%90%86-%E6%8C%87%E4%BB%A4%E6%B5%81%E6%B0%B4%E7%BA%BF/" title="计算机基础-计算机组成原理-指令流水线"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">Previous</div><div class="info-item-2">计算机基础-计算机组成原理-指令流水线</div></div><div class="info-2"><div class="info-item-1">指令流水线 (Instruction Pipelining)指令流水线是现代处理器中用于提升性能的一项关键技术。它的核心思想类似于工厂里的“流水线”，将一条指令的执行过程分解为多个相互独立的阶段（Stage），并让这些阶段可以并行处理不同指令的不同部分，从而提高指令的吞吐率。 1. 流水线的基本概念假设一条指令的执行需要 3 个时钟周期，如果不使用流水线，执行 3 条指令就需要 3 * 3 = 9 个时钟周期。 现在，我们将一条指令的执行过程分解为 3 个阶段，每个阶段耗时 1 个时钟周期：  取指 (Fetch, IF): 从内存中取出指令。 译码 (Decode, ID): 分析指令，确定操作类型和操作数。 执行 (Execute, EX): 执行指令所规定的操作。  通过流水线技术，CPU 可以在第一个时钟周期取第一条指令，在第二个时钟周期取第二条指令并同时译码第一条指令，在第三个时钟周期取第三条指令、译码第二条指令并同时执行第一条指令。此后，每个时钟周期都能完成一条指令的执行。 非流水线 vs. 流水线对比:  非流水线 (9个周期): 123指令1: | IF | ID...</div></div></div></a><a class="pagination-related" href="/2025/10/22/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80-%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BB%84%E6%88%90%E5%8E%9F%E7%90%86-%E6%8C%87%E4%BB%A4%E7%B3%BB%E7%BB%9F/" title="计算机基础-计算机组成原理-指令系统"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">Next</div><div class="info-item-2">计算机基础-计算机组成原理-指令系统</div></div><div class="info-2"><div class="info-item-1">指令系统 (Instruction Set Architecture - ISA)指令系统（ISA）是计算机体系结构中与程序设计有关的部分，它是软件和硬件之间的关键接口。它定义了 CPU 能识别和执行的指令集合，规定了指令的格式、寻址方式以及指令的功能。 1. 指令格式一条指令就是机器语言的一个语句，它规定了计算机要执行的某种操作。一条指令通常由两部分组成：  操作码 (Opcode): 指明该指令要执行的操作，如加、减、取数、存数等。操作码的位数决定了计算机的指令集大小（例如，n 位操作码最多可以表示 2^n 条指令）。 地址码 (Address Code): 指明操作的对象（操作数）的地址。根据地址码的数量，指令可以分为零地址、一地址、二地址、三地址指令。     操作码 (Opcode) 地址码 1 (A1) 地址码 2 (A2) …     三地址指令: OP A1, A2, A3 -&gt; (A1) OP (A2) -&gt; A3 (例如，ADD R1, R2, R3) 二地址指令: OP A1, A2 -&gt; (A1) OP (A2) -&gt; A1 (例如...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>Related Articles</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/2025/10/22/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80-%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BB%84%E6%88%90%E5%8E%9F%E7%90%86-CPU%E7%9A%84%E5%8A%9F%E8%83%BD%E5%92%8C%E5%9F%BA%E6%9C%AC%E7%BB%93%E6%9E%84/" title="计算机基础-计算机组成原理-CPU的功能和基本结构"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-10-22</div><div class="info-item-2">计算机基础-计算机组成原理-CPU的功能和基本结构</div></div><div class="info-2"><div class="info-item-1">CPU 的功能和基本结构中央处理器（Central Processing Unit, CPU）是计算机的运算和控制核心。它的主要功能是解释计算机指令以及处理计算机软件中的数据。CPU 的工作可以概括为：取指令、分析指令、执行指令。 1. CPU 的两大核心功能 指令控制: 控制程序的执行顺序。CPU 通过程序计数器（PC）来确定下一条指令的地址，实现程序的顺序执行、分支、循环和跳转。 操作控制: 一条指令可以分解为多个微操作。CPU 的控制器负责产生每个微操作所需的控制命令，并将它们发送到相应的部件，以控制这些部件执行相应的操作。  2. CPU 的基本结构CPU 主要由运算器 (ALU) 和控制器 (Control Unit) 两大部分组成。 2.1 运算器 (Arithmetic Logic Unit, ALU)运算器是 CPU 中负责执行数据处理的部分，即执行算术运算和逻辑运算。  功能:  算术运算: 加、减、乘、除等。 逻辑运算: 与、或、非、异或等。   核心组成: 算术逻辑单元 (ALU): 是运算器的核心，负责执行具体的算术和逻辑操作。 累加寄存器 (Accumu...</div></div></div></a><a class="pagination-related" href="/2025/10/22/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80-%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BB%84%E6%88%90%E5%8E%9F%E7%90%86-%E6%8C%87%E4%BB%A4%E7%B3%BB%E7%BB%9F/" title="计算机基础-计算机组成原理-指令系统"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-10-22</div><div class="info-item-2">计算机基础-计算机组成原理-指令系统</div></div><div class="info-2"><div class="info-item-1">指令系统 (Instruction Set Architecture - ISA)指令系统（ISA）是计算机体系结构中与程序设计有关的部分，它是软件和硬件之间的关键接口。它定义了 CPU 能识别和执行的指令集合，规定了指令的格式、寻址方式以及指令的功能。 1. 指令格式一条指令就是机器语言的一个语句，它规定了计算机要执行的某种操作。一条指令通常由两部分组成：  操作码 (Opcode): 指明该指令要执行的操作，如加、减、取数、存数等。操作码的位数决定了计算机的指令集大小（例如，n 位操作码最多可以表示 2^n 条指令）。 地址码 (Address Code): 指明操作的对象（操作数）的地址。根据地址码的数量，指令可以分为零地址、一地址、二地址、三地址指令。     操作码 (Opcode) 地址码 1 (A1) 地址码 2 (A2) …     三地址指令: OP A1, A2, A3 -&gt; (A1) OP (A2) -&gt; A3 (例如，ADD R1, R2, R3) 二地址指令: OP A1, A2 -&gt; (A1) OP (A2) -&gt; A1 (例如...</div></div></div></a><a class="pagination-related" href="/2025/10/22/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80-%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BB%84%E6%88%90%E5%8E%9F%E7%90%86-%E6%8C%87%E4%BB%A4%E6%B5%81%E6%B0%B4%E7%BA%BF/" title="计算机基础-计算机组成原理-指令流水线"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-10-22</div><div class="info-item-2">计算机基础-计算机组成原理-指令流水线</div></div><div class="info-2"><div class="info-item-1">指令流水线 (Instruction Pipelining)指令流水线是现代处理器中用于提升性能的一项关键技术。它的核心思想类似于工厂里的“流水线”，将一条指令的执行过程分解为多个相互独立的阶段（Stage），并让这些阶段可以并行处理不同指令的不同部分，从而提高指令的吞吐率。 1. 流水线的基本概念假设一条指令的执行需要 3 个时钟周期，如果不使用流水线，执行 3 条指令就需要 3 * 3 = 9 个时钟周期。 现在，我们将一条指令的执行过程分解为 3 个阶段，每个阶段耗时 1 个时钟周期：  取指 (Fetch, IF): 从内存中取出指令。 译码 (Decode, ID): 分析指令，确定操作类型和操作数。 执行 (Execute, EX): 执行指令所规定的操作。  通过流水线技术，CPU 可以在第一个时钟周期取第一条指令，在第二个时钟周期取第二条指令并同时译码第一条指令，在第三个时钟周期取第三条指令、译码第二条指令并同时执行第一条指令。此后，每个时钟周期都能完成一条指令的执行。 非流水线 vs. 流水线对比:  非流水线 (9个周期): 123指令1: | IF | ID...</div></div></div></a><a class="pagination-related" href="/2025/10/22/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80-%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BB%84%E6%88%90%E5%8E%9F%E7%90%86-%E4%B8%BB%E5%AD%98%E5%82%A8%E5%99%A8/" title="计算机基础-计算机组成原理-主存储器"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-10-22</div><div class="info-item-2">计算机基础-计算机组成原理-主存储器</div></div><div class="info-2"><div class="info-item-1">主存储器 (Main Memory)主存储器（简称主存或内存）是计算机存储器层次结构中的核心组成部分，位于高速缓存（Cache）和辅助存储器（硬盘）之间。它用于存放 CPU 当前正在执行的程序和处理的数据。CPU 可以直接对主存进行读写访问。 现代计算机的主存主要由半导体存储器构成，根据其工作原理的不同，主要分为两大类：静态随机存取存储器 (SRAM) 和动态随机存取存储器 (DRAM)。 1. 静态随机存取存储器 (SRAM - Static RAM) 工作原理: SRAM 使用触发器 (Flip-flop) 来存储每一位（bit）的数据。一个触发器通常由 6 个晶体管构成。只要有持续的电源供应，触发器就能一直保持其状态（0 或 1），无需刷新。  特点:  速度快: 由于其结构简单，无需刷新操作，SRAM 的存取速度非常快，接近 CPU 的速度。 价格昂贵: 每个 bit 需要多个晶体管，集成度低，单位容量的成本非常高。 功耗较大: 在保持数据时，触发器一直处于工作状态，因此功耗相对较高。   主要用途: 因其高速特性，SRAM 主要用于制造高速缓存 (Cache) 和 CP...</div></div></div></a><a class="pagination-related" href="/2025/10/22/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80-%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BB%84%E6%88%90%E5%8E%9F%E7%90%86-%E5%A4%9A%E5%A4%84%E7%90%86%E5%99%A8%E7%B3%BB%E7%BB%9F/" title="计算机基础-计算机组成原理-多处理器系统"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-10-22</div><div class="info-item-2">计算机基础-计算机组成原理-多处理器系统</div></div><div class="info-2"><div class="info-item-1">多处理器系统 (Multiprocessor Systems)随着单个处理器性能提升遭遇物理瓶颈，通过集成多个处理器（核心）来提升计算能力成为主流，这就是多处理器系统。这类系统通过并行处理来显著提高计算机的吞吐率和性能。 1. 并行处理概念：Flynn 分类法Flynn 分类法是基于指令流 (Instruction Stream) 和数据流 (Data Stream) 的数量，对计算机体系结构进行分类的一种经典方法。  指令流: 机器执行的指令序列。 数据流: 由指令流调用的数据序列。  根据此分类，计算机体系结构可以分为四类：  SISD (Single Instruction, Single Data Stream) - 单指令流单数据流  描述: 传统的单处理器计算机，一个时刻只执行一条指令，处理一个数据。 示例: 早期的冯·诺依曼体系计算机。   SIMD (Single Instruction, Multiple Data Stream) - 单指令流多数据流  描述: 用一条指令同时对多个不同的数据执行相同的操作。这种并行方式也称为数据级并行。 示例: 现代 CPU ...</div></div></div></a><a class="pagination-related" href="/2025/10/22/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80-%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BB%84%E6%88%90%E5%8E%9F%E7%90%86-%E5%AD%98%E5%82%A8%E5%99%A8%E5%B1%82%E6%AC%A1%E7%BB%93%E6%9E%84/" title="计算机基础-计算机组成原理-存储器层次结构"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-10-22</div><div class="info-item-2">计算机基础-计算机组成原理-存储器层次结构</div></div><div class="info-2"><div class="info-item-1">存储器层次结构 (Memory Hierarchy)在计算机系统中，我们对存储器的期望是：速度快、容量大、价格便宜。然而，这三个目标在物理上是相互矛盾的。速度越快的存储器，通常价格越贵，容量也越小。为了解决这个矛盾，现代计算机系统采用了存储器层次结构 (Memory Hierarchy) 的设计。 1. 为什么需要层次结构？存储器层次结构的基本思想是，在 CPU 和主存之间，以及主存和辅存之间，设置不同速度、容量和价格的存储层次，并将数据在这些层次之间进行调度，以尽可能地达到高速、大容量和低成本的统一。 这种设计的有效性，主要依赖于一个重要的程序行为特性——局部性原理 (Principle of Locality)。  时间局部性 (Temporal Locality): 如果一个数据项被访问了，那么在不久的将来，它很可能再次被访问。例如，循环中的变量、函数中的局部变量。 空间局部性 (Spatial Locality): 如果一个数据项被访问了，那么与它地址相邻的数据项也很可能很快被访问。例如，数组的顺序访问、指令的顺序执行。  正是因为局部性原理的存在，我们可以将 CPU 当...</div></div></div></a></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/butterfly-icon.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">david</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">71</div></a><a href="/tags/"><div class="headline">Tags</div><div class="length-num">152</div></a><a href="/categories/"><div class="headline">Categories</div><div class="length-num">14</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>Announcement</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>Contents</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8E%A7%E5%88%B6%E5%99%A8%E8%AE%BE%E8%AE%A1"><span class="toc-number">1.</span> <span class="toc-text">控制器设计</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E7%A1%AC%E5%B8%83%E7%BA%BF%E6%8E%A7%E5%88%B6%E5%99%A8-Hardwired-Controller"><span class="toc-number">1.1.</span> <span class="toc-text">1. 硬布线控制器 (Hardwired Controller)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E5%BE%AE%E7%A8%8B%E5%BA%8F%E6%8E%A7%E5%88%B6%E5%99%A8-Micro-programmed-Controller"><span class="toc-number">1.2.</span> <span class="toc-text">2. 微程序控制器 (Micro-programmed Controller)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%80%BB%E7%BB%93%E5%AF%B9%E6%AF%94"><span class="toc-number">1.3.</span> <span class="toc-text">总结对比</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>Recent Posts</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/10/22/JavaSE-%E5%B8%B8%E7%94%A8API/" title="JavaSE-常用API">JavaSE-常用API</a><time datetime="2025-10-22T02:00:00.000Z" title="Created 2025-10-22 10:00:00">2025-10-22</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/10/22/JavaSE-%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/" title="JavaSE-异常处理">JavaSE-异常处理</a><time datetime="2025-10-22T02:00:00.000Z" title="Created 2025-10-22 10:00:00">2025-10-22</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/10/22/JavaSE-%E9%9B%86%E5%90%88%E6%A1%86%E6%9E%B6/" title="JavaSE-集合框架(索引)">JavaSE-集合框架(索引)</a><time datetime="2025-10-22T02:00:00.000Z" title="Created 2025-10-22 10:00:00">2025-10-22</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/10/22/JavaSE-%E9%9D%A2%E5%90%91%E5%AF%B9%E8%B1%A1%E7%BC%96%E7%A8%8B/" title="JavaSE-面向对象编程">JavaSE-面向对象编程</a><time datetime="2025-10-22T02:00:00.000Z" title="Created 2025-10-22 10:00:00">2025-10-22</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/10/22/JavaSE-%E5%85%A8%E9%9D%A2%E6%8E%8C%E6%8F%A1/" title="JavaSE-全面掌握">JavaSE-全面掌握</a><time datetime="2025-10-22T02:00:00.000Z" title="Created 2025-10-22 10:00:00">2025-10-22</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 By david</span><span class="framework-info"><span>Framework </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>Theme </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.4.3</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="Reading Mode"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="Toggle Between Light and Dark Mode"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="Toggle Between Single-column and Double-column"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="Settings"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="Table of Contents"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="Back to Top"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><div class="js-pjax"><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (false) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>

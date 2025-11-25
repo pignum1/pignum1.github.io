@@ -1,0 +1,320 @@
+<!DOCTYPE html><html lang="en" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>JavaSE-泛型 | Hexo</title><meta name="author" content="david"><meta name="copyright" content="david"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="JavaSE - 泛型 (Generics)泛型（Generics）是 Java 5 引入的一个重要特性，它允许在定义类、接口和方法时使用类型参数。泛型的核心目标是提高代码的类型安全性和消除强制类型转换，同时增强代码的可重用性。 1. 为什么需要泛型？在泛型出现之前，Java 集合框架（如 ArrayList）只能存储 Object 类型的对象。这意味着：  类型不安全: 任何类型的对象都可以被添">
+<meta property="og:type" content="article">
+<meta property="og:title" content="JavaSE-泛型">
+<meta property="og:url" content="http://example.com/2025/10/22/JavaSE-%E6%B3%9B%E5%9E%8B/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="JavaSE - 泛型 (Generics)泛型（Generics）是 Java 5 引入的一个重要特性，它允许在定义类、接口和方法时使用类型参数。泛型的核心目标是提高代码的类型安全性和消除强制类型转换，同时增强代码的可重用性。 1. 为什么需要泛型？在泛型出现之前，Java 集合框架（如 ArrayList）只能存储 Object 类型的对象。这意味着：  类型不安全: 任何类型的对象都可以被添">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://example.com/img/butterfly-icon.png">
+<meta property="article:published_time" content="2025-10-22T02:00:00.000Z">
+<meta property="article:modified_time" content="2025-11-09T07:10:31.837Z">
+<meta property="article:author" content="david">
+<meta property="article:tag" content="Java">
+<meta property="article:tag" content="泛型">
+<meta property="article:tag" content="Generics">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/img/butterfly-icon.png"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "JavaSE-泛型",
+  "url": "http://example.com/2025/10/22/JavaSE-%E6%B3%9B%E5%9E%8B/",
+  "image": "http://example.com/img/butterfly-icon.png",
+  "datePublished": "2025-10-22T02:00:00.000Z",
+  "dateModified": "2025-11-09T07:10:31.837Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "david",
+      "url": "http://example.com"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://example.com/2025/10/22/JavaSE-%E6%B3%9B%E5%9E%8B/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: 'Copy Successful',
+    error: 'Copy Failed',
+    noSupport: 'Browser Not Supported'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: 'Just now',
+    min: 'minutes ago',
+    hour: 'hours ago',
+    day: 'days ago',
+    month: 'months ago'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid/dist/infinitegrid.min.js',
+    buttonText: 'Load More'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'JavaSE-泛型',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Hexo</span></a><a class="nav-page-title" href="/"><span class="site-name">JavaSE-泛型</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  Back to Home</span></span></a></span><div id="menus"></div></nav><div id="post-info"><h1 class="post-title">JavaSE-泛型</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">Created</span><time class="post-meta-date-created" datetime="2025-10-22T02:00:00.000Z" title="Created 2025-10-22 10:00:00">2025-10-22</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">Updated</span><time class="post-meta-date-updated" datetime="2025-11-09T07:10:31.837Z" title="Updated 2025-11-09 15:10:31">2025-11-09</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E6%A0%B8%E5%BF%83Java%E4%B8%8EJVM%E7%B2%BE%E9%80%9A/">核心Java与JVM精通</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E6%A0%B8%E5%BF%83Java%E4%B8%8EJVM%E7%B2%BE%E9%80%9A/Java%E8%AF%AD%E8%A8%80%E5%9F%BA%E7%A1%80%E4%B8%8E%E9%AB%98%E7%BA%A7%E7%89%B9%E6%80%A7/">Java语言基础与高级特性</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">Post Views:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h2 id="JavaSE-泛型-Generics"><a href="#JavaSE-泛型-Generics" class="headerlink" title="JavaSE - 泛型 (Generics)"></a>JavaSE - 泛型 (Generics)</h2><p>泛型（Generics）是 Java 5 引入的一个重要特性，它允许在定义类、接口和方法时使用类型参数。泛型的核心目标是<strong>提高代码的类型安全性</strong>和<strong>消除强制类型转换</strong>，同时增强代码的<strong>可重用性</strong>。</p>
+<h3 id="1-为什么需要泛型？"><a href="#1-为什么需要泛型？" class="headerlink" title="1. 为什么需要泛型？"></a>1. 为什么需要泛型？</h3><p>在泛型出现之前，Java 集合框架（如 <code>ArrayList</code>）只能存储 <code>Object</code> 类型的对象。这意味着：</p>
+<ol>
+<li><strong>类型不安全</strong>: 任何类型的对象都可以被添加到集合中，导致运行时可能出现 <code>ClassCastException</code>。</li>
+<li><strong>需要强制类型转换</strong>: 从集合中取出元素时，必须进行强制类型转换，代码冗余且容易出错。</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 泛型出现之前</span></span><br><span class="line"><span class="type">List</span> <span class="variable">list</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ArrayList</span>();</span><br><span class="line">list.add(<span class="string">&quot;hello&quot;</span>);</span><br><span class="line">list.add(<span class="number">123</span>); <span class="comment">// 编译时不会报错</span></span><br><span class="line"></span><br><span class="line"><span class="type">String</span> <span class="variable">s</span> <span class="operator">=</span> (String) list.get(<span class="number">0</span>); <span class="comment">// 需要强制类型转换</span></span><br><span class="line"><span class="type">Integer</span> <span class="variable">i</span> <span class="operator">=</span> (Integer) list.get(<span class="number">1</span>); <span class="comment">// 需要强制类型转换</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// String s2 = (String) list.get(1); // 运行时抛出 ClassCastException</span></span><br></pre></td></tr></table></figure>
+
+<p>泛型解决了这些问题，它在<strong>编译时</strong>就提供了类型检查，确保了类型安全。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 使用泛型</span></span><br><span class="line">List&lt;String&gt; stringList = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;String&gt;();</span><br><span class="line">stringList.add(<span class="string">&quot;hello&quot;</span>);</span><br><span class="line"><span class="comment">// stringList.add(123); // 编译时报错，类型不匹配</span></span><br><span class="line"></span><br><span class="line"><span class="type">String</span> <span class="variable">s</span> <span class="operator">=</span> stringList.get(<span class="number">0</span>); <span class="comment">// 无需强制类型转换</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="2-泛型的基本使用"><a href="#2-泛型的基本使用" class="headerlink" title="2. 泛型的基本使用"></a>2. 泛型的基本使用</h3><h4 id="2-1-泛型类"><a href="#2-1-泛型类" class="headerlink" title="2.1 泛型类"></a>2.1 泛型类</h4><p>在类名后面添加 <code>&lt;T&gt;</code>（或其他大写字母，如 <code>E</code> 表示元素，<code>K</code> 表示键，<code>V</code> 表示值），<code>T</code> 就是类型参数。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Box</span>&lt;T&gt; &#123;</span><br><span class="line">    <span class="keyword">private</span> T data;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">Box</span><span class="params">(T data)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.data = data;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> T <span class="title function_">getData</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> data;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">setData</span><span class="params">(T data)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.data = data;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        Box&lt;String&gt; stringBox = <span class="keyword">new</span> <span class="title class_">Box</span>&lt;&gt;(<span class="string">&quot;Hello Generics&quot;</span>);</span><br><span class="line">        System.out.println(stringBox.getData());</span><br><span class="line"></span><br><span class="line">        Box&lt;Integer&gt; integerBox = <span class="keyword">new</span> <span class="title class_">Box</span>&lt;&gt;(<span class="number">123</span>);</span><br><span class="line">        System.out.println(integerBox.getData());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="2-2-泛型接口"><a href="#2-2-泛型接口" class="headerlink" title="2.2 泛型接口"></a>2.2 泛型接口</h4><p>接口也可以使用泛型。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">Generator</span>&lt;T&gt; &#123;</span><br><span class="line">    T <span class="title function_">next</span><span class="params">()</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">StringGenerator</span> <span class="keyword">implements</span> <span class="title class_">Generator</span>&lt;String&gt; &#123;</span><br><span class="line">    <span class="keyword">private</span> String[] data = &#123;<span class="string">&quot;A&quot;</span>, <span class="string">&quot;B&quot;</span>, <span class="string">&quot;C&quot;</span>&#125;;</span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> <span class="variable">index</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> String <span class="title function_">next</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> data[index++];</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        Generator&lt;String&gt; generator = <span class="keyword">new</span> <span class="title class_">StringGenerator</span>();</span><br><span class="line">        System.out.println(generator.next());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="2-3-泛型方法"><a href="#2-3-泛型方法" class="headerlink" title="2.3 泛型方法"></a>2.3 泛型方法</h4><p>在方法返回类型前面添加 <code>&lt;T&gt;</code>，<code>T</code> 就是类型参数。泛型方法可以定义在普通类中，也可以定义在泛型类中。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">GenericMethod</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> &lt;T&gt; <span class="keyword">void</span> <span class="title function_">printArray</span><span class="params">(T[] array)</span> &#123;</span><br><span class="line">        <span class="keyword">for</span> (T element : array) &#123;</span><br><span class="line">            System.out.print(element + <span class="string">&quot; &quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        System.out.println();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        Integer[] intArray = &#123;<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>&#125;;</span><br><span class="line">        String[] stringArray = &#123;<span class="string">&quot;Hello&quot;</span>, <span class="string">&quot;World&quot;</span>&#125;;</span><br><span class="line"></span><br><span class="line">        printArray(intArray);   <span class="comment">// 编译器自动推断 T 为 Integer</span></span><br><span class="line">        printArray(stringArray); <span class="comment">// 编译器自动推断 T 为 String</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-类型擦除-Type-Erasure"><a href="#3-类型擦除-Type-Erasure" class="headerlink" title="3. 类型擦除 (Type Erasure)"></a>3. 类型擦除 (Type Erasure)</h3><p>这是 Java 泛型最核心也是最容易混淆的概念。</p>
+<ul>
+<li><strong>定义</strong>: Java 泛型是在<strong>编译时</strong>实现的。在编译完成后，所有泛型信息（即类型参数 <code>&lt;T&gt;</code>）都会被<strong>擦除</strong>，替换为它们的上界（通常是 <code>Object</code>）。</li>
+<li><strong>目的</strong>: 为了兼容 Java 5 之前的旧版本代码。</li>
+<li><strong>影响</strong>: <ol>
+<li><strong>运行时无法获取泛型类型信息</strong>: 例如，<code>List&lt;String&gt;</code> 和 <code>List&lt;Integer&gt;</code> 在运行时实际上都是 <code>List</code> 类型。<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">List&lt;String&gt; list1 = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;();</span><br><span class="line">List&lt;Integer&gt; list2 = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;();</span><br><span class="line">System.out.println(list1.getClass() == list2.getClass()); <span class="comment">// 输出 true</span></span><br></pre></td></tr></table></figure></li>
+<li><strong>不能使用 <code>instanceof</code> 判断泛型类型</strong>: <code>if (obj instanceof List&lt;String&gt;)</code> 是编译错误的。</li>
+<li><strong>不能创建泛型数组</strong>: <code>T[] array = new T[10];</code> 是编译错误的，因为运行时 <code>T</code> 不存在。</li>
+<li><strong>不能直接捕获泛型异常</strong>: <code>catch (MyGenericException&lt;T&gt; e)</code> 是编译错误的。</li>
+</ol>
+</li>
+</ul>
+<h3 id="4-泛型通配符-Wildcards-与-PECS-原则"><a href="#4-泛型通配符-Wildcards-与-PECS-原则" class="headerlink" title="4. 泛型通配符 (Wildcards) 与 PECS 原则"></a>4. 泛型通配符 (Wildcards) 与 PECS 原则</h3><p>泛型通配符用于解决泛型类型之间<strong>不能直接赋值</strong>的问题。例如，<code>List&lt;String&gt;</code> 并不是 <code>List&lt;Object&gt;</code> 的子类型。为了理解通配符，我们必须先理解著名的 <strong>PECS 原则</strong>。</p>
+<h4 id="PECS-Producer-Extends-Consumer-Super"><a href="#PECS-Producer-Extends-Consumer-Super" class="headerlink" title="PECS: Producer Extends, Consumer Super"></a>PECS: Producer Extends, Consumer Super</h4><p>这个原则的命名非常容易引起混淆，关键在于要从<strong>泛型集合本身</strong>的角度来理解“生产者”和“消费者”。</p>
+<ul>
+<li><p><strong>Producer (生产者)</strong>: 指的是一个<strong>向你的代码提供 T 类型实例</strong>的泛型集合。你的代码是从这个集合中<strong>读取 (get)</strong> 数据。因此，它是一个数据的<strong>来源</strong>或<strong>生产者</strong>。</p>
+<ul>
+<li><strong>结论</strong>: 对于这样的生产者，我们使用 <code>extends</code>。</li>
+</ul>
+</li>
+<li><p><strong>Consumer (消费者)</strong>: 指的是一个<strong>需要接收 T 类型实例</strong>的泛型集合。你的代码是向这个集合中<strong>写入 (add)</strong> 数据。因此，它是一个数据的<strong>目的地</strong>或<strong>消费者</strong>。</p>
+<ul>
+<li><strong>结论</strong>: 对于这样的消费者，我们使用 <code>super</code>。</li>
+</ul>
+</li>
+</ul>
+<p>我们用一个“水果盘”的例子来解释。假设有以下类：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Fruit</span> &#123;&#125;</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Apple</span> <span class="keyword">extends</span> <span class="title class_">Fruit</span> &#123;&#125;</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Banana</span> <span class="keyword">extends</span> <span class="title class_">Fruit</span> &#123;&#125;</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">RedApple</span> <span class="keyword">extends</span> <span class="title class_">Apple</span> &#123;&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="extends-Fruit-上界通配符-用于读取"><a href="#extends-Fruit-上界通配符-用于读取" class="headerlink" title="? extends Fruit (上界通配符 - 用于读取)"></a><code>? extends Fruit</code> (上界通配符 - 用于读取)</h4><p><code>List&lt;? extends Fruit&gt;</code> 表示这是一个“<strong>装着某种水果的盘子</strong>”。它可能是 <code>List&lt;Fruit&gt;</code>，也可能是 <code>List&lt;Apple&gt;</code>。</p>
+<ul>
+<li><p><strong>读取操作 (安全)</strong>: 我们可以从这个盘子里<strong>取出</strong>水果。因为无论盘子里装的是 <code>Apple</code> 还是 <code>Banana</code>，我们都可以肯定地说“它是一种水果 (<code>Fruit</code>)”。</p>
+<ul>
+<li><code>Fruit f = fruitPlate.get(0);</code> 是<strong>安全</strong>的。</li>
+</ul>
+</li>
+<li><p><strong>写入操作 (危险)</strong>: 我们<strong>不能</strong>往这个盘子里<strong>放入</strong>任何具体类型的水果。为什么？</p>
+<ul>
+<li>因为我们不确定盘子的具体类型。如果这个盘子实际上是 <code>List&lt;Apple&gt;</code>（一个苹果盘），你试图往里面放入一个 <code>Banana</code>，这显然是错误的。</li>
+<li>编译器为了保证类型安全，干脆<strong>禁止</strong>了所有写入操作（除了 <code>null</code>）。</li>
+</ul>
+</li>
+</ul>
+<p><strong>总结 <code>extends</code></strong>:</p>
+<ul>
+<li><strong>功能</strong>: 主要用于<strong>安全地读取数据</strong> (get)。</li>
+<li><strong>限制</strong>: <strong>不能写入</strong>数据 (add)。</li>
+<li><strong>记忆</strong>: <code>extends</code> 用于<strong>生产者</strong> (Producer)，即提供数据供你读取的集合。</li>
+</ul>
+<h4 id="super-Apple-下界通配符-用于写入"><a href="#super-Apple-下界通配符-用于写入" class="headerlink" title="? super Apple (下界通配符 - 用于写入)"></a><code>? super Apple</code> (下界通配符 - 用于写入)</h4><p><code>List&lt;? super Apple&gt;</code> 表示这是一个“<strong>能装苹果以及苹果父类的盘子</strong>”。它可能是 <code>List&lt;Apple&gt;</code>，也可能是 <code>List&lt;Fruit&gt;</code>，或者是 <code>List&lt;Object&gt;</code>。</p>
+<ul>
+<li><p><strong>写入操作 (安全)</strong>: 我们可以往这个盘子里<strong>放入</strong>一个 <code>Apple</code>。为什么？</p>
+<ul>
+<li>因为无论这个盘子是 <code>List&lt;Apple&gt;</code>（苹果盘）、<code>List&lt;Fruit&gt;</code>（水果盘）还是 <code>List&lt;Object&gt;</code>（什么都能装的盘），它都<strong>有能力装下一个 <code>Apple</code></strong>。我们甚至可以放入 <code>RedApple</code>，因为 <code>RedApple</code> 也是一种 <code>Apple</code>。</li>
+<li><code>applePlate.add(new Apple());</code> 和 <code>applePlate.add(new RedApple());</code> 都是<strong>安全</strong>的。</li>
+</ul>
+</li>
+<li><p><strong>读取操作 (信息丢失)</strong>: 我们<strong>不能</strong>确定从这个盘子里取出的东西是什么类型，除了 <code>Object</code>。</p>
+<ul>
+<li>因为这个盘子可能是 <code>List&lt;Object&gt;</code>，你从里面取出的东西，只能保证它是一个 <code>Object</code>，但不能保证它是一个 <code>Fruit</code>，更不能保证它是一个 <code>Apple</code>。</li>
+<li><code>Object o = applePlate.get(0);</code> 是唯一安全的操作。</li>
+</ul>
+</li>
+</ul>
+<p><strong>总结 <code>super</code></strong>:</p>
+<ul>
+<li><strong>功能</strong>: 主要用于<strong>安全地写入数据</strong> (add)。</li>
+<li><strong>限制</strong>: <strong>读取数据时类型信息丢失</strong>（只能得到 <code>Object</code>）。</li>
+<li><strong>记忆</strong>: <code>super</code> 用于<strong>消费者</strong> (Consumer)，即接收你写入的数据的集合。</li>
+</ul>
+<h4 id="无界通配符"><a href="#无界通配符" class="headerlink" title="? (无界通配符)"></a><code>?</code> (无界通配符)</h4><p><code>List&lt;?&gt;</code> 实际上是 <code>List&lt;? extends Object&gt;</code> 的简写，其行为与 <code>extends</code> 一致：只能读（作为 <code>Object</code>），不能写。</p>
+<h4 id="实际应用：Collections-copy"><a href="#实际应用：Collections-copy" class="headerlink" title="实际应用：Collections.copy()"></a>实际应用：<code>Collections.copy()</code></h4><p>Java 源码中的 <code>Collections.copy()</code> 方法是理解 PECS 原则的最佳范例：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> &lt;T&gt; <span class="keyword">void</span> <span class="title function_">copy</span><span class="params">(List&lt;? <span class="built_in">super</span> T&gt; dest, List&lt;? extends T&gt; src)</span> &#123;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><code>src</code> (源列表): 它是<strong>生产者</strong>，我们只需要从里面<strong>读取</strong> <code>T</code> 类型的元素，所以使用 <code>? extends T</code>。</li>
+<li><code>dest</code> (目标列表): 它是<strong>消费者</strong>，我们需要往里面<strong>写入</strong> <code>T</code> 类型的元素，所以使用 <code>? super T</code>。</li>
+</ul>
+<p>这个方法签名完美地诠释了 PECS 原则，使得 <code>copy</code> 方法具有最大的灵活性。例如，你可以将一个 <code>ArrayList&lt;Integer&gt;</code> 复制到一个 <code>ArrayList&lt;Number&gt;</code> 中。</p>
+<h3 id="5-泛型方法与类型推断"><a href="#5-泛型方法与类型推断" class="headerlink" title="5. 泛型方法与类型推断"></a>5. 泛型方法与类型推断</h3><p>Java 编译器在调用泛型方法时，会尝试根据方法参数的类型来推断类型参数 <code>T</code> 的具体类型。这种能力称为<strong>类型推断 (Type Inference)</strong>。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">TypeInferenceExample</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> &lt;T&gt; T <span class="title function_">getFirst</span><span class="params">(List&lt;T&gt; list)</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> list.isEmpty() ? <span class="literal">null</span> : list.get(<span class="number">0</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        List&lt;String&gt; names = Arrays.asList(<span class="string">&quot;Alice&quot;</span>, <span class="string">&quot;Bob&quot;</span>);</span><br><span class="line">        <span class="type">String</span> <span class="variable">first</span> <span class="operator">=</span> getFirst(names); <span class="comment">// 编译器推断 T 为 String</span></span><br><span class="line">        System.out.println(first);</span><br><span class="line"></span><br><span class="line">        List&lt;Integer&gt; numbers = Arrays.asList(<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>);</span><br><span class="line">        <span class="type">Integer</span> <span class="variable">num</span> <span class="operator">=</span> getFirst(numbers); <span class="comment">// 编译器推断 T 为 Integer</span></span><br><span class="line">        System.out.println(num);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="6-泛型与继承"><a href="#6-泛型与继承" class="headerlink" title="6. 泛型与继承"></a>6. 泛型与继承</h3><ul>
+<li><strong>泛型类不具备继承性</strong>: <code>Box&lt;Integer&gt;</code> 并不是 <code>Box&lt;Number&gt;</code> 的子类。即使 <code>Integer</code> 是 <code>Number</code> 的子类，<code>Box&lt;Integer&gt;</code> 和 <code>Box&lt;Number&gt;</code> 之间也没有继承关系。</li>
+<li><strong>通配符解决泛型继承问题</strong>: 这正是泛型通配符 <code>? extends T</code> 和 <code>? super T</code> 存在的意义，它们允许我们表达泛型类型之间的“兼容性”或“子类型关系”。</li>
+</ul>
+<h3 id="7-总结"><a href="#7-总结" class="headerlink" title="7. 总结"></a>7. 总结</h3><p>泛型是 Java 语言中一个非常强大且复杂的特性。它通过在编译时进行类型检查，提高了代码的安全性、可读性和可重用性。理解类型擦除和泛型通配符是掌握泛型的关键。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>Author: </span><span class="post-copyright-info"><a href="http://example.com">david</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>Link: </span><span class="post-copyright-info"><a href="http://example.com/2025/10/22/JavaSE-%E6%B3%9B%E5%9E%8B/">http://example.com/2025/10/22/JavaSE-%E6%B3%9B%E5%9E%8B/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>Copyright Notice: </span><span class="post-copyright-info">All articles on this blog are licensed under <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> unless otherwise stated.</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Java/">Java</a><a class="post-meta__tags" href="/tags/%E6%B3%9B%E5%9E%8B/">泛型</a><a class="post-meta__tags" href="/tags/Generics/">Generics</a></div><div class="post-share"><div class="social-share" data-image="/img/butterfly-icon.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2025/10/22/JavaSE-%E6%B3%A8%E8%A7%A3/" title="JavaSE-注解"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">Previous</div><div class="info-item-2">JavaSE-注解</div></div><div class="info-2"><div class="info-item-1">JavaSE - 注解 (Annotations)注解（Annotations）是 Java 5 引入的一种元数据（metadata）机制。它提供了一种不影响程序逻辑的方式，为代码添加额外的信息。这些信息可以在编译时、类加载时或运行时被读取和处理，从而实现代码的自动化处理、检查或配置。 1. 注解的本质与作用 本质: 注解是一种特殊的接口，继承自 java.lang.annotation.Annotation 接口。 作用: 编译检查: 告诉编译器如何检查代码（如 @Override, @Deprecated）。 代码生成: 通过注解处理器在编译时生成新的代码（如 Lombok）。 运行时处理: 在运行时通过反射读取注解信息，进行动态配置或行为修改（如 Spring 的 @Autowired, @Transactional）。    2. Java 内置注解Java 提供了几个标准的内置注解，它们在日常开发中非常常见。  @Override:  作用: 标记一个方法是重写父类或实现接口的方法。 目的: 帮助编译器检查方法签名是否正确，如果父类中没有对应方法，则编译报错。   @D...</div></div></div></a><a class="pagination-related" href="/2025/10/22/JavaSE-%E5%8F%8D%E5%B0%84/" title="JavaSE-反射"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">Next</div><div class="info-item-2">JavaSE-反射</div></div><div class="info-2"><div class="info-item-1">JavaSE - 反射 (Reflection)反射（Reflection）是 Java 语言在运行时动态地获取类信息并操作对象的能力。它允许程序在运行时检查类、接口、字段和方法，而无需在编译时知道这些信息。这是 Java 语言非常强大和灵活的特性，也是许多高级框架（如 Spring、Hibernate、JUnit）实现其核心功能的基石。 1. 反射的基石：Class 类java.lang.Class 类是反射的入口。每个类在 JVM 中都有一个对应的 Class 对象，这个对象包含了该类的所有结构信息（构造器、方法、字段等）。 获取 Class 对象的三种方式 Class.forName(&quot;全限定类名&quot;): 最常用，通过类的全限定名获取。1Class&lt;?&gt; c1 = Class.forName(&quot;java.lang.String&quot;); 类名.class: 通过类本身的 class 属性获取。1Class&lt;?&gt; c2 = String.class; 对象.getClass(): 通过对象的 getClass() 方法...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>Related Articles</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/2025/10/22/JavaSE-%E5%B8%B8%E7%94%A8API/" title="JavaSE-常用API"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-10-22</div><div class="info-item-2">JavaSE-常用API</div></div><div class="info-2"><div class="info-item-1">JavaSE - 常用 APIJava Development Kit (JDK) 提供了大量功能强大的 API (Application Programming Interface)，这些 API 是我们日常开发的基础工具。熟练掌握常用 API 能极大地提高开发效率和代码质量。 1. String 类String 是 Java 中最重要、最常用的类之一，用于表示字符串。String 对象是不可变的 (immutable)，一旦创建，其内容就不能被修改。 1.1 String 的不可变性 优点:  线程安全: 因为不可变，所以可以在多线程环境中安全共享，无需同步。 可作为 HashMap 的键: String 的 hashCode() 是缓存的，因为字符串内容不变，所以哈希码也不变，提高了 HashMap 的性能。 字符串常量池 (String Pool): 不可变性是字符串常量池实现的基础，可以节省大量内存。   缺点: 每次对 String 对象进行修改（如拼接、替换），都会创建一个新的 String 对象，这在大量操作时会产生性能开销和内存垃圾。  1.2 常用方法 int...</div></div></div></a><a class="pagination-related" href="/2025/10/22/JavaSE-%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/" title="JavaSE-异常处理"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-10-22</div><div class="info-item-2">JavaSE-异常处理</div></div><div class="info-2"><div class="info-item-1">JavaSE - 异常处理 (Exception Handling)异常处理是 Java 语言中一个强大的机制，它提供了一种结构化的方式来处理程序在运行时可能出现的错误或“异常”情况，从而增强程序的健壮性和容错性。 1. 异常体系结构Java 中所有的异常都派生自 java.lang.Throwable 类。Throwable 有两个主要的子类：Error 和 Exception。      graph TD     A(Throwable) --&gt; B(Error)     A --&gt; C(Exception)      B --&gt; D[OutOfMemoryError]     B --&gt; E[StackOverflowError]      C --&gt; F(Checked Exception)     C --&gt; G(RuntimeException)      F --&gt; H[IOException]     F --&gt; I[SQLException]     G --&gt; J[NullPointerException]...</div></div></div></a><a class="pagination-related" href="/2025/10/22/JavaSE-%E9%9B%86%E5%90%88%E6%A1%86%E6%9E%B6/" title="JavaSE-集合框架(索引)"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-10-22</div><div class="info-item-2">JavaSE-集合框架(索引)</div></div><div class="info-2"><div class="info-item-1">JavaSE - 集合框架 (Collections Framework)Java 集合框架（JCF）是一个用来存储和操作对象集合的统一架构。它包含了一系列的接口、实现类和算法，极大地简化了对数据集合的处理。这是 JavaSE 中最核心、最重要的部分之一。 本篇笔记将作为集合框架学习的索引和枢纽，您可以点击以下链接，跳转到各个核心接口的详细学习笔记中。 1. 集合框架核心接口     %%{init: {&#39;theme&#39;: &#39;neutral&#39;}}%% graph TD     subgraph Collection 接口         A[Iterable] --&gt; B(Collection)         B --&gt; C{List}         B --&gt; D{Set}         B --&gt; E{Queue}     end     subgraph Map 接口         F(Map)     end      C --&gt; G[ArrayList]     C --&gt; H[LinkedLis...</div></div></div></a><a class="pagination-related" href="/2025/10/22/JavaSE-%E9%9D%A2%E5%90%91%E5%AF%B9%E8%B1%A1%E7%BC%96%E7%A8%8B/" title="JavaSE-面向对象编程"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-10-22</div><div class="info-item-2">JavaSE-面向对象编程</div></div><div class="info-2"><div class="info-item-1">JavaSE - 面向对象编程 (OOP)面向对象编程（Object-Oriented Programming, OOP）是 Java 语言的核心思想。它是一种程序设计范式，将程序组织为“对象”的集合，每个对象都包含数据（属性）和操作数据的方法（行为）。OOP 的核心优势在于其模块化、可重用性和易于维护性。 1. 类与对象 (Class and Object) 类 (Class): 类是对象的模板或蓝图，它定义了对象的属性（数据）和行为（方法）。类是抽象的，不占用内存空间。 1234567891011121314public class Dog &#123;    // 属性 (成员变量)    String name;    int age;    // 行为 (成员方法)    public void bark() &#123;        System.out.println(name + &quot;汪汪叫！&quot;);    &#125;    public void eat() &#123;        System.out.println(name + &q...</div></div></div></a><a class="pagination-related" href="/2025/10/22/JavaSE-%E5%85%A8%E9%9D%A2%E6%8E%8C%E6%8F%A1/" title="JavaSE-全面掌握"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-10-22</div><div class="info-item-2">JavaSE-全面掌握</div></div><div class="info-2"><div class="info-item-1">JavaSE 全面掌握Java SE (Standard Edition) 是 Java 语言的核心和基础。精通 Java SE 是学习 Java EE、Android 开发以及各种高级框架（如 Spring、MyBatis）的前提。本部分旨在全面、系统地巩固 Java 的核心知识体系，为后续深入学习 JVM、并发编程和框架源码打下坚实的基础。 学习路径我们将遵循一条从基础到进阶的路径，逐步深入 Java 的世界：  基础语法: 回顾变量、数据类型、运算符、流程控制等基础知识 面向对象编程 (OOP): 深入理解封装、继承、多态三大特性，以及类、对象、接口、抽象类的设计与实现 常用 API: 掌握 &#96;String&#96;、&#96;StringBuilder&#96;、&#96;Math&#96;、日期时间 API (&#96;LocalDate&#96;, &#96;LocalDateTime&#96;) 等核心类的使用 集合框架 (Collections Framework): 这是 JavaSE 的重中之重。我们将深入学习 &#96;List&#96;, &#96...</div></div></div></a><a class="pagination-related" href="/2025/10/22/JavaSE-IO%E4%B8%8ENIO/" title="JavaSE-IO与NIO"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-10-22</div><div class="info-item-2">JavaSE-IO与NIO</div></div><div class="info-2"><div class="info-item-1">JavaSE - I&#x2F;O 与 NIOJava 的 I&#x2F;O (Input&#x2F;Output) 机制是程序与外部世界进行数据交换的桥梁。它允许程序从各种来源（如文件、网络、内存）读取数据，并将数据写入到各种目的地。随着技术的发展，Java 引入了 NIO (New I&#x2F;O) 来提供更高效、非阻塞的 I&#x2F;O 操作。 1. 传统 I&#x2F;O (BIO - Blocking I&#x2F;O)传统 I&#x2F;O 基于流 (Stream) 的概念，其主要特点是阻塞式 (Blocking)。当程序调用一个 I&#x2F;O 操作（如 read()）时，如果数据尚未准备好，线程就会被阻塞，直到操作完成。这种模式在连接数少时简单易用，但在高并发场景下，一个线程对应一个连接的方式会因大量线程阻塞和上下文切换而导致性能瓶颈。 2. NIO (New I&#x2F;O - Non-Blocking I&#x2F;O)Java NIO 是在 JDK 1.4 中引入的，它基于通道 (Channel)、缓冲区 (Buffer) 和选择器 (Selecto...</div></div></div></a></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/butterfly-icon.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">david</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">71</div></a><a href="/tags/"><div class="headline">Tags</div><div class="length-num">152</div></a><a href="/categories/"><div class="headline">Categories</div><div class="length-num">14</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>Announcement</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>Contents</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#JavaSE-%E6%B3%9B%E5%9E%8B-Generics"><span class="toc-number">1.</span> <span class="toc-text">JavaSE - 泛型 (Generics)</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E4%B8%BA%E4%BB%80%E4%B9%88%E9%9C%80%E8%A6%81%E6%B3%9B%E5%9E%8B%EF%BC%9F"><span class="toc-number">1.1.</span> <span class="toc-text">1. 为什么需要泛型？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E6%B3%9B%E5%9E%8B%E7%9A%84%E5%9F%BA%E6%9C%AC%E4%BD%BF%E7%94%A8"><span class="toc-number">1.2.</span> <span class="toc-text">2. 泛型的基本使用</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#2-1-%E6%B3%9B%E5%9E%8B%E7%B1%BB"><span class="toc-number">1.2.1.</span> <span class="toc-text">2.1 泛型类</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-2-%E6%B3%9B%E5%9E%8B%E6%8E%A5%E5%8F%A3"><span class="toc-number">1.2.2.</span> <span class="toc-text">2.2 泛型接口</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-3-%E6%B3%9B%E5%9E%8B%E6%96%B9%E6%B3%95"><span class="toc-number">1.2.3.</span> <span class="toc-text">2.3 泛型方法</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-%E7%B1%BB%E5%9E%8B%E6%93%A6%E9%99%A4-Type-Erasure"><span class="toc-number">1.3.</span> <span class="toc-text">3. 类型擦除 (Type Erasure)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-%E6%B3%9B%E5%9E%8B%E9%80%9A%E9%85%8D%E7%AC%A6-Wildcards-%E4%B8%8E-PECS-%E5%8E%9F%E5%88%99"><span class="toc-number">1.4.</span> <span class="toc-text">4. 泛型通配符 (Wildcards) 与 PECS 原则</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#PECS-Producer-Extends-Consumer-Super"><span class="toc-number">1.4.1.</span> <span class="toc-text">PECS: Producer Extends, Consumer Super</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#extends-Fruit-%E4%B8%8A%E7%95%8C%E9%80%9A%E9%85%8D%E7%AC%A6-%E7%94%A8%E4%BA%8E%E8%AF%BB%E5%8F%96"><span class="toc-number">1.4.2.</span> <span class="toc-text">? extends Fruit (上界通配符 - 用于读取)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#super-Apple-%E4%B8%8B%E7%95%8C%E9%80%9A%E9%85%8D%E7%AC%A6-%E7%94%A8%E4%BA%8E%E5%86%99%E5%85%A5"><span class="toc-number">1.4.3.</span> <span class="toc-text">? super Apple (下界通配符 - 用于写入)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%97%A0%E7%95%8C%E9%80%9A%E9%85%8D%E7%AC%A6"><span class="toc-number">1.4.4.</span> <span class="toc-text">? (无界通配符)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AE%9E%E9%99%85%E5%BA%94%E7%94%A8%EF%BC%9ACollections-copy"><span class="toc-number">1.4.5.</span> <span class="toc-text">实际应用：Collections.copy()</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-%E6%B3%9B%E5%9E%8B%E6%96%B9%E6%B3%95%E4%B8%8E%E7%B1%BB%E5%9E%8B%E6%8E%A8%E6%96%AD"><span class="toc-number">1.5.</span> <span class="toc-text">5. 泛型方法与类型推断</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-%E6%B3%9B%E5%9E%8B%E4%B8%8E%E7%BB%A7%E6%89%BF"><span class="toc-number">1.6.</span> <span class="toc-text">6. 泛型与继承</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-%E6%80%BB%E7%BB%93"><span class="toc-number">1.7.</span> <span class="toc-text">7. 总结</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>Recent Posts</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/10/22/JavaSE-%E5%B8%B8%E7%94%A8API/" title="JavaSE-常用API">JavaSE-常用API</a><time datetime="2025-10-22T02:00:00.000Z" title="Created 2025-10-22 10:00:00">2025-10-22</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/10/22/JavaSE-%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/" title="JavaSE-异常处理">JavaSE-异常处理</a><time datetime="2025-10-22T02:00:00.000Z" title="Created 2025-10-22 10:00:00">2025-10-22</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/10/22/JavaSE-%E9%9B%86%E5%90%88%E6%A1%86%E6%9E%B6/" title="JavaSE-集合框架(索引)">JavaSE-集合框架(索引)</a><time datetime="2025-10-22T02:00:00.000Z" title="Created 2025-10-22 10:00:00">2025-10-22</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/10/22/JavaSE-%E9%9D%A2%E5%90%91%E5%AF%B9%E8%B1%A1%E7%BC%96%E7%A8%8B/" title="JavaSE-面向对象编程">JavaSE-面向对象编程</a><time datetime="2025-10-22T02:00:00.000Z" title="Created 2025-10-22 10:00:00">2025-10-22</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/10/22/JavaSE-%E5%85%A8%E9%9D%A2%E6%8E%8C%E6%8F%A1/" title="JavaSE-全面掌握">JavaSE-全面掌握</a><time datetime="2025-10-22T02:00:00.000Z" title="Created 2025-10-22 10:00:00">2025-10-22</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 By david</span><span class="framework-info"><span>Framework </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>Theme </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.4.3</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="Reading Mode"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="Toggle Between Light and Dark Mode"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="Toggle Between Single-column and Double-column"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="Settings"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="Table of Contents"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="Back to Top"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><div class="js-pjax"><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (false) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>

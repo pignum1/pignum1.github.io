@@ -1,0 +1,291 @@
+<!DOCTYPE html><html lang="en" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>设计模式-命令模式 | Hexo</title><meta name="author" content="david"><meta name="copyright" content="david"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="什么是命令模式？命令模式 (Command Pattern) 是一种行为型设计模式，它将一个请求封装为一个对象，从而使你可用不同的请求对客户进行参数化，对请求排队或记录请求日志，以及支持可撤销的操作。 通俗地讲，命令模式就像你去餐厅吃饭。你（客户端）看好菜单后，告诉服务员（调用者）你要点什么菜（比如“一份宫保鸡丁”）。服务员将你的点单写在订单（命令对象）上，然后把订单交给后厨的厨师（接收者）。 在">
+<meta property="og:type" content="article">
+<meta property="og:title" content="设计模式-命令模式">
+<meta property="og:url" content="http://example.com/2025/10/22/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E5%91%BD%E4%BB%A4%E6%A8%A1%E5%BC%8F/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="什么是命令模式？命令模式 (Command Pattern) 是一种行为型设计模式，它将一个请求封装为一个对象，从而使你可用不同的请求对客户进行参数化，对请求排队或记录请求日志，以及支持可撤销的操作。 通俗地讲，命令模式就像你去餐厅吃饭。你（客户端）看好菜单后，告诉服务员（调用者）你要点什么菜（比如“一份宫保鸡丁”）。服务员将你的点单写在订单（命令对象）上，然后把订单交给后厨的厨师（接收者）。 在">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://example.com/img/butterfly-icon.png">
+<meta property="article:published_time" content="2025-10-22T02:00:00.000Z">
+<meta property="article:modified_time" content="2025-10-31T06:35:17.388Z">
+<meta property="article:author" content="david">
+<meta property="article:tag" content="Java">
+<meta property="article:tag" content="设计模式">
+<meta property="article:tag" content="Behavioral">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/img/butterfly-icon.png"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "设计模式-命令模式",
+  "url": "http://example.com/2025/10/22/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E5%91%BD%E4%BB%A4%E6%A8%A1%E5%BC%8F/",
+  "image": "http://example.com/img/butterfly-icon.png",
+  "datePublished": "2025-10-22T02:00:00.000Z",
+  "dateModified": "2025-10-31T06:35:17.388Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "david",
+      "url": "http://example.com"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://example.com/2025/10/22/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E5%91%BD%E4%BB%A4%E6%A8%A1%E5%BC%8F/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: 'Copy Successful',
+    error: 'Copy Failed',
+    noSupport: 'Browser Not Supported'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: 'Just now',
+    min: 'minutes ago',
+    hour: 'hours ago',
+    day: 'days ago',
+    month: 'months ago'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid/dist/infinitegrid.min.js',
+    buttonText: 'Load More'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '设计模式-命令模式',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Hexo</span></a><a class="nav-page-title" href="/"><span class="site-name">设计模式-命令模式</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  Back to Home</span></span></a></span><div id="menus"></div></nav><div id="post-info"><h1 class="post-title">设计模式-命令模式</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">Created</span><time class="post-meta-date-created" datetime="2025-10-22T02:00:00.000Z" title="Created 2025-10-22 10:00:00">2025-10-22</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">Updated</span><time class="post-meta-date-updated" datetime="2025-10-31T06:35:17.388Z" title="Updated 2025-10-31 14:35:17">2025-10-31</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E7%AE%97%E6%B3%95%E4%B8%8E%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/">算法与设计模式</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E7%AE%97%E6%B3%95%E4%B8%8E%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E8%A1%8C%E4%B8%BA%E5%9E%8B/">设计模式-行为型</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">Post Views:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h2 id="什么是命令模式？"><a href="#什么是命令模式？" class="headerlink" title="什么是命令模式？"></a>什么是命令模式？</h2><p><strong>命令模式 (Command Pattern)</strong> 是一种行为型设计模式，它将一个请求封装为一个对象，从而使你可用不同的请求对客户进行参数化，对请求排队或记录请求日志，以及支持可撤销的操作。</p>
+<p>通俗地讲，命令模式就像你去餐厅吃饭。你（客户端）看好菜单后，告诉服务员（调用者）你要点什么菜（比如“一份宫保鸡丁”）。服务员将你的点单写在订单（命令对象）上，然后把订单交给后厨的厨师（接收者）。</p>
+<p>在这个过程中：</p>
+<ul>
+<li>你无需关心厨师是谁，也不用关心宫保鸡丁具体怎么做。</li>
+<li>服务员无需知道如何做菜，他只负责传递订单。</li>
+<li>厨师无需知道是谁点的菜，他只负责根据订单做菜。</li>
+<li>订单本身（命令）成为了一个独立的对象，它包含了所有必要信息（“做一份宫保鸡丁”）。这个订单可以被排队、记录，甚至在厨师还没开始做之前被取消（撤销）。</li>
+</ul>
+<h2 id="模式结构"><a href="#模式结构" class="headerlink" title="模式结构"></a>模式结构</h2><p>命令模式主要包含以下角色：</p>
+<ol>
+<li><strong>Command (命令接口)</strong>: 定义了所有具体命令的统一接口，通常包含一个 <code>execute()</code> 方法。</li>
+<li><strong>ConcreteCommand (具体命令)</strong>: 实现了命令接口。它持有一个 <code>Receiver</code> (接收者) 的引用，并调用接收者的相应方法来完成请求。</li>
+<li><strong>Receiver (接收者)</strong>: 知道如何执行与请求相关的操作，是真正执行业务逻辑的实体。</li>
+<li><strong>Invoker (调用者)</strong>: 持有一个命令对象，并要求该命令执行请求。调用者不直接与接收者交互。</li>
+<li><strong>Client (客户端)</strong>: 创建具体命令对象，并设置其接收者。然后，它将命令对象与调用者关联起来。</li>
+</ol>
+<h3 id="结构图"><a href="#结构图" class="headerlink" title="结构图"></a>结构图</h3><div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+    %%{init: {&#39;theme&#39;: &#39;neutral&#39;}}%%
+classDiagram
+    direction LR
+
+    class Client
+    class Invoker {
+        -command: Command
+        +setCommand(Command)
+        +executeCommand()
+    }
+    class Command {
+        &lt;&lt;Interface&gt;&gt;
+        +execute()
+    }
+    class ConcreteCommand {
+        -receiver: Receiver
+        +execute()
+    }
+    class Receiver {
+        +action()
+    }
+
+    Client --|&gt; Invoker
+    Client --|&gt; ConcreteCommand
+    Client --|&gt; Receiver
+    Invoker o-- Command
+    ConcreteCommand --|&gt; Command
+    ConcreteCommand o-- Receiver
+
+  </pre></div>
+
+<h2 id="代码示例"><a href="#代码示例" class="headerlink" title="代码示例"></a>代码示例</h2><p>让我们用一个智能家居的遥控器例子来实现命令模式。</p>
+<h3 id="1-定义接收者-Receiver"><a href="#1-定义接收者-Receiver" class="headerlink" title="1. 定义接收者 (Receiver)"></a>1. 定义接收者 (Receiver)</h3><p>接收者是真正执行操作的设备，如电灯。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 接收者：Light</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Light</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">on</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;The light is on.&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">off</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;The light is off.&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-定义命令接口-Command"><a href="#2-定义命令接口-Command" class="headerlink" title="2. 定义命令接口 (Command)"></a>2. 定义命令接口 (Command)</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 命令接口：Command</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">Command</span> &#123;</span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">execute</span><span class="params">()</span>;</span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">undo</span><span class="params">()</span>; <span class="comment">// 支持撤销操作</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-创建具体命令-ConcreteCommand"><a href="#3-创建具体命令-ConcreteCommand" class="headerlink" title="3. 创建具体命令 (ConcreteCommand)"></a>3. 创建具体命令 (ConcreteCommand)</h3><p>具体命令将一个接收者和一个动作绑定起来。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 具体命令A：LightOnCommand</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">LightOnCommand</span> <span class="keyword">implements</span> <span class="title class_">Command</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> Light light;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">LightOnCommand</span><span class="params">(Light light)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.light = light;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">execute</span><span class="params">()</span> &#123;</span><br><span class="line">        light.on();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">undo</span><span class="params">()</span> &#123;</span><br><span class="line">        light.off();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 具体命令B：LightOffCommand</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">LightOffCommand</span> <span class="keyword">implements</span> <span class="title class_">Command</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> Light light;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">LightOffCommand</span><span class="params">(Light light)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.light = light;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">execute</span><span class="params">()</span> &#123;</span><br><span class="line">        light.off();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">undo</span><span class="params">()</span> &#123;</span><br><span class="line">        light.on();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="4-创建调用者-Invoker"><a href="#4-创建调用者-Invoker" class="headerlink" title="4. 创建调用者 (Invoker)"></a>4. 创建调用者 (Invoker)</h3><p>调用者是遥控器，它只知道按下按钮时需要执行一个命令。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 调用者：SimpleRemoteControl</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">SimpleRemoteControl</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> Command slot;</span><br><span class="line">    <span class="keyword">private</span> Command undoCommand; <span class="comment">// 用于支持撤销</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">setCommand</span><span class="params">(Command command)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.slot = command;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">buttonWasPressed</span><span class="params">()</span> &#123;</span><br><span class="line">        slot.execute();</span><br><span class="line">        undoCommand = slot; <span class="comment">// 记录上一个命令</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">undoButtonWasPressed</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (undoCommand != <span class="literal">null</span>) &#123;</span><br><span class="line">            System.out.print(<span class="string">&quot;Undo: &quot;</span>);</span><br><span class="line">            undoCommand.undo();</span><br><span class="line">            undoCommand = <span class="literal">null</span>; <span class="comment">// 只能撤销一次</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="5-客户端使用"><a href="#5-客户端使用" class="headerlink" title="5. 客户端使用"></a>5. 客户端使用</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">RemoteControlTest</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="comment">// 创建调用者（遥控器）</span></span><br><span class="line">        <span class="type">SimpleRemoteControl</span> <span class="variable">remote</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">SimpleRemoteControl</span>();</span><br><span class="line">        </span><br><span class="line">        <span class="comment">// 创建接收者（电灯）</span></span><br><span class="line">        <span class="type">Light</span> <span class="variable">light</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Light</span>();</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 创建命令并设置接收者</span></span><br><span class="line">        <span class="type">Command</span> <span class="variable">lightOn</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">LightOnCommand</span>(light);</span><br><span class="line">        <span class="type">Command</span> <span class="variable">lightOff</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">LightOffCommand</span>(light);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 将命令设置到遥控器插槽</span></span><br><span class="line">        remote.setCommand(lightOn);</span><br><span class="line">        remote.buttonWasPressed(); <span class="comment">// 按下按钮，开灯</span></span><br><span class="line">        remote.undoButtonWasPressed(); <span class="comment">// 按下撤销按钮，关灯</span></span><br><span class="line"></span><br><span class="line">        System.out.println(<span class="string">&quot;------&quot;</span>);</span><br><span class="line"></span><br><span class="line">        remote.setCommand(lightOff);</span><br><span class="line">        remote.buttonWasPressed(); <span class="comment">// 按下按钮，关灯</span></span><br><span class="line">        remote.undoButtonWasPressed(); <span class="comment">// 按下撤销按钮，开灯</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="优缺点"><a href="#优缺点" class="headerlink" title="优缺点"></a>优缺点</h2><h3 id="优点"><a href="#优点" class="headerlink" title="优点"></a>优点</h3><ol>
+<li><strong>解耦</strong>: 将请求的发送者和接收者完全解耦。发送者（Invoker）无需知道接收者是谁，也无需知道如何执行操作。</li>
+<li><strong>易于扩展</strong>: 可以很容易地增加新的命令，而无需修改现有代码，符合开闭原则。</li>
+<li><strong>支持高级操作</strong>: 命令对象可以被存储、排队、记录日志，并且很容易实现撤销（Undo）和重做（Redo）功能。</li>
+<li><strong>组合命令</strong>: 可以将多个命令组合成一个宏命令（Composite Command），以执行一系列复杂操作。</li>
+</ol>
+<h3 id="缺点"><a href="#缺点" class="headerlink" title="缺点"></a>缺点</h3><ol>
+<li><strong>增加了类的数量</strong>: 对于每个简单的操作，都可能需要创建一个具体的命令类，这会导致系统中类的数量增加。</li>
+</ol>
+<h2 id="经典应用"><a href="#经典应用" class="headerlink" title="经典应用"></a>经典应用</h2><ol>
+<li><strong>GUI 按钮和菜单项</strong>: 在图形用户界面中，一个按钮或菜单项（Invoker）被点击时，会执行一个 <code>Command</code> 对象。这个 <code>Command</code> 对象包含了要执行的操作和接收者（如一个文档对象）。</li>
+<li><strong>任务队列&#x2F;线程池</strong>: 线程池中的工作队列可以存储 <code>Command</code> 对象（通常是 <code>Runnable</code> 或 <code>Callable</code> 的实例）。工作线程（Invoker）从队列中取出命令并执行，而无需知道命令的具体内容。</li>
+<li><strong>宏录制与执行</strong>: 用户的操作可以被录制为一系列的命令对象，然后可以一次性地回放这些命令，实现宏功能。</li>
+<li><strong>事务性操作</strong>: 在需要支持事务的系统中，可以将一系列操作封装成命令。如果事务需要回滚，可以依次调用每个命令的 <code>undo()</code> 方法。</li>
+</ol>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>Author: </span><span class="post-copyright-info"><a href="http://example.com">david</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>Link: </span><span class="post-copyright-info"><a href="http://example.com/2025/10/22/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E5%91%BD%E4%BB%A4%E6%A8%A1%E5%BC%8F/">http://example.com/2025/10/22/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E5%91%BD%E4%BB%A4%E6%A8%A1%E5%BC%8F/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>Copyright Notice: </span><span class="post-copyright-info">All articles on this blog are licensed under <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> unless otherwise stated.</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Java/">Java</a><a class="post-meta__tags" href="/tags/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/">设计模式</a><a class="post-meta__tags" href="/tags/Behavioral/">Behavioral</a></div><div class="post-share"><div class="social-share" data-image="/img/butterfly-icon.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2025/10/22/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E5%B7%A5%E5%8E%82%E6%96%B9%E6%B3%95%E6%A8%A1%E5%BC%8F/" title="设计模式-工厂方法模式"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">Previous</div><div class="info-item-2">设计模式-工厂方法模式</div></div><div class="info-2"><div class="info-item-1">什么是工厂方法模式？工厂方法模式 (Factory Method Pattern) 是一种创建型设计模式，它定义了一个用于创建对象的接口，但让子类决定实例化哪一个类。工厂方法使一个类的实例化延迟到其子类。 这听起来可能有点抽象，简单来说，就是将创建具体“产品”的责任从“主工厂”下放到“子工厂”中。每个“子工厂”都只负责生产一种特定的“产品”。 模式结构工厂方法模式包含以下四个核心角色：  Product (抽象产品): 定义了工厂方法所创建的对象的接口。 ConcreteProduct (具体产品): 实现了抽象产品接口，是工厂方法创建的目标。 Creator (抽象创建者&#x2F;工厂): 声明了工厂方法 factoryMethod()，其返回类型是 Product 接口。它也可以包含依赖于抽象产品的业务逻辑。 ConcreteCreator (具体创建者&#x2F;工厂): 重写了工厂方法，以返回一个 ConcreteProduct 的实例。  结构图下面是基于日志记录器 (Logger) 示例的类图，直观地展示了工厂方法模式的结构：      %%{init: {&#39...</div></div></div></a><a class="pagination-related" href="/2025/10/22/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E5%8E%9F%E5%9E%8B%E6%A8%A1%E5%BC%8F/" title="设计模式-原型模式"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">Next</div><div class="info-item-2">设计模式-原型模式</div></div><div class="info-2"><div class="info-item-1">什么是原型模式？原型模式 (Prototype Pattern) 是一种创建型设计模式，它允许你通过复制现有对象来创建新对象，而不是通过实例化类。这种模式适用于创建成本较高或过程复杂的对象，通过克隆现有对象可以提高效率。 原型模式的核心思想是“克隆”或“复制”一个已有的对象来生成新的对象。Java 中通过实现 Cloneable 接口并重写 clone() 方法来支持原型模式。 模式结构原型模式包含以下核心角色：  Prototype (抽象原型): 声明一个克隆自身的接口。 ConcretePrototype (具体原型): 实现抽象原型接口，并实现克隆操作。 Client (客户端): 使用抽象原型接口来克隆对象。  结构图下面是原型模式的结构图：      %%{init: {&#39;theme&#39;: &#39;neutral&#39;}}%% classDiagram     direction LR      class Prototype {         &lt;&lt;Interface&gt;&gt;         +clone() Prototyp...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>Related Articles</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/2025/10/22/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E4%B8%AD%E4%BB%8B%E8%80%85%E6%A8%A1%E5%BC%8F/" title="设计模式-中介者模式"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-10-22</div><div class="info-item-2">设计模式-中介者模式</div></div><div class="info-2"><div class="info-item-1">什么是中介者模式？中介者模式 (Mediator Pattern) 是一种行为型设计模式，它提供了一个中介对象来封装一系列对象（同事类）之间的交互。中介者模式使得这些对象不需要显式地相互引用，从而使它们的耦合松散，并且可以独立地改变它们之间的交互。 通俗地讲，中介者模式就像是机场的控制塔。每架飞机（同事类）都无需与其他飞机直接通信来协调起飞和降落。相反，所有飞机都只与控制塔（中介者）通信。控制塔负责协调所有飞机的行动，避免冲突。如果没有控制塔，每架飞机都需要知道其他所有飞机的位置和状态，这将形成一个极其复杂的网状通信结构，非常混乱且危险。 模式结构中介者模式主要包含以下角色：  Mediator (中介者接口): 定义了同事类对象之间进行通信的接口。 ConcreteMediator (具体中介者): 实现了中介者接口。它了解并维护所有的同事类，并负责协调它们之间的交互关系。 Colleague (同事类接口): 定义了每个同事类的接口，它通常持有一个中介者对象的引用。 ConcreteColleague (具体同事类): 实现了同事类接口。每个同事类只知道自己的行为，它不与其他...</div></div></div></a><a class="pagination-related" href="/2025/10/22/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E6%A8%A1%E6%9D%BF%E6%96%B9%E6%B3%95%E6%A8%A1%E5%BC%8F/" title="设计模式-模板方法模式"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-10-22</div><div class="info-item-2">设计模式-模板方法模式</div></div><div class="info-2"><div class="info-item-1">什么是模板方法模式？模板方法模式 (Template Method Pattern) 是一种行为型设计模式，它在一个抽象类中定义了一个操作的算法骨架，并将一些步骤的实现延迟到子类中。模板方法使得子类可以在不改变算法整体结构的情况下，重新定义算法的某些特定步骤。 通俗地讲，模板方法模式就像是去银行办业务。无论你办什么业务（存款、取款、转账），基本流程（算法骨架）是固定的：取号、排队、叫号、去柜台办理。这个固定流程就是模板方法。而“去柜台办理”这一步的具体内容，则根据你办理的业务（子类）不同而不同。 模式结构模板方法模式的结构非常简单，主要包含两个角色：  AbstractClass (抽象类): 定义了一个或多个抽象方法，供子类实现。同时，它实现了一个模板方法，该方法定义了算法的骨架，并调用了那些抽象方法以及其他具体方法。 ConcreteClass (具体类): 继承了抽象类，并实现了父类中定义的抽象方法，以完成算法中与子类相关的步骤。  结构图     %%{init: {&#39;theme&#39;: &#39;neutral&#39;}}%% classDiagram  ...</div></div></div></a><a class="pagination-related" href="/2025/10/22/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E7%8A%B6%E6%80%81%E6%A8%A1%E5%BC%8F/" title="设计模式-状态模式"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-10-22</div><div class="info-item-2">设计模式-状态模式</div></div><div class="info-2"><div class="info-item-1">什么是状态模式？状态模式 (State Pattern) 是一种行为型设计模式，它允许一个对象在其内部状态改变时改变它的行为。该对象看起来就像是改变了它的类。状态模式将与特定状态相关的行为局部化，并将不同状态的行为分割开来。 通俗地讲，状态模式就像一个自动售货机。这个售货机（上下文）有多种状态：“无币状态”、“有币状态”、“售罄状态”。  在“无币状态”下，你投币，它会进入“有币状态”。你按购买按钮，它会提示你投币。 在“有币状态”下，你投币，它会退还多余的币。你按购买按钮，它会出货并可能进入“无币状态”或“售罄状态”。 在“售罄状态”下，无论你做什么，它都不会出货。  对象（售货机）的行为完全取决于它当前所处的状态。状态模式就是将每种状态下的行为封装在各自独立的类中，使得对象在状态切换时，其行为也随之切换。 模式结构状态模式主要包含以下角色：  Context (上下文): 定义了客户端感兴趣的接口。它维护一个 State 子类的实例，这个实例定义了对象的当前状态。 State (状态接口): 定义了一个接口，用于封装与上下文的特定状态相关的行为。 ConcreteState ...</div></div></div></a><a class="pagination-related" href="/2025/10/22/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E5%A4%87%E5%BF%98%E5%BD%95%E6%A8%A1%E5%BC%8F/" title="设计模式-备忘录模式"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-10-22</div><div class="info-item-2">设计模式-备忘录模式</div></div><div class="info-2"><div class="info-item-1">什么是备忘录模式？备忘录模式 (Memento Pattern) 是一种行为型设计模式，它能在不破坏对象封装性的前提下，捕获一个对象的内部状态，并在该对象之外保存这个状态。这样一来，你就可以在将来将该对象恢复到原先保存的状态。这个模式常被用来实现“撤销&#x2F;回滚”（Undo&#x2F;Rollback）功能。 通俗地讲，备忘录模式就像游戏中的“存档”功能。你在玩游戏时（操作一个对象），可以在某个时间点（如打 Boss 前）创建一个存档（备忘录）。这个存档记录了你当前的所有状态（等级、装备、位置等）。如果你打 Boss 失败了，就可以读取这个存档，将游戏恢复到打 Boss 之前的状态，而无需从头再来。游戏本身（原发器）负责创建和读取存档，但存档文件由一个“历史记录”管理者（负责人）来保管。 模式结构备忘录模式主要包含以下三个角色：  Originator (原发器): 这是一个状态可能会发生改变的类。它知道如何创建备忘录来保存自己的状态，也知道如何从备忘录中恢复自己的状态。 Memento (备忘录): 这是一个值对象，用于存储原发器对象的内部状态。为了保护原发器的封装性，备...</div></div></div></a><a class="pagination-related" href="/2025/10/22/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E8%A7%82%E5%AF%9F%E8%80%85%E6%A8%A1%E5%BC%8F/" title="设计模式-观察者模式"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-10-22</div><div class="info-item-2">设计模式-观察者模式</div></div><div class="info-2"><div class="info-item-1">什么是观察者模式？观察者模式 (Observer Pattern) 是一种行为型设计模式，它定义了对象之间一种一对多的依赖关系。当一个对象（被称为“主题”或“可观察者”）的状态发生改变时，所有依赖于它的对象（被称为“观察者”）都会得到通知并自动更新。这种模式也被广法称为发布-订阅 (Publish-Subscribe) 模式。 通俗地讲，观察者模式就像订阅报笨或杂志。你（观察者）去报社（主题）订阅了报笨。当有新报笨出版时（主题状态改变），报社会主动将新报笨送到你家（通知观察者），而你无需每天都去报社查询。你也可以随时取消订阅，报社就不会再给你送报笨了。 模式结构观察者模式主要包含以下角色：  Subject (主题&#x2F;被观察者): 抽象主题，它维护了一个观察者列表，并提供用于添加、删除和通知观察者的方法。 ConcreteSubject (具体主题): 实现了抽象主题接口。当其内部状态发生改变时，它会通知所有已注册的观察者。 Observer (观察者): 抽象观察者，它定义了一个更新接口，当接受到主题的通知时，该接口将被调用。 ConcreteObserver (具体观...</div></div></div></a><a class="pagination-related" href="/2025/10/22/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E7%AD%96%E7%95%A5%E6%A8%A1%E5%BC%8F/" title="设计模式-策略模式"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-10-22</div><div class="info-item-2">设计模式-策略模式</div></div><div class="info-2"><div class="info-item-1">什么是策略模式？策略模式 (Strategy Pattern) 是一种行为型设计模式，它定义了一系列算法，将每个算法都封装起来，并使它们可以相互替换。策略模式使得算法可以独立于使用它的客户端而变化。 通俗地讲，策略模式就像是解决“条条大路通罗马”的问题。你去罗马（目标），可以选择多种交通方式（策略），比如可以坐飞机、坐火车、或者骑自行车。每种交通方式都是一个独立的策略。你可以根据你的具体情况（如时间、预算）在运行时自由选择和切换策略，而你“去罗马”这个行为本身（客户端）并不需要关心每种交通方式的具体实现细节。 模式结构策略模式主要包含以下角色：  Context (上下文): 维护一个对 Strategy 对象的引用。它不执行具体策略，而是将工作委派给所引用的策略对象。它提供一个方法让客户端设置策略。 Strategy (策略接口): 定义了所有支持的算法的公共接口。上下文使用这个接口来调用由具体策略定义的算法。 ConcreteStrategy (具体策略): 实现了策略接口，封装了具体的算法或行为。  结构图     %%{init: {&#39;theme&#39;: &#...</div></div></div></a></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/butterfly-icon.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">david</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">71</div></a><a href="/tags/"><div class="headline">Tags</div><div class="length-num">152</div></a><a href="/categories/"><div class="headline">Categories</div><div class="length-num">14</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>Announcement</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>Contents</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E5%91%BD%E4%BB%A4%E6%A8%A1%E5%BC%8F%EF%BC%9F"><span class="toc-number">1.</span> <span class="toc-text">什么是命令模式？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A8%A1%E5%BC%8F%E7%BB%93%E6%9E%84"><span class="toc-number">2.</span> <span class="toc-text">模式结构</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BB%93%E6%9E%84%E5%9B%BE"><span class="toc-number">2.1.</span> <span class="toc-text">结构图</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%A3%E7%A0%81%E7%A4%BA%E4%BE%8B"><span class="toc-number">3.</span> <span class="toc-text">代码示例</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E5%AE%9A%E4%B9%89%E6%8E%A5%E6%94%B6%E8%80%85-Receiver"><span class="toc-number">3.1.</span> <span class="toc-text">1. 定义接收者 (Receiver)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E5%AE%9A%E4%B9%89%E5%91%BD%E4%BB%A4%E6%8E%A5%E5%8F%A3-Command"><span class="toc-number">3.2.</span> <span class="toc-text">2. 定义命令接口 (Command)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-%E5%88%9B%E5%BB%BA%E5%85%B7%E4%BD%93%E5%91%BD%E4%BB%A4-ConcreteCommand"><span class="toc-number">3.3.</span> <span class="toc-text">3. 创建具体命令 (ConcreteCommand)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-%E5%88%9B%E5%BB%BA%E8%B0%83%E7%94%A8%E8%80%85-Invoker"><span class="toc-number">3.4.</span> <span class="toc-text">4. 创建调用者 (Invoker)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-%E5%AE%A2%E6%88%B7%E7%AB%AF%E4%BD%BF%E7%94%A8"><span class="toc-number">3.5.</span> <span class="toc-text">5. 客户端使用</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BC%98%E7%BC%BA%E7%82%B9"><span class="toc-number">4.</span> <span class="toc-text">优缺点</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BC%98%E7%82%B9"><span class="toc-number">4.1.</span> <span class="toc-text">优点</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BC%BA%E7%82%B9"><span class="toc-number">4.2.</span> <span class="toc-text">缺点</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BB%8F%E5%85%B8%E5%BA%94%E7%94%A8"><span class="toc-number">5.</span> <span class="toc-text">经典应用</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>Recent Posts</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/10/22/JavaSE-%E5%B8%B8%E7%94%A8API/" title="JavaSE-常用API">JavaSE-常用API</a><time datetime="2025-10-22T02:00:00.000Z" title="Created 2025-10-22 10:00:00">2025-10-22</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/10/22/JavaSE-%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/" title="JavaSE-异常处理">JavaSE-异常处理</a><time datetime="2025-10-22T02:00:00.000Z" title="Created 2025-10-22 10:00:00">2025-10-22</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/10/22/JavaSE-%E9%9B%86%E5%90%88%E6%A1%86%E6%9E%B6/" title="JavaSE-集合框架(索引)">JavaSE-集合框架(索引)</a><time datetime="2025-10-22T02:00:00.000Z" title="Created 2025-10-22 10:00:00">2025-10-22</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/10/22/JavaSE-%E9%9D%A2%E5%90%91%E5%AF%B9%E8%B1%A1%E7%BC%96%E7%A8%8B/" title="JavaSE-面向对象编程">JavaSE-面向对象编程</a><time datetime="2025-10-22T02:00:00.000Z" title="Created 2025-10-22 10:00:00">2025-10-22</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/10/22/JavaSE-%E5%85%A8%E9%9D%A2%E6%8E%8C%E6%8F%A1/" title="JavaSE-全面掌握">JavaSE-全面掌握</a><time datetime="2025-10-22T02:00:00.000Z" title="Created 2025-10-22 10:00:00">2025-10-22</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 By david</span><span class="framework-info"><span>Framework </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>Theme </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.4.3</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="Reading Mode"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="Toggle Between Light and Dark Mode"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="Toggle Between Single-column and Double-column"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="Settings"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="Table of Contents"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="Back to Top"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><div class="js-pjax"><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (false) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
