@@ -1,0 +1,686 @@
+<!DOCTYPE html><html lang="en" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>AI-Python-06.2-Prompt模板与输出解析 | Hexo</title><meta name="author" content="david"><meta name="copyright" content="david"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="AI-Python-06.2: Prompt 模板与输出解析 LangChain 与模型交互的核心流程：输入格式化（Prompt Template）→ 模型调用 → 输出解析（Output Parser）。本章从”输入”到”输出”完整讲透。   1. 完整数据流：从输入到输出     flowchart LR     A[Prompt Template\n输入模板] --&gt; B[Chat M">
+<meta property="og:type" content="article">
+<meta property="og:title" content="AI-Python-06.2-Prompt模板与输出解析">
+<meta property="og:url" content="http://example.com/2026/04/13/AI-Python-06.2-Prompt%E6%A8%A1%E6%9D%BF%E4%B8%8E%E8%BE%93%E5%87%BA%E8%A7%A3%E6%9E%90/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="AI-Python-06.2: Prompt 模板与输出解析 LangChain 与模型交互的核心流程：输入格式化（Prompt Template）→ 模型调用 → 输出解析（Output Parser）。本章从”输入”到”输出”完整讲透。   1. 完整数据流：从输入到输出     flowchart LR     A[Prompt Template\n输入模板] --&gt; B[Chat M">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://example.com/img/butterfly-icon.png">
+<meta property="article:published_time" content="2026-04-13T02:00:00.000Z">
+<meta property="article:modified_time" content="2026-04-13T07:53:35.040Z">
+<meta property="article:author" content="david">
+<meta property="article:tag" content="Python">
+<meta property="article:tag" content="AI">
+<meta property="article:tag" content="学习笔记">
+<meta property="article:tag" content="LangChain">
+<meta property="article:tag" content="PromptTemplate">
+<meta property="article:tag" content="OutputParser">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/img/butterfly-icon.png"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "AI-Python-06.2-Prompt模板与输出解析",
+  "url": "http://example.com/2026/04/13/AI-Python-06.2-Prompt%E6%A8%A1%E6%9D%BF%E4%B8%8E%E8%BE%93%E5%87%BA%E8%A7%A3%E6%9E%90/",
+  "image": "http://example.com/img/butterfly-icon.png",
+  "datePublished": "2026-04-13T02:00:00.000Z",
+  "dateModified": "2026-04-13T07:53:35.040Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "david",
+      "url": "http://example.com"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://example.com/2026/04/13/AI-Python-06.2-Prompt%E6%A8%A1%E6%9D%BF%E4%B8%8E%E8%BE%93%E5%87%BA%E8%A7%A3%E6%9E%90/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: 'Copy Successful',
+    error: 'Copy Failed',
+    noSupport: 'Browser Not Supported'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: 'Just now',
+    min: 'minutes ago',
+    hour: 'hours ago',
+    day: 'days ago',
+    month: 'months ago'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid/dist/infinitegrid.min.js',
+    buttonText: 'Load More'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'AI-Python-06.2-Prompt模板与输出解析',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Hexo</span></a><a class="nav-page-title" href="/"><span class="site-name">AI-Python-06.2-Prompt模板与输出解析</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  Back to Home</span></span></a></span><div id="menus"></div></nav><div id="post-info"><h1 class="post-title">AI-Python-06.2-Prompt模板与输出解析</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">Created</span><time class="post-meta-date-created" datetime="2026-04-13T02:00:00.000Z" title="Created 2026-04-13 10:00:00">2026-04-13</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">Updated</span><time class="post-meta-date-updated" datetime="2026-04-13T07:53:35.040Z" title="Updated 2026-04-13 15:53:35">2026-04-13</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/AI%E5%AD%A6%E4%B9%A0/">AI学习</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/AI%E5%AD%A6%E4%B9%A0/Python/">Python</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">Post Views:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h1 id="AI-Python-06-2-Prompt-模板与输出解析"><a href="#AI-Python-06-2-Prompt-模板与输出解析" class="headerlink" title="AI-Python-06.2: Prompt 模板与输出解析"></a>AI-Python-06.2: Prompt 模板与输出解析</h1><blockquote>
+<p>LangChain 与模型交互的核心流程：<strong>输入格式化（Prompt Template）→ 模型调用 → 输出解析（Output Parser）</strong>。本章从”输入”到”输出”完整讲透。</p>
+</blockquote>
+<hr>
+<h2 id="1-完整数据流：从输入到输出"><a href="#1-完整数据流：从输入到输出" class="headerlink" title="1. 完整数据流：从输入到输出"></a>1. 完整数据流：从输入到输出</h2><div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+    flowchart LR
+    A[Prompt Template\n输入模板] --&gt; B[Chat Model\n模型调用]
+    B --&gt; C[Output Parser\n输出解析]
+
+    A --&gt;|结构化输入| B
+    B --&gt;|原始 AIMessage| C
+    C --&gt;|业务数据| D[应用]
+  </pre></div>
+
+<table>
+<thead>
+<tr>
+<th>阶段</th>
+<th>组件</th>
+<th>做什么</th>
+<th>输入</th>
+<th>输出</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>输入格式化</strong></td>
+<td>PromptTemplate &#x2F; ChatPromptTemplate</td>
+<td>把变量填入模板，生成结构化消息</td>
+<td><code>&#123;&quot;role&quot;: &quot;专家&quot;, &quot;question&quot;: &quot;xxx&quot;&#125;</code></td>
+<td><code>[SystemMessage, HumanMessage]</code></td>
+</tr>
+<tr>
+<td><strong>模型调用</strong></td>
+<td>ChatOpenAI</td>
+<td>发给 LLM，获取回复</td>
+<td>消息列表</td>
+<td><code>AIMessage</code> 对象</td>
+</tr>
+<tr>
+<td><strong>输出解析</strong></td>
+<td>StrOutputParser &#x2F; JsonOutputParser &#x2F; PydanticOutputParser</td>
+<td>从 AIMessage 提取业务数据</td>
+<td><code>AIMessage</code></td>
+<td>字符串 &#x2F; JSON &#x2F; Pydantic 对象</td>
+</tr>
+</tbody></table>
+<p><strong>类比理解：</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Prompt Template = 填表（把信息填入固定格式的表格）</span><br><span class="line">Chat Model      = 提交（把表格交给办事员处理）</span><br><span class="line">Output Parser   = 取结果（从办事员的回复中提取你需要的信息）</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="2-输入端：Prompt-Template-详解"><a href="#2-输入端：Prompt-Template-详解" class="headerlink" title="2. 输入端：Prompt Template 详解"></a>2. 输入端：Prompt Template 详解</h2><h3 id="2-1-PromptTemplate（纯文本模板）"><a href="#2-1-PromptTemplate（纯文本模板）" class="headerlink" title="2.1 PromptTemplate（纯文本模板）"></a>2.1 PromptTemplate（纯文本模板）</h3><p><strong>适用场景：</strong> 简单的单轮文本生成，不需要区分消息角色。</p>
+<h4 id="定义方式一：from-template（自动推断变量）"><a href="#定义方式一：from-template（自动推断变量）" class="headerlink" title="定义方式一：from_template（自动推断变量）"></a>定义方式一：<code>from_template</code>（自动推断变量）</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> langchain_core.prompts <span class="keyword">import</span> PromptTemplate</span><br><span class="line"></span><br><span class="line"><span class="comment"># 自动识别 &#123;product&#125; 和 &#123;style&#125; 两个变量</span></span><br><span class="line">prompt = PromptTemplate.from_template(<span class="string">&quot;为&#123;product&#125;写3个&#123;style&#125;的广告语&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 查看自动推断的变量</span></span><br><span class="line"><span class="built_in">print</span>(prompt.input_variables)  <span class="comment"># [&#x27;product&#x27;, &#x27;style&#x27;]</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 填充变量，生成最终字符串</span></span><br><span class="line">result = prompt.<span class="built_in">format</span>(product=<span class="string">&quot;iPhone&quot;</span>, style=<span class="string">&quot;吸引年轻人的&quot;</span>)</span><br><span class="line"><span class="built_in">print</span>(result)</span><br><span class="line"><span class="comment"># → &quot;为iPhone写3个吸引年轻人的广告语&quot;</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="定义方式二：手动声明变量（更严格）"><a href="#定义方式二：手动声明变量（更严格）" class="headerlink" title="定义方式二：手动声明变量（更严格）"></a>定义方式二：手动声明变量（更严格）</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">prompt = PromptTemplate(</span><br><span class="line">    template=<span class="string">&quot;你是&#123;domain&#125;专家，请用&#123;language&#125;回答：&#123;question&#125;&quot;</span>,</span><br><span class="line">    input_variables=[<span class="string">&quot;domain&quot;</span>, <span class="string">&quot;language&quot;</span>, <span class="string">&quot;question&quot;</span>],  <span class="comment"># 显式声明</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="comment"># ✅ 全部传入</span></span><br><span class="line">prompt.<span class="built_in">format</span>(domain=<span class="string">&quot;网络安全&quot;</span>, language=<span class="string">&quot;中文&quot;</span>, question=<span class="string">&quot;如何防范XSS？&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># ❌ 少传一个 → ValidationError</span></span><br><span class="line">prompt.<span class="built_in">format</span>(domain=<span class="string">&quot;网络安全&quot;</span>, language=<span class="string">&quot;中文&quot;</span>)  <span class="comment"># 缺 question，报错</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="定义方式三：partial-variables-设默认值"><a href="#定义方式三：partial-variables-设默认值" class="headerlink" title="定义方式三：partial_variables 设默认值"></a>定义方式三：<code>partial_variables</code> 设默认值</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">prompt = PromptTemplate(</span><br><span class="line">    template=<span class="string">&quot;用&#123;style&#125;风格分析：&#123;user_input&#125;&quot;</span>,</span><br><span class="line">    input_variables=[<span class="string">&quot;user_input&quot;</span>],              <span class="comment"># 只需要传这一个</span></span><br><span class="line">    partial_variables=&#123;<span class="string">&quot;style&quot;</span>: <span class="string">&quot;简洁专业&quot;</span>&#125;,      <span class="comment"># style 固定，不用每次传</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 调用时只需填 user_input</span></span><br><span class="line">prompt.<span class="built_in">format</span>(user_input=<span class="string">&quot;Python装饰器是什么？&quot;</span>)</span><br><span class="line"><span class="comment"># → &quot;用简洁专业风格分析：Python装饰器是什么？&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>适用场景：</strong> <code>language</code>、<code>style</code>、<code>analysis_type</code> 这类”基本不变”的参数，用默认值减少重复代码。</p>
+<h4 id="模板变量的约束规则"><a href="#模板变量的约束规则" class="headerlink" title="模板变量的约束规则"></a>模板变量的约束规则</h4><table>
+<thead>
+<tr>
+<th>规则</th>
+<th>正确</th>
+<th>错误</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>变量名不能有空格</td>
+<td><code>&#123;product&#125;</code></td>
+<td><code>&#123;product name&#125;</code></td>
+</tr>
+<tr>
+<td>变量名必须合法标识符</td>
+<td><code>&#123;user_input&#125;</code></td>
+<td><code>&#123;user-input&#125;</code></td>
+</tr>
+<tr>
+<td>字面花括号用 <code>&#123;&#123;` `&#125;&#125;</code> 转义</td>
+<td><code>&quot;输出JSON &#123;&#123;key&#125;&#125;&quot;</code></td>
+<td><code>&quot;输出JSON &#123;key&#125;&quot;</code></td>
+</tr>
+<tr>
+<td>必填变量不传会报错</td>
+<td>全部传入</td>
+<td>漏传 → ValidationError</td>
+</tr>
+</tbody></table>
+<h4 id="模板格式：f-string-vs-jinja2"><a href="#模板格式：f-string-vs-jinja2" class="headerlink" title="模板格式：f-string vs jinja2"></a>模板格式：f-string vs jinja2</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># f-string（默认，简单变量替换）</span></span><br><span class="line">PromptTemplate.from_template(<span class="string">&quot;你好&#123;name&#125;&quot;</span>, template_format=<span class="string">&quot;f-string&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># jinja2（支持循环、条件等复杂逻辑）</span></span><br><span class="line">PromptTemplate.from_template(<span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">&#123;% for item in items %&#125;</span></span><br><span class="line"><span class="string">- &#123;&#123; item &#125;&#125;</span></span><br><span class="line"><span class="string">&#123;% endfor %&#125;</span></span><br><span class="line"><span class="string">&quot;&quot;&quot;</span>, template_format=<span class="string">&quot;jinja2&quot;</span>)</span><br></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th>语法</th>
+<th>适用场景</th>
+<th>占位符写法</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>f-string</strong></td>
+<td>简单变量替换（默认）</td>
+<td><code>&#123;var&#125;</code></td>
+</tr>
+<tr>
+<td><strong>jinja2</strong></td>
+<td>循环、条件、复杂逻辑</td>
+<td><code>&#123;&#123; var &#125;&#125;</code>, <code>&#123;% for %&#125;</code></td>
+</tr>
+</tbody></table>
+<hr>
+<h3 id="2-2-ChatPromptTemplate（对话模板，最常用）"><a href="#2-2-ChatPromptTemplate（对话模板，最常用）" class="headerlink" title="2.2 ChatPromptTemplate（对话模板，最常用）"></a>2.2 ChatPromptTemplate（对话模板，最常用）</h3><p><strong>适用场景：</strong> 多轮对话、需要区分 System&#x2F;Human&#x2F;AI 角色。</p>
+<h4 id="基本用法"><a href="#基本用法" class="headerlink" title="基本用法"></a>基本用法</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> langchain_core.prompts <span class="keyword">import</span> ChatPromptTemplate</span><br><span class="line"></span><br><span class="line"><span class="comment"># 元组格式：(角色, 内容模板)</span></span><br><span class="line">prompt = ChatPromptTemplate.from_messages([</span><br><span class="line">    (<span class="string">&quot;system&quot;</span>, <span class="string">&quot;你是&#123;role&#125;，回答要&#123;style&#125;&quot;</span>),</span><br><span class="line">    (<span class="string">&quot;human&quot;</span>, <span class="string">&quot;&#123;question&#125;&quot;</span>),</span><br><span class="line">])</span><br><span class="line"></span><br><span class="line"><span class="comment"># 填充变量</span></span><br><span class="line">messages = prompt.invoke(&#123;</span><br><span class="line">    <span class="string">&quot;role&quot;</span>: <span class="string">&quot;Python教授&quot;</span>,</span><br><span class="line">    <span class="string">&quot;style&quot;</span>: <span class="string">&quot;简洁，带代码示例&quot;</span>,</span><br><span class="line">    <span class="string">&quot;question&quot;</span>: <span class="string">&quot;什么是生成器？&quot;</span>,</span><br><span class="line">&#125;)</span><br><span class="line"></span><br><span class="line"><span class="comment"># messages 是 ChatPromptValue 对象，可以 .to_messages() 转成消息列表</span></span><br><span class="line"><span class="built_in">print</span>(messages.to_messages())</span><br><span class="line"><span class="comment"># → [SystemMessage(&quot;你是Python教授...&quot;), HumanMessage(&quot;什么是生成器？&quot;)]</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="三种消息角色的控制力"><a href="#三种消息角色的控制力" class="headerlink" title="三种消息角色的控制力"></a>三种消息角色的控制力</h4><table>
+<thead>
+<tr>
+<th>角色</th>
+<th>控制什么</th>
+<th>示例</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>(&quot;system&quot;, ...)</code></td>
+<td>AI 的行为边界、人设、约束</td>
+<td>“你只能回答Python相关问题”</td>
+</tr>
+<tr>
+<td><code>(&quot;human&quot;, ...)</code></td>
+<td>用户的输入内容</td>
+<td>“什么是装饰器？”</td>
+</tr>
+<tr>
+<td><code>(&quot;ai&quot;, ...)</code></td>
+<td>历史回复（注入对话记忆）</td>
+<td>“装饰器是一种设计模式…”</td>
+</tr>
+</tbody></table>
+<h4 id="MessagesPlaceholder：动态插入消息列表"><a href="#MessagesPlaceholder：动态插入消息列表" class="headerlink" title="MessagesPlaceholder：动态插入消息列表"></a>MessagesPlaceholder：动态插入消息列表</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> langchain_core.prompts <span class="keyword">import</span> ChatPromptTemplate, MessagesPlaceholder</span><br><span class="line"></span><br><span class="line">prompt = ChatPromptTemplate.from_messages([</span><br><span class="line">    (<span class="string">&quot;system&quot;</span>, <span class="string">&quot;你是一个友好的AI助手&quot;</span>),</span><br><span class="line">    MessagesPlaceholder(<span class="string">&quot;history&quot;</span>),   <span class="comment"># ← 动态插入对话历史</span></span><br><span class="line">    (<span class="string">&quot;human&quot;</span>, <span class="string">&quot;&#123;input&#125;&quot;</span>),</span><br><span class="line">])</span><br><span class="line"></span><br><span class="line"><span class="comment"># 调用时传入历史消息</span></span><br><span class="line">messages = prompt.invoke(&#123;</span><br><span class="line">    <span class="string">&quot;history&quot;</span>: [</span><br><span class="line">        (<span class="string">&quot;human&quot;</span>, <span class="string">&quot;我叫小明&quot;</span>),</span><br><span class="line">        (<span class="string">&quot;ai&quot;</span>, <span class="string">&quot;你好小明！&quot;</span>),</span><br><span class="line">    ],</span><br><span class="line">    <span class="string">&quot;input&quot;</span>: <span class="string">&quot;我叫什么？&quot;</span>,</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+
+<p>生成的结果等价于：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[System] 你是一个友好的AI助手</span><br><span class="line">[Human] 我叫小明</span><br><span class="line">[AI]    你好小明！</span><br><span class="line">[Human] 我叫什么？</span><br></pre></td></tr></table></figure>
+
+<p><strong><code>MessagesPlaceholder</code> 的典型用途：</strong></p>
+<table>
+<thead>
+<tr>
+<th>用途</th>
+<th>variable_name</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>对话历史</td>
+<td><code>&quot;history&quot;</code></td>
+<td>多轮对话时注入之前的消息</td>
+</tr>
+<tr>
+<td>Few-shot 示例</td>
+<td><code>&quot;examples&quot;</code></td>
+<td>注入示例引导模型输出格式</td>
+</tr>
+<tr>
+<td>Agent 思考记录</td>
+<td><code>&quot;agent_scratchpad&quot;</code></td>
+<td>Agent 的 Thought&#x2F;Action&#x2F;Observation 循环记录</td>
+</tr>
+</tbody></table>
+<hr>
+<h3 id="2-3-FewShotPromptTemplate（少样本模板）"><a href="#2-3-FewShotPromptTemplate（少样本模板）" class="headerlink" title="2.3 FewShotPromptTemplate（少样本模板）"></a>2.3 FewShotPromptTemplate（少样本模板）</h3><p><strong>核心思想：</strong> 给模型看几个”输入→输出”的示例，让它模仿你的格式。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> langchain_core.prompts <span class="keyword">import</span> FewShotPromptTemplate, PromptTemplate</span><br><span class="line"></span><br><span class="line"><span class="comment"># 定义示例</span></span><br><span class="line">examples = [</span><br><span class="line">    &#123;<span class="string">&quot;input&quot;</span>: <span class="string">&quot;开心&quot;</span>, <span class="string">&quot;output&quot;</span>: <span class="string">&quot;😊 情绪正面，建议继续保持好心情&quot;</span>&#125;,</span><br><span class="line">    &#123;<span class="string">&quot;input&quot;</span>: <span class="string">&quot;难过&quot;</span>, <span class="string">&quot;output&quot;</span>: <span class="string">&quot;😢 情绪负面，建议与朋友倾诉&quot;</span>&#125;,</span><br><span class="line">    &#123;<span class="string">&quot;input&quot;</span>: <span class="string">&quot;平静&quot;</span>, <span class="string">&quot;output&quot;</span>: <span class="string">&quot;😌 情绪中性，适合思考和规划&quot;</span>&#125;,</span><br><span class="line">]</span><br><span class="line"></span><br><span class="line"><span class="comment"># 定义示例的格式模板</span></span><br><span class="line">example_prompt = PromptTemplate.from_template(<span class="string">&quot;输入: &#123;input&#125;\n输出: &#123;output&#125;&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 组装 FewShot 模板</span></span><br><span class="line">few_shot_prompt = FewShotPromptTemplate(</span><br><span class="line">    examples=examples,</span><br><span class="line">    example_prompt=example_prompt,</span><br><span class="line">    prefix=<span class="string">&quot;你是一个情绪分析助手，根据用户输入判断情绪并给出建议：&quot;</span>,</span><br><span class="line">    suffix=<span class="string">&quot;输入: &#123;user_input&#125;\n输出:&quot;</span>,</span><br><span class="line">    input_variables=[<span class="string">&quot;user_input&quot;</span>],</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 使用</span></span><br><span class="line">result = few_shot_prompt.<span class="built_in">format</span>(user_input=<span class="string">&quot;焦虑&quot;</span>)</span><br><span class="line"><span class="built_in">print</span>(result)</span><br></pre></td></tr></table></figure>
+
+<p>输出：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">你是一个情绪分析助手，根据用户输入判断情绪并给出建议：</span><br><span class="line"></span><br><span class="line">输入: 开心</span><br><span class="line">输出: 😊 情绪正面，建议继续保持好心情</span><br><span class="line"></span><br><span class="line">输入: 难过</span><br><span class="line">输出: 😢 情绪负面，建议与朋友倾诉</span><br><span class="line"></span><br><span class="line">输入: 平静</span><br><span class="line">输出: 😌 情绪中性，适合思考和规划</span><br><span class="line"></span><br><span class="line">输入: 焦虑</span><br><span class="line">输出:</span><br></pre></td></tr></table></figure>
+
+<p>模型看到前面的示例，就会模仿 <code>&#123;input&#125; → &#123;output&#125;</code> 的格式来回答。</p>
+<table>
+<thead>
+<tr>
+<th>方式</th>
+<th>示例数量</th>
+<th>准确率</th>
+<th>Token 消耗</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Zero-Shot</strong></td>
+<td>0</td>
+<td>较低</td>
+<td>最少</td>
+</tr>
+<tr>
+<td><strong>Few-Shot</strong></td>
+<td>3-5</td>
+<td>较高</td>
+<td>较多</td>
+</tr>
+<tr>
+<td><strong>Many-Shot</strong></td>
+<td>10+</td>
+<td>最高</td>
+<td>最多</td>
+</tr>
+</tbody></table>
+<hr>
+<h3 id="2-4-四种模板选择决策"><a href="#2-4-四种模板选择决策" class="headerlink" title="2.4 四种模板选择决策"></a>2.4 四种模板选择决策</h3><div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+    flowchart TD
+    A[需要提示词模板] --&gt; B{使用什么模型?}
+
+    B --&gt;|LLM 纯文本模型| C[PromptTemplate]
+    B --&gt;|Chat 对话模型| D{需要示例引导吗?}
+
+    D --&gt;|是| E[FewShotPromptTemplate]
+    D --&gt;|否| F[ChatPromptTemplate]
+
+    C --&gt; G{需要组合多个模板?}
+    F --&gt; G
+    E --&gt; G
+
+    G --&gt;|是| H[PipelinePromptTemplate]
+    G --&gt;|否| I[单一模板即可]
+  </pre></div>
+
+<table>
+<thead>
+<tr>
+<th>场景</th>
+<th>推荐模板</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>简单问答、单轮文本</td>
+<td><code>PromptTemplate</code></td>
+</tr>
+<tr>
+<td>多轮对话、需要控制 AI 行为</td>
+<td><code>ChatPromptTemplate</code></td>
+</tr>
+<tr>
+<td>需要特定输出格式、风格模仿</td>
+<td><code>FewShotPromptTemplate</code></td>
+</tr>
+<tr>
+<td>复杂工作流、多模板组合</td>
+<td><code>PipelinePromptTemplate</code></td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="3-输出端：Output-Parser-详解"><a href="#3-输出端：Output-Parser-详解" class="headerlink" title="3. 输出端：Output Parser 详解"></a>3. 输出端：Output Parser 详解</h2><h3 id="3-1-为什么需要-Output-Parser？"><a href="#3-1-为什么需要-Output-Parser？" class="headerlink" title="3.1 为什么需要 Output Parser？"></a>3.1 为什么需要 Output Parser？</h3><p>LLM 返回的是 <code>AIMessage</code> 对象，不是直接可用的数据：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 模型返回的原始结果</span></span><br><span class="line">response = llm.invoke(<span class="string">&quot;什么是Python？&quot;</span>)</span><br><span class="line"><span class="built_in">print</span>(<span class="built_in">type</span>(response))   <span class="comment"># &lt;class &#x27;langchain_core.messages.AIMessage&#x27;&gt;</span></span><br><span class="line"><span class="built_in">print</span>(response)         <span class="comment"># content=&#x27;Python是...&#x27; additional_kwargs=&#123;...&#125; response_metadata=&#123;...&#125;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 你真正需要的是 response.content（纯文本）</span></span><br><span class="line"><span class="built_in">print</span>(response.content) <span class="comment"># &quot;Python是一种通用编程语言...&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p>而且 LLM 的输出是<strong>不确定</strong>的，生产环境需要<strong>稳定</strong>的结构化数据（JSON、对象）。</p>
+<p><strong>Output Parser 解决的问题：</strong></p>
+<table>
+<thead>
+<tr>
+<th>问题</th>
+<th>Parser 的作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>AIMessage</code> 对象太复杂</td>
+<td>提取 <code>.content</code> 得到纯文本</td>
+</tr>
+<tr>
+<td>输出格式不稳定</td>
+<td>强制解析为 JSON &#x2F; Pydantic 对象</td>
+</tr>
+<tr>
+<td>解析失败怎么办</td>
+<td>自动重试或报清晰错误</td>
+</tr>
+</tbody></table>
+<hr>
+<h3 id="3-2-StrOutputParser（最基础，提取纯文本）"><a href="#3-2-StrOutputParser（最基础，提取纯文本）" class="headerlink" title="3.2 StrOutputParser（最基础，提取纯文本）"></a>3.2 StrOutputParser（最基础，提取纯文本）</h3><p><strong>作用：</strong> 从 <code>AIMessage</code> 中提取 <code>.content</code>，返回纯字符串。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> langchain_openai <span class="keyword">import</span> ChatOpenAI</span><br><span class="line"><span class="keyword">from</span> langchain_core.prompts <span class="keyword">import</span> ChatPromptTemplate</span><br><span class="line"><span class="keyword">from</span> langchain_core.output_parsers <span class="keyword">import</span> StrOutputParser</span><br><span class="line"></span><br><span class="line">llm = ChatOpenAI(model=<span class="string">&quot;glm-4-flash&quot;</span>, temperature=<span class="number">0.1</span>)</span><br><span class="line">parser = StrOutputParser()</span><br><span class="line"></span><br><span class="line">prompt = ChatPromptTemplate.from_messages([</span><br><span class="line">    (<span class="string">&quot;system&quot;</span>, <span class="string">&quot;你是&#123;role&#125;&quot;</span>),</span><br><span class="line">    (<span class="string">&quot;human&quot;</span>, <span class="string">&quot;&#123;question&#125;&quot;</span>),</span><br><span class="line">])</span><br><span class="line"></span><br><span class="line"><span class="comment"># 用 | 串联</span></span><br><span class="line">chain = prompt | llm | parser</span><br><span class="line"></span><br><span class="line"><span class="comment"># 没有 Parser：返回 AIMessage 对象</span></span><br><span class="line">result_without = (prompt | llm).invoke(&#123;<span class="string">&quot;role&quot;</span>: <span class="string">&quot;专家&quot;</span>, <span class="string">&quot;question&quot;</span>: <span class="string">&quot;什么是GIL？&quot;</span>&#125;)</span><br><span class="line"><span class="built_in">print</span>(<span class="built_in">type</span>(result_without))  <span class="comment"># AIMessage</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 有 Parser：返回纯字符串</span></span><br><span class="line">result_with = chain.invoke(&#123;<span class="string">&quot;role&quot;</span>: <span class="string">&quot;专家&quot;</span>, <span class="string">&quot;question&quot;</span>: <span class="string">&quot;什么是GIL？&quot;</span>&#125;)</span><br><span class="line"><span class="built_in">print</span>(<span class="built_in">type</span>(result_with))     <span class="comment"># str</span></span><br><span class="line"><span class="built_in">print</span>(result_with)           <span class="comment"># &quot;GIL是全局解释器锁...&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>数据流：</strong></p>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+    flowchart LR
+    A[ChatPromptTemplate] --&gt; B[ChatOpenAI]
+    B --&gt; C[AIMessage\ncontent&#x3D;GIL是...\nresponse_metadata&#x3D;...]
+    C --&gt; D[StrOutputParser]
+    D --&gt; E[GIL是全局解释器锁...]
+  </pre></div>
+
+<hr>
+<h3 id="3-3-JsonOutputParser（解析-JSON）"><a href="#3-3-JsonOutputParser（解析-JSON）" class="headerlink" title="3.3 JsonOutputParser（解析 JSON）"></a>3.3 JsonOutputParser（解析 JSON）</h3><p><strong>作用：</strong> 要求模型输出 JSON 格式，并自动解析为 Python 字典。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> langchain_core.output_parsers <span class="keyword">import</span> JsonOutputParser</span><br><span class="line"><span class="keyword">from</span> langchain_core.prompts <span class="keyword">import</span> ChatPromptTemplate</span><br><span class="line"><span class="keyword">from</span> langchain_openai <span class="keyword">import</span> ChatOpenAI</span><br><span class="line"></span><br><span class="line">llm = ChatOpenAI(model=<span class="string">&quot;glm-4-flash&quot;</span>, temperature=<span class="number">0</span>)</span><br><span class="line">parser = JsonOutputParser()</span><br><span class="line"></span><br><span class="line">prompt = ChatPromptTemplate.from_messages([</span><br><span class="line">    (<span class="string">&quot;system&quot;</span>, <span class="string">&quot;你是一个信息提取助手。&#123;format_instructions&#125;&quot;</span>),</span><br><span class="line">    (<span class="string">&quot;human&quot;</span>, <span class="string">&quot;从以下文本提取姓名、年龄和技能：&#123;text&#125;&quot;</span>),</span><br><span class="line">])</span><br><span class="line"></span><br><span class="line"><span class="comment"># 获取格式指令（自动注入到 prompt 中）</span></span><br><span class="line">format_instructions = parser.get_format_instructions()</span><br><span class="line"><span class="built_in">print</span>(format_instructions)</span><br><span class="line"><span class="comment"># → &quot;请输出一个 JSON 对象，格式如下...&quot;</span></span><br><span class="line"></span><br><span class="line">chain = prompt | llm | parser</span><br><span class="line"></span><br><span class="line">result = chain.invoke(&#123;</span><br><span class="line">    <span class="string">&quot;format_instructions&quot;</span>: format_instructions,</span><br><span class="line">    <span class="string">&quot;text&quot;</span>: <span class="string">&quot;张三今年28岁，擅长Python、Java和Go&quot;</span>,</span><br><span class="line">&#125;)</span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span>(<span class="built_in">type</span>(result))  <span class="comment"># dict</span></span><br><span class="line"><span class="built_in">print</span>(result)</span><br><span class="line"><span class="comment"># → &#123;&quot;name&quot;: &quot;张三&quot;, &quot;age&quot;: 28, &quot;skills&quot;: [&quot;Python&quot;, &quot;Java&quot;, &quot;Go&quot;]&#125;</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>关键方法 <code>get_format_instructions()</code>：</strong> 自动生成一段”格式说明”文本，注入到 Prompt 中告诉模型应该输出什么格式的 JSON。</p>
+<hr>
+<h3 id="3-4-PydanticOutputParser（推荐生产使用）"><a href="#3-4-PydanticOutputParser（推荐生产使用）" class="headerlink" title="3.4 PydanticOutputParser（推荐生产使用）"></a>3.4 PydanticOutputParser（推荐生产使用）</h3><p><strong>作用：</strong> 用 Pydantic 模型定义输出结构，自动生成格式指令 + 自动验证 + 自动解析。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pydantic <span class="keyword">import</span> BaseModel, Field</span><br><span class="line"><span class="keyword">from</span> langchain_core.output_parsers <span class="keyword">import</span> PydanticOutputParser</span><br><span class="line"><span class="keyword">from</span> langchain_core.prompts <span class="keyword">import</span> ChatPromptTemplate</span><br><span class="line"><span class="keyword">from</span> langchain_openai <span class="keyword">import</span> ChatOpenAI</span><br><span class="line"></span><br><span class="line"><span class="comment"># 1. 用 Pydantic 定义输出结构</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">PersonInfo</span>(<span class="title class_ inherited__">BaseModel</span>):</span><br><span class="line">    name: <span class="built_in">str</span> = Field(description=<span class="string">&quot;人名&quot;</span>)</span><br><span class="line">    age: <span class="built_in">int</span> = Field(description=<span class="string">&quot;年龄&quot;</span>)</span><br><span class="line">    skills: <span class="built_in">list</span>[<span class="built_in">str</span>] = Field(description=<span class="string">&quot;技能列表&quot;</span>)</span><br><span class="line">    summary: <span class="built_in">str</span> = Field(description=<span class="string">&quot;一句话简介&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 2. 创建 Parser</span></span><br><span class="line">parser = PydanticOutputParser(pydantic_object=PersonInfo)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 3. 获取格式指令</span></span><br><span class="line"><span class="built_in">print</span>(parser.get_format_instructions())</span><br><span class="line"><span class="comment"># → 自动生成：请按以下 JSON Schema 输出...</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 4. 使用</span></span><br><span class="line">prompt = ChatPromptTemplate.from_messages([</span><br><span class="line">    (<span class="string">&quot;system&quot;</span>, <span class="string">&quot;你是信息提取助手。&#123;format_instructions&#125;&quot;</span>),</span><br><span class="line">    (<span class="string">&quot;human&quot;</span>, <span class="string">&quot;提取信息：&#123;text&#125;&quot;</span>),</span><br><span class="line">])</span><br><span class="line"></span><br><span class="line">llm = ChatOpenAI(model=<span class="string">&quot;glm-4-flash&quot;</span>, temperature=<span class="number">0</span>)</span><br><span class="line">chain = prompt | llm | parser</span><br><span class="line"></span><br><span class="line">result = chain.invoke(&#123;</span><br><span class="line">    <span class="string">&quot;format_instructions&quot;</span>: parser.get_format_instructions(),</span><br><span class="line">    <span class="string">&quot;text&quot;</span>: <span class="string">&quot;李四今年32岁，精通React和TypeScript，是一个全栈工程师&quot;</span>,</span><br><span class="line">&#125;)</span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span>(<span class="built_in">type</span>(result))  <span class="comment"># PersonInfo</span></span><br><span class="line"><span class="built_in">print</span>(result.name)   <span class="comment"># &quot;李四&quot;</span></span><br><span class="line"><span class="built_in">print</span>(result.age)    <span class="comment"># 32</span></span><br><span class="line"><span class="built_in">print</span>(result.skills) <span class="comment"># [&quot;React&quot;, &quot;TypeScript&quot;]</span></span><br></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="3-5-with-structured-output（最简单的方式）"><a href="#3-5-with-structured-output（最简单的方式）" class="headerlink" title="3.5 with_structured_output（最简单的方式）"></a>3.5 with_structured_output（最简单的方式）</h3><p><strong>作用：</strong> 利用模型原生的 Function Calling 能力，一行代码实现结构化输出。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pydantic <span class="keyword">import</span> BaseModel, Field</span><br><span class="line"><span class="keyword">from</span> langchain_openai <span class="keyword">import</span> ChatOpenAI</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">PersonInfo</span>(<span class="title class_ inherited__">BaseModel</span>):</span><br><span class="line">    name: <span class="built_in">str</span> = Field(description=<span class="string">&quot;人名&quot;</span>)</span><br><span class="line">    age: <span class="built_in">int</span> = Field(description=<span class="string">&quot;年龄&quot;</span>)</span><br><span class="line">    skills: <span class="built_in">list</span>[<span class="built_in">str</span>] = Field(description=<span class="string">&quot;技能列表&quot;</span>)</span><br><span class="line"></span><br><span class="line">llm = ChatOpenAI(model=<span class="string">&quot;glm-4-flash&quot;</span>, temperature=<span class="number">0</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 一行搞定：绑定结构化输出</span></span><br><span class="line">structured_llm = llm.with_structured_output(PersonInfo)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 直接调用，返回 Pydantic 对象</span></span><br><span class="line">result = structured_llm.invoke(<span class="string">&quot;王五今年25岁，擅长Python和机器学习&quot;</span>)</span><br><span class="line"><span class="built_in">print</span>(result.name)   <span class="comment"># &quot;王五&quot;</span></span><br><span class="line"><span class="built_in">print</span>(result.skills) <span class="comment"># [&quot;Python&quot;, &quot;机器学习&quot;]</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>不需要手动写 Parser，不需要手动注入格式指令！</strong> 模型原生支持。</p>
+<hr>
+<h3 id="3-6-三种输出解析方式对比"><a href="#3-6-三种输出解析方式对比" class="headerlink" title="3.6 三种输出解析方式对比"></a>3.6 三种输出解析方式对比</h3><div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+    flowchart TD
+    A[需要结构化输出] --&gt; B{模型支持 Function Calling?}
+
+    B --&gt;|是 OpenAI Claude等| C[with_structured_output\n最简单，准确率最高]
+    B --&gt;|否 不确定| D{需要自动验证?}
+
+    D --&gt;|是| E[PydanticOutputParser\n类型安全，自动校验]
+    D --&gt;|否| F[JsonOutputParser\n轻量级，快速原型]
+
+    G[只需要纯文本] --&gt; H[StrOutputParser\n提取 .content]
+  </pre></div>
+
+<table>
+<thead>
+<tr>
+<th>方式</th>
+<th>准确率</th>
+<th>代码量</th>
+<th>兼容性</th>
+<th>推荐场景</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>StrOutputParser</strong></td>
+<td>-</td>
+<td>最少</td>
+<td>全部</td>
+<td>纯文本问答</td>
+</tr>
+<tr>
+<td><strong>with_structured_output</strong></td>
+<td>最高</td>
+<td>最少</td>
+<td>OpenAI&#x2F;Claude</td>
+<td>新项目首选</td>
+</tr>
+<tr>
+<td><strong>PydanticOutputParser</strong></td>
+<td>高</td>
+<td>中等</td>
+<td>全部模型</td>
+<td>生产环境、复杂结构</td>
+</tr>
+<tr>
+<td><strong>JsonOutputParser</strong></td>
+<td>中等</td>
+<td>少</td>
+<td>全部模型</td>
+<td>快速测试、本地模型</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="4-输入与输出的完整串联"><a href="#4-输入与输出的完整串联" class="headerlink" title="4. 输入与输出的完整串联"></a>4. 输入与输出的完整串联</h2><h3 id="4-1-基础链：Prompt-LLM-Parser"><a href="#4-1-基础链：Prompt-LLM-Parser" class="headerlink" title="4.1 基础链：Prompt + LLM + Parser"></a>4.1 基础链：Prompt + LLM + Parser</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> langchain_openai <span class="keyword">import</span> ChatOpenAI</span><br><span class="line"><span class="keyword">from</span> langchain_core.prompts <span class="keyword">import</span> PromptTemplate</span><br><span class="line"><span class="keyword">from</span> langchain_core.output_parsers <span class="keyword">import</span> StrOutputParser</span><br><span class="line"></span><br><span class="line"><span class="comment"># 输入：Prompt Template</span></span><br><span class="line">prompt = PromptTemplate.from_template(<span class="string">&quot;用&#123;style&#125;解释&#123;concept&#125;&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 处理：Model</span></span><br><span class="line">llm = ChatOpenAI(model=<span class="string">&quot;glm-4-flash&quot;</span>, temperature=<span class="number">0.1</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 输出：Parser</span></span><br><span class="line">parser = StrOutputParser()</span><br><span class="line"></span><br><span class="line"><span class="comment"># 串联</span></span><br><span class="line">chain = prompt | llm | parser</span><br><span class="line"></span><br><span class="line"><span class="comment"># 调用</span></span><br><span class="line">result = chain.invoke(&#123;<span class="string">&quot;style&quot;</span>: <span class="string">&quot;通俗的话&quot;</span>, <span class="string">&quot;concept&quot;</span>: <span class="string">&quot;Python装饰器&quot;</span>&#125;)</span><br><span class="line"><span class="built_in">print</span>(result)  <span class="comment"># 纯字符串</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>完整数据流：</strong></p>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+    sequenceDiagram
+    participant U as 用户
+    participant P as PromptTemplate
+    participant M as ChatOpenAI
+    participant O as StrOutputParser
+
+    U-&gt;&gt;P: style&#x3D;通俗的话, concept&#x3D;装饰器
+    P-&gt;&gt;P: 变量填充 - 用通俗的话解释装饰器
+    P-&gt;&gt;M: HumanMessage
+    M-&gt;&gt;M: 模型推理
+    M-&gt;&gt;O: AIMessage content&#x3D;装饰器是...
+    O-&gt;&gt;O: 提取 .content
+    O-&gt;&gt;U: 装饰器是一种设计模式...
+  </pre></div>
+
+<h3 id="4-2-结构化输出链：Prompt-LLM-PydanticParser"><a href="#4-2-结构化输出链：Prompt-LLM-PydanticParser" class="headerlink" title="4.2 结构化输出链：Prompt + LLM + PydanticParser"></a>4.2 结构化输出链：Prompt + LLM + PydanticParser</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pydantic <span class="keyword">import</span> BaseModel, Field</span><br><span class="line"><span class="keyword">from</span> langchain_openai <span class="keyword">import</span> ChatOpenAI</span><br><span class="line"><span class="keyword">from</span> langchain_core.prompts <span class="keyword">import</span> ChatPromptTemplate</span><br><span class="line"><span class="keyword">from</span> langchain_core.output_parsers <span class="keyword">import</span> PydanticOutputParser</span><br><span class="line"></span><br><span class="line"><span class="comment"># 定义输出结构</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">CodeReview</span>(<span class="title class_ inherited__">BaseModel</span>):</span><br><span class="line">    quality_score: <span class="built_in">int</span> = Field(description=<span class="string">&quot;代码质量评分 1-10&quot;</span>)</span><br><span class="line">    issues: <span class="built_in">list</span>[<span class="built_in">str</span>] = Field(description=<span class="string">&quot;发现的问题列表&quot;</span>)</span><br><span class="line">    suggestion: <span class="built_in">str</span> = Field(description=<span class="string">&quot;改进建议&quot;</span>)</span><br><span class="line"></span><br><span class="line">parser = PydanticOutputParser(pydantic_object=CodeReview)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 输入模板</span></span><br><span class="line">prompt = ChatPromptTemplate.from_messages([</span><br><span class="line">    (<span class="string">&quot;system&quot;</span>, <span class="string">&quot;你是代码审查专家。&#123;format_instructions&#125;&quot;</span>),</span><br><span class="line">    (<span class="string">&quot;human&quot;</span>, <span class="string">&quot;审查以下代码：\n```\n&#123;code&#125;\n```&quot;</span>),</span><br><span class="line">])</span><br><span class="line"></span><br><span class="line">llm = ChatOpenAI(model=<span class="string">&quot;glm-4-flash&quot;</span>, temperature=<span class="number">0</span>)</span><br><span class="line">chain = prompt | llm | parser</span><br><span class="line"></span><br><span class="line"><span class="comment"># 调用</span></span><br><span class="line">result = chain.invoke(&#123;</span><br><span class="line">    <span class="string">&quot;format_instructions&quot;</span>: parser.get_format_instructions(),</span><br><span class="line">    <span class="string">&quot;code&quot;</span>: <span class="string">&quot;def add(a, b): return a + b&quot;</span>,</span><br><span class="line">&#125;)</span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span>(result.quality_score)  <span class="comment"># 7</span></span><br><span class="line"><span class="built_in">print</span>(result.issues)         <span class="comment"># [&quot;缺少类型注解&quot;, &quot;缺少文档字符串&quot;]</span></span><br><span class="line"><span class="built_in">print</span>(result.suggestion)     <span class="comment"># &quot;建议添加类型注解和 docstring&quot;</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="4-3-对话链：带历史的-Prompt-LLM-Parser"><a href="#4-3-对话链：带历史的-Prompt-LLM-Parser" class="headerlink" title="4.3 对话链：带历史的 Prompt + LLM + Parser"></a>4.3 对话链：带历史的 Prompt + LLM + Parser</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> langchain_openai <span class="keyword">import</span> ChatOpenAI</span><br><span class="line"><span class="keyword">from</span> langchain_core.prompts <span class="keyword">import</span> ChatPromptTemplate, MessagesPlaceholder</span><br><span class="line"><span class="keyword">from</span> langchain_core.output_parsers <span class="keyword">import</span> StrOutputParser</span><br><span class="line"><span class="keyword">from</span> langchain_core.runnables.history <span class="keyword">import</span> RunnableWithMessageHistory</span><br><span class="line"><span class="keyword">from</span> langchain_community.chat_message_histories <span class="keyword">import</span> ChatMessageHistory</span><br><span class="line"></span><br><span class="line">llm = ChatOpenAI(model=<span class="string">&quot;glm-4-flash&quot;</span>, temperature=<span class="number">0.7</span>)</span><br><span class="line">parser = StrOutputParser()</span><br><span class="line"></span><br><span class="line"><span class="comment"># 输入模板（带对话历史占位符）</span></span><br><span class="line">prompt = ChatPromptTemplate.from_messages([</span><br><span class="line">    (<span class="string">&quot;system&quot;</span>, <span class="string">&quot;你是一个友好的AI助手，记住用户的信息&quot;</span>),</span><br><span class="line">    MessagesPlaceholder(<span class="string">&quot;history&quot;</span>),  <span class="comment"># 对话历史</span></span><br><span class="line">    (<span class="string">&quot;human&quot;</span>, <span class="string">&quot;&#123;input&#125;&quot;</span>),            <span class="comment"># 当前输入</span></span><br><span class="line">])</span><br><span class="line"></span><br><span class="line">chain = prompt | llm | parser</span><br><span class="line"></span><br><span class="line"><span class="comment"># 会话存储</span></span><br><span class="line">store = &#123;&#125;</span><br><span class="line"><span class="keyword">def</span> <span class="title function_">get_session_history</span>(<span class="params">session_id: <span class="built_in">str</span></span>):</span><br><span class="line">    <span class="keyword">if</span> session_id <span class="keyword">not</span> <span class="keyword">in</span> store:</span><br><span class="line">        store[session_id] = ChatMessageHistory()</span><br><span class="line">    <span class="keyword">return</span> store[session_id]</span><br><span class="line"></span><br><span class="line"><span class="comment"># 包装成带记忆的链</span></span><br><span class="line">chain_with_history = RunnableWithMessageHistory(</span><br><span class="line">    chain,</span><br><span class="line">    get_session_history,</span><br><span class="line">    input_messages_key=<span class="string">&quot;input&quot;</span>,</span><br><span class="line">    history_messages_key=<span class="string">&quot;history&quot;</span>,</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 多轮对话</span></span><br><span class="line">config = &#123;<span class="string">&quot;configurable&quot;</span>: &#123;<span class="string">&quot;session_id&quot;</span>: <span class="string">&quot;user-001&quot;</span>&#125;&#125;</span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span>(chain_with_history.invoke(&#123;<span class="string">&quot;input&quot;</span>: <span class="string">&quot;我叫小明，我是Python开发者&quot;</span>&#125;, config))</span><br><span class="line"><span class="comment"># → &quot;你好小明！很高兴认识一位Python开发者...&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span>(chain_with_history.invoke(&#123;<span class="string">&quot;input&quot;</span>: <span class="string">&quot;我叫什么？擅长什么？&quot;</span>&#125;, config))</span><br><span class="line"><span class="comment"># → &quot;你叫小明，是一名Python开发者&quot;  ← 记住了！</span></span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="5-LangChain-Hub：现成的模板库"><a href="#5-LangChain-Hub：现成的模板库" class="headerlink" title="5. LangChain Hub：现成的模板库"></a>5. LangChain Hub：现成的模板库</h2><p>LangChain 提供了社区共享的 Prompt 模板，可以直接使用：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> langchain <span class="keyword">import</span> hub</span><br><span class="line"></span><br><span class="line"><span class="comment"># 拉取社区优质模板</span></span><br><span class="line">prompt = hub.pull(<span class="string">&quot;hwchase17/react&quot;</span>)          <span class="comment"># ReAct Agent 模板</span></span><br><span class="line">prompt = hub.pull(<span class="string">&quot;rlm/rag-prompt&quot;</span>)           <span class="comment"># RAG 检索问答模板</span></span><br><span class="line">prompt = hub.pull(<span class="string">&quot;hwchase17/openai-tools&quot;</span>)   <span class="comment"># OpenAI 工具调用模板</span></span><br></pre></td></tr></table></figure>
+
+<p>可以在 <a target="_blank" rel="noopener" href="https://smith.langchain.com/hub">Smith LangChain Hub</a> 浏览所有共享模板。</p>
+<hr>
+<h2 id="6-总结"><a href="#6-总结" class="headerlink" title="6. 总结"></a>6. 总结</h2><h3 id="输入端速查"><a href="#输入端速查" class="headerlink" title="输入端速查"></a>输入端速查</h3><table>
+<thead>
+<tr>
+<th>模板</th>
+<th>用法</th>
+<th>适用场景</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>PromptTemplate.from_template(&quot;...&quot;)</code></td>
+<td>自动推断变量</td>
+<td>简单文本</td>
+</tr>
+<tr>
+<td><code>PromptTemplate(template=..., input_variables=[...])</code></td>
+<td>手动声明变量</td>
+<td>团队协作、严格校验</td>
+</tr>
+<tr>
+<td><code>partial_variables=&#123;&quot;key&quot;: &quot;value&quot;&#125;</code></td>
+<td>设默认值</td>
+<td>减少重复传参</td>
+</tr>
+<tr>
+<td><code>ChatPromptTemplate.from_messages([...])</code></td>
+<td>多角色消息</td>
+<td>对话场景（最常用）</td>
+</tr>
+<tr>
+<td><code>MessagesPlaceholder(&quot;history&quot;)</code></td>
+<td>动态消息列表</td>
+<td>多轮对话历史</td>
+</tr>
+<tr>
+<td><code>FewShotPromptTemplate</code></td>
+<td>带示例引导</td>
+<td>格式化输出</td>
+</tr>
+</tbody></table>
+<h3 id="输出端速查"><a href="#输出端速查" class="headerlink" title="输出端速查"></a>输出端速查</h3><table>
+<thead>
+<tr>
+<th>Parser</th>
+<th>输出类型</th>
+<th>适用场景</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>StrOutputParser</code></td>
+<td><code>str</code></td>
+<td>纯文本问答</td>
+</tr>
+<tr>
+<td><code>JsonOutputParser</code></td>
+<td><code>dict</code></td>
+<td>快速获取 JSON</td>
+</tr>
+<tr>
+<td><code>PydanticOutputParser</code></td>
+<td>Pydantic 对象</td>
+<td>生产环境、类型安全</td>
+</tr>
+<tr>
+<td><code>with_structured_output</code></td>
+<td>Pydantic 对象</td>
+<td>最简单（需模型支持）</td>
+</tr>
+</tbody></table>
+<h3 id="核心公式"><a href="#核心公式" class="headerlink" title="核心公式"></a>核心公式</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">完整链 = PromptTemplate  |  ChatModel  |  OutputParser</span><br><span class="line">         ↑ 输入格式化      ↑ 模型推理     ↑ 输出解析</span><br><span class="line">         变量→消息          消息→AIMessage  AIMessage→业务数据</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><p><strong>官方文档：</strong></p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://docs.langchain.com/oss/python/langchain/prompt-templates">Prompt Templates - LangChain Docs</a></li>
+<li><a target="_blank" rel="noopener" href="https://docs.langchain.com/oss/python/langchain/output-parsers">Output Parsers - LangChain Docs</a></li>
+<li><a target="_blank" rel="noopener" href="https://docs.langchain.com/oss/python/langchain/structured-output">Structured Output - LangChain Docs</a></li>
+</ul>
+<p><strong>优质教程：</strong></p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://cloud.tencent.com/developer/article/2605873">零基础学AI大模型之LangChain-PromptTemplate - 腾讯云</a></li>
+<li><a target="_blank" rel="noopener" href="https://juejin.cn/post/7295720738568372259">一文搞懂Langchain Models（四）提示模板 - 掘金</a></li>
+<li><a target="_blank" rel="noopener" href="https://docs.langchain.com/langsmith/prompt-template-format">Prompt Template Format Guide - LangSmith</a></li>
+</ul>
+<hr>
+<h2 id="下一步"><a href="#下一步" class="headerlink" title="下一步"></a>下一步</h2><ul>
+<li><input disabled="" type="checkbox"> Module 06.3: LCEL 链式编排（<code>|</code> 管道语法详解）</li>
+<li><input disabled="" type="checkbox"> Module 06.4: Memory 记忆管理（多轮对话）</li>
+<li><input disabled="" type="checkbox"> Module 06.5: Tool 与 Agent（工具定义与智能体）</li>
+</ul>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>Author: </span><span class="post-copyright-info"><a href="http://example.com">david</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>Link: </span><span class="post-copyright-info"><a href="http://example.com/2026/04/13/AI-Python-06.2-Prompt%E6%A8%A1%E6%9D%BF%E4%B8%8E%E8%BE%93%E5%87%BA%E8%A7%A3%E6%9E%90/">http://example.com/2026/04/13/AI-Python-06.2-Prompt%E6%A8%A1%E6%9D%BF%E4%B8%8E%E8%BE%93%E5%87%BA%E8%A7%A3%E6%9E%90/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>Copyright Notice: </span><span class="post-copyright-info">All articles on this blog are licensed under <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> unless otherwise stated.</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Python/">Python</a><a class="post-meta__tags" href="/tags/AI/">AI</a><a class="post-meta__tags" href="/tags/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">学习笔记</a><a class="post-meta__tags" href="/tags/LangChain/">LangChain</a><a class="post-meta__tags" href="/tags/PromptTemplate/">PromptTemplate</a><a class="post-meta__tags" href="/tags/OutputParser/">OutputParser</a></div><div class="post-share"><div class="social-share" data-image="/img/butterfly-icon.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2026/04/20/AI-Python-06.3-LCEL%E9%93%BE%E5%BC%8F%E7%BC%96%E6%8E%92/" title="AI-Python-06.3-LCEL链式编排"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">Previous</div><div class="info-item-2">AI-Python-06.3-LCEL链式编排</div></div><div class="info-2"><div class="info-item-1">AI-Python-06.3: LCEL 链式编排 LCEL（LangChain Expression Language）是 LangChain 的核心语法，使用 | 管道操作符串联组件。本章深入理解 Runnable 接口、四种调用方式、三个工具类和高级编排模式。   1. 为什么需要 LCEL？1.1 没有 LCEL 的写法1234# 手动传递数据，类型容易出错prompt_result = prompt.format(topic=&quot;Python&quot;)llm_result = llm.invoke(prompt_result)final_result = parser.parse(llm_result)  1.2 有了 LCEL12chain = prompt | llm | parserresult = chain.invoke(&#123;&quot;topic&quot;: &quot;Python&quot;&#125;)  LCEL 解决的核心问题： 每个组件的输入输出格式不同，手动传递容易出错。      flowchart LR     A[P...</div></div></div></a><a class="pagination-related" href="/2026/03/31/LangChain-PromptTemplate%E9%80%89%E6%8B%A9%E5%86%B3%E7%AD%96%E6%B5%81%E7%A8%8B%E5%9B%BE.excalidraw/" title=""><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">Next</div><div class="info-item-2"></div></div><div class="info-2"><div class="info-item-1">&#x3D;&#x3D;⚠  Switch to EXCALIDRAW VIEW in the MORE OPTIONS menu of this document. ⚠&#x3D;&#x3D; You can decompress Drawing data with the command palette: ‘Decompress current Excalidraw file’. For more info check in plugin settings under ‘Saving’ Excalidraw DataText Elements%% Drawing1234567891011121314151617181920212223242526272829303132333435363738394041424344454647484950515253545556575859606162636465666768697071727374757677787980818283848586878889909192939495969798991001011021031041051061...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>Related Articles</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/2026/03/31/AI-Python-06.1-LangChain%E5%9F%BA%E7%A1%80/" title="AI-Python-06.1-LangChain基础"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-03-31</div><div class="info-item-2">AI-Python-06.1-LangChain基础</div></div><div class="info-2"><div class="info-item-1">AI-Python-06.1: LangChain 基础 LangChain 是当前最流行的 LLM 应用开发框架，让开发者快速搭建智能体、问答系统、对话机器人、知识库等复杂功能。   1. 什么是 LangChain？1.1 为什么需要 LangChain？众所周知，OpenAI 的 API 是无法联网的。如果想实现：  联网搜索并给出回答 总结 PDF 文档 基于某个视频进行问答 连接企业数据库  直接调用 API 是无法实现的。LangChain 就是为了解决这些问题而诞生的。 1.2 LangChain 的两大核心能力     flowchart TD     subgraph LangChain核心能力         direction TB         A[1. 将 LLM 与外部数据源连接]         A1[文档 &#x2F; 数据库 &#x2F; API &#x2F; 搜索引擎]         B[2. 允许与 LLM 进行交互]         B1[多轮对话 &#x2F; 工具调用 &#x2F; 链式编排]     end      A --&g...</div></div></div></a><a class="pagination-related" href="/2026/04/21/AI-Python-06.5-Tool%E4%B8%8EAgent/" title="AI-Python-06.5-Tool与Agent"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-04-21</div><div class="info-item-2">AI-Python-06.5-Tool与Agent</div></div><div class="info-2"><div class="info-item-1">AI-Python-06.5: Tool 与 Agent LLM 只会”说话”，Tool 让它能”做事”，Agent 让它自主决定”用什么工具做事”。本章深入理解 Tool 定义、Function Calling 机制和 Agent 的决策原理。   1. 为什么需要 Tool？1.1 LLM 的局限LLM 本质上只会生成文本，它不能：  搜索网络获取实时信息 执行精确的数学计算 查询数据库 调用外部 API 读写文件  1.2 Tool 的作用Tool &#x3D; 给 AI 装上”手脚” 1234567没有 Tool：用户: 135 × 246 等于多少？AI:   让我算一下... 33120（可能算错！）有 Tool：用户: 135 × 246 等于多少？AI:   [调用 multiply(135, 246)] → 33210（精确结果）   2. Function Calling 机制在学 Tool 之前，必须理解底层的 Function Calling（也叫 Tool Use）。 2.1 没有 Function Calling 时12用户: 135 × 246 等于...</div></div></div></a><a class="pagination-related" href="/2026/04/20/AI-Python-06.3-LCEL%E9%93%BE%E5%BC%8F%E7%BC%96%E6%8E%92/" title="AI-Python-06.3-LCEL链式编排"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-04-20</div><div class="info-item-2">AI-Python-06.3-LCEL链式编排</div></div><div class="info-2"><div class="info-item-1">AI-Python-06.3: LCEL 链式编排 LCEL（LangChain Expression Language）是 LangChain 的核心语法，使用 | 管道操作符串联组件。本章深入理解 Runnable 接口、四种调用方式、三个工具类和高级编排模式。   1. 为什么需要 LCEL？1.1 没有 LCEL 的写法1234# 手动传递数据，类型容易出错prompt_result = prompt.format(topic=&quot;Python&quot;)llm_result = llm.invoke(prompt_result)final_result = parser.parse(llm_result)  1.2 有了 LCEL12chain = prompt | llm | parserresult = chain.invoke(&#123;&quot;topic&quot;: &quot;Python&quot;&#125;)  LCEL 解决的核心问题： 每个组件的输入输出格式不同，手动传递容易出错。      flowchart LR     A[P...</div></div></div></a><a class="pagination-related" href="/2026/04/20/AI-Python-06.4-Memory%E8%AE%B0%E5%BF%86%E7%AE%A1%E7%90%86/" title="AI-Python-06.4-Memory记忆管理"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-04-20</div><div class="info-item-2">AI-Python-06.4-Memory记忆管理</div></div><div class="info-2"><div class="info-item-1">AI-Python-06.4: Memory 记忆管理 LLM 是无状态的，每次调用都是独立的。Memory 的本质是把历史消息塞进下次请求的 Prompt 里，让 AI “记住” 之前的对话。本章深入理解 LangChain 的记忆管理机制。   1. 为什么需要 Memory？1.1 LLM 是无状态的12345无记忆：用户: 我叫小明AI:   你好小明！用户: 我叫什么？AI:   抱歉，我不知道  ← 每次调用都是独立的，模型不知道上一轮说了什么       sequenceDiagram     participant U as 用户     participant L as LLM      Note over U,L: 无记忆模式     U-&gt;&gt;L: 我叫小明     L-&gt;&gt;U: 你好小明！     U-&gt;&gt;L: 我叫什么？     L-&gt;&gt;U: 抱歉，我不知道     Note right of L: 第2次调用没有上下文     1.2 Memory 的本质Memory 不是什么魔法，本质就是把历史消息塞进下...</div></div></div></a><a class="pagination-related" href="/2025/03/18/AI-Python-01.2-%E5%88%87%E7%89%87%E4%B8%8E%E5%AD%97%E7%AC%A6%E4%B8%B2%E6%93%8D%E4%BD%9C/" title="AI-Python-01.2 切片与字符串操作"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-03-18</div><div class="info-item-2">AI-Python-01.2 切片与字符串操作</div></div><div class="info-2"><div class="info-item-1">AI-Python-01.2: 切片与字符串操作 深入 Python 的切片操作与字符串处理能力，掌握这些基础操作对后续 AI 开发中的数据处理至关重要。   1. 切片 (Slicing) 基础1.1 切片语法12345678910111213141516171819&quot;&quot;&quot;切片语法示例Python 切片语法为 [start:stop:step]，提供灵活的子序列提取方式。&quot;&quot;&quot;# 基础语法sequence[start:stop:step]# 参数说明# start: 起始索引（包含），默认 0# stop: 结束索引（不包含），默认为序列长度# step: 步长，默认 1# 示例numbers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]print(f&quot;完整列表: &#123;numbers&#125;&quot;)print(f&quot;切片 [2:7]: &#123;numbers[2:7]&#125;&quot;)  # [2, 3, 4, 5, 6]  1234567891011...</div></div></div></a><a class="pagination-related" href="/2025/03/18/AI-Python-01.1-%E7%B1%BB%E5%9E%8B%E6%8E%A8%E5%AF%BC%E4%B8%8E%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/" title="AI-Python-01.1 类型推导与基础语法"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-03-18</div><div class="info-item-2">AI-Python-01.1 类型推导与基础语法</div></div><div class="info-2"><div class="info-item-1">AI-Python-01.1: 类型推导与基础语法 作为 Java 架构师学习 Python，本文聚焦 Python 的动态类型系统和类型推导机制，为后续 AI 开发奠定基础。每段代码都包含完整的文件注释（docstring）和对应的 Java 代码对比。   1. Python 与 Java 类型系统对比   特性 Python Java    类型检查时机 运行时（动态） 编译时（静态）   变量声明 无需声明类型 必须声明类型 int x = 10;   类型安全 运行时发现错误 编译时发现错误   灵活性 高（同一变量可赋不同类型） 低（类型一旦确定不能变）   IDE 支持 类型注解提供辅助 原生强类型支持   适用场景 快速原型、数据探索 大型项目、团队协作    2. 基础数据类型2.1 数值类型示例1234567891011121314151617181920&quot;&quot;&quot;基础数据类型示例本示例展示 Python 各数值类型的创建和使用方式，对比 Java 的类型系统差异。&quot;&quot;&quot;# Python 自动推断类型x ...</div></div></div></a></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/butterfly-icon.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">david</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">126</div></a><a href="/tags/"><div class="headline">Tags</div><div class="length-num">299</div></a><a href="/categories/"><div class="headline">Categories</div><div class="length-num">23</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>Announcement</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>Contents</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#AI-Python-06-2-Prompt-%E6%A8%A1%E6%9D%BF%E4%B8%8E%E8%BE%93%E5%87%BA%E8%A7%A3%E6%9E%90"><span class="toc-number">1.</span> <span class="toc-text">AI-Python-06.2: Prompt 模板与输出解析</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-%E5%AE%8C%E6%95%B4%E6%95%B0%E6%8D%AE%E6%B5%81%EF%BC%9A%E4%BB%8E%E8%BE%93%E5%85%A5%E5%88%B0%E8%BE%93%E5%87%BA"><span class="toc-number">1.1.</span> <span class="toc-text">1. 完整数据流：从输入到输出</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-%E8%BE%93%E5%85%A5%E7%AB%AF%EF%BC%9APrompt-Template-%E8%AF%A6%E8%A7%A3"><span class="toc-number">1.2.</span> <span class="toc-text">2. 输入端：Prompt Template 详解</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-PromptTemplate%EF%BC%88%E7%BA%AF%E6%96%87%E6%9C%AC%E6%A8%A1%E6%9D%BF%EF%BC%89"><span class="toc-number">1.2.1.</span> <span class="toc-text">2.1 PromptTemplate（纯文本模板）</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AE%9A%E4%B9%89%E6%96%B9%E5%BC%8F%E4%B8%80%EF%BC%9Afrom-template%EF%BC%88%E8%87%AA%E5%8A%A8%E6%8E%A8%E6%96%AD%E5%8F%98%E9%87%8F%EF%BC%89"><span class="toc-number">1.2.1.1.</span> <span class="toc-text">定义方式一：from_template（自动推断变量）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AE%9A%E4%B9%89%E6%96%B9%E5%BC%8F%E4%BA%8C%EF%BC%9A%E6%89%8B%E5%8A%A8%E5%A3%B0%E6%98%8E%E5%8F%98%E9%87%8F%EF%BC%88%E6%9B%B4%E4%B8%A5%E6%A0%BC%EF%BC%89"><span class="toc-number">1.2.1.2.</span> <span class="toc-text">定义方式二：手动声明变量（更严格）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AE%9A%E4%B9%89%E6%96%B9%E5%BC%8F%E4%B8%89%EF%BC%9Apartial-variables-%E8%AE%BE%E9%BB%98%E8%AE%A4%E5%80%BC"><span class="toc-number">1.2.1.3.</span> <span class="toc-text">定义方式三：partial_variables 设默认值</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%A8%A1%E6%9D%BF%E5%8F%98%E9%87%8F%E7%9A%84%E7%BA%A6%E6%9D%9F%E8%A7%84%E5%88%99"><span class="toc-number">1.2.1.4.</span> <span class="toc-text">模板变量的约束规则</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%A8%A1%E6%9D%BF%E6%A0%BC%E5%BC%8F%EF%BC%9Af-string-vs-jinja2"><span class="toc-number">1.2.1.5.</span> <span class="toc-text">模板格式：f-string vs jinja2</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-ChatPromptTemplate%EF%BC%88%E5%AF%B9%E8%AF%9D%E6%A8%A1%E6%9D%BF%EF%BC%8C%E6%9C%80%E5%B8%B8%E7%94%A8%EF%BC%89"><span class="toc-number">1.2.2.</span> <span class="toc-text">2.2 ChatPromptTemplate（对话模板，最常用）</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%9F%BA%E6%9C%AC%E7%94%A8%E6%B3%95"><span class="toc-number">1.2.2.1.</span> <span class="toc-text">基本用法</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%B8%89%E7%A7%8D%E6%B6%88%E6%81%AF%E8%A7%92%E8%89%B2%E7%9A%84%E6%8E%A7%E5%88%B6%E5%8A%9B"><span class="toc-number">1.2.2.2.</span> <span class="toc-text">三种消息角色的控制力</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#MessagesPlaceholder%EF%BC%9A%E5%8A%A8%E6%80%81%E6%8F%92%E5%85%A5%E6%B6%88%E6%81%AF%E5%88%97%E8%A1%A8"><span class="toc-number">1.2.2.3.</span> <span class="toc-text">MessagesPlaceholder：动态插入消息列表</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-FewShotPromptTemplate%EF%BC%88%E5%B0%91%E6%A0%B7%E6%9C%AC%E6%A8%A1%E6%9D%BF%EF%BC%89"><span class="toc-number">1.2.3.</span> <span class="toc-text">2.3 FewShotPromptTemplate（少样本模板）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-4-%E5%9B%9B%E7%A7%8D%E6%A8%A1%E6%9D%BF%E9%80%89%E6%8B%A9%E5%86%B3%E7%AD%96"><span class="toc-number">1.2.4.</span> <span class="toc-text">2.4 四种模板选择决策</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-%E8%BE%93%E5%87%BA%E7%AB%AF%EF%BC%9AOutput-Parser-%E8%AF%A6%E8%A7%A3"><span class="toc-number">1.3.</span> <span class="toc-text">3. 输出端：Output Parser 详解</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-%E4%B8%BA%E4%BB%80%E4%B9%88%E9%9C%80%E8%A6%81-Output-Parser%EF%BC%9F"><span class="toc-number">1.3.1.</span> <span class="toc-text">3.1 为什么需要 Output Parser？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-StrOutputParser%EF%BC%88%E6%9C%80%E5%9F%BA%E7%A1%80%EF%BC%8C%E6%8F%90%E5%8F%96%E7%BA%AF%E6%96%87%E6%9C%AC%EF%BC%89"><span class="toc-number">1.3.2.</span> <span class="toc-text">3.2 StrOutputParser（最基础，提取纯文本）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-JsonOutputParser%EF%BC%88%E8%A7%A3%E6%9E%90-JSON%EF%BC%89"><span class="toc-number">1.3.3.</span> <span class="toc-text">3.3 JsonOutputParser（解析 JSON）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-4-PydanticOutputParser%EF%BC%88%E6%8E%A8%E8%8D%90%E7%94%9F%E4%BA%A7%E4%BD%BF%E7%94%A8%EF%BC%89"><span class="toc-number">1.3.4.</span> <span class="toc-text">3.4 PydanticOutputParser（推荐生产使用）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-5-with-structured-output%EF%BC%88%E6%9C%80%E7%AE%80%E5%8D%95%E7%9A%84%E6%96%B9%E5%BC%8F%EF%BC%89"><span class="toc-number">1.3.5.</span> <span class="toc-text">3.5 with_structured_output（最简单的方式）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-6-%E4%B8%89%E7%A7%8D%E8%BE%93%E5%87%BA%E8%A7%A3%E6%9E%90%E6%96%B9%E5%BC%8F%E5%AF%B9%E6%AF%94"><span class="toc-number">1.3.6.</span> <span class="toc-text">3.6 三种输出解析方式对比</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-%E8%BE%93%E5%85%A5%E4%B8%8E%E8%BE%93%E5%87%BA%E7%9A%84%E5%AE%8C%E6%95%B4%E4%B8%B2%E8%81%94"><span class="toc-number">1.4.</span> <span class="toc-text">4. 输入与输出的完整串联</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-%E5%9F%BA%E7%A1%80%E9%93%BE%EF%BC%9APrompt-LLM-Parser"><span class="toc-number">1.4.1.</span> <span class="toc-text">4.1 基础链：Prompt + LLM + Parser</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-%E7%BB%93%E6%9E%84%E5%8C%96%E8%BE%93%E5%87%BA%E9%93%BE%EF%BC%9APrompt-LLM-PydanticParser"><span class="toc-number">1.4.2.</span> <span class="toc-text">4.2 结构化输出链：Prompt + LLM + PydanticParser</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-3-%E5%AF%B9%E8%AF%9D%E9%93%BE%EF%BC%9A%E5%B8%A6%E5%8E%86%E5%8F%B2%E7%9A%84-Prompt-LLM-Parser"><span class="toc-number">1.4.3.</span> <span class="toc-text">4.3 对话链：带历史的 Prompt + LLM + Parser</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-LangChain-Hub%EF%BC%9A%E7%8E%B0%E6%88%90%E7%9A%84%E6%A8%A1%E6%9D%BF%E5%BA%93"><span class="toc-number">1.5.</span> <span class="toc-text">5. LangChain Hub：现成的模板库</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-%E6%80%BB%E7%BB%93"><span class="toc-number">1.6.</span> <span class="toc-text">6. 总结</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BE%93%E5%85%A5%E7%AB%AF%E9%80%9F%E6%9F%A5"><span class="toc-number">1.6.1.</span> <span class="toc-text">输入端速查</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BE%93%E5%87%BA%E7%AB%AF%E9%80%9F%E6%9F%A5"><span class="toc-number">1.6.2.</span> <span class="toc-text">输出端速查</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A0%B8%E5%BF%83%E5%85%AC%E5%BC%8F"><span class="toc-number">1.6.3.</span> <span class="toc-text">核心公式</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%82%E8%80%83%E8%B5%84%E6%96%99"><span class="toc-number">1.7.</span> <span class="toc-text">参考资料</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%8B%E4%B8%80%E6%AD%A5"><span class="toc-number">1.8.</span> <span class="toc-text">下一步</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>Recent Posts</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/04/30/AI-Python-07.4-GraphRAG%E7%9F%A5%E8%AF%86%E5%9B%BE%E8%B0%B1%E6%A3%80%E7%B4%A2/" title="AI-Python-07.4-GraphRAG知识图谱检索">AI-Python-07.4-GraphRAG知识图谱检索</a><time datetime="2026-04-30T02:00:00.000Z" title="Created 2026-04-30 10:00:00">2026-04-30</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/04/29/AI-Python-07.3-%E6%B7%B7%E5%90%88%E6%A3%80%E7%B4%A2%E4%B8%8E%E9%87%8D%E6%8E%92%E5%BA%8F/" title="AI-Python-07.3-混合检索与重排序">AI-Python-07.3-混合检索与重排序</a><time datetime="2026-04-29T02:00:00.000Z" title="Created 2026-04-29 10:00:00">2026-04-29</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/04/28/AI-Python-07.2-%E6%96%87%E6%A1%A3%E6%99%BA%E8%83%BD%E8%A7%A3%E6%9E%90/" title="AI-Python-07.2-文档智能解析">AI-Python-07.2-文档智能解析</a><time datetime="2026-04-28T02:00:00.000Z" title="Created 2026-04-28 10:00:00">2026-04-28</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/04/27/AI-Python-07.1-RAG%E6%A3%80%E7%B4%A2%E5%A2%9E%E5%BC%BA%E4%B8%8E%E5%90%91%E9%87%8F%E6%A3%80%E7%B4%A2/" title="AI-Python-07.1-RAG检索增强与向量检索">AI-Python-07.1-RAG检索增强与向量检索</a><time datetime="2026-04-27T02:00:00.000Z" title="Created 2026-04-27 10:00:00">2026-04-27</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/04/21/AI-Python-06.6-LangGraph%E7%8A%B6%E6%80%81%E6%9C%BA%E7%BC%96%E6%8E%92/" title="AI-Python-06.6-LangGraph状态机编排">AI-Python-06.6-LangGraph状态机编排</a><time datetime="2026-04-21T03:00:00.000Z" title="Created 2026-04-21 11:00:00">2026-04-21</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By david</span><span class="framework-info"><span>Framework </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>Theme </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.4.3</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="Reading Mode"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="Toggle Between Light and Dark Mode"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="Toggle Between Single-column and Double-column"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="Settings"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="Table of Contents"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="Back to Top"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><div class="js-pjax"><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (false) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
