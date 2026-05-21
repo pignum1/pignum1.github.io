@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <title>Agent 运行时序图</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', sans-serif; background: #F9FAFB; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+  </style>
+</head>
+<body>
+<svg width="780" height="540" viewBox="0 0 780 540">
+  <defs>
+    <marker id="as" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#6B7280"/>
+    </marker>
+    <marker id="ad" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#3B82F6"/>
+    </marker>
+    <filter id="s"><feDropShadow dx="0" dy="2" stdDeviation="3" flood-opacity="0.08"/></filter>
+  </defs>
+
+  <rect width="780" height="540" fill="#F9FAFB" rx="12"/>
+  <text x="390" y="28" text-anchor="middle" font-size="15" font-weight="bold" fill="#111827">Agent 运行时序 — "北京和上海哪个更热？"</text>
+
+  <!-- 参与者头部 -->
+  <g filter="url(#s)">
+    <rect x="45" y="45" width="90" height="36" rx="8" fill="#F1F5F9" stroke="#94A3B8" stroke-width="1.5"/>
+    <text x="90" y="68" text-anchor="middle" font-size="12" fill="#475569">&#x1F464; 用户</text>
+  </g>
+  <g filter="url(#s)">
+    <rect x="210" y="45" width="110" height="36" rx="8" fill="#D1E8FF" stroke="#42A5F5" stroke-width="1.5"/>
+    <text x="265" y="68" text-anchor="middle" font-size="12" fill="#2563EB">Agent 循环</text>
+  </g>
+  <g filter="url(#s)">
+    <rect x="400" y="45" width="100" height="36" rx="8" fill="#FEE2E2" stroke="#EF4444" stroke-width="1.5"/>
+    <text x="450" y="68" text-anchor="middle" font-size="12" fill="#DC2626">&#x1F9E0; LLM</text>
+  </g>
+  <g filter="url(#s)">
+    <rect x="590" y="45" width="100" height="36" rx="8" fill="#DBEAFE" stroke="#3B82F6" stroke-width="1.5"/>
+    <text x="640" y="68" text-anchor="middle" font-size="12" fill="#2563EB">&#x1F527; 工具</text>
+  </g>
+
+  <!-- 生命线 -->
+  <line x1="90" y1="81" x2="90" y2="510" stroke="#94A3B8" stroke-width="1" stroke-dasharray="4,3"/>
+  <line x1="265" y1="81" x2="265" y2="510" stroke="#42A5F5" stroke-width="1" stroke-dasharray="4,3"/>
+  <line x1="450" y1="81" x2="450" y2="510" stroke="#EF4444" stroke-width="1" stroke-dasharray="4,3"/>
+  <line x1="640" y1="81" x2="640" y2="510" stroke="#3B82F6" stroke-width="1" stroke-dasharray="4,3"/>
+
+  <!-- Step 1 -->
+  <rect x="30" y="97" width="60" height="18" rx="4" fill="#FEF3C7"/>
+  <text x="60" y="111" text-anchor="middle" font-size="10" font-weight="bold" fill="#D97706">Step 1</text>
+
+  <line x1="90" y1="106" x2="260" y2="106" stroke="#6B7280" stroke-width="1.5" marker-end="url(#as)"/>
+  <text x="175" y="100" text-anchor="middle" font-size="10" fill="#374151">北京和上海哪个更热？</text>
+
+  <line x1="265" y1="128" x2="445" y2="128" stroke="#6B7280" stroke-width="1.5" marker-end="url(#as)"/>
+  <text x="355" y="122" text-anchor="middle" font-size="10" fill="#374151">问题 + 工具清单</text>
+
+  <line x1="445" y1="150" x2="270" y2="150" stroke="#3B82F6" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#ad)"/>
+  <text x="355" y="144" text-anchor="middle" font-size="10" fill="#3B82F6">调 get_weather("北京") + ("上海")</text>
+
+  <line x1="270" y1="172" x2="635" y2="172" stroke="#6B7280" stroke-width="1.5" marker-end="url(#as)"/>
+  <text x="450" y="166" text-anchor="middle" font-size="10" fill="#374151">执行两个天气查询</text>
+
+  <line x1="635" y1="194" x2="270" y2="194" stroke="#3B82F6" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#ad)"/>
+  <text x="450" y="188" text-anchor="middle" font-size="10" fill="#3B82F6">北京 35°C, 上海 29°C</text>
+
+  <!-- Step 2 -->
+  <rect x="30" y="217" width="60" height="18" rx="4" fill="#FEF3C7"/>
+  <text x="60" y="231" text-anchor="middle" font-size="10" font-weight="bold" fill="#D97706">Step 2</text>
+
+  <line x1="265" y1="226" x2="445" y2="226" stroke="#6B7280" stroke-width="1.5" marker-end="url(#as)"/>
+  <text x="355" y="220" text-anchor="middle" font-size="10" fill="#374151">工具结果 + 原始问题</text>
+
+  <line x1="445" y1="248" x2="270" y2="248" stroke="#3B82F6" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#ad)"/>
+  <text x="355" y="242" text-anchor="middle" font-size="10" fill="#3B82F6">调 calculate("35 - 29")</text>
+
+  <line x1="270" y1="270" x2="635" y2="270" stroke="#6B7280" stroke-width="1.5" marker-end="url(#as)"/>
+  <text x="450" y="264" text-anchor="middle" font-size="10" fill="#374151">执行计算</text>
+
+  <line x1="635" y1="292" x2="270" y2="292" stroke="#3B82F6" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#ad)"/>
+  <text x="450" y="286" text-anchor="middle" font-size="10" fill="#3B82F6">6</text>
+
+  <!-- Step 3 -->
+  <rect x="30" y="315" width="60" height="18" rx="4" fill="#FEF3C7"/>
+  <text x="60" y="329" text-anchor="middle" font-size="10" font-weight="bold" fill="#D97706">Step 3</text>
+
+  <line x1="265" y1="324" x2="445" y2="324" stroke="#6B7280" stroke-width="1.5" marker-end="url(#as)"/>
+  <text x="355" y="318" text-anchor="middle" font-size="10" fill="#374151">计算结果 + 天气结果</text>
+
+  <line x1="445" y1="346" x2="270" y2="346" stroke="#059669" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#as)"/>
+  <text x="355" y="340" text-anchor="middle" font-size="10" font-weight="bold" fill="#059669">北京更热，差 6°C（不再调工具）</text>
+
+  <line x1="260" y1="374" x2="95" y2="374" stroke="#059669" stroke-width="2" marker-end="url(#as)"/>
+  <text x="175" y="368" text-anchor="middle" font-size="11" font-weight="bold" fill="#059669">北京更热。35°C vs 29°C，差 6°C</text>
+
+  <!-- 底部总结 -->
+  <g filter="url(#s)">
+    <rect x="100" y="410" width="580" height="55" rx="10" fill="white" stroke="#E5E7EB" stroke-width="1"/>
+    <text x="120" y="432" font-size="11" fill="#374151">3 轮 ReAct 循环，LLM 自主决定：</text>
+    <text x="120" y="450" font-size="10" fill="#6B7280">&#x2460; 信息不够 → 查两个城市天气（Action）</text>
+    <text x="120" y="465" font-size="10" fill="#6B7280">&#x2461; 有天气但需精确计算 → 调计算器（Action）&#x2462; 信息齐全 → 直接回答</text>
+  </g>
+
+  <!-- 右侧标注 -->
+  <g opacity="0.6">
+    <rect x="700" y="127" width="60" height="16" rx="4" fill="#FEE2E2"/>
+    <text x="730" y="139" text-anchor="middle" font-size="9" fill="#DC2626">Thought</text>
+    <rect x="700" y="171" width="60" height="16" rx="4" fill="#DBEAFE"/>
+    <text x="730" y="183" text-anchor="middle" font-size="9" fill="#2563EB">Action</text>
+    <rect x="700" y="193" width="60" height="16" rx="4" fill="#ECFDF5"/>
+    <text x="730" y="205" text-anchor="middle" font-size="9" fill="#059669">Observation</text>
+  </g>
+
+</svg>
+</body>
+</html>

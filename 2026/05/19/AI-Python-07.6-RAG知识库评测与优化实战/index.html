@@ -1,0 +1,536 @@
+<!DOCTYPE html><html lang="en" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>AI-Python-07.6-RAG知识库评测与优化实战 | Hexo</title><meta name="author" content="david"><meta name="copyright" content="david"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="RAG 知识库评测与优化实战 核心问题：构建了一个 124 篇博客的 Wiki 知识库（基于 LLM Wiki 模式），但如何验证它真的好用？回答质量如何量化？出了问题怎么定位和修复？ 本文价值：完整记录从”初始评分 3.1&#x2F;5”到”稳定 4.3-4.5&#x2F;5”的优化全过程，涵盖 7 个真实 bug 的定位修复、LLM-as-Judge 评测体系搭建、以及 Wiki 内容质量提升">
+<meta property="og:type" content="article">
+<meta property="og:title" content="AI-Python-07.6-RAG知识库评测与优化实战">
+<meta property="og:url" content="http://example.com/2026/05/19/AI-Python-07.6-RAG%E7%9F%A5%E8%AF%86%E5%BA%93%E8%AF%84%E6%B5%8B%E4%B8%8E%E4%BC%98%E5%8C%96%E5%AE%9E%E6%88%98/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="RAG 知识库评测与优化实战 核心问题：构建了一个 124 篇博客的 Wiki 知识库（基于 LLM Wiki 模式），但如何验证它真的好用？回答质量如何量化？出了问题怎么定位和修复？ 本文价值：完整记录从”初始评分 3.1&#x2F;5”到”稳定 4.3-4.5&#x2F;5”的优化全过程，涵盖 7 个真实 bug 的定位修复、LLM-as-Judge 评测体系搭建、以及 Wiki 内容质量提升">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://example.com/img/butterfly-icon.png">
+<meta property="article:published_time" content="2026-05-19T02:00:00.000Z">
+<meta property="article:modified_time" content="2026-05-19T07:26:37.775Z">
+<meta property="article:author" content="david">
+<meta property="article:tag" content="AI">
+<meta property="article:tag" content="Python">
+<meta property="article:tag" content="学习笔记">
+<meta property="article:tag" content="RAG">
+<meta property="article:tag" content="评测">
+<meta property="article:tag" content="LLM-as-Judge">
+<meta property="article:tag" content="优化">
+<meta property="article:tag" content="Wiki知识库">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/img/butterfly-icon.png"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "AI-Python-07.6-RAG知识库评测与优化实战",
+  "url": "http://example.com/2026/05/19/AI-Python-07.6-RAG%E7%9F%A5%E8%AF%86%E5%BA%93%E8%AF%84%E6%B5%8B%E4%B8%8E%E4%BC%98%E5%8C%96%E5%AE%9E%E6%88%98/",
+  "image": "http://example.com/img/butterfly-icon.png",
+  "datePublished": "2026-05-19T02:00:00.000Z",
+  "dateModified": "2026-05-19T07:26:37.775Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "david",
+      "url": "http://example.com"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://example.com/2026/05/19/AI-Python-07.6-RAG%E7%9F%A5%E8%AF%86%E5%BA%93%E8%AF%84%E6%B5%8B%E4%B8%8E%E4%BC%98%E5%8C%96%E5%AE%9E%E6%88%98/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: 'Copy Successful',
+    error: 'Copy Failed',
+    noSupport: 'Browser Not Supported'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: 'Just now',
+    min: 'minutes ago',
+    hour: 'hours ago',
+    day: 'days ago',
+    month: 'months ago'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid/dist/infinitegrid.min.js',
+    buttonText: 'Load More'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'AI-Python-07.6-RAG知识库评测与优化实战',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Hexo</span></a><a class="nav-page-title" href="/"><span class="site-name">AI-Python-07.6-RAG知识库评测与优化实战</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  Back to Home</span></span></a></span><div id="menus"></div></nav><div id="post-info"><h1 class="post-title">AI-Python-07.6-RAG知识库评测与优化实战</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">Created</span><time class="post-meta-date-created" datetime="2026-05-19T02:00:00.000Z" title="Created 2026-05-19 10:00:00">2026-05-19</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">Updated</span><time class="post-meta-date-updated" datetime="2026-05-19T07:26:37.775Z" title="Updated 2026-05-19 15:26:37">2026-05-19</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/AI%E5%AD%A6%E4%B9%A0/">AI学习</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/AI%E5%AD%A6%E4%B9%A0/Python/">Python</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">Post Views:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h1 id="RAG-知识库评测与优化实战"><a href="#RAG-知识库评测与优化实战" class="headerlink" title="RAG 知识库评测与优化实战"></a>RAG 知识库评测与优化实战</h1><blockquote>
+<p><strong>核心问题</strong>：构建了一个 124 篇博客的 Wiki 知识库（基于 LLM Wiki 模式），但如何验证它真的好用？回答质量如何量化？出了问题怎么定位和修复？</p>
+<p><strong>本文价值</strong>：完整记录从”初始评分 3.1&#x2F;5”到”稳定 4.3-4.5&#x2F;5”的优化全过程，涵盖 7 个真实 bug 的定位修复、LLM-as-Judge 评测体系搭建、以及 Wiki 内容质量提升策略。这是一次真实的 RAG 优化实战经验，可作为面试中展示 RAG 工程能力的核心案例。</p>
+</blockquote>
+<h2 id="一、知识库架构回顾"><a href="#一、知识库架构回顾" class="headerlink" title="一、知识库架构回顾"></a>一、知识库架构回顾</h2><h3 id="1-1-整体架构"><a href="#1-1-整体架构" class="headerlink" title="1.1 整体架构"></a>1.1 整体架构</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">graph LR</span><br><span class="line">    A[用户问题] --&gt; B[路由 Router]</span><br><span class="line">    B --&gt;|命中| C[关联扩展 Expander]</span><br><span class="line">    B --&gt;|未命中| D[降级 Fallback]</span><br><span class="line">    C --&gt; E[分层上下文 Context]</span><br><span class="line">    E --&gt; F[回答生成 LLM]</span><br><span class="line">    F --&gt; G[评测 Evaluator]</span><br><span class="line">    G --&gt;|低分| H[二次扩展 Retry]</span><br><span class="line">    G --&gt;|高分| I[输出结果]</span><br><span class="line">    D --&gt; D1[关键词搜索]</span><br><span class="line">    D1 --&gt;|命中| E</span><br><span class="line">    D1 --&gt;|未命中| D2[Tag 匹配]</span><br><span class="line">    D2 --&gt;|未命中| D3[友好提示]</span><br></pre></td></tr></table></figure>
+
+<p><strong>关键参数</strong>：</p>
+<ul>
+<li>124 篇博客 → 124 个 Wiki 页面（经过 LLM 编译压缩）</li>
+<li>路由：LLM 从 index.md 选择 1-5 个相关 Wiki</li>
+<li>上下文：Top 2 Wiki 全文（≤4000字），其余摘要</li>
+<li>评测：LLM-as-Judge，四维度评分（路由&#x2F;覆盖&#x2F;忠实&#x2F;质量）</li>
+</ul>
+<h3 id="1-2-技术栈"><a href="#1-2-技术栈" class="headerlink" title="1.2 技术栈"></a>1.2 技术栈</h3><table>
+<thead>
+<tr>
+<th align="left">组件</th>
+<th align="left">技术选型</th>
+<th align="left">原因</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">向量数据库</td>
+<td align="left"><strong>无</strong>（LLM Wiki 模式）</td>
+<td align="left">124 篇可直接塞入上下文窗口</td>
+</tr>
+<tr>
+<td align="left">路由</td>
+<td align="left">LLM 读 index.md 选择</td>
+<td align="left">利用 LLM 的语义理解能力</td>
+</tr>
+<tr>
+<td align="left">评测</td>
+<td align="left">LLM-as-Judge (双次评分取平均)</td>
+<td align="left">自动化评测，减少人工标注</td>
+</tr>
+<tr>
+<td align="left">编译</td>
+<td align="left">LLM 将博客编译为 Wiki</td>
+<td align="left">结构化 + 信息压缩</td>
+</tr>
+<tr>
+<td align="left">模型</td>
+<td align="left">glm-5.1 (Anthropic 兼容 API)</td>
+<td align="left">中文能力好，成本可控</td>
+</tr>
+</tbody></table>
+<h2 id="二、评测体系搭建"><a href="#二、评测体系搭建" class="headerlink" title="二、评测体系搭建"></a>二、评测体系搭建</h2><h3 id="2-1-测试题库设计"><a href="#2-1-测试题库设计" class="headerlink" title="2.1 测试题库设计"></a>2.1 测试题库设计</h3><p>设计 15 道覆盖不同难度的测试题：</p>
+<table>
+<thead>
+<tr>
+<th align="left">类别</th>
+<th align="left">数量</th>
+<th align="left">示例</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">精确单领域</td>
+<td align="left">9</td>
+<td align="left">“Python GIL 是什么？”</td>
+</tr>
+<tr>
+<td align="left">跨领域</td>
+<td align="left">3</td>
+<td align="left">“RAG 和 Agent 的关系？”</td>
+</tr>
+<tr>
+<td align="left">模糊查询</td>
+<td align="left">2</td>
+<td align="left">“并发”、”怎么优化性能？”</td>
+</tr>
+<tr>
+<td align="left">无关查询</td>
+<td align="left">1</td>
+<td align="left">“今天天气怎么样？”</td>
+</tr>
+</tbody></table>
+<h3 id="2-2-LLM-as-Judge-评测维度"><a href="#2-2-LLM-as-Judge-评测维度" class="headerlink" title="2.2 LLM-as-Judge 评测维度"></a>2.2 LLM-as-Judge 评测维度</h3><table>
+<thead>
+<tr>
+<th align="left">维度</th>
+<th align="left">权重</th>
+<th align="left">1 分</th>
+<th align="left">5 分</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>路由准确性</strong></td>
+<td align="left">20%</td>
+<td align="left">选中的 Wiki 与问题完全无关</td>
+<td align="left">所有相关 Wiki 都被选中</td>
+</tr>
+<tr>
+<td align="left"><strong>覆盖度</strong></td>
+<td align="left">20%</td>
+<td align="left">几乎没用到 Wiki 中的内容</td>
+<td align="left">完全覆盖 Wiki 中的所有相关信息</td>
+</tr>
+<tr>
+<td align="left"><strong>忠实度</strong></td>
+<td align="left">30%</td>
+<td align="left">回答大量编造了 Wiki 中没有的内容</td>
+<td align="left">每个论断都能在 Wiki 中找到依据</td>
+</tr>
+<tr>
+<td align="left"><strong>回答质量</strong></td>
+<td align="left">30%</td>
+<td align="left">回答混乱、答非所问</td>
+<td align="left">结构清晰、准确完整、有代码示例</td>
+</tr>
+</tbody></table>
+<h3 id="2-3-评测稳定性优化"><a href="#2-3-评测稳定性优化" class="headerlink" title="2.3 评测稳定性优化"></a>2.3 评测稳定性优化</h3><p><strong>问题</strong>：LLM-as-Judge 评分波动大（同一问题两次评测差异可达 2 分）</p>
+<p><strong>解决方案</strong>：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 1. 评测 temperature = 0（确定性输出）</span></span><br><span class="line"><span class="built_in">eval</span>:</span><br><span class="line">  temperature: <span class="number">0</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 2. 双次评分取平均（自洽性校验）</span></span><br><span class="line"><span class="keyword">for</span> attempt <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">2</span>):</span><br><span class="line">    result = llm.chat(messages, max_tokens=<span class="number">200</span>)</span><br><span class="line">    all_scores.append(parse_scores(result))</span><br><span class="line">scores = &#123;key: <span class="built_in">round</span>((all_scores[<span class="number">0</span>][key] + all_scores[<span class="number">1</span>][key]) / <span class="number">2</span>, <span class="number">1</span>)</span><br><span class="line">          <span class="keyword">for</span> key <span class="keyword">in</span> dimensions&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment"># 3. Evaluator 看到实际 Wiki 内容（而非仅 slug）</span></span><br><span class="line">prompt = <span class="string">f&quot;Wiki 实际内容:\n<span class="subst">&#123;wiki_summaries[:<span class="number">3000</span>]&#125;</span>\n实际回答:\n<span class="subst">&#123;answer[:<span class="number">3000</span>]&#125;</span>&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>效果</strong>：评分波动从 ±2.0 降到 ±0.5</p>
+<h2 id="三、七个真实-Bug-的定位与修复"><a href="#三、七个真实-Bug-的定位与修复" class="headerlink" title="三、七个真实 Bug 的定位与修复"></a>三、七个真实 Bug 的定位与修复</h2><h3 id="Bug-1-回答生成-Prompt-缺失用户问题（最关键）"><a href="#Bug-1-回答生成-Prompt-缺失用户问题（最关键）" class="headerlink" title="Bug 1: 回答生成 Prompt 缺失用户问题（最关键）"></a>Bug 1: 回答生成 Prompt 缺失用户问题（最关键）</h3><p><strong>现象</strong>：多个问题得到完全跑题的回答（问 RAG 和 Agent 关系，回答 @tool 装饰器）</p>
+<p><strong>根因</strong>：<code>ANSWER_PROMPT</code> 模板中没有 <code>&#123;question&#125;</code> 占位符</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 修复前 — LLM 根本不知道用户问了什么！</span></span><br><span class="line">ANSWER_PROMPT = <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">你是一个技术知识助手。请基于以下知识库内容回答用户问题。</span></span><br><span class="line"><span class="string">## 知识库内容</span></span><br><span class="line"><span class="string">&#123;context&#125;</span></span><br><span class="line"><span class="string">## 回答规则</span></span><br><span class="line"><span class="string">...&quot;&quot;&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 修复后 — 用户问题放在上下文之后，确保 LLM 聚焦</span></span><br><span class="line">ANSWER_PROMPT = <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">你是一个技术知识助手。</span></span><br><span class="line"><span class="string">## 知识库内容</span></span><br><span class="line"><span class="string">&#123;context&#125;</span></span><br><span class="line"><span class="string">---</span></span><br><span class="line"><span class="string">## 用户问题</span></span><br><span class="line"><span class="string">&#123;question&#125;</span></span><br><span class="line"><span class="string">## 回答要求</span></span><br><span class="line"><span class="string">1. 紧扣问题：先明确用户在问什么</span></span><br><span class="line"><span class="string">2. 不要跑题：即使知识库中有其他有趣内容</span></span><br><span class="line"><span class="string">...&quot;&quot;&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>效果</strong>：T07 (RAG+Agent) 从 ~1.0 → 4.5，T08 (学习路线) 从 ~1.0 → 4.5</p>
+<h3 id="Bug-2-Index-截断导致尾部领域不可见"><a href="#Bug-2-Index-截断导致尾部领域不可见" class="headerlink" title="Bug 2: Index 截断导致尾部领域不可见"></a>Bug 2: Index 截断导致尾部领域不可见</h3><p><strong>现象</strong>：Java Spring 相关查询总是触发降级（fallback），无法正常路由</p>
+<p><strong>根因</strong>：<code>index_content[:10000]</code> 截断在设计模式区域（约第 110 行），Spring 条目从第 153 行开始</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 修复前 — 路由器完全看不到 Spring、消息队列等尾部领域</span></span><br><span class="line">index_content = <span class="variable language_">self</span>._read_index()</span><br><span class="line">prompt = ROUTE_PROMPT.<span class="built_in">format</span>(index_content=index_content[:<span class="number">10000</span>])</span><br><span class="line"></span><br><span class="line"><span class="comment"># 修复后 — 顶部添加领域概览行（始终在截断窗口内）</span></span><br><span class="line"><span class="comment"># Index 头部新增：</span></span><br><span class="line"><span class="comment"># &gt; 领域概览: Python编程(15篇) · AI(7篇) · ... · Spring生态(9篇) · ...</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>效果</strong>：T12 (Spring) 从 <code>fallback_hit</code> → <code>hit</code></p>
+<h3 id="Bug-3-T02-ReAct-路由-100-漏选"><a href="#Bug-3-T02-ReAct-路由-100-漏选" class="headerlink" title="Bug 3: T02 ReAct 路由 100% 漏选"></a>Bug 3: T02 ReAct 路由 100% 漏选</h3><p><strong>现象</strong>：ReAct 相关查询约 50% 概率路由不中，走 fallback</p>
+<p><strong>根因</strong>：Indexer 只取前 5 个 headings，而 “ReAct” 关键词排在第 8 位</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 修复前</span></span><br><span class="line">top_headings = headings[:<span class="number">5</span>]  <span class="comment"># ReAct 在第 8 位，被截断</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 修复后</span></span><br><span class="line">top_headings = headings[:<span class="number">8</span>]  <span class="comment"># 覆盖更多关键术语</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>效果</strong>：T02 ReAct 路由 100% 命中</p>
+<h3 id="Bug-4-评测温度过高导致评分波动"><a href="#Bug-4-评测温度过高导致评分波动" class="headerlink" title="Bug 4: 评测温度过高导致评分波动"></a>Bug 4: 评测温度过高导致评分波动</h3><p><strong>现象</strong>：同一问题连续评测分数差异大（3.5 vs 5.0）</p>
+<p><strong>修复</strong>：eval temperature 从 0.3 降到 0 + 双次评分取平均</p>
+<h3 id="Bug-5-回答生成温度过高"><a href="#Bug-5-回答生成温度过高" class="headerlink" title="Bug 5: 回答生成温度过高"></a>Bug 5: 回答生成温度过高</h3><p><strong>现象</strong>：相同 Wiki 内容，不同轮次回答差异大</p>
+<p><strong>修复</strong>：query temperature 从 0.5 降到 0.3</p>
+<h3 id="Bug-6-编译-Prompt-过度压缩"><a href="#Bug-6-编译-Prompt-过度压缩" class="headerlink" title="Bug 6: 编译 Prompt 过度压缩"></a>Bug 6: 编译 Prompt 过度压缩</h3><p><strong>现象</strong>：33 篇 Wiki 缺少速查表，多篇代码示例被截断到只剩骨架</p>
+<p><strong>修复</strong>：优化编译 Prompt</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"># 修复前</span><br><span class="line">3. 保留最关键的 1-2 个代码示例（每个精简到核心 5-10 行）</span><br><span class="line">4. 如有参数表/速查表，完整保留</span><br><span class="line"></span><br><span class="line"># 修复后</span><br><span class="line">3. 保留 1-2 个最有价值的代码示例，保留完整逻辑（10-20 行）</span><br><span class="line">4. 速查表必须有！如果原文没有现成表格，从内容中提取关键信息自行构建</span><br><span class="line">5. 所有技术术语必须同时标注英文（如 &quot;自注意力机制(Self-Attention)&quot;）</span><br></pre></td></tr></table></figure>
+
+<p><strong>效果</strong>：26 篇重编译后平均内容量 +78%</p>
+<h3 id="Bug-7-来源真实性校验阈值过严"><a href="#Bug-7-来源真实性校验阈值过严" class="headerlink" title="Bug 7: 来源真实性校验阈值过严"></a>Bug 7: 来源真实性校验阈值过严</h3><p><strong>现象</strong>：正确回答被判为”来源存疑”（关键词匹配率 0.55 &lt; 0.6 阈值）</p>
+<p><strong>分析</strong>：这是 evaluator 关键词匹配的固有限制，回答用不同措辞表达同一概念会导致匹配率偏低</p>
+<p><strong>决策</strong>：保持 0.6 阈值，接受少量误判。未来可升级为 embedding 相似度</p>
+<h2 id="四、优化路径与方法论"><a href="#四、优化路径与方法论" class="headerlink" title="四、优化路径与方法论"></a>四、优化路径与方法论</h2><h3 id="4-1-优化优先级矩阵"><a href="#4-1-优化优先级矩阵" class="headerlink" title="4.1 优化优先级矩阵"></a>4.1 优化优先级矩阵</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">高影响 + 易修复（优先做）</span><br><span class="line">├── Bug 1: ANSWER_PROMPT 缺失 question     → 综合分 3.1→4.5 (+45%)</span><br><span class="line">├── Bug 2: Index 领域概览                   → 消除 fallback</span><br><span class="line">└── Bug 3: Headings 截断                    → T02 路由修复</span><br><span class="line"></span><br><span class="line">高影响 + 中等难度（第二批做）</span><br><span class="line">├── 评测稳定性 (temperature + 双次评分)     → 评分波动 ±2→±0.5</span><br><span class="line">├── 回答温度优化 (0.5→0.3)                  → 减少回答波动</span><br><span class="line">└── 编译 Prompt 增强                        → Wiki 内容量 +78%</span><br><span class="line"></span><br><span class="line">低影响 / 收益递减（最后做）</span><br><span class="line">├── Evaluator 语义匹配替代关键词匹配       → 精确度提升但工程复杂</span><br><span class="line">└── 路由 prompt 多选同领域策略              → 边缘优化</span><br></pre></td></tr></table></figure>
+
+<h3 id="4-2-诊断方法论"><a href="#4-2-诊断方法论" class="headerlink" title="4.2 诊断方法论"></a>4.2 诊断方法论</h3><p>遇到评分下降时的排查流程：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">graph TD</span><br><span class="line">    A[评分下降] --&gt; B&#123;哪个维度低?&#125;</span><br><span class="line">    B --&gt;|路由低| C[检查 index 截断位置]</span><br><span class="line">    C --&gt; C1[检查路由 prompt 输出]</span><br><span class="line">    B --&gt;|覆盖低| D[检查 Wiki 内容是否被截断]</span><br><span class="line">    D --&gt; D1[检查分层上下文策略]</span><br><span class="line">    B --&gt;|忠实度低| E[检查回答是否跑题]</span><br><span class="line">    E --&gt; E1[检查 ANSWER_PROMPT 是否包含 question]</span><br><span class="line">    E1 --&gt; E2[检查上下文是否传入了正确 Wiki]</span><br><span class="line">    B --&gt;|质量低| F[检查 LLM 输出质量]</span><br><span class="line">    F --&gt; F1[降低 temperature]</span><br><span class="line">    F --&gt; F2[增加上下文信息量]</span><br></pre></td></tr></table></figure>
+
+<h3 id="4-3-关键经验总结"><a href="#4-3-关键经验总结" class="headerlink" title="4.3 关键经验总结"></a>4.3 关键经验总结</h3><table>
+<thead>
+<tr>
+<th align="left">经验</th>
+<th align="left">说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>先确认评测准确，再优化内容</strong></td>
+<td align="left">早期以为回答有问题，实际是评测器不稳定。先修好尺子再量身高</td>
+</tr>
+<tr>
+<td align="left"><strong>Prompt 模板的变量绑定要验证</strong></td>
+<td align="left"><code>&#123;question&#125;</code> 缺失是最隐蔽的 bug — <code>.format()</code> 静默忽略多余参数</td>
+</tr>
+<tr>
+<td align="left"><strong>截断是隐形的杀手</strong></td>
+<td align="left">Index 截断、Wiki 截断、上下文截断，每层都可能丢关键信息</td>
+</tr>
+<tr>
+<td align="left"><strong>LLM-as-Judge 要降低波动</strong></td>
+<td align="left">temperature&#x3D;0 + 双次评分 + 丰富的参考内容 &#x3D; 稳定评测</td>
+</tr>
+<tr>
+<td align="left"><strong>内容深度比结构完整更重要</strong></td>
+<td align="left">124 篇全有正确 section，但信息密度不足时回答质量照样差</td>
+</tr>
+</tbody></table>
+<h2 id="五、最终指标"><a href="#五、最终指标" class="headerlink" title="五、最终指标"></a>五、最终指标</h2><h3 id="5-1-优化前后对比"><a href="#5-1-优化前后对比" class="headerlink" title="5.1 优化前后对比"></a>5.1 优化前后对比</h3><table>
+<thead>
+<tr>
+<th align="left">指标</th>
+<th align="left">初始</th>
+<th align="left">最终</th>
+<th align="left">提升</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">综合评分</td>
+<td align="left">3.1&#x2F;5</td>
+<td align="left">4.3-4.5&#x2F;5</td>
+<td align="left">+39-45%</td>
+</tr>
+<tr>
+<td align="left">路由准确性</td>
+<td align="left">~3.5&#x2F;5</td>
+<td align="left">4.6-4.9&#x2F;5</td>
+<td align="left">+31-40%</td>
+</tr>
+<tr>
+<td align="left">关键词命中率</td>
+<td align="left">~60%</td>
+<td align="left">95-97%</td>
+<td align="left">+58%</td>
+</tr>
+<tr>
+<td align="left">平均耗时</td>
+<td align="left">~50s</td>
+<td align="left">30-35s</td>
+<td align="left">-30-40%</td>
+</tr>
+<tr>
+<td align="left">Fallback 数</td>
+<td align="left">多次</td>
+<td align="left">0</td>
+<td align="left">完全消除</td>
+</tr>
+<tr>
+<td align="left">Wiki 内容量</td>
+<td align="left">~2100字&#x2F;篇</td>
+<td align="left">~2700字&#x2F;篇</td>
+<td align="left">+29%</td>
+</tr>
+</tbody></table>
+<h3 id="5-2-按类别得分"><a href="#5-2-按类别得分" class="headerlink" title="5.2 按类别得分"></a>5.2 按类别得分</h3><table>
+<thead>
+<tr>
+<th align="left">类别</th>
+<th align="left">路由</th>
+<th align="left">覆盖</th>
+<th align="left">忠实</th>
+<th align="left">质量</th>
+<th align="left">综合</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">精确单领域 (9题)</td>
+<td align="left">4.6</td>
+<td align="left">4.0</td>
+<td align="left">3.9</td>
+<td align="left">4.4</td>
+<td align="left">4.2</td>
+</tr>
+<tr>
+<td align="left">跨领域 (3题)</td>
+<td align="left">4.8</td>
+<td align="left">4.3</td>
+<td align="left">4.5</td>
+<td align="left">4.7</td>
+<td align="left">4.6</td>
+</tr>
+<tr>
+<td align="left">模糊查询 (2题)</td>
+<td align="left">4.5</td>
+<td align="left">4.2</td>
+<td align="left">4.0</td>
+<td align="left">4.5</td>
+<td align="left">4.3</td>
+</tr>
+<tr>
+<td align="left">无关查询 (1题)</td>
+<td align="left">-</td>
+<td align="left">-</td>
+<td align="left">-</td>
+<td align="left">-</td>
+<td align="left">no_result ✓</td>
+</tr>
+</tbody></table>
+<h3 id="5-3-剩余优化空间"><a href="#5-3-剩余优化空间" class="headerlink" title="5.3 剩余优化空间"></a>5.3 剩余优化空间</h3><table>
+<thead>
+<tr>
+<th align="left">问题</th>
+<th align="left">原因</th>
+<th align="left">方案</th>
+<th align="left">预期收益</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">T11 Transformer faithfulness 3.0</td>
+<td align="left">关键词匹配无法识别语义等价</td>
+<td align="left">用 embedding 相似度替代关键词匹配</td>
+<td align="left">+0.5~1.0</td>
+</tr>
+<tr>
+<td align="left">T12 Spring routing 3.0</td>
+<td align="left">路由器只选 1 个 Spring 页面</td>
+<td align="left">路由 prompt 鼓励同领域多选</td>
+<td align="left">+0.5</td>
+</tr>
+<tr>
+<td align="left">T04 “router” 关键词缺失</td>
+<td align="left">Wiki 代码用 <code>should_continue</code></td>
+<td align="left">更新 expected keywords</td>
+<td align="left">+0.3</td>
+</tr>
+</tbody></table>
+<h2 id="六、面试高频问题"><a href="#六、面试高频问题" class="headerlink" title="六、面试高频问题"></a>六、面试高频问题</h2><h3 id="Q1-你的-RAG-系统遇到的最大挑战是什么？"><a href="#Q1-你的-RAG-系统遇到的最大挑战是什么？" class="headerlink" title="Q1: 你的 RAG 系统遇到的最大挑战是什么？"></a>Q1: 你的 RAG 系统遇到的最大挑战是什么？</h3><p><strong>A</strong>: 最具挑战的是<strong>回答生成 LLM 完全忽略用户问题</strong>。根因是 ANSWER_PROMPT 模板中缺少 <code>&#123;question&#125;</code> 占位符 —— Python 的 <code>str.format()</code> 会静默忽略未使用的参数，所以问题被悄悄丢弃了。LLM 只看到 Wiki 内容，无法知道用户在问什么，只能随机总结上下文。这个 bug 隐藏得非常深，因为路由正确（选了正确的 Wiki），但回答完全跑题。最终通过 LLM-as-Judge 的忠实度评分发现端倪，逐条检查回答内容后定位到根因。</p>
+<h3 id="Q2-LLM-as-Judge-评测怎么做的？如何保证稳定性？"><a href="#Q2-LLM-as-Judge-评测怎么做的？如何保证稳定性？" class="headerlink" title="Q2: LLM-as-Judge 评测怎么做的？如何保证稳定性？"></a>Q2: LLM-as-Judge 评测怎么做的？如何保证稳定性？</h3><p><strong>A</strong>: 三个关键技术：</p>
+<ol>
+<li><strong>temperature&#x3D;0</strong> — 确定性输出，同样的输入同样的评分</li>
+<li><strong>双次评分取平均</strong> — 自洽性校验，两次评分差异大说明 prompt 设计有问题</li>
+<li><strong>给 evaluator 看实际 Wiki 内容</strong> — 而非仅给 slug，让评分有据可依</li>
+</ol>
+<p>另外评分标准从模糊的 3 级改为精确的 5 级锚点（每级有具体描述），减少主观性。</p>
+<h3 id="Q3-如何处理知识库中后部内容的检索问题？"><a href="#Q3-如何处理知识库中后部内容的检索问题？" class="headerlink" title="Q3: 如何处理知识库中后部内容的检索问题？"></a>Q3: 如何处理知识库中后部内容的检索问题？</h3><p><strong>A</strong>: 经典的<strong>长文档截断问题</strong>。Index 有 124 个条目约 19000 字，但路由器只能看前 10000 字，导致 Spring（第 153 行起）等尾部领域完全不可见。</p>
+<p>解决方案不是简单增大窗口，而是在 Index 顶部添加<strong>领域概览行</strong>——一行文字覆盖所有 16 个领域的名称和篇数，始终在截断窗口内。路由器先通过概览定位领域，再从详细条目中找具体 Wiki。这本质上是”摘要 + 详情”的两级检索思路。</p>
+<h3 id="Q4-你的-Wiki-编译策略是什么？如何保证内容质量？"><a href="#Q4-你的-Wiki-编译策略是什么？如何保证内容质量？" class="headerlink" title="Q4: 你的 Wiki 编译策略是什么？如何保证内容质量？"></a>Q4: 你的 Wiki 编译策略是什么？如何保证内容质量？</h3><p><strong>A</strong>: 编译策略的核心是<strong>信息密度最大化</strong>。初始 Prompt 要求”精简到 5-10 行”，导致大量细节丢失。优化后的 Prompt 要求：</p>
+<ol>
+<li>保留完整代码逻辑（10-20 行而非 5-10 行）</li>
+<li>必须包含速查表（从内容中自行构建）</li>
+<li>术语必须中英对照（如 “自注意力机制(Self-Attention)”）</li>
+</ol>
+<p>重编译 26 篇后平均内容量 +78%，回答质量显著提升。</p>
+<h3 id="Q5-如果让你重新设计这个系统，会怎么做？"><a href="#Q5-如果让你重新设计这个系统，会怎么做？" class="headerlink" title="Q5: 如果让你重新设计这个系统，会怎么做？"></a>Q5: 如果让你重新设计这个系统，会怎么做？</h3><p><strong>A</strong>: 三个改进方向：</p>
+<ol>
+<li><strong>评测先行</strong>：先搭建稳定的评测体系，再做任何优化。避免”优化了但不知道效果”</li>
+<li><strong>语义化忠实度检查</strong>：用 embedding 相似度替代关键词匹配，避免语义等价但措辞不同被判为”不忠实”</li>
+<li><strong>分层路由</strong>：先用领域概览做粗筛（一级），再从领域内 Wiki 列表做精选（二级），减少 index 截断影响</li>
+</ol>
+<h2 id="来源"><a href="#来源" class="headerlink" title="来源"></a>来源</h2><p>本文章基于真实的 Wiki 知识库优化实战经验整理，涵盖 124 篇博客文章的 RAG 知识库从搭建到优化的全过程。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>Author: </span><span class="post-copyright-info"><a href="http://example.com">david</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>Link: </span><span class="post-copyright-info"><a href="http://example.com/2026/05/19/AI-Python-07.6-RAG%E7%9F%A5%E8%AF%86%E5%BA%93%E8%AF%84%E6%B5%8B%E4%B8%8E%E4%BC%98%E5%8C%96%E5%AE%9E%E6%88%98/">http://example.com/2026/05/19/AI-Python-07.6-RAG%E7%9F%A5%E8%AF%86%E5%BA%93%E8%AF%84%E6%B5%8B%E4%B8%8E%E4%BC%98%E5%8C%96%E5%AE%9E%E6%88%98/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>Copyright Notice: </span><span class="post-copyright-info">All articles on this blog are licensed under <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> unless otherwise stated.</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/AI/">AI</a><a class="post-meta__tags" href="/tags/Python/">Python</a><a class="post-meta__tags" href="/tags/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">学习笔记</a><a class="post-meta__tags" href="/tags/RAG/">RAG</a><a class="post-meta__tags" href="/tags/%E8%AF%84%E6%B5%8B/">评测</a><a class="post-meta__tags" href="/tags/LLM-as-Judge/">LLM-as-Judge</a><a class="post-meta__tags" href="/tags/%E4%BC%98%E5%8C%96/">优化</a><a class="post-meta__tags" href="/tags/Wiki%E7%9F%A5%E8%AF%86%E5%BA%93/">Wiki知识库</a></div><div class="post-share"><div class="social-share" data-image="/img/butterfly-icon.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2026/05/20/AI-Python-08.3-%E5%A4%9A%E6%99%BA%E8%83%BD%E4%BD%93%E5%8D%8F%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%AE%9E%E6%88%98/" title="AI-Python-08.3-多智能体协作系统实战"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">Previous</div><div class="info-item-2">AI-Python-08.3-多智能体协作系统实战</div></div><div class="info-2"><div class="info-item-1">AI-Python-08.3: 多智能体协作系统实战 前面我们学会了构建单个 Agent（08.2），但现实中的复杂任务往往需要多个 Agent 协作。本文从三种最实用的协作模式入手，用 LangGraph StateGraph 构建完整的多 Agent 系统。  前置知识：  06.6 LangGraph 状态机编排：StateGraph 基础 + Supervisor 概念 08.1 Agent 设计模式全景：15 种模式理论（含 6 种协作模式） 08.2 Agent 实战：单 Agent 的完整构建过程   1. 从单 Agent 到多 Agent1.1 单 Agent 的瓶颈当任务变复杂，单 Agent 会遇到三个问题：    问题 原因 表现    角色混乱 一个 Agent 既要搜索又要分析又要写作 Prompt 太长，LLM 不知道优先做什么   工具爆炸 搜索 + 阅读 + 计算 + 翻译全塞一起 LLM 选错工具、参数幻觉   无法并行 一个 Agent 只能串行处理 3 个独立任务也要排队   1.2 多 Agent 的核心：分工 + 协调多 Agent 的...</div></div></div></a><a class="pagination-related" href="/2026/05/19/AI-Python-08.2-Agent%E5%AE%9E%E6%88%98%E4%BB%8E%E9%9B%B6%E6%9E%84%E5%BB%BA%E6%99%BA%E8%83%BD%E4%BD%93/" title="AI-Python-08.2-Agent实战从零构建智能体"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">Next</div><div class="info-item-2">AI-Python-08.2-Agent实战从零构建智能体</div></div><div class="info-2"><div class="info-item-1">AI-Python-08.2: Agent 实战 — 从零构建智能体 核心认知：Agent &#x3D; LLM（大脑推理）+ Tool（手脚交互）+ Memory（记忆上下文）+ Planning（规划策略），通过 ReAct 循环（思考→行动→观察）协同工作。 本文路径：先拆解 Agent 的四大组件，理解每个组件的职责；再用 50 行纯 Python 手搓一个 Agent；最后用 LangChain&#x2F;LangGraph 框架重构。先懂原理，再用框架。  1. Agent 的本质与组成1.1 什么是 Agent？ “An AI agent is a system that combines LLMs for reasoning and decision-making with tools for real-world interaction.” — Andrew Ng   “AI agents are autonomous systems that can understand queries, plan workflows, and execute complex...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>Related Articles</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/2026/04/29/AI-Python-07.3-%E6%B7%B7%E5%90%88%E6%A3%80%E7%B4%A2%E4%B8%8E%E9%87%8D%E6%8E%92%E5%BA%8F/" title="AI-Python-07.3-混合检索与重排序"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-04-29</div><div class="info-item-2">AI-Python-07.3-混合检索与重排序</div></div><div class="info-2"><div class="info-item-1">AI-Python-07.3: 混合检索与重排序 纯向量检索精度有限，本章讲解 BM25 关键词检索 + 向量检索的混合策略、Cross-Encoder 重排序、Query 改写，以及 RAGAS 评测体系，把 RAG 检索精度从 60 分提升到 90 分。   1. 为什么纯向量检索不够？1.1 纯向量检索的三个盲区   盲区 例子 原因    专有名词匹配差 搜”BERT模型”漏掉含”BERT”的文档 向量模型把”BERT”和”Transformer”看成近义词，反而匹配到不相关内容   精确匹配弱 搜”订单号 ORD-20260428”找不到 向量语义理解把精确编号”理解”成了别的意思   领域术语不准 搜”KV Cache”找不到对应段落 通用 Embedding 模型对技术术语理解有限   1.2 解法：混合检索（Hybrid Search）     flowchart TB     Q[用户问题] --&gt; V[向量检索\n语义匹配]     Q --&gt; K[BM25 检索\n关键词匹配]     V --&gt; M[结果融合\nReciprocal Ra...</div></div></div></a><a class="pagination-related" href="/2026/04/27/AI-Python-07.1-RAG%E6%A3%80%E7%B4%A2%E5%A2%9E%E5%BC%BA%E4%B8%8E%E5%90%91%E9%87%8F%E6%A3%80%E7%B4%A2/" title="AI-Python-07.1-RAG检索增强与向量检索"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-04-27</div><div class="info-item-2">AI-Python-07.1-RAG检索增强与向量检索</div></div><div class="info-2"><div class="info-item-1">AI-Python-07.1: RAG 检索增强与向量检索 RAG（Retrieval-Augmented Generation）让 LLM 在回答问题前先”查资料”，解决知识过时、幻觉和缺乏私有数据三大痛点。本章从 RAG 架构全流程到 Embedding 原理、向量数据库实战，构建完整的 RAG Pipeline。   1. 什么是 RAG？1.1 为什么需要 RAG？LLM 有三大固有局限：    局限 问题 RAG 如何解决    知识过时 训练数据有截止日期，不知道最新信息 检索实时文档&#x2F;网页   幻觉 编造看似合理但错误的信息 基于真实文档生成回答   缺乏私有数据 不知道企业内部知识 连接内部知识库   1.2 RAG vs Fine-tuning   维度 RAG Fine-tuning    知识更新 实时更新文档即可 需要重新训练   成本 低（检索 + 推理） 高（GPU 训练）   可解释性 高（可以展示来源文档） 低（知识融入权重）   私有数据 天然支持 需构建训练集   适用场景 问答、知识库、客服 风格迁移、领域适应   选择建议： 需要...</div></div></div></a><a class="pagination-related" href="/2026/04/30/AI-Python-07.4-GraphRAG%E7%9F%A5%E8%AF%86%E5%9B%BE%E8%B0%B1%E6%A3%80%E7%B4%A2/" title="AI-Python-07.4-GraphRAG知识图谱检索"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-04-30</div><div class="info-item-2">AI-Python-07.4-GraphRAG知识图谱检索</div></div><div class="info-2"><div class="info-item-1">AI-Python-07.4: GraphRAG 知识图谱检索 传统 RAG 只能检索”文本片段”，无法理解实体间的关系。GraphRAG 将知识图谱与向量检索结合，能回答”谁和谁有什么关系”这类需要跨文档推理的问题。本章讲解知识图谱构建、图谱检索与向量检索的融合。   1. 传统 RAG 的局限1.1 什么问题传统 RAG 回答不了？场景： 知识库里有 10 篇关于公司员工的文档。 1234567891011用户问: &quot;张三和李四是什么关系？&quot;传统 RAG:  检索 &quot;张三&quot; → 找到 &quot;张三是技术部经理&quot;  检索 &quot;李四&quot; → 找到 &quot;李四是市场部总监&quot;  检索 &quot;张三 李四 关系&quot; → 找不到！因为没有人写过这句话但事实是:  张三 → 汇报给 → 王五（CTO）  李四 → 汇报给 → 王五（CTO）  → 张三和李四是同级别的部门负责人  根因： 传统 RAG 只能找”写出来的文本”，无法推理”没写出来但可以从关系推导的信息”。 1.2 GraphRA...</div></div></div></a><a class="pagination-related" href="/2026/05/06/AI-Python-07.5-RAG%E6%9E%B6%E6%9E%84%E6%A8%A1%E5%BC%8F%E5%85%A8%E6%99%AF%E5%AF%B9%E6%AF%94/" title="AI-Python-07.5-RAG架构模式全景对比"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-05-06</div><div class="info-item-2">AI-Python-07.5-RAG架构模式全景对比</div></div><div class="info-2"><div class="info-item-1">AI-Python-07.5: RAG 架构模式全景对比 传统 RAG（07.1-07.3）、GraphRAG（07.4）只是 RAG 的两种形态。2024-2025 年间，RAG 架构快速演化，出现了 LLM Wiki、Agentic RAG、CRAG、Self-RAG 等多种模式。本章全景梳理六大 RAG 架构的核心思路、优劣对比、选型决策，帮你为具体场景选对架构。   1. RAG 架构演化脉络1.1 从简单到复杂的进化路径      timeline     title RAG 架构演化时间线     2020 : Naive RAG : 原始论文（Lewis et al.）     2023 : Advanced RAG : 混合检索 + Rerank     2024 : GraphRAG : 微软发布知识图谱增强     2024 : CRAG : 纠正性检索增强生成     2024 : Self-RAG : 自反思检索增强生成     2024 : Agentic RAG : 多 Agent 协同检索     2025 : LLM Wiki : Karpathy...</div></div></div></a><a class="pagination-related" href="/2026/05/07/AI-Python-07.6-LLM%20Wiki%E5%AE%9E%E6%88%98-%E4%BB%8E%E9%9B%B6%E6%9E%84%E5%BB%BA%E5%8D%9A%E5%AE%A2%E7%9F%A5%E8%AF%86%E5%BA%93/" title="AI-Python-07.6-LLM Wiki实战-从零构建博客知识库"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-05-07</div><div class="info-item-2">AI-Python-07.6-LLM Wiki实战-从零构建博客知识库</div></div><div class="info-2"><div class="info-item-1">AI-Python-07.6: LLM Wiki 实战 — 从零构建博客知识库 07.5 章全景对比了六大 RAG 架构后，选定 LLM Wiki 模式（预编译知识库）作为最适合个人博客的方案。本章完整记录从架构设计到代码实现、全量编译、查询优化的全过程，将 124 篇 Hexo 博客编译为结构化 Wiki 知识库，实现零基础设施的智能问答。   1. 项目背景1.1 知识资产盘点经过一年多的 AI 学习，积累了 124 篇技术博客，涵盖多个领域：    系列 篇数 内容范围    AI-Python-01.x 7 Python 语法精髓（类型、切片、推导式、装饰器、魔法方法、dataclass）   AI-Python-02.x 5 Python OOP&#x2F;元编程（面向对象、继承、元类、描述符、ABC）   AI-Python-03.x 3 Python 并发（GIL&#x2F;多线程、Asyncio、多进程）   AI-Python-04.x 3 数据科学（NumPy、Pandas、Matplotlib）   AI-Python-05.x 3 深度学习（PyTorch...</div></div></div></a><a class="pagination-related" href="/2026/04/28/AI-Python-07.2-%E6%96%87%E6%A1%A3%E6%99%BA%E8%83%BD%E8%A7%A3%E6%9E%90/" title="AI-Python-07.2-文档智能解析"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-04-28</div><div class="info-item-2">AI-Python-07.2-文档智能解析</div></div><div class="info-2"><div class="info-item-1">AI-Python-07.2: 文档智能解析 RAG 的第一步是把各种格式的文档变成”可检索的文本”。本章深入 PDF 解析、OCR、表格提取、布局分析，以及 LangChain 文档加载器的实战用法。   1. 为什么文档解析是 RAG 的瓶颈？1.1 真实文档的复杂性RAG 系统面对的不是干净的文本文件，而是：    文档类型 解析难点    PDF 混合排版、多栏布局、嵌入图片、扫描件   Word&#x2F;Excel 表格结构、样式信息、公式   图片&#x2F;PPT 纯视觉内容，需要 OCR   网页 HTML 标签、广告、导航栏干扰        flowchart LR     A[原始文档] --&gt; B{文档类型?}     B --&gt;|纯文本| C[直接读取]     B --&gt;|PDF 数字版| D[文本提取]     B --&gt;|PDF 扫描件| E[OCR 识别]     B --&gt;|图片| E     B --&gt;|网页| F[HTML 清洗]      C --&gt; G[统一 Document 对象]     ...</div></div></div></a></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/butterfly-icon.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">david</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">134</div></a><a href="/tags/"><div class="headline">Tags</div><div class="length-num">324</div></a><a href="/categories/"><div class="headline">Categories</div><div class="length-num">23</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>Announcement</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>Contents</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#RAG-%E7%9F%A5%E8%AF%86%E5%BA%93%E8%AF%84%E6%B5%8B%E4%B8%8E%E4%BC%98%E5%8C%96%E5%AE%9E%E6%88%98"><span class="toc-number">1.</span> <span class="toc-text">RAG 知识库评测与优化实战</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E7%9F%A5%E8%AF%86%E5%BA%93%E6%9E%B6%E6%9E%84%E5%9B%9E%E9%A1%BE"><span class="toc-number">1.1.</span> <span class="toc-text">一、知识库架构回顾</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-%E6%95%B4%E4%BD%93%E6%9E%B6%E6%9E%84"><span class="toc-number">1.1.1.</span> <span class="toc-text">1.1 整体架构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-%E6%8A%80%E6%9C%AF%E6%A0%88"><span class="toc-number">1.1.2.</span> <span class="toc-text">1.2 技术栈</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E8%AF%84%E6%B5%8B%E4%BD%93%E7%B3%BB%E6%90%AD%E5%BB%BA"><span class="toc-number">1.2.</span> <span class="toc-text">二、评测体系搭建</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-%E6%B5%8B%E8%AF%95%E9%A2%98%E5%BA%93%E8%AE%BE%E8%AE%A1"><span class="toc-number">1.2.1.</span> <span class="toc-text">2.1 测试题库设计</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-LLM-as-Judge-%E8%AF%84%E6%B5%8B%E7%BB%B4%E5%BA%A6"><span class="toc-number">1.2.2.</span> <span class="toc-text">2.2 LLM-as-Judge 评测维度</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-%E8%AF%84%E6%B5%8B%E7%A8%B3%E5%AE%9A%E6%80%A7%E4%BC%98%E5%8C%96"><span class="toc-number">1.2.3.</span> <span class="toc-text">2.3 评测稳定性优化</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E4%B8%83%E4%B8%AA%E7%9C%9F%E5%AE%9E-Bug-%E7%9A%84%E5%AE%9A%E4%BD%8D%E4%B8%8E%E4%BF%AE%E5%A4%8D"><span class="toc-number">1.3.</span> <span class="toc-text">三、七个真实 Bug 的定位与修复</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Bug-1-%E5%9B%9E%E7%AD%94%E7%94%9F%E6%88%90-Prompt-%E7%BC%BA%E5%A4%B1%E7%94%A8%E6%88%B7%E9%97%AE%E9%A2%98%EF%BC%88%E6%9C%80%E5%85%B3%E9%94%AE%EF%BC%89"><span class="toc-number">1.3.1.</span> <span class="toc-text">Bug 1: 回答生成 Prompt 缺失用户问题（最关键）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Bug-2-Index-%E6%88%AA%E6%96%AD%E5%AF%BC%E8%87%B4%E5%B0%BE%E9%83%A8%E9%A2%86%E5%9F%9F%E4%B8%8D%E5%8F%AF%E8%A7%81"><span class="toc-number">1.3.2.</span> <span class="toc-text">Bug 2: Index 截断导致尾部领域不可见</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Bug-3-T02-ReAct-%E8%B7%AF%E7%94%B1-100-%E6%BC%8F%E9%80%89"><span class="toc-number">1.3.3.</span> <span class="toc-text">Bug 3: T02 ReAct 路由 100% 漏选</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Bug-4-%E8%AF%84%E6%B5%8B%E6%B8%A9%E5%BA%A6%E8%BF%87%E9%AB%98%E5%AF%BC%E8%87%B4%E8%AF%84%E5%88%86%E6%B3%A2%E5%8A%A8"><span class="toc-number">1.3.4.</span> <span class="toc-text">Bug 4: 评测温度过高导致评分波动</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Bug-5-%E5%9B%9E%E7%AD%94%E7%94%9F%E6%88%90%E6%B8%A9%E5%BA%A6%E8%BF%87%E9%AB%98"><span class="toc-number">1.3.5.</span> <span class="toc-text">Bug 5: 回答生成温度过高</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Bug-6-%E7%BC%96%E8%AF%91-Prompt-%E8%BF%87%E5%BA%A6%E5%8E%8B%E7%BC%A9"><span class="toc-number">1.3.6.</span> <span class="toc-text">Bug 6: 编译 Prompt 过度压缩</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Bug-7-%E6%9D%A5%E6%BA%90%E7%9C%9F%E5%AE%9E%E6%80%A7%E6%A0%A1%E9%AA%8C%E9%98%88%E5%80%BC%E8%BF%87%E4%B8%A5"><span class="toc-number">1.3.7.</span> <span class="toc-text">Bug 7: 来源真实性校验阈值过严</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E4%BC%98%E5%8C%96%E8%B7%AF%E5%BE%84%E4%B8%8E%E6%96%B9%E6%B3%95%E8%AE%BA"><span class="toc-number">1.4.</span> <span class="toc-text">四、优化路径与方法论</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-%E4%BC%98%E5%8C%96%E4%BC%98%E5%85%88%E7%BA%A7%E7%9F%A9%E9%98%B5"><span class="toc-number">1.4.1.</span> <span class="toc-text">4.1 优化优先级矩阵</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-%E8%AF%8A%E6%96%AD%E6%96%B9%E6%B3%95%E8%AE%BA"><span class="toc-number">1.4.2.</span> <span class="toc-text">4.2 诊断方法论</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-3-%E5%85%B3%E9%94%AE%E7%BB%8F%E9%AA%8C%E6%80%BB%E7%BB%93"><span class="toc-number">1.4.3.</span> <span class="toc-text">4.3 关键经验总结</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E6%9C%80%E7%BB%88%E6%8C%87%E6%A0%87"><span class="toc-number">1.5.</span> <span class="toc-text">五、最终指标</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-%E4%BC%98%E5%8C%96%E5%89%8D%E5%90%8E%E5%AF%B9%E6%AF%94"><span class="toc-number">1.5.1.</span> <span class="toc-text">5.1 优化前后对比</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-%E6%8C%89%E7%B1%BB%E5%88%AB%E5%BE%97%E5%88%86"><span class="toc-number">1.5.2.</span> <span class="toc-text">5.2 按类别得分</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-3-%E5%89%A9%E4%BD%99%E4%BC%98%E5%8C%96%E7%A9%BA%E9%97%B4"><span class="toc-number">1.5.3.</span> <span class="toc-text">5.3 剩余优化空间</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81%E9%9D%A2%E8%AF%95%E9%AB%98%E9%A2%91%E9%97%AE%E9%A2%98"><span class="toc-number">1.6.</span> <span class="toc-text">六、面试高频问题</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Q1-%E4%BD%A0%E7%9A%84-RAG-%E7%B3%BB%E7%BB%9F%E9%81%87%E5%88%B0%E7%9A%84%E6%9C%80%E5%A4%A7%E6%8C%91%E6%88%98%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="toc-number">1.6.1.</span> <span class="toc-text">Q1: 你的 RAG 系统遇到的最大挑战是什么？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Q2-LLM-as-Judge-%E8%AF%84%E6%B5%8B%E6%80%8E%E4%B9%88%E5%81%9A%E7%9A%84%EF%BC%9F%E5%A6%82%E4%BD%95%E4%BF%9D%E8%AF%81%E7%A8%B3%E5%AE%9A%E6%80%A7%EF%BC%9F"><span class="toc-number">1.6.2.</span> <span class="toc-text">Q2: LLM-as-Judge 评测怎么做的？如何保证稳定性？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Q3-%E5%A6%82%E4%BD%95%E5%A4%84%E7%90%86%E7%9F%A5%E8%AF%86%E5%BA%93%E4%B8%AD%E5%90%8E%E9%83%A8%E5%86%85%E5%AE%B9%E7%9A%84%E6%A3%80%E7%B4%A2%E9%97%AE%E9%A2%98%EF%BC%9F"><span class="toc-number">1.6.3.</span> <span class="toc-text">Q3: 如何处理知识库中后部内容的检索问题？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Q4-%E4%BD%A0%E7%9A%84-Wiki-%E7%BC%96%E8%AF%91%E7%AD%96%E7%95%A5%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F%E5%A6%82%E4%BD%95%E4%BF%9D%E8%AF%81%E5%86%85%E5%AE%B9%E8%B4%A8%E9%87%8F%EF%BC%9F"><span class="toc-number">1.6.4.</span> <span class="toc-text">Q4: 你的 Wiki 编译策略是什么？如何保证内容质量？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Q5-%E5%A6%82%E6%9E%9C%E8%AE%A9%E4%BD%A0%E9%87%8D%E6%96%B0%E8%AE%BE%E8%AE%A1%E8%BF%99%E4%B8%AA%E7%B3%BB%E7%BB%9F%EF%BC%8C%E4%BC%9A%E6%80%8E%E4%B9%88%E5%81%9A%EF%BC%9F"><span class="toc-number">1.6.5.</span> <span class="toc-text">Q5: 如果让你重新设计这个系统，会怎么做？</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9D%A5%E6%BA%90"><span class="toc-number">1.7.</span> <span class="toc-text">来源</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>Recent Posts</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/05/21/AI-Python-09.2-%E8%AF%AD%E9%9F%B3%E4%BA%A4%E4%BA%92%E4%B8%8E%E8%AF%AD%E9%9F%B3Agent/" title="AI-Python-09.2-语音交互与语音Agent">AI-Python-09.2-语音交互与语音Agent</a><time datetime="2026-05-21T06:00:00.000Z" title="Created 2026-05-21 14:00:00">2026-05-21</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/05/21/AI-Python-09.1-Vision-Language%E5%A4%9A%E6%A8%A1%E6%80%81%E7%90%86%E8%A7%A3/" title="AI-Python-09.1-Vision-Language多模态理解">AI-Python-09.1-Vision-Language多模态理解</a><time datetime="2026-05-21T03:00:00.000Z" title="Created 2026-05-21 11:00:00">2026-05-21</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/05/20/AI-Python-08.3-%E5%A4%9A%E6%99%BA%E8%83%BD%E4%BD%93%E5%8D%8F%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%AE%9E%E6%88%98/" title="AI-Python-08.3-多智能体协作系统实战">AI-Python-08.3-多智能体协作系统实战</a><time datetime="2026-05-20T03:00:00.000Z" title="Created 2026-05-20 11:00:00">2026-05-20</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/05/19/AI-Python-08.2-Agent%E5%AE%9E%E6%88%98%E4%BB%8E%E9%9B%B6%E6%9E%84%E5%BB%BA%E6%99%BA%E8%83%BD%E4%BD%93/" title="AI-Python-08.2-Agent实战从零构建智能体">AI-Python-08.2-Agent实战从零构建智能体</a><time datetime="2026-05-19T02:00:00.000Z" title="Created 2026-05-19 10:00:00">2026-05-19</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/05/19/AI-Python-07.6-RAG%E7%9F%A5%E8%AF%86%E5%BA%93%E8%AF%84%E6%B5%8B%E4%B8%8E%E4%BC%98%E5%8C%96%E5%AE%9E%E6%88%98/" title="AI-Python-07.6-RAG知识库评测与优化实战">AI-Python-07.6-RAG知识库评测与优化实战</a><time datetime="2026-05-19T02:00:00.000Z" title="Created 2026-05-19 10:00:00">2026-05-19</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By david</span><span class="framework-info"><span>Framework </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>Theme </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.4.3</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="Reading Mode"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="Toggle Between Light and Dark Mode"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="Toggle Between Single-column and Double-column"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="Settings"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="Table of Contents"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="Back to Top"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><div class="js-pjax"><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (false) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>

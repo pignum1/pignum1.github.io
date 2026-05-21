@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <title>ReAct 循环</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', sans-serif; background: #F9FAFB; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+  </style>
+</head>
+<body>
+<svg width="720" height="280" viewBox="0 0 720 280">
+  <defs>
+    <marker id="a" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#6B7280"/>
+    </marker>
+    <marker id="ag" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#059669"/>
+    </marker>
+    <filter id="s"><feDropShadow dx="0" dy="2" stdDeviation="3" flood-opacity="0.08"/></filter>
+  </defs>
+
+  <rect width="720" height="280" fill="#F9FAFB" rx="12"/>
+  <text x="360" y="28" text-anchor="middle" font-size="15" font-weight="bold" fill="#111827">ReAct 循环 = Agent 的 while 循环</text>
+
+  <!-- 用户 -->
+  <g filter="url(#s)">
+    <rect x="30" y="55" width="90" height="42" rx="21" fill="#F1F5F9" stroke="#94A3B8" stroke-width="1.5"/>
+    <text x="75" y="81" text-anchor="middle" font-size="13" fill="#475569">&#x1F464; 用户</text>
+  </g>
+
+  <!-- 箭头 用户→Thought -->
+  <line x1="120" y1="76" x2="158" y2="76" stroke="#6B7280" stroke-width="2" marker-end="url(#a)"/>
+
+  <!-- Thought -->
+  <g filter="url(#s)">
+    <rect x="163" y="50" width="145" height="52" rx="12" fill="#FEE2E2" stroke="#EF4444" stroke-width="2"/>
+    <text x="235" y="73" text-anchor="middle" font-size="13" font-weight="bold" fill="#DC2626">&#x1F4AD; Thought</text>
+    <text x="235" y="92" text-anchor="middle" font-size="10" fill="#7F1D1D">LLM 推理思考</text>
+  </g>
+
+  <!-- 箭头 Thought→Action -->
+  <line x1="308" y1="76" x2="346" y2="76" stroke="#6B7280" stroke-width="2" marker-end="url(#a)"/>
+
+  <!-- Action -->
+  <g filter="url(#s)">
+    <rect x="351" y="50" width="145" height="52" rx="12" fill="#DBEAFE" stroke="#3B82F6" stroke-width="2"/>
+    <text x="423" y="73" text-anchor="middle" font-size="13" font-weight="bold" fill="#2563EB">&#x1F527; Action</text>
+    <text x="423" y="92" text-anchor="middle" font-size="10" fill="#1E3A5F">执行工具调用</text>
+  </g>
+
+  <!-- 箭头 Action→Observation -->
+  <line x1="496" y1="76" x2="534" y2="76" stroke="#6B7280" stroke-width="2" marker-end="url(#a)"/>
+
+  <!-- Observation -->
+  <g filter="url(#s)">
+    <rect x="539" y="50" width="150" height="52" rx="12" fill="#ECFDF5" stroke="#34D399" stroke-width="2"/>
+    <text x="614" y="73" text-anchor="middle" font-size="13" font-weight="bold" fill="#059669">&#x1F441; Observation</text>
+    <text x="614" y="92" text-anchor="middle" font-size="10" fill="#064E3B">观察执行结果</text>
+  </g>
+
+  <!-- 循环箭头 Observation → Thought（下方回传）-->
+  <path d="M 614 102 L 614 140 L 235 140 L 235 107"
+        stroke="#059669" stroke-width="2.5" fill="none"
+        stroke-dasharray="6,3" marker-end="url(#ag)"/>
+  <text x="425" y="137" text-anchor="middle" font-size="12" font-weight="bold" fill="#059669">信息不够？继续循环 &#x21BB;</text>
+
+  <!-- 退出：Thought → 最终回答（从 Thought 下方出发）-->
+  <path d="M 235 102 L 235 160 L 280 160"
+        stroke="#6B7280" stroke-width="1.5" fill="none" stroke-dasharray="4,3" marker-end="url(#a)"/>
+  <text x="247" y="150" font-size="10" fill="#6B7280">信息够了</text>
+
+  <!-- 最终回答 -->
+  <g filter="url(#s)">
+    <rect x="285" y="143" width="190" height="35" rx="10" fill="#DCFCE7" stroke="#22C55E" stroke-width="2"/>
+    <text x="380" y="166" text-anchor="middle" font-size="12" font-weight="bold" fill="#166534">&#x1F4DD; 生成最终回答</text>
+  </g>
+
+  <!-- 底部说明 -->
+  <text x="360" y="220" text-anchor="middle" font-size="11" fill="#6B7280">每轮 = Thought（LLM推理）→ Action（执行工具）→ Observation（观察结果）→ 循环或退出</text>
+
+  <!-- 组件标注 -->
+  <g filter="url(#s)">
+    <rect x="100" y="235" width="520" height="30" rx="8" fill="white" stroke="#E5E7EB" stroke-width="1"/>
+    <text x="360" y="255" text-anchor="middle" font-size="10" fill="#6B7280">
+      <tspan font-weight="bold" fill="#EF4444">Thought</tspan> = LLM 推理决策
+      <tspan dx="15" font-weight="bold" fill="#3B82F6">Action</tspan> = Tool 执行工具
+      <tspan dx="15" font-weight="bold" fill="#34D399">Observation</tspan> = Memory 读取结果
+    </text>
+  </g>
+
+</svg>
+</body>
+</html>

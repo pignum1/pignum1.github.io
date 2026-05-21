@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <title>Agent 四大组件架构图</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+      background: #F9FAFB;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+    }
+  </style>
+</head>
+<body>
+<svg width="820" height="880" viewBox="0 0 820 880">
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#6B7280"/>
+    </marker>
+    <marker id="arrow-green" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#059669"/>
+    </marker>
+    <marker id="arrow-purple" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#8B5CF6"/>
+    </marker>
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="0" dy="2" stdDeviation="4" flood-opacity="0.08"/>
+    </filter>
+  </defs>
+
+  <!-- 背景 -->
+  <rect width="820" height="880" fill="#F9FAFB" rx="16"/>
+
+  <!-- ===== 用户提问 ===== -->
+  <g filter="url(#shadow)">
+    <rect x="250" y="15" width="320" height="48" rx="24" fill="#F1F5F9" stroke="#94A3B8" stroke-width="1.5"/>
+    <text x="410" y="45" text-anchor="middle" font-size="14" fill="#475569">&#x1F464; 用户："北京和上海哪个更热？"</text>
+  </g>
+  <line x1="410" y1="63" x2="410" y2="88" stroke="#6B7280" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- ===== Planning 规划（可选前置）===== -->
+  <g filter="url(#shadow)">
+    <rect x="110" y="93" width="600" height="55" rx="12" fill="#FEF3C7" stroke="#F59E0B" stroke-width="2"/>
+    <text x="145" y="118" font-size="16">&#x1F4CB;</text>
+    <text x="170" y="119" font-size="14" font-weight="bold" fill="#D97706">Planning 规划（可选）</text>
+    <text x="370" y="119" font-size="12" fill="#92400E">复杂任务先拆解："需要 ① 查北京天气 ② 查上海天气 ③ 算差值"</text>
+    <text x="170" y="137" font-size="11" fill="#A16207">简单任务跳过，LLM 边推理边决策</text>
+  </g>
+  <line x1="410" y1="148" x2="410" y2="175" stroke="#6B7280" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- ===== ReAct 循环大框 ===== -->
+  <rect x="90" y="180" width="640" height="510" rx="20" fill="none" stroke="#059669" stroke-width="2.5" stroke-dasharray="10,5"/>
+  <text x="125" y="208" font-size="14" font-weight="bold" fill="#059669">&#x1F504; ReAct 循环（while not_done）</text>
+
+  <!-- ===== ① Thought 思考（推理）===== -->
+  <g filter="url(#shadow)">
+    <rect x="150" y="225" width="520" height="65" rx="14" fill="#FEE2E2" stroke="#EF4444" stroke-width="2"/>
+    <text x="185" y="253" font-size="18">&#x1F9E0;</text>
+    <text x="215" y="254" font-size="14" font-weight="bold" fill="#DC2626">&#x2460; Thought 推理</text>
+    <text x="400" y="254" font-size="12" fill="#7F1D1D">LLM 读 Memory → 分析状态 → 决定下一步</text>
+    <text x="215" y="276" font-size="11" fill="#991B1B">"我不知道实时温度，需要调 get_weather"</text>
+  </g>
+  <line x1="410" y1="290" x2="410" y2="318" stroke="#6B7280" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="425" y="308" font-size="10" fill="#6B7280">决定调工具</text>
+
+  <!-- ===== ② Action 行动（工具）===== -->
+  <g filter="url(#shadow)">
+    <rect x="150" y="323" width="520" height="65" rx="14" fill="#DBEAFE" stroke="#3B82F6" stroke-width="2"/>
+    <text x="185" y="351" font-size="18">&#x1F527;</text>
+    <text x="215" y="352" font-size="14" font-weight="bold" fill="#2563EB">&#x2461; Action 行动</text>
+    <text x="380" y="352" font-size="12" fill="#1E3A5F">执行 Tool 工具函数</text>
+    <text x="215" y="374" font-size="11" fill="#1D4ED8">get_weather("北京") → "35°C"</text>
+  </g>
+  <line x1="410" y1="388" x2="410" y2="416" stroke="#6B7280" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="425" y="406" font-size="10" fill="#6B7280">写入结果</text>
+
+  <!-- ===== ③ Memory 记忆（写入）===== -->
+  <g filter="url(#shadow)">
+    <rect x="150" y="421" width="520" height="65" rx="14" fill="#F3E8FF" stroke="#8B5CF6" stroke-width="2"/>
+    <text x="185" y="449" font-size="18">&#x1F4BE;</text>
+    <text x="215" y="450" font-size="14" font-weight="bold" fill="#7C3AED">&#x2462; Memory 记忆</text>
+    <text x="390" y="450" font-size="12" fill="#4C1D95">工具结果写入对话历史</text>
+    <text x="215" y="472" font-size="11" fill="#6D28D9">messages.append({"role": "tool", "content": "35°C"})</text>
+  </g>
+  <line x1="410" y1="486" x2="410" y2="514" stroke="#6B7280" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="425" y="504" font-size="10" fill="#6B7280">下一轮读取</text>
+
+  <!-- ===== ④ Observation 观察 ===== -->
+  <g filter="url(#shadow)">
+    <rect x="150" y="519" width="520" height="65" rx="14" fill="#ECFDF5" stroke="#34D399" stroke-width="2"/>
+    <text x="185" y="547" font-size="18">&#x1F441;</text>
+    <text x="215" y="548" font-size="14" font-weight="bold" fill="#059669">&#x2463; Observation 观察</text>
+    <text x="410" y="548" font-size="12" fill="#064E3B">下一轮 Thought 读取 Memory</text>
+    <text x="215" y="570" font-size="11" fill="#047857">"北京 35°C，上海 29°C。信息不全，还需算差值"</text>
+  </g>
+
+  <!-- ===== 循环箭头：Observation → Thought ===== -->
+  <path d="M 670 551 L 730 551 L 730 257 L 675 257"
+        stroke="#059669" stroke-width="2.5" fill="none"
+        stroke-dasharray="6,3" marker-end="url(#arrow-green)"/>
+  <text x="745" y="415" font-size="11" font-weight="bold" fill="#059669" writing-mode="tb">信息不够 &#x21BB; 继续循环</text>
+
+  <!-- Memory → Thought 回传虚线（表示读取） -->
+  <path d="M 150 453 L 115 453 L 115 257 L 145 257"
+        stroke="#8B5CF6" stroke-width="1.5" fill="none"
+        stroke-dasharray="4,3" marker-end="url(#arrow-purple)"/>
+  <text x="100" y="360" font-size="10" fill="#7C3AED" writing-mode="tb">读取上下文</text>
+
+  <!-- ===== 退出循环 ===== -->
+  <line x1="410" y1="690" x2="410" y2="720" stroke="#6B7280" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="425" y="710" font-size="11" fill="#EF4444" font-weight="bold">信息够了，退出</text>
+
+  <!-- ===== 最终回答 ===== -->
+  <g filter="url(#shadow)">
+    <rect x="150" y="725" width="520" height="55" rx="14" fill="#DCFCE7" stroke="#22C55E" stroke-width="2.5"/>
+    <text x="185" y="757" font-size="18">&#x1F4DD;</text>
+    <text x="215" y="758" font-size="14" font-weight="bold" fill="#166534">最终回答："北京更热，35°C vs 29°C，差 6°C"</text>
+  </g>
+
+  <!-- ===== 底部说明 ===== -->
+  <g filter="url(#shadow)">
+    <rect x="90" y="800" width="640" height="55" rx="10" fill="white" stroke="#E5E7EB" stroke-width="1"/>
+    <text x="125" y="823" font-size="12" fill="#374151">
+      <tspan font-weight="bold" fill="#DC2626">&#x2460; 推理</tspan>= LLM 每步逻辑思考
+      <tspan dx="12" font-weight="bold" fill="#3B82F6">&#x2461; 工具</tspan>= 执行外部操作
+      <tspan dx="12" font-weight="bold" fill="#8B5CF6">&#x2462; 记忆</tspan>= 写入历史
+      <tspan dx="12" font-weight="bold" fill="#059669">&#x2463; 观察</tspan>= 读取记忆
+    </text>
+    <text x="125" y="843" font-size="11" fill="#6B7280">顺序执行：Thought → Action → Memory 写入 → Observation → 循环回 Thought。Observation 本质是下一轮 Thought 读取 Memory 的结果</text>
+  </g>
+
+</svg>
+</body>
+</html>

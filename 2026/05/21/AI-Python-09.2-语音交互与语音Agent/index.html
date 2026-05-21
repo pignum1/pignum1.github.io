@@ -1,0 +1,528 @@
+<!DOCTYPE html><html lang="en" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>AI-Python-09.2-语音交互与语音Agent | Hexo</title><meta name="author" content="david"><meta name="copyright" content="david"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="AI-Python-09.2: 语音交互与语音 Agent 实战 09.1 让 Agent 长出了”眼睛”，本章让它长出”嘴巴”和”耳朵”。TTS（文字→语音）让 Agent 能说话，ASR（语音→文字）让 Agent 能听懂用户说话。两者结合就是语音 Agent。  前置知识：  06.5 Tool 与 Agent：@tool 装饰器、Function Calling 08.2 Agent 实战">
+<meta property="og:type" content="article">
+<meta property="og:title" content="AI-Python-09.2-语音交互与语音Agent">
+<meta property="og:url" content="http://example.com/2026/05/21/AI-Python-09.2-%E8%AF%AD%E9%9F%B3%E4%BA%A4%E4%BA%92%E4%B8%8E%E8%AF%AD%E9%9F%B3Agent/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="AI-Python-09.2: 语音交互与语音 Agent 实战 09.1 让 Agent 长出了”眼睛”，本章让它长出”嘴巴”和”耳朵”。TTS（文字→语音）让 Agent 能说话，ASR（语音→文字）让 Agent 能听懂用户说话。两者结合就是语音 Agent。  前置知识：  06.5 Tool 与 Agent：@tool 装饰器、Function Calling 08.2 Agent 实战">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://example.com/img/butterfly-icon.png">
+<meta property="article:published_time" content="2026-05-21T06:00:00.000Z">
+<meta property="article:modified_time" content="2026-05-21T06:43:07.355Z">
+<meta property="article:author" content="david">
+<meta property="article:tag" content="AI">
+<meta property="article:tag" content="Agent">
+<meta property="article:tag" content="Python">
+<meta property="article:tag" content="学习笔记">
+<meta property="article:tag" content="Voice">
+<meta property="article:tag" content="TTS">
+<meta property="article:tag" content="ASR">
+<meta property="article:tag" content="GLM-TTS">
+<meta property="article:tag" content="GLM-4-Voice">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/img/butterfly-icon.png"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "AI-Python-09.2-语音交互与语音Agent",
+  "url": "http://example.com/2026/05/21/AI-Python-09.2-%E8%AF%AD%E9%9F%B3%E4%BA%A4%E4%BA%92%E4%B8%8E%E8%AF%AD%E9%9F%B3Agent/",
+  "image": "http://example.com/img/butterfly-icon.png",
+  "datePublished": "2026-05-21T06:00:00.000Z",
+  "dateModified": "2026-05-21T06:43:07.355Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "david",
+      "url": "http://example.com"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://example.com/2026/05/21/AI-Python-09.2-%E8%AF%AD%E9%9F%B3%E4%BA%A4%E4%BA%92%E4%B8%8E%E8%AF%AD%E9%9F%B3Agent/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: 'Copy Successful',
+    error: 'Copy Failed',
+    noSupport: 'Browser Not Supported'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: 'Just now',
+    min: 'minutes ago',
+    hour: 'hours ago',
+    day: 'days ago',
+    month: 'months ago'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid/dist/infinitegrid.min.js',
+    buttonText: 'Load More'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'AI-Python-09.2-语音交互与语音Agent',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Hexo</span></a><a class="nav-page-title" href="/"><span class="site-name">AI-Python-09.2-语音交互与语音Agent</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  Back to Home</span></span></a></span><div id="menus"></div></nav><div id="post-info"><h1 class="post-title">AI-Python-09.2-语音交互与语音Agent</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">Created</span><time class="post-meta-date-created" datetime="2026-05-21T06:00:00.000Z" title="Created 2026-05-21 14:00:00">2026-05-21</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">Updated</span><time class="post-meta-date-updated" datetime="2026-05-21T06:43:07.355Z" title="Updated 2026-05-21 14:43:07">2026-05-21</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/AI%E5%AD%A6%E4%B9%A0/">AI学习</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/AI%E5%AD%A6%E4%B9%A0/Python/">Python</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">Post Views:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h1 id="AI-Python-09-2-语音交互与语音-Agent-实战"><a href="#AI-Python-09-2-语音交互与语音-Agent-实战" class="headerlink" title="AI-Python-09.2: 语音交互与语音 Agent 实战"></a>AI-Python-09.2: 语音交互与语音 Agent 实战</h1><blockquote>
+<p>09.1 让 Agent 长出了”眼睛”，本章让它长出”嘴巴”和”耳朵”。TTS（文字→语音）让 Agent 能说话，ASR（语音→文字）让 Agent 能听懂用户说话。两者结合就是语音 Agent。</p>
+</blockquote>
+<p><strong>前置知识</strong>：</p>
+<ul>
+<li><a href="/2026/04/21/AI-Python-06.5-Tool%E4%B8%8EAgent/" title="AI-Python-06.5-Tool与Agent">06.5 Tool 与 Agent</a>：@tool 装饰器、Function Calling</li>
+<li><a href="/2026/05/19/AI-Python-08.2-Agent%E5%AE%9E%E6%88%98%E4%BB%8E%E9%9B%B6%E6%9E%84%E5%BB%BA%E6%99%BA%E8%83%BD%E4%BD%93/" title="AI-Python-08.2-Agent实战从零构建智能体">08.2 Agent 实战</a>：单 Agent 构建</li>
+<li><a href="/2026/05/21/AI-Python-09.1-Vision-Language%E5%A4%9A%E6%A8%A1%E6%80%81%E7%90%86%E8%A7%A3/" title="AI-Python-09.1-Vision-Language多模态理解">09.1 Vision-Language</a>：多模态 Tool 封装模式</li>
+</ul>
+<hr>
+<h2 id="1-为什么-Agent-需要嘴和耳朵"><a href="#1-为什么-Agent-需要嘴和耳朵" class="headerlink" title="1. 为什么 Agent 需要嘴和耳朵"></a>1. 为什么 Agent 需要嘴和耳朵</h2><h3 id="1-1-纯文字-Agent-的局限"><a href="#1-1-纯文字-Agent-的局限" class="headerlink" title="1.1 纯文字 Agent 的局限"></a>1.1 纯文字 Agent 的局限</h3><table>
+<thead>
+<tr>
+<th>场景</th>
+<th>文字 Agent</th>
+<th>语音 Agent</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>用户在开车时提问</td>
+<td>无法使用（不能打字）</td>
+<td>语音输入→语音回答</td>
+</tr>
+<tr>
+<td>朗读长文档</td>
+<td>只能看屏幕</td>
+<td>语音播报，解放眼睛</td>
+</tr>
+<tr>
+<td>电话客服</td>
+<td>需要人转述</td>
+<td>直接语音对话</td>
+</tr>
+<tr>
+<td>语音笔记转文字</td>
+<td>无法处理</td>
+<td>ASR 识别 + 整理</td>
+</tr>
+</tbody></table>
+<h3 id="1-2-语音交互的核心流程"><a href="#1-2-语音交互的核心流程" class="headerlink" title="1.2 语音交互的核心流程"></a>1.2 语音交互的核心流程</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">语音输入（用户说话）</span><br><span class="line">    ↓</span><br><span class="line">ASR（语音→文字）：GLM-4-Voice 识别语音内容</span><br><span class="line">    ↓</span><br><span class="line">Text LLM（理解 + 决策）：分析文字、调用工具</span><br><span class="line">    ↓</span><br><span class="line">TTS（文字→语音）：GLM-TTS 将回答转为语音</span><br><span class="line">    ↓</span><br><span class="line">语音输出（Agent 说话）</span><br></pre></td></tr></table></figure>
+
+<p>核心就两件事：<strong>听（ASR）</strong> 和 <strong>说（TTS）</strong>。Agent 的大脑仍然是 Text LLM，语音只是输入&#x2F;输出通道。</p>
+<h3 id="1-3-智谱-GLM-语音-API-体系"><a href="#1-3-智谱-GLM-语音-API-体系" class="headerlink" title="1.3 智谱 GLM 语音 API 体系"></a>1.3 智谱 GLM 语音 API 体系</h3><table>
+<thead>
+<tr>
+<th>API</th>
+<th>模型</th>
+<th>功能</th>
+<th>调用方式</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>GLM-TTS</strong></td>
+<td><code>glm-tts</code></td>
+<td>文字→语音（纯 TTS）</td>
+<td><code>POST /audio/speech</code></td>
+</tr>
+<tr>
+<td><strong>GLM-4-Voice</strong></td>
+<td><code>glm-4-voice</code></td>
+<td>语音↔文字（端到端）</td>
+<td><code>chat/completions</code></td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="2-实战-1：TTS-语音合成基础"><a href="#2-实战-1：TTS-语音合成基础" class="headerlink" title="2. 实战 1：TTS 语音合成基础"></a>2. 实战 1：TTS 语音合成基础</h2><h3 id="2-1-GLM-TTS-API-调用"><a href="#2-1-GLM-TTS-API-调用" class="headerlink" title="2.1 GLM-TTS API 调用"></a>2.1 GLM-TTS API 调用</h3><p>最简单的 TTS：发一段文字，收到一段音频。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> requests</span><br><span class="line"></span><br><span class="line">TTS_URL = <span class="string">&quot;https://open.bigmodel.cn/api/paas/v4/audio/speech&quot;</span></span><br><span class="line">headers = &#123;<span class="string">&quot;Authorization&quot;</span>: <span class="string">f&quot;Bearer <span class="subst">&#123;API_KEY&#125;</span>&quot;</span>&#125;</span><br><span class="line">payload = &#123;</span><br><span class="line">    <span class="string">&quot;model&quot;</span>: <span class="string">&quot;glm-tts&quot;</span>,</span><br><span class="line">    <span class="string">&quot;input&quot;</span>: <span class="string">&quot;你好，我是AI语音助手。&quot;</span>,</span><br><span class="line">    <span class="string">&quot;voice&quot;</span>: <span class="string">&quot;female&quot;</span>,</span><br><span class="line">    <span class="string">&quot;response_format&quot;</span>: <span class="string">&quot;wav&quot;</span>,</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">resp = requests.post(TTS_URL, headers=headers, json=payload)</span><br><span class="line">audio_data = resp.content  <span class="comment"># WAV 格式二进制数据</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>参数说明</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>可选值</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>voice</code></td>
+<td><code>female</code></td>
+<td>当前支持女声</td>
+</tr>
+<tr>
+<td><code>response_format</code></td>
+<td><code>wav</code> &#x2F; <code>pcm</code></td>
+<td>音频格式</td>
+</tr>
+<tr>
+<td><code>speed</code></td>
+<td>0.5~2.0</td>
+<td>语速（默认 1.0）</td>
+</tr>
+<tr>
+<td><code>volume</code></td>
+<td>0.5~2.0</td>
+<td>音量（默认 1.0）</td>
+</tr>
+</tbody></table>
+<h3 id="2-2-流式-TTS"><a href="#2-2-流式-TTS" class="headerlink" title="2.2 流式 TTS"></a>2.2 流式 TTS</h3><p>流式 TTS 通过 SSE（Server-Sent Events）逐段返回音频，降低用户等待时间：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">payload[<span class="string">&quot;stream&quot;</span>] = <span class="literal">True</span></span><br><span class="line">resp = requests.post(TTS_URL, headers=headers, json=payload, stream=<span class="literal">True</span>)</span><br><span class="line"></span><br><span class="line">audio_chunks = []</span><br><span class="line"><span class="keyword">for</span> line <span class="keyword">in</span> resp.iter_lines(decode_unicode=<span class="literal">True</span>):</span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">not</span> line.startswith(<span class="string">&quot;data: &quot;</span>):</span><br><span class="line">        <span class="keyword">continue</span></span><br><span class="line">    data = line[<span class="number">6</span>:]  <span class="comment"># 去掉 &quot;data: &quot; 前缀</span></span><br><span class="line">    <span class="keyword">if</span> data == <span class="string">&quot;[DONE]&quot;</span>:</span><br><span class="line">        <span class="keyword">break</span></span><br><span class="line">    chunk = json.loads(data)</span><br><span class="line">    b64_audio = chunk[<span class="string">&quot;choices&quot;</span>][<span class="number">0</span>][<span class="string">&quot;delta&quot;</span>][<span class="string">&quot;content&quot;</span>]</span><br><span class="line">    audio_chunks.append(base64.b64decode(b64_audio))</span><br><span class="line"></span><br><span class="line">full_audio = <span class="string">b&quot;&quot;</span>.join(audio_chunks)</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-3-完整代码"><a href="#2-3-完整代码" class="headerlink" title="2.3 完整代码"></a>2.3 完整代码</h3><blockquote>
+<p>完整可运行代码：<a target="_blank" rel="noopener" href="https://github.com/example/agent-exercises/blob/main/exercise_10_tts_basic.py">exercise_10_tts_basic.py</a></p>
+</blockquote>
+<hr>
+<h2 id="3-实战-2：GLM-4-Voice-端到端语音对话"><a href="#3-实战-2：GLM-4-Voice-端到端语音对话" class="headerlink" title="3. 实战 2：GLM-4-Voice 端到端语音对话"></a>3. 实战 2：GLM-4-Voice 端到端语音对话</h2><h3 id="3-1-GLM-4-Voice-的工作方式"><a href="#3-1-GLM-4-Voice-的工作方式" class="headerlink" title="3.1 GLM-4-Voice 的工作方式"></a>3.1 GLM-4-Voice 的工作方式</h3><p>GLM-4-Voice 是一个端到端语音模型，能<strong>同时理解和生成语音</strong>。它使用标准的 chat completions 格式：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">response = client.chat.completions.create(</span><br><span class="line">    model=<span class="string">&quot;glm-4-voice&quot;</span>,</span><br><span class="line">    messages=[&#123;</span><br><span class="line">        <span class="string">&quot;role&quot;</span>: <span class="string">&quot;user&quot;</span>,</span><br><span class="line">        <span class="string">&quot;content&quot;</span>: [</span><br><span class="line">            <span class="comment"># 文字 + 语音 混合输入</span></span><br><span class="line">            &#123;<span class="string">&quot;type&quot;</span>: <span class="string">&quot;text&quot;</span>, <span class="string">&quot;text&quot;</span>: <span class="string">&quot;请用中文回答&quot;</span>&#125;,</span><br><span class="line">            &#123;<span class="string">&quot;type&quot;</span>: <span class="string">&quot;input_audio&quot;</span>, <span class="string">&quot;input_audio&quot;</span>: &#123;</span><br><span class="line">                <span class="string">&quot;data&quot;</span>: base64_audio,   <span class="comment"># WAV 文件的 base64 编码</span></span><br><span class="line">                <span class="string">&quot;format&quot;</span>: <span class="string">&quot;wav&quot;</span></span><br><span class="line">            &#125;&#125;,</span><br><span class="line">        ]</span><br><span class="line">    &#125;],</span><br><span class="line">    stream=<span class="literal">False</span>,</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 输出同时包含文字和语音</span></span><br><span class="line">text = response.choices[<span class="number">0</span>].message.content</span><br><span class="line">audio = response.choices[<span class="number">0</span>].message.audio[<span class="string">&quot;data&quot;</span>]  <span class="comment"># base64 音频</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="3-2-三种输入模式"><a href="#3-2-三种输入模式" class="headerlink" title="3.2 三种输入模式"></a>3.2 三种输入模式</h3><p><strong>模式 A：语音输入 → 文字输出（ASR）</strong></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 用户发送语音，模型理解后用文字回答</span></span><br><span class="line">content = [</span><br><span class="line">    &#123;<span class="string">&quot;type&quot;</span>: <span class="string">&quot;input_audio&quot;</span>, <span class="string">&quot;input_audio&quot;</span>: &#123;<span class="string">&quot;data&quot;</span>: b64, <span class="string">&quot;format&quot;</span>: <span class="string">&quot;wav&quot;</span>&#125;&#125;,</span><br><span class="line">]</span><br></pre></td></tr></table></figure>
+
+<p><strong>模式 B：文字输入 → 语音输出（TTS）</strong></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 用户发送文字，模型用语音回答</span></span><br><span class="line">content = [</span><br><span class="line">    &#123;<span class="string">&quot;type&quot;</span>: <span class="string">&quot;text&quot;</span>, <span class="string">&quot;text&quot;</span>: <span class="string">&quot;请朗读这段话：今天天气真好&quot;</span>&#125;,</span><br><span class="line">]</span><br></pre></td></tr></table></figure>
+
+<p><strong>模式 C：语音输入 → 语音输出（端到端）</strong></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 用户发语音，模型用语音回答（最自然的对话方式）</span></span><br><span class="line">content = [</span><br><span class="line">    &#123;<span class="string">&quot;type&quot;</span>: <span class="string">&quot;input_audio&quot;</span>, <span class="string">&quot;input_audio&quot;</span>: &#123;<span class="string">&quot;data&quot;</span>: b64, <span class="string">&quot;format&quot;</span>: <span class="string">&quot;wav&quot;</span>&#125;&#125;,</span><br><span class="line">]</span><br><span class="line"><span class="comment"># 输出同时包含 text 和 audio</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="3-3-音频格式要求"><a href="#3-3-音频格式要求" class="headerlink" title="3.3 音频格式要求"></a>3.3 音频格式要求</h3><table>
+<thead>
+<tr>
+<th>参数</th>
+<th>值</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>采样率</td>
+<td>44100 Hz</td>
+</tr>
+<tr>
+<td>声道</td>
+<td>单声道（mono）</td>
+</tr>
+<tr>
+<td>位深</td>
+<td>16-bit</td>
+</tr>
+<tr>
+<td>格式</td>
+<td>WAV</td>
+</tr>
+</tbody></table>
+<h3 id="3-4-完整代码"><a href="#3-4-完整代码" class="headerlink" title="3.4 完整代码"></a>3.4 完整代码</h3><blockquote>
+<p>完整可运行代码：<a target="_blank" rel="noopener" href="https://github.com/example/agent-exercises/blob/main/exercise_11_voice_chat.py">exercise_11_voice_chat.py</a></p>
+</blockquote>
+<hr>
+<h2 id="4-实战-3：Voice-Agent-—-语音问答智能体"><a href="#4-实战-3：Voice-Agent-—-语音问答智能体" class="headerlink" title="4. 实战 3：Voice Agent — 语音问答智能体"></a>4. 实战 3：Voice Agent — 语音问答智能体</h2><h3 id="4-1-核心设计：语音封装为-Tool"><a href="#4-1-核心设计：语音封装为-Tool" class="headerlink" title="4.1 核心设计：语音封装为 Tool"></a>4.1 核心设计：语音封装为 Tool</h3><p>和 09.1 Vision Agent 一样，<strong>语音能力封装为 <code>@tool</code></strong>，Agent 统一调度：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@tool</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">text_to_speech</span>(<span class="params">text: <span class="built_in">str</span></span>) -&gt; <span class="built_in">str</span>:</span><br><span class="line">    <span class="string">&quot;&quot;&quot;将文字转换为语音。&quot;&quot;&quot;</span></span><br><span class="line">    resp = requests.post(TTS_URL, headers=headers, json=&#123;</span><br><span class="line">        <span class="string">&quot;model&quot;</span>: <span class="string">&quot;glm-tts&quot;</span>,</span><br><span class="line">        <span class="string">&quot;input&quot;</span>: text,</span><br><span class="line">        <span class="string">&quot;voice&quot;</span>: <span class="string">&quot;female&quot;</span>,</span><br><span class="line">        <span class="string">&quot;response_format&quot;</span>: <span class="string">&quot;wav&quot;</span>,</span><br><span class="line">    &#125;)</span><br><span class="line">    <span class="comment"># 保存 WAV 文件，返回路径</span></span><br><span class="line">    filepath = OUTPUT_DIR / <span class="string">f&quot;tts_<span class="subst">&#123;<span class="built_in">hash</span>(text) % <span class="number">10000</span>&#125;</span>.wav&quot;</span></span><br><span class="line">    filepath.write_bytes(resp.content)</span><br><span class="line">    <span class="keyword">return</span> <span class="string">f&quot;语音已生成: <span class="subst">&#123;filepath&#125;</span>&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="meta">@tool</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">speech_to_text</span>(<span class="params">audio_path: <span class="built_in">str</span>, question: <span class="built_in">str</span> = <span class="string">&quot;请识别这段语音&quot;</span></span>) -&gt; <span class="built_in">str</span>:</span><br><span class="line">    <span class="string">&quot;&quot;&quot;将语音文件转换为文字。&quot;&quot;&quot;</span></span><br><span class="line">    b64 = base64.b64encode(Path(audio_path).read_bytes()).decode()</span><br><span class="line">    <span class="comment"># 调用 GLM-4-Voice 理解语音</span></span><br><span class="line">    resp = requests.post(VOICE_API_URL, json=&#123;</span><br><span class="line">        <span class="string">&quot;model&quot;</span>: <span class="string">&quot;glm-4-voice&quot;</span>,</span><br><span class="line">        <span class="string">&quot;messages&quot;</span>: [&#123;<span class="string">&quot;role&quot;</span>: <span class="string">&quot;user&quot;</span>, <span class="string">&quot;content&quot;</span>: [</span><br><span class="line">            &#123;<span class="string">&quot;type&quot;</span>: <span class="string">&quot;text&quot;</span>, <span class="string">&quot;text&quot;</span>: question&#125;,</span><br><span class="line">            &#123;<span class="string">&quot;type&quot;</span>: <span class="string">&quot;input_audio&quot;</span>, <span class="string">&quot;input_audio&quot;</span>: &#123;<span class="string">&quot;data&quot;</span>: b64, <span class="string">&quot;format&quot;</span>: <span class="string">&quot;wav&quot;</span>&#125;&#125;,</span><br><span class="line">        ]&#125;],</span><br><span class="line">    &#125;)</span><br><span class="line">    <span class="keyword">return</span> resp.json()[<span class="string">&quot;choices&quot;</span>][<span class="number">0</span>][<span class="string">&quot;message&quot;</span>][<span class="string">&quot;content&quot;</span>]</span><br></pre></td></tr></table></figure>
+
+<p>Agent 有了三个工具：</p>
+<ul>
+<li><code>text_to_speech</code>：说话（调用 glm-tts）</li>
+<li><code>speech_to_text</code>：听（调用 glm-4-voice）</li>
+<li><code>search_wiki</code>：搜索知识库</li>
+</ul>
+<h3 id="4-2-Agent-自主决策"><a href="#4-2-Agent-自主决策" class="headerlink" title="4.2 Agent 自主决策"></a>4.2 Agent 自主决策</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">问题: &quot;请解释什么是 RAG，然后朗读你的回答&quot;</span><br><span class="line">Agent:</span><br><span class="line">  1. search_wiki(&quot;RAG&quot;) → 搜索知识库</span><br><span class="line">  2. 整合信息，生成文字回答</span><br><span class="line">  3. text_to_speech(回答) → 生成语音文件</span><br><span class="line">  → 返回文字 + 语音路径</span><br><span class="line"></span><br><span class="line">问题: &quot;请识别这段语音的内容：/path/to/voice.wav&quot;</span><br><span class="line">Agent:</span><br><span class="line">  1. speech_to_text(&quot;/path/to/voice.wav&quot;) → 识别语音内容</span><br><span class="line">  2. 基于识别结果回答</span><br><span class="line">  → 返回文字回答</span><br></pre></td></tr></table></figure>
+
+<h3 id="4-3-架构对比"><a href="#4-3-架构对比" class="headerlink" title="4.3 架构对比"></a>4.3 架构对比</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">Vision Agent (09.1):</span><br><span class="line">  Text LLM → Tool: analyze_image → Vision LLM（看图）</span><br><span class="line">           → Tool: search_wiki  → 知识库（搜索）</span><br><span class="line"></span><br><span class="line">Voice Agent (09.2):</span><br><span class="line">  Text LLM → Tool: text_to_speech  → GLM-TTS（说）</span><br><span class="line">           → Tool: speech_to_text  → GLM-4-Voice（听）</span><br><span class="line">           → Tool: search_wiki     → 知识库（搜索）</span><br></pre></td></tr></table></figure>
+
+<p><strong>关键</strong>：和 Vision Agent 同理，TTS&#x2F;ASR 不是 Agent 的”大脑”，而是 Agent 调用的”工具”。Agent 的大脑仍然是 Text LLM。</p>
+<h3 id="4-4-完整代码"><a href="#4-4-完整代码" class="headerlink" title="4.4 完整代码"></a>4.4 完整代码</h3><blockquote>
+<p>完整可运行代码：<a target="_blank" rel="noopener" href="https://github.com/example/agent-exercises/blob/main/exercise_12_voice_agent.py">exercise_12_voice_agent.py</a></p>
+</blockquote>
+<hr>
+<h2 id="5-GLM-TTS-vs-GLM-4-Voice-选型"><a href="#5-GLM-TTS-vs-GLM-4-Voice-选型" class="headerlink" title="5. GLM-TTS vs GLM-4-Voice 选型"></a>5. GLM-TTS vs GLM-4-Voice 选型</h2><h3 id="5-1-对比"><a href="#5-1-对比" class="headerlink" title="5.1 对比"></a>5.1 对比</h3><table>
+<thead>
+<tr>
+<th>维度</th>
+<th>GLM-TTS</th>
+<th>GLM-4-Voice</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>定位</strong></td>
+<td>纯 TTS（文字→语音）</td>
+<td>端到端语音模型</td>
+</tr>
+<tr>
+<td><strong>输入</strong></td>
+<td>文字</td>
+<td>文字 + 语音</td>
+</tr>
+<tr>
+<td><strong>输出</strong></td>
+<td>音频二进制</td>
+<td>文字 + 音频</td>
+</tr>
+<tr>
+<td><strong>API</strong></td>
+<td><code>POST /audio/speech</code></td>
+<td><code>chat/completions</code></td>
+</tr>
+<tr>
+<td><strong>ASR 能力</strong></td>
+<td>无</td>
+<td>有（能理解语音）</td>
+</tr>
+<tr>
+<td><strong>TTS 质量</strong></td>
+<td>更好（专用模型）</td>
+<td>可以（多任务模型）</td>
+</tr>
+<tr>
+<td><strong>成本</strong></td>
+<td>较低</td>
+<td>较高</td>
+</tr>
+<tr>
+<td><strong>延迟</strong></td>
+<td>较低</td>
+<td>较高</td>
+</tr>
+</tbody></table>
+<h3 id="5-2-选型建议"><a href="#5-2-选型建议" class="headerlink" title="5.2 选型建议"></a>5.2 选型建议</h3><ul>
+<li><strong>只需要朗读</strong> → GLM-TTS（音质好、成本低）</li>
+<li><strong>需要语音对话</strong> → GLM-4-Voice（能听能说）</li>
+<li><strong>Agent 场景</strong> → 两者结合（ASR 用 GLM-4-Voice，TTS 用 GLM-TTS）</li>
+<li><strong>实时对话</strong> → 两者都用流式模式，降低延迟</li>
+</ul>
+<h3 id="5-3-实际生产架构"><a href="#5-3-实际生产架构" class="headerlink" title="5.3 实际生产架构"></a>5.3 实际生产架构</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">用户语音输入</span><br><span class="line">    ↓</span><br><span class="line">WebSocket / WebRTC（实时音频流）</span><br><span class="line">    ↓</span><br><span class="line">VAD（语音活动检测）→ 检测说话开始/结束</span><br><span class="line">    ↓</span><br><span class="line">ASR（GLM-4-Voice 流式）→ 实时转文字</span><br><span class="line">    ↓</span><br><span class="line">Text LLM → 理解意图、调用工具、生成回答</span><br><span class="line">    ↓</span><br><span class="line">TTS（GLM-TTS 流式）→ 实时合成语音</span><br><span class="line">    ↓</span><br><span class="line">WebSocket → 播放语音</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="6-最佳实践与局限"><a href="#6-最佳实践与局限" class="headerlink" title="6. 最佳实践与局限"></a>6. 最佳实践与局限</h2><h3 id="6-1-最佳实践"><a href="#6-1-最佳实践" class="headerlink" title="6.1 最佳实践"></a>6.1 最佳实践</h3><table>
+<thead>
+<tr>
+<th>实践</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>流式优先</strong></td>
+<td>TTS&#x2F;ASR 都用流式模式，降低感知延迟</td>
+</tr>
+<tr>
+<td><strong>VAD 检测</strong></td>
+<td>语音输入前加 VAD（Voice Activity Detection），避免静音段浪费计算</td>
+</tr>
+<tr>
+<td><strong>缓存 TTS</strong></td>
+<td>相同文字不重复合成，缓存音频文件</td>
+</tr>
+<tr>
+<td><strong>降级策略</strong></td>
+<td>TTS 失败时降级为纯文字回答</td>
+</tr>
+<tr>
+<td><strong>音频格式统一</strong></td>
+<td>统一使用 44100Hz 单声道 16bit WAV</td>
+</tr>
+</tbody></table>
+<h3 id="6-2-当前局限"><a href="#6-2-当前局限" class="headerlink" title="6.2 当前局限"></a>6.2 当前局限</h3><table>
+<thead>
+<tr>
+<th>局限</th>
+<th>表现</th>
+<th>应对</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>延迟</strong></td>
+<td>端到端语音链路延迟 2-5 秒</td>
+<td>流式 + 缓存 + VAD</td>
+</tr>
+<tr>
+<td><strong>情感表达</strong></td>
+<td>TTS 语音情感较平淡</td>
+<td>选择更好的音色、调整 speed&#x2F;volume</td>
+</tr>
+<tr>
+<td><strong>噪声</strong></td>
+<td>嘈杂环境 ASR 准确率下降</td>
+<td>前端降噪、WebRTC AEC</td>
+</tr>
+<tr>
+<td><strong>打断</strong></td>
+<td>Agent 说话时用户插话</td>
+<td>实现全双工对话、VAD 检测打断</td>
+</tr>
+<tr>
+<td><strong>方言</strong></td>
+<td>非普通话识别不准</td>
+<td>模型微调、多语言模型</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="7-总结"><a href="#7-总结" class="headerlink" title="7. 总结"></a>7. 总结</h2><h3 id="关键概念"><a href="#关键概念" class="headerlink" title="关键概念"></a>关键概念</h3><ul>
+<li><strong>语音 Agent &#x3D; Text LLM（决策）+ TTS Tool（说）+ ASR Tool（听）</strong></li>
+<li><strong>TTS 和 ASR 都封装为 <code>@tool</code>，Agent 自动决定何时调用</strong></li>
+<li><strong>GLM-TTS 适合纯朗读，GLM-4-Voice 适合语音对话</strong></li>
+<li><strong>流式模式是生产环境的必选项</strong></li>
+</ul>
+<h3 id="与-Vision-Agent-的统一架构"><a href="#与-Vision-Agent-的统一架构" class="headerlink" title="与 Vision Agent 的统一架构"></a>与 Vision Agent 的统一架构</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">多模态 Agent:</span><br><span class="line">  Text LLM（决策大脑）</span><br><span class="line">  ├── Vision Tool（看）  → 09.1</span><br><span class="line">  ├── TTS Tool（说）     → 09.2</span><br><span class="line">  ├── ASR Tool（听）     → 09.2</span><br><span class="line">  ├── Search Tool（搜）  → 07.x</span><br><span class="line">  └── ... 更多 Tool</span><br></pre></td></tr></table></figure>
+
+<p><strong>Agent 的大脑始终是 Text LLM，多模态能力通过 Tool 扩展。</strong></p>
+<h3 id="实战练习"><a href="#实战练习" class="headerlink" title="实战练习"></a>实战练习</h3><ol>
+<li><strong>入门</strong>：运行 exercise_10，调整 TTS 参数（speed、volume），听效果差异</li>
+<li><strong>进阶</strong>：在 exercise_12 中增加 Vision Tool（结合 09.1），实现”看图说话”——看图片后用语音描述</li>
+<li><strong>挑战</strong>：实现流式语音对话（TTS + ASR 都用 stream 模式）</li>
+</ol>
+<h3 id="下一步"><a href="#下一步" class="headerlink" title="下一步"></a>下一步</h3><ul>
+<li><strong>工程化部署</strong>：Docker 容器化、vLLM 高性能推理</li>
+<li><strong>模型微调</strong>：LoRA 微调 TTS 音色、ASR 方言适配</li>
+</ul>
+<hr>
+<h2 id="参考资源"><a href="#参考资源" class="headerlink" title="参考资源"></a>参考资源</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://open.bigmodel.cn/dev/api/audio">GLM-TTS API 文档</a></li>
+<li><a target="_blank" rel="noopener" href="https://open.bigmodel.cn/dev/api/normal-model/glm-4-voice">GLM-4-Voice API 文档</a></li>
+<li><a target="_blank" rel="noopener" href="https://platform.openai.com/docs/guides/text-to-speech">OpenAI TTS API</a></li>
+<li><a target="_blank" rel="noopener" href="https://platform.openai.com/docs/guides/speech-to-text">OpenAI Speech-to-Text</a></li>
+</ul>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>Author: </span><span class="post-copyright-info"><a href="http://example.com">david</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>Link: </span><span class="post-copyright-info"><a href="http://example.com/2026/05/21/AI-Python-09.2-%E8%AF%AD%E9%9F%B3%E4%BA%A4%E4%BA%92%E4%B8%8E%E8%AF%AD%E9%9F%B3Agent/">http://example.com/2026/05/21/AI-Python-09.2-%E8%AF%AD%E9%9F%B3%E4%BA%A4%E4%BA%92%E4%B8%8E%E8%AF%AD%E9%9F%B3Agent/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>Copyright Notice: </span><span class="post-copyright-info">All articles on this blog are licensed under <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> unless otherwise stated.</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/AI/">AI</a><a class="post-meta__tags" href="/tags/Agent/">Agent</a><a class="post-meta__tags" href="/tags/Python/">Python</a><a class="post-meta__tags" href="/tags/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">学习笔记</a><a class="post-meta__tags" href="/tags/Voice/">Voice</a><a class="post-meta__tags" href="/tags/TTS/">TTS</a><a class="post-meta__tags" href="/tags/ASR/">ASR</a><a class="post-meta__tags" href="/tags/GLM-TTS/">GLM-TTS</a><a class="post-meta__tags" href="/tags/GLM-4-Voice/">GLM-4-Voice</a></div><div class="post-share"><div class="social-share" data-image="/img/butterfly-icon.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related full-width" href="/2026/05/21/AI-Python-09.1-Vision-Language%E5%A4%9A%E6%A8%A1%E6%80%81%E7%90%86%E8%A7%A3/" title="AI-Python-09.1-Vision-Language多模态理解"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">Next</div><div class="info-item-2">AI-Python-09.1-Vision-Language多模态理解</div></div><div class="info-2"><div class="info-item-1">AI-Python-09.1: Vision-Language 多模态理解实战 前 8 章我们构建的 Agent 只会”读文字”和”写文字”。但现实世界中大量信息是图片——架构图、截图、文档扫描件。本章让 Agent 长出”眼睛”，用 Vision-Language 模型理解图片内容。  前置知识：  06.5 Tool 与 Agent：@tool 装饰器、Function Calling 08.2 Agent 实战：单 Agent 构建 08.3 多 Agent 协作：Supervisor/Pipeline   1. 为什么 Agent 需要眼睛1.1 纯文本 Agent 的局限   场景 文本 Agent Vision Agent    用户发了一张架构图 “我看不了图片” 分析组件、关系、流程   截图中的报错信息 需要用户手动打字 直接读图识别错误   PDF 文档中的表格 无法处理 OCR 提取表格数据   产品图片对比 只能靠文字描述 视觉对比差异   1.2 Vision-Language 的工作原理1234567用户上传图片    ↓图片 → base64 编码（...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>Related Articles</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/2026/03/31/AI-Python-06.1-LangChain%E5%9F%BA%E7%A1%80/" title="AI-Python-06.1-LangChain基础"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-03-31</div><div class="info-item-2">AI-Python-06.1-LangChain基础</div></div><div class="info-2"><div class="info-item-1">AI-Python-06.1: LangChain 基础 LangChain 是当前最流行的 LLM 应用开发框架，让开发者快速搭建智能体、问答系统、对话机器人、知识库等复杂功能。   1. 什么是 LangChain？1.1 为什么需要 LangChain？众所周知，OpenAI 的 API 是无法联网的。如果想实现：  联网搜索并给出回答 总结 PDF 文档 基于某个视频进行问答 连接企业数据库  直接调用 API 是无法实现的。LangChain 就是为了解决这些问题而诞生的。 1.2 LangChain 的两大核心能力     flowchart TD     subgraph LangChain核心能力         direction TB         A[1. 将 LLM 与外部数据源连接]         A1[文档 &#x2F; 数据库 &#x2F; API &#x2F; 搜索引擎]         B[2. 允许与 LLM 进行交互]         B1[多轮对话 &#x2F; 工具调用 &#x2F; 链式编排]     end      A --&g...</div></div></div></a><a class="pagination-related" href="/2026/04/21/AI-Python-06.5-Tool%E4%B8%8EAgent/" title="AI-Python-06.5-Tool与Agent"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-04-21</div><div class="info-item-2">AI-Python-06.5-Tool与Agent</div></div><div class="info-2"><div class="info-item-1">AI-Python-06.5: Tool 与 Agent LLM 只会”说话”，Tool 让它能”做事”，Agent 让它自主决定”用什么工具做事”。本章深入理解 Tool 定义、Function Calling 机制和 Agent 的决策原理。   1. 为什么需要 Tool？1.1 LLM 的局限LLM 本质上只会生成文本，它不能：  搜索网络获取实时信息 执行精确的数学计算 查询数据库 调用外部 API 读写文件  1.2 Tool 的作用Tool &#x3D; 给 AI 装上”手脚” 1234567没有 Tool：用户: 135 × 246 等于多少？AI:   让我算一下... 33120（可能算错！）有 Tool：用户: 135 × 246 等于多少？AI:   [调用 multiply(135, 246)] → 33210（精确结果）   2. Function Calling 机制在学 Tool 之前，必须理解底层的 Function Calling（也叫 Tool Use）。 2.1 没有 Function Calling 时12用户: 135 × 246 等于...</div></div></div></a><a class="pagination-related" href="/2026/04/21/AI-Python-06.6-LangGraph%E7%8A%B6%E6%80%81%E6%9C%BA%E7%BC%96%E6%8E%92/" title="AI-Python-06.6-LangGraph状态机编排"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-04-21</div><div class="info-item-2">AI-Python-06.6-LangGraph状态机编排</div></div><div class="info-2"><div class="info-item-1">AI-Python-06.6: LangGraph 状态机编排 LangChain Agent 是”黑盒”，LLM 自己决定一切。LangGraph 把 Agent 拆成”白盒”——每个步骤都是显式的节点，节点之间用明确的规则连接。本章深入理解 State、Node、Edge 和多 Agent 协作模式。   1. 为什么需要 LangGraph？1.1 LangChain Agent 的局限1234567agent = create_agent(model=llm, tools=tools)result = agent.invoke(&#123;&quot;messages&quot;: [...]&#125;)# 你无法控制中间过程：# - 不知道 LLM 会调用几次工具# - 无法在关键步骤暂停让人审批# - 无法设定固定的流程# - 循环次数不可控  1.2 LangGraph 的解决思路把 Agent 拆成状态机——每个步骤是节点，节点之间是明确的规则：      flowchart LR     subgraph LangChain Agent 黑盒         ...</div></div></div></a><a class="pagination-related" href="/2026/05/19/AI-Python-08.2-Agent%E5%AE%9E%E6%88%98%E4%BB%8E%E9%9B%B6%E6%9E%84%E5%BB%BA%E6%99%BA%E8%83%BD%E4%BD%93/" title="AI-Python-08.2-Agent实战从零构建智能体"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-05-19</div><div class="info-item-2">AI-Python-08.2-Agent实战从零构建智能体</div></div><div class="info-2"><div class="info-item-1">AI-Python-08.2: Agent 实战 — 从零构建智能体 核心认知：Agent &#x3D; LLM（大脑推理）+ Tool（手脚交互）+ Memory（记忆上下文）+ Planning（规划策略），通过 ReAct 循环（思考→行动→观察）协同工作。 本文路径：先拆解 Agent 的四大组件，理解每个组件的职责；再用 50 行纯 Python 手搓一个 Agent；最后用 LangChain&#x2F;LangGraph 框架重构。先懂原理，再用框架。  1. Agent 的本质与组成1.1 什么是 Agent？ “An AI agent is a system that combines LLMs for reasoning and decision-making with tools for real-world interaction.” — Andrew Ng   “AI agents are autonomous systems that can understand queries, plan workflows, and execute complex...</div></div></div></a><a class="pagination-related" href="/2026/05/14/AI-Python-08.1-Agent%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%E5%85%A8%E6%99%AF/" title="AI-Python-08.1-Agent设计模式全景"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-05-14</div><div class="info-item-2">AI-Python-08.1-Agent设计模式全景</div></div><div class="info-2"><div class="info-item-1">AI-Python-08.1: Agent 设计模式全景 构建 Agent 不是选一个框架然后开始写代码——而是先理解设计模式，再决定架构。本文系统梳理 Agent 的 推理、规划、反思、协作 四大类设计模式，建立完整的模式选型思维框架。   1. 为什么需要设计模式？1.1 同一个任务，不同模式天差地别123456789101112131415任务：写一份技术调研报告ReAct 模式：  搜索 → 读结果 → 发现不够 → 再搜索 → 读结果 → 写报告 → 发现遗漏 → 再搜索...  （10+ 次 LLM 调用，边走边看）Plan-and-Execute 模式：  规划：1.搜索A 2.搜索B 3.对比分析 4.写报告  执行：搜索A → 搜索B → 对比 → 写报告  （4 步完成，路径清晰）ReWOO 模式：  一次规划所有搜索：[搜索A, 搜索B, 搜索C]  并行执行 → 一次汇总  （2 次 LLM 调用 + 并行工具调用，最快）  同样的任务，LLM 调用次数可以从 2 次到 10+ 次，成本差 5 倍。 1.2 Andrew Ng 的四大模式Andrew Ng...</div></div></div></a><a class="pagination-related" href="/2026/05/20/AI-Python-08.3-%E5%A4%9A%E6%99%BA%E8%83%BD%E4%BD%93%E5%8D%8F%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%AE%9E%E6%88%98/" title="AI-Python-08.3-多智能体协作系统实战"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-05-20</div><div class="info-item-2">AI-Python-08.3-多智能体协作系统实战</div></div><div class="info-2"><div class="info-item-1">AI-Python-08.3: 多智能体协作系统实战 前面我们学会了构建单个 Agent（08.2），但现实中的复杂任务往往需要多个 Agent 协作。本文从三种最实用的协作模式入手，用 LangGraph StateGraph 构建完整的多 Agent 系统。  前置知识：  06.6 LangGraph 状态机编排：StateGraph 基础 + Supervisor 概念 08.1 Agent 设计模式全景：15 种模式理论（含 6 种协作模式） 08.2 Agent 实战：单 Agent 的完整构建过程   1. 从单 Agent 到多 Agent1.1 单 Agent 的瓶颈当任务变复杂，单 Agent 会遇到三个问题：    问题 原因 表现    角色混乱 一个 Agent 既要搜索又要分析又要写作 Prompt 太长，LLM 不知道优先做什么   工具爆炸 搜索 + 阅读 + 计算 + 翻译全塞一起 LLM 选错工具、参数幻觉   无法并行 一个 Agent 只能串行处理 3 个独立任务也要排队   1.2 多 Agent 的核心：分工 + 协调多 Agent 的...</div></div></div></a></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/butterfly-icon.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">david</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">134</div></a><a href="/tags/"><div class="headline">Tags</div><div class="length-num">324</div></a><a href="/categories/"><div class="headline">Categories</div><div class="length-num">23</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>Announcement</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>Contents</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#AI-Python-09-2-%E8%AF%AD%E9%9F%B3%E4%BA%A4%E4%BA%92%E4%B8%8E%E8%AF%AD%E9%9F%B3-Agent-%E5%AE%9E%E6%88%98"><span class="toc-number">1.</span> <span class="toc-text">AI-Python-09.2: 语音交互与语音 Agent 实战</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-%E4%B8%BA%E4%BB%80%E4%B9%88-Agent-%E9%9C%80%E8%A6%81%E5%98%B4%E5%92%8C%E8%80%B3%E6%9C%B5"><span class="toc-number">1.1.</span> <span class="toc-text">1. 为什么 Agent 需要嘴和耳朵</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-%E7%BA%AF%E6%96%87%E5%AD%97-Agent-%E7%9A%84%E5%B1%80%E9%99%90"><span class="toc-number">1.1.1.</span> <span class="toc-text">1.1 纯文字 Agent 的局限</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-%E8%AF%AD%E9%9F%B3%E4%BA%A4%E4%BA%92%E7%9A%84%E6%A0%B8%E5%BF%83%E6%B5%81%E7%A8%8B"><span class="toc-number">1.1.2.</span> <span class="toc-text">1.2 语音交互的核心流程</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-3-%E6%99%BA%E8%B0%B1-GLM-%E8%AF%AD%E9%9F%B3-API-%E4%BD%93%E7%B3%BB"><span class="toc-number">1.1.3.</span> <span class="toc-text">1.3 智谱 GLM 语音 API 体系</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-%E5%AE%9E%E6%88%98-1%EF%BC%9ATTS-%E8%AF%AD%E9%9F%B3%E5%90%88%E6%88%90%E5%9F%BA%E7%A1%80"><span class="toc-number">1.2.</span> <span class="toc-text">2. 实战 1：TTS 语音合成基础</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-GLM-TTS-API-%E8%B0%83%E7%94%A8"><span class="toc-number">1.2.1.</span> <span class="toc-text">2.1 GLM-TTS API 调用</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-%E6%B5%81%E5%BC%8F-TTS"><span class="toc-number">1.2.2.</span> <span class="toc-text">2.2 流式 TTS</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-%E5%AE%8C%E6%95%B4%E4%BB%A3%E7%A0%81"><span class="toc-number">1.2.3.</span> <span class="toc-text">2.3 完整代码</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-%E5%AE%9E%E6%88%98-2%EF%BC%9AGLM-4-Voice-%E7%AB%AF%E5%88%B0%E7%AB%AF%E8%AF%AD%E9%9F%B3%E5%AF%B9%E8%AF%9D"><span class="toc-number">1.3.</span> <span class="toc-text">3. 实战 2：GLM-4-Voice 端到端语音对话</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-GLM-4-Voice-%E7%9A%84%E5%B7%A5%E4%BD%9C%E6%96%B9%E5%BC%8F"><span class="toc-number">1.3.1.</span> <span class="toc-text">3.1 GLM-4-Voice 的工作方式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-%E4%B8%89%E7%A7%8D%E8%BE%93%E5%85%A5%E6%A8%A1%E5%BC%8F"><span class="toc-number">1.3.2.</span> <span class="toc-text">3.2 三种输入模式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-%E9%9F%B3%E9%A2%91%E6%A0%BC%E5%BC%8F%E8%A6%81%E6%B1%82"><span class="toc-number">1.3.3.</span> <span class="toc-text">3.3 音频格式要求</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-4-%E5%AE%8C%E6%95%B4%E4%BB%A3%E7%A0%81"><span class="toc-number">1.3.4.</span> <span class="toc-text">3.4 完整代码</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-%E5%AE%9E%E6%88%98-3%EF%BC%9AVoice-Agent-%E2%80%94-%E8%AF%AD%E9%9F%B3%E9%97%AE%E7%AD%94%E6%99%BA%E8%83%BD%E4%BD%93"><span class="toc-number">1.4.</span> <span class="toc-text">4. 实战 3：Voice Agent — 语音问答智能体</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-%E6%A0%B8%E5%BF%83%E8%AE%BE%E8%AE%A1%EF%BC%9A%E8%AF%AD%E9%9F%B3%E5%B0%81%E8%A3%85%E4%B8%BA-Tool"><span class="toc-number">1.4.1.</span> <span class="toc-text">4.1 核心设计：语音封装为 Tool</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-Agent-%E8%87%AA%E4%B8%BB%E5%86%B3%E7%AD%96"><span class="toc-number">1.4.2.</span> <span class="toc-text">4.2 Agent 自主决策</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-3-%E6%9E%B6%E6%9E%84%E5%AF%B9%E6%AF%94"><span class="toc-number">1.4.3.</span> <span class="toc-text">4.3 架构对比</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-4-%E5%AE%8C%E6%95%B4%E4%BB%A3%E7%A0%81"><span class="toc-number">1.4.4.</span> <span class="toc-text">4.4 完整代码</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-GLM-TTS-vs-GLM-4-Voice-%E9%80%89%E5%9E%8B"><span class="toc-number">1.5.</span> <span class="toc-text">5. GLM-TTS vs GLM-4-Voice 选型</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-%E5%AF%B9%E6%AF%94"><span class="toc-number">1.5.1.</span> <span class="toc-text">5.1 对比</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-%E9%80%89%E5%9E%8B%E5%BB%BA%E8%AE%AE"><span class="toc-number">1.5.2.</span> <span class="toc-text">5.2 选型建议</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-3-%E5%AE%9E%E9%99%85%E7%94%9F%E4%BA%A7%E6%9E%B6%E6%9E%84"><span class="toc-number">1.5.3.</span> <span class="toc-text">5.3 实际生产架构</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5%E4%B8%8E%E5%B1%80%E9%99%90"><span class="toc-number">1.6.</span> <span class="toc-text">6. 最佳实践与局限</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#6-1-%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5"><span class="toc-number">1.6.1.</span> <span class="toc-text">6.1 最佳实践</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-2-%E5%BD%93%E5%89%8D%E5%B1%80%E9%99%90"><span class="toc-number">1.6.2.</span> <span class="toc-text">6.2 当前局限</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7-%E6%80%BB%E7%BB%93"><span class="toc-number">1.7.</span> <span class="toc-text">7. 总结</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%B3%E9%94%AE%E6%A6%82%E5%BF%B5"><span class="toc-number">1.7.1.</span> <span class="toc-text">关键概念</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%8E-Vision-Agent-%E7%9A%84%E7%BB%9F%E4%B8%80%E6%9E%B6%E6%9E%84"><span class="toc-number">1.7.2.</span> <span class="toc-text">与 Vision Agent 的统一架构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%9E%E6%88%98%E7%BB%83%E4%B9%A0"><span class="toc-number">1.7.3.</span> <span class="toc-text">实战练习</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%8B%E4%B8%80%E6%AD%A5"><span class="toc-number">1.7.4.</span> <span class="toc-text">下一步</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%82%E8%80%83%E8%B5%84%E6%BA%90"><span class="toc-number">1.8.</span> <span class="toc-text">参考资源</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>Recent Posts</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/05/21/AI-Python-09.2-%E8%AF%AD%E9%9F%B3%E4%BA%A4%E4%BA%92%E4%B8%8E%E8%AF%AD%E9%9F%B3Agent/" title="AI-Python-09.2-语音交互与语音Agent">AI-Python-09.2-语音交互与语音Agent</a><time datetime="2026-05-21T06:00:00.000Z" title="Created 2026-05-21 14:00:00">2026-05-21</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/05/21/AI-Python-09.1-Vision-Language%E5%A4%9A%E6%A8%A1%E6%80%81%E7%90%86%E8%A7%A3/" title="AI-Python-09.1-Vision-Language多模态理解">AI-Python-09.1-Vision-Language多模态理解</a><time datetime="2026-05-21T03:00:00.000Z" title="Created 2026-05-21 11:00:00">2026-05-21</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/05/20/AI-Python-08.3-%E5%A4%9A%E6%99%BA%E8%83%BD%E4%BD%93%E5%8D%8F%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%AE%9E%E6%88%98/" title="AI-Python-08.3-多智能体协作系统实战">AI-Python-08.3-多智能体协作系统实战</a><time datetime="2026-05-20T03:00:00.000Z" title="Created 2026-05-20 11:00:00">2026-05-20</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/05/19/AI-Python-08.2-Agent%E5%AE%9E%E6%88%98%E4%BB%8E%E9%9B%B6%E6%9E%84%E5%BB%BA%E6%99%BA%E8%83%BD%E4%BD%93/" title="AI-Python-08.2-Agent实战从零构建智能体">AI-Python-08.2-Agent实战从零构建智能体</a><time datetime="2026-05-19T02:00:00.000Z" title="Created 2026-05-19 10:00:00">2026-05-19</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/05/19/AI-Python-07.6-RAG%E7%9F%A5%E8%AF%86%E5%BA%93%E8%AF%84%E6%B5%8B%E4%B8%8E%E4%BC%98%E5%8C%96%E5%AE%9E%E6%88%98/" title="AI-Python-07.6-RAG知识库评测与优化实战">AI-Python-07.6-RAG知识库评测与优化实战</a><time datetime="2026-05-19T02:00:00.000Z" title="Created 2026-05-19 10:00:00">2026-05-19</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By david</span><span class="framework-info"><span>Framework </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>Theme </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.4.3</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="Reading Mode"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="Toggle Between Light and Dark Mode"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="Toggle Between Single-column and Double-column"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="Settings"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="Table of Contents"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="Back to Top"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><div class="js-pjax"><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (false) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>

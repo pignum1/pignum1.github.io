@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <title>概念演进关系</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', sans-serif; background: #F9FAFB; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+  </style>
+</head>
+<body>
+<svg width="700" height="360" viewBox="0 0 700 360">
+  <defs>
+    <marker id="a" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#6B7280"/>
+    </marker>
+    <filter id="s"><feDropShadow dx="0" dy="2" stdDeviation="3" flood-opacity="0.08"/></filter>
+  </defs>
+
+  <rect width="700" height="360" fill="#F9FAFB" rx="12"/>
+  <text x="350" y="30" text-anchor="middle" font-size="16" font-weight="bold" fill="#111827">概念演进路径与包含关系</text>
+
+  <!-- ===== 演进路径 ===== -->
+  <text x="80" y="60" font-size="12" font-weight="bold" fill="#6B7280">演进路径</text>
+
+  <!-- 2023 Function Calling -->
+  <g filter="url(#s)">
+    <rect x="30" y="72" width="195" height="68" rx="12" fill="#FEE2E2" stroke="#EF4444" stroke-width="2"/>
+    <text x="127" y="95" text-anchor="middle" font-size="13" fill="#991B1B">2023</text>
+    <text x="127" y="113" text-anchor="middle" font-size="13" font-weight="bold" fill="#DC2626">Function Calling</text>
+    <text x="127" y="131" text-anchor="middle" font-size="10" fill="#7F1D1D">LLM 输出 JSON 调用函数</text>
+  </g>
+
+  <!-- 箭头 1 -->
+  <line x1="225" y1="106" x2="255" y2="106" stroke="#6B7280" stroke-width="2" marker-end="url(#a)"/>
+
+  <!-- 2024 MCP -->
+  <g filter="url(#s)">
+    <rect x="260" y="72" width="180" height="68" rx="12" fill="#FEF3C7" stroke="#F59E0B" stroke-width="2"/>
+    <text x="350" y="95" text-anchor="middle" font-size="13" fill="#92400E">2024</text>
+    <text x="350" y="113" text-anchor="middle" font-size="13" font-weight="bold" fill="#D97706">MCP 协议</text>
+    <text x="350" y="131" text-anchor="middle" font-size="10" fill="#A16207">统一标准连接工具</text>
+  </g>
+
+  <!-- 箭头 2 -->
+  <line x1="440" y1="106" x2="470" y2="106" stroke="#6B7280" stroke-width="2" marker-end="url(#a)"/>
+
+  <!-- 2025 Skills -->
+  <g filter="url(#s)">
+    <rect x="475" y="72" width="195" height="68" rx="12" fill="#D1FAE5" stroke="#10B981" stroke-width="2"/>
+    <text x="572" y="95" text-anchor="middle" font-size="13" fill="#064E3B">2025</text>
+    <text x="572" y="113" text-anchor="middle" font-size="13" font-weight="bold" fill="#059669">Skills 技能</text>
+    <text x="572" y="131" text-anchor="middle" font-size="10" fill="#047857">动态发现 + 渐进加载</text>
+  </g>
+
+  <!-- ===== 包含关系 ===== -->
+  <text x="80" y="175" font-size="12" font-weight="bold" fill="#6B7280">包含关系（由外到内）</text>
+
+  <!-- Agent（最外层）-->
+  <rect x="80" y="190" width="540" height="140" rx="16" fill="none" stroke="#D1E8FF" stroke-width="2.5"/>
+  <text x="105" y="215" font-size="13" font-weight="bold" fill="#42A5F5">Agent 智能体</text>
+  <text x="105" y="232" font-size="10" fill="#42A5F5">LLM + 循环 + 工具</text>
+
+  <!-- Skills（第二层）-->
+  <rect x="160" y="240" width="390" height="75" rx="12" fill="none" stroke="#D1FAE5" stroke-width="2"/>
+  <text x="185" y="262" font-size="12" font-weight="bold" fill="#059669">Skills 技能包</text>
+  <text x="290" y="262" font-size="10" fill="#059669">SKILL.md + 脚本 + 资源</text>
+
+  <!-- MCP（第三层）-->
+  <rect x="260" y="270" width="200" height="35" rx="10" fill="none" stroke="#FEF3C7" stroke-width="2"/>
+  <text x="285" y="293" font-size="11" font-weight="bold" fill="#D97706">MCP 协议</text>
+  <text x="380" y="293" font-size="10" fill="#D97706">统一通信标准</text>
+
+  <!-- Tools（最内层）-->
+  <rect x="390" y="275" width="90" height="25" rx="6" fill="none" stroke="#FEE2E2" stroke-width="2"/>
+  <text x="435" y="293" text-anchor="middle" font-size="10" font-weight="bold" fill="#DC2626">Tools</text>
+
+  <!-- 底部说明 -->
+  <text x="350" y="350" text-anchor="middle" font-size="11" fill="#6B7280">Agent 包含 Skills，Skills 通过 MCP 连接 Tools。越外层越高层，越内层越基础</text>
+
+</svg>
+</body>
+</html>

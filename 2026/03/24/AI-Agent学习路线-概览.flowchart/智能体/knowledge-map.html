@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <title>知识图谱总结</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', sans-serif; background: #F9FAFB; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+  </style>
+</head>
+<body>
+<svg width="780" height="480" viewBox="0 0 780 480">
+  <defs>
+    <marker id="a" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#6B7280"/>
+    </marker>
+    <filter id="s"><feDropShadow dx="0" dy="2" stdDeviation="4" flood-opacity="0.08"/></filter>
+  </defs>
+
+  <rect width="780" height="480" fill="#F9FAFB" rx="12"/>
+  <text x="390" y="32" text-anchor="middle" font-size="16" font-weight="bold" fill="#111827">知识图谱 — 从原理到框架的学习路径</text>
+
+  <!-- ===== 主学习路径（纵向）===== -->
+  <text x="60" y="62" font-size="11" font-weight="bold" fill="#6B7280">学习路径</text>
+
+  <!-- Function Calling -->
+  <g filter="url(#s)">
+    <rect x="200" y="50" width="220" height="60" rx="12" fill="#FEE2E2" stroke="#EF4444" stroke-width="2"/>
+    <text x="310" y="74" text-anchor="middle" font-size="13" font-weight="bold" fill="#DC2626">Function Calling</text>
+    <text x="310" y="96" text-anchor="middle" font-size="10" fill="#7F1D1D">底层机制：LLM 输出 JSON 调用函数</text>
+  </g>
+
+  <line x1="310" y1="110" x2="310" y2="130" stroke="#6B7280" stroke-width="2" marker-end="url(#a)"/>
+
+  <!-- Tool -->
+  <g filter="url(#s)">
+    <rect x="200" y="135" width="220" height="60" rx="12" fill="#FEF3C7" stroke="#F59E0B" stroke-width="2"/>
+    <text x="310" y="159" text-anchor="middle" font-size="13" font-weight="bold" fill="#D97706">Tool / 工具</text>
+    <text x="310" y="181" text-anchor="middle" font-size="10" fill="#92400E">函数 + 描述：Agent 的手和脚</text>
+  </g>
+
+  <line x1="310" y1="195" x2="310" y2="215" stroke="#6B7280" stroke-width="2" marker-end="url(#a)"/>
+
+  <!-- Agent -->
+  <g filter="url(#s)">
+    <rect x="200" y="220" width="220" height="60" rx="12" fill="#D1FAE5" stroke="#10B981" stroke-width="2.5"/>
+    <text x="310" y="244" text-anchor="middle" font-size="14" font-weight="bold" fill="#059669">Agent / 智能体</text>
+    <text x="310" y="266" text-anchor="middle" font-size="10" fill="#064E3B">LLM + 循环 + 工具：自主决策系统</text>
+  </g>
+
+  <line x1="310" y1="280" x2="310" y2="300" stroke="#6B7280" stroke-width="2" marker-end="url(#a)"/>
+
+  <!-- ReAct -->
+  <g filter="url(#s)">
+    <rect x="200" y="305" width="220" height="60" rx="12" fill="#D1E8FF" stroke="#42A5F5" stroke-width="2"/>
+    <text x="310" y="329" text-anchor="middle" font-size="13" font-weight="bold" fill="#2563EB">ReAct 模式</text>
+    <text x="310" y="351" text-anchor="middle" font-size="10" fill="#1E3A5F">思考→行动→观察：经典 Agent 模式</text>
+  </g>
+
+  <line x1="310" y1="365" x2="310" y2="385" stroke="#6B7280" stroke-width="2" marker-end="url(#a)"/>
+
+  <!-- LangGraph -->
+  <g filter="url(#s)">
+    <rect x="200" y="390" width="220" height="50" rx="12" fill="#E8D1FF" stroke="#8B5CF6" stroke-width="2"/>
+    <text x="310" y="420" text-anchor="middle" font-size="13" font-weight="bold" fill="#7C3AED">LangGraph</text>
+    <text x="310" y="436" text-anchor="middle" font-size="10" fill="#6D28D9">状态机编排：工业化框架</text>
+  </g>
+
+  <!-- ===== 左侧：补充概念 ===== -->
+  <text x="60" y="135" font-size="11" font-weight="bold" fill="#6B7280">补充概念</text>
+
+  <!-- MCP -->
+  <g filter="url(#s)">
+    <rect x="25" y="150" width="150" height="55" rx="10" fill="#D1F0FF" stroke="#0EA5E9" stroke-width="1.5"/>
+    <text x="100" y="172" text-anchor="middle" font-size="12" font-weight="bold" fill="#0284C7">MCP 协议</text>
+    <text x="100" y="192" text-anchor="middle" font-size="9" fill="#0C4A6E">统一标准 · AI 的 USB</text>
+  </g>
+  <line x1="175" y1="177" x2="195" y2="177" stroke="#0EA5E9" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#a)"/>
+
+  <!-- Skill -->
+  <g filter="url(#s)">
+    <rect x="25" y="215" width="150" height="55" rx="10" fill="#F0D1FF" stroke="#A855F7" stroke-width="1.5"/>
+    <text x="100" y="237" text-anchor="middle" font-size="12" font-weight="bold" fill="#7C3AED">Skill / 技能</text>
+    <text x="100" y="257" text-anchor="middle" font-size="9" fill="#581C87">能力包 · 渐进加载</text>
+  </g>
+  <line x1="175" y1="242" x2="195" y2="242" stroke="#A855F7" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#a)"/>
+
+  <!-- ===== 右侧：概念层级 ===== -->
+  <text x="600" y="62" text-anchor="middle" font-size="11" font-weight="bold" fill="#6B7280">概念层级</text>
+
+  <g filter="url(#s)">
+    <rect x="480" y="75" width="250" height="240" rx="12" fill="white" stroke="#E5E7EB" stroke-width="1"/>
+
+    <rect x="500" y="95" width="210" height="32" rx="6" fill="#D1FAE5" stroke="#10B981" stroke-width="1"/>
+    <text x="605" y="116" text-anchor="middle" font-size="11" font-weight="bold" fill="#059669">Agent（完整系统）</text>
+
+    <rect x="515" y="137" width="180" height="32" rx="6" fill="#F0D1FF" stroke="#A855F7" stroke-width="1"/>
+    <text x="605" y="158" text-anchor="middle" font-size="11" fill="#7C3AED">Skill（能力包）</text>
+
+    <rect x="530" y="179" width="150" height="32" rx="6" fill="#D1F0FF" stroke="#0EA5E9" stroke-width="1"/>
+    <text x="605" y="200" text-anchor="middle" font-size="11" fill="#0284C7">MCP（通信标准）</text>
+
+    <rect x="545" y="221" width="120" height="32" rx="6" fill="#FEF3C7" stroke="#F59E0B" stroke-width="1"/>
+    <text x="605" y="242" text-anchor="middle" font-size="11" fill="#D97706">Tool（单个函数）</text>
+
+    <text x="605" y="280" text-anchor="middle" font-size="10" fill="#6B7280">越外层越高层，越内层越基础</text>
+    <text x="605" y="296" text-anchor="middle" font-size="10" fill="#6B7280">Tool 被 MCP 标准化，被 Skill 封装</text>
+  </g>
+
+  <!-- ===== 底部总结 ===== -->
+  <text x="390" y="465" text-anchor="middle" font-size="11" fill="#6B7280">学习路径：Function Calling → Tool → Agent → ReAct → LangGraph | 概念层级：Tool &lt; MCP &lt; Skill &lt; Agent</text>
+
+</svg>
+</body>
+</html>

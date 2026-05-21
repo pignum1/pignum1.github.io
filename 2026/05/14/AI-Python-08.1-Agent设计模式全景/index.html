@@ -1,0 +1,1227 @@
+<!DOCTYPE html><html lang="en" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>AI-Python-08.1-Agent设计模式全景 | Hexo</title><meta name="author" content="david"><meta name="copyright" content="david"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="AI-Python-08.1: Agent 设计模式全景 构建 Agent 不是选一个框架然后开始写代码——而是先理解设计模式，再决定架构。本文系统梳理 Agent 的 推理、规划、反思、协作 四大类设计模式，建立完整的模式选型思维框架。   1. 为什么需要设计模式？1.1 同一个任务，不同模式天差地别123456789101112131415任务：写一份技术调研报告ReAct 模式：  搜索">
+<meta property="og:type" content="article">
+<meta property="og:title" content="AI-Python-08.1-Agent设计模式全景">
+<meta property="og:url" content="http://example.com/2026/05/14/AI-Python-08.1-Agent%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%E5%85%A8%E6%99%AF/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="AI-Python-08.1: Agent 设计模式全景 构建 Agent 不是选一个框架然后开始写代码——而是先理解设计模式，再决定架构。本文系统梳理 Agent 的 推理、规划、反思、协作 四大类设计模式，建立完整的模式选型思维框架。   1. 为什么需要设计模式？1.1 同一个任务，不同模式天差地别123456789101112131415任务：写一份技术调研报告ReAct 模式：  搜索">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://example.com/img/butterfly-icon.png">
+<meta property="article:published_time" content="2026-05-14T02:00:00.000Z">
+<meta property="article:modified_time" content="2026-05-18T01:52:06.658Z">
+<meta property="article:author" content="david">
+<meta property="article:tag" content="AI">
+<meta property="article:tag" content="Agent">
+<meta property="article:tag" content="Python">
+<meta property="article:tag" content="学习笔记">
+<meta property="article:tag" content="设计模式">
+<meta property="article:tag" content="LangGraph">
+<meta property="article:tag" content="ReAct">
+<meta property="article:tag" content="Multi-Agent">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/img/butterfly-icon.png"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "AI-Python-08.1-Agent设计模式全景",
+  "url": "http://example.com/2026/05/14/AI-Python-08.1-Agent%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%E5%85%A8%E6%99%AF/",
+  "image": "http://example.com/img/butterfly-icon.png",
+  "datePublished": "2026-05-14T02:00:00.000Z",
+  "dateModified": "2026-05-18T01:52:06.658Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "david",
+      "url": "http://example.com"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://example.com/2026/05/14/AI-Python-08.1-Agent%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%E5%85%A8%E6%99%AF/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: 'Copy Successful',
+    error: 'Copy Failed',
+    noSupport: 'Browser Not Supported'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: 'Just now',
+    min: 'minutes ago',
+    hour: 'hours ago',
+    day: 'days ago',
+    month: 'months ago'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid/dist/infinitegrid.min.js',
+    buttonText: 'Load More'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'AI-Python-08.1-Agent设计模式全景',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Hexo</span></a><a class="nav-page-title" href="/"><span class="site-name">AI-Python-08.1-Agent设计模式全景</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  Back to Home</span></span></a></span><div id="menus"></div></nav><div id="post-info"><h1 class="post-title">AI-Python-08.1-Agent设计模式全景</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">Created</span><time class="post-meta-date-created" datetime="2026-05-14T02:00:00.000Z" title="Created 2026-05-14 10:00:00">2026-05-14</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">Updated</span><time class="post-meta-date-updated" datetime="2026-05-18T01:52:06.658Z" title="Updated 2026-05-18 09:52:06">2026-05-18</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/AI%E5%AD%A6%E4%B9%A0/">AI学习</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/AI%E5%AD%A6%E4%B9%A0/Python/">Python</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">Post Views:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h1 id="AI-Python-08-1-Agent-设计模式全景"><a href="#AI-Python-08-1-Agent-设计模式全景" class="headerlink" title="AI-Python-08.1: Agent 设计模式全景"></a>AI-Python-08.1: Agent 设计模式全景</h1><blockquote>
+<p>构建 Agent 不是选一个框架然后开始写代码——而是先理解设计模式，再决定架构。本文系统梳理 Agent 的 <strong>推理、规划、反思、协作</strong> 四大类设计模式，建立完整的模式选型思维框架。</p>
+</blockquote>
+<hr>
+<h2 id="1-为什么需要设计模式？"><a href="#1-为什么需要设计模式？" class="headerlink" title="1. 为什么需要设计模式？"></a>1. 为什么需要设计模式？</h2><h3 id="1-1-同一个任务，不同模式天差地别"><a href="#1-1-同一个任务，不同模式天差地别" class="headerlink" title="1.1 同一个任务，不同模式天差地别"></a>1.1 同一个任务，不同模式天差地别</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">任务：写一份技术调研报告</span><br><span class="line"></span><br><span class="line">ReAct 模式：</span><br><span class="line">  搜索 → 读结果 → 发现不够 → 再搜索 → 读结果 → 写报告 → 发现遗漏 → 再搜索...</span><br><span class="line">  （10+ 次 LLM 调用，边走边看）</span><br><span class="line"></span><br><span class="line">Plan-and-Execute 模式：</span><br><span class="line">  规划：1.搜索A 2.搜索B 3.对比分析 4.写报告</span><br><span class="line">  执行：搜索A → 搜索B → 对比 → 写报告</span><br><span class="line">  （4 步完成，路径清晰）</span><br><span class="line"></span><br><span class="line">ReWOO 模式：</span><br><span class="line">  一次规划所有搜索：[搜索A, 搜索B, 搜索C]</span><br><span class="line">  并行执行 → 一次汇总</span><br><span class="line">  （2 次 LLM 调用 + 并行工具调用，最快）</span><br></pre></td></tr></table></figure>
+
+<p><strong>同样的任务，LLM 调用次数可以从 2 次到 10+ 次，成本差 5 倍。</strong></p>
+<h3 id="1-2-Andrew-Ng-的四大模式"><a href="#1-2-Andrew-Ng-的四大模式" class="headerlink" title="1.2 Andrew Ng 的四大模式"></a>1.2 Andrew Ng 的四大模式</h3><p>Andrew Ng（吴恩达）将 Agent 设计模式归纳为四大类：</p>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+    flowchart TB
+    subgraph 吴恩达四大模式
+        A[&quot;🔍 Reflection\n自我反思&quot;]
+        B[&quot;🔧 Tool Use\n工具使用&quot;]
+        C[&quot;📋 Planning\n规划决策&quot;]
+        D[&quot;👥 Multi-Agent\n多智能体协作&quot;]
+    end
+
+    A --&gt; |&quot;做完了检查&quot;| C
+    B --&gt; |&quot;有工具可用&quot;| C
+    C --&gt; |&quot;复杂到需要分工&quot;| D
+
+    style A fill:#ffd1d1,stroke:#e57373,stroke-width:2px,color:#333
+    style B fill:#e6f7e6,stroke:#4caf50,stroke-width:2px,color:#333
+    style C fill:#d1e8ff,stroke:#42a5f5,stroke-width:2px,color:#333
+    style D fill:#fff3d1,stroke:#ffb74d,stroke-width:2px,color:#333
+  </pre></div>
+
+<p><strong>这四类不是孤立的——生产系统是它们的组合。</strong></p>
+<hr>
+<h2 id="2-从四大类到五层架构"><a href="#2-从四大类到五层架构" class="headerlink" title="2. 从四大类到五层架构"></a>2. 从四大类到五层架构</h2><p>吴恩达的四大类是<strong>宏观概念框架</strong>，本文在其基础上做<strong>实现层面的细化拆分</strong>——把 Ng 的 “Planning” 拆成”推理”（怎么想）和”规划”（怎么安排步骤），因为 CoT&#x2F;ToT 和 Plan-and-Execute 解决的是不同维度的问题。</p>
+<h3 id="2-1-映射关系"><a href="#2-1-映射关系" class="headerlink" title="2.1 映射关系"></a>2.1 映射关系</h3><div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+    flowchart TB
+    subgraph &quot;吴恩达四大类（概念层）&quot;
+        NG1[&quot;📋 Planning\n规划决策&quot;]
+        NG2[&quot;🔧 Tool Use\n工具使用&quot;]
+        NG3[&quot;🔍 Reflection\n自我反思&quot;]
+        NG4[&quot;👥 Multi-Agent\n多智能体协作&quot;]
+    end
+
+    subgraph &quot;五层架构（实现层）&quot;
+        L1[&quot;Layer 1 推理层\nCoT &#x2F; Self-Ask &#x2F; ToT&quot;]
+        L2[&quot;Layer 2 行动层\nFunction Calling &#x2F; ReAct &#x2F; CodeAct&quot;]
+        L3[&quot;Layer 3 规划层\nPlan-and-Execute &#x2F; ReWOO &#x2F; LATS&quot;]
+        L4[&quot;Layer 4 反思层\nReflexion &#x2F; Self-Critic&quot;]
+        L5[&quot;Layer 5 协作层\nSupervisor &#x2F; Swarm &#x2F; Debate&quot;]
+    end
+
+    NG1 --&gt; L1
+    NG1 --&gt; L3
+    NG2 --&gt; L2
+    NG3 --&gt; L4
+    NG4 --&gt; L5
+
+    style NG1 fill:#d1e8ff,stroke:#42a5f5,stroke-width:2px,color:#333
+    style NG2 fill:#e6f7e6,stroke:#4caf50,stroke-width:2px,color:#333
+    style NG3 fill:#ffd1d1,stroke:#e57373,stroke-width:2px,color:#333
+    style NG4 fill:#fff3d1,stroke:#ffb74d,stroke-width:2px,color:#333
+
+    style L1 fill:#d1e8ff,stroke:#42a5f5,stroke-width:2px,color:#333
+    style L2 fill:#e6f7e6,stroke:#4caf50,stroke-width:2px,color:#333
+    style L3 fill:#d1e8ff,stroke:#42a5f5,stroke-width:2px,color:#333
+    style L4 fill:#ffd1d1,stroke:#e57373,stroke-width:2px,color:#333
+    style L5 fill:#fff3d1,stroke:#ffb74d,stroke-width:2px,color:#333
+  </pre></div>
+
+<p><strong>为什么要拆？”Planning” 包含了两种截然不同的能力：</strong></p>
+<table>
+<thead>
+<tr>
+<th align="left"></th>
+<th align="left">推理（怎么想）</th>
+<th align="left">规划（怎么安排）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>关注点</strong></td>
+<td align="left">单步内的思维过程</td>
+<td align="left">多步之间的编排策略</td>
+</tr>
+<tr>
+<td align="left"><strong>代表模式</strong></td>
+<td align="left">CoT、ToT、Self-Ask</td>
+<td align="left">Plan-and-Execute、ReWOO、LATS</td>
+</tr>
+<tr>
+<td align="left"><strong>核心区别</strong></td>
+<td align="left">不涉及工具，纯思维链</td>
+<td align="left">决定工具调用的顺序和策略</td>
+</tr>
+</tbody></table>
+<h3 id="2-2-五层总览"><a href="#2-2-五层总览" class="headerlink" title="2.2 五层总览"></a>2.2 五层总览</h3><table>
+<thead>
+<tr>
+<th align="left">层级</th>
+<th align="left">对应 Ng 的类别</th>
+<th align="left">职责</th>
+<th align="left">核心问题</th>
+<th align="left">典型模式</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>Layer 1 推理</strong></td>
+<td align="left">Planning</td>
+<td align="left">怎么想</td>
+<td align="left">如何分解问题、组织思路？</td>
+<td align="left">CoT、Self-Ask、ToT</td>
+</tr>
+<tr>
+<td align="left"><strong>Layer 2 行动</strong></td>
+<td align="left">Tool Use</td>
+<td align="left">怎么做</td>
+<td align="left">如何与外部世界交互？</td>
+<td align="left">Function Calling、ReAct、CodeAct</td>
+</tr>
+<tr>
+<td align="left"><strong>Layer 3 规划</strong></td>
+<td align="left">Planning</td>
+<td align="left">怎么安排</td>
+<td align="left">多步任务如何编排？</td>
+<td align="left">Plan-and-Execute、ReWOO、LATS</td>
+</tr>
+<tr>
+<td align="left"><strong>Layer 4 反思</strong></td>
+<td align="left">Reflection</td>
+<td align="left">怎么改进</td>
+<td align="left">做完了如何验证和修正？</td>
+<td align="left">Reflexion、Self-Critic</td>
+</tr>
+<tr>
+<td align="left"><strong>Layer 5 协作</strong></td>
+<td align="left">Multi-Agent</td>
+<td align="left">怎么分工</td>
+<td align="left">多个 Agent 如何配合？</td>
+<td align="left">Supervisor、Swarm、Debate</td>
+</tr>
+</tbody></table>
+<p><strong>原则：从低层到高层组合使用，不是越复杂越好。</strong></p>
+<blockquote>
+<p>接下来的第 3-7 节，按 Layer 1 → Layer 5 逐层展开每种模式的详细设计。</p>
+</blockquote>
+<hr>
+<h2 id="3-Layer-1-—-推理模式"><a href="#3-Layer-1-—-推理模式" class="headerlink" title="3. Layer 1 — 推理模式"></a>3. Layer 1 — 推理模式</h2><h3 id="3-1-Chain-of-Thought（思维链）"><a href="#3-1-Chain-of-Thought（思维链）" class="headerlink" title="3.1 Chain of Thought（思维链）"></a>3.1 Chain of Thought（思维链）</h3><p><strong>让 LLM 分步推理，而不是直接给答案。</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">❌ 直接问：</span><br><span class="line">用户: 餐厅有23个苹果，午餐用了20个，又买了6个，现在有几个？</span><br><span class="line">LLM:   9（直接猜，可能错）</span><br><span class="line"></span><br><span class="line">✅ CoT 推理：</span><br><span class="line">用户: 餐厅有23个苹果，午餐用了20个，又买了6个，现在有几个？请一步步思考。</span><br><span class="line">LLM:   初始: 23个</span><br><span class="line">       午餐用了: 23 - 20 = 3个</span><br><span class="line">       又买了: 3 + 6 = 9个</span><br><span class="line">       答案: 9个</span><br></pre></td></tr></table></figure>
+
+<p><strong>两种触发方式：</strong></p>
+<table>
+<thead>
+<tr>
+<th align="left">方式</th>
+<th align="left">做法</th>
+<th align="left">适用场景</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>Zero-shot CoT</strong></td>
+<td align="left">追加 “请一步步思考”</td>
+<td align="left">通用场景</td>
+</tr>
+<tr>
+<td align="left"><strong>Few-shot CoT</strong></td>
+<td align="left">给出推理示例</td>
+<td align="left">高精度场景</td>
+</tr>
+<tr>
+<td align="left"><strong>Self-Consistency</strong></td>
+<td align="left">采样多条推理路径，投票选多数</td>
+<td align="left">数学、逻辑推理</td>
+</tr>
+</tbody></table>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># Zero-shot CoT</span></span><br><span class="line">prompt = <span class="string">f&quot;<span class="subst">&#123;question&#125;</span>\n请一步步思考。&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Few-shot CoT</span></span><br><span class="line">prompt = <span class="string">f&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">示例1: Q: 罗杰有5个网球，又买了2罐，每罐3个，共几个？</span></span><br><span class="line"><span class="string">       A: 罗杰有5个，买了2罐×3个=6个，共5+6=11个。</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">示例2: Q: <span class="subst">&#123;question&#125;</span></span></span><br><span class="line"><span class="string">       A:&quot;&quot;&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>效果：在复杂推理任务上可提升高达 61 个百分点。</strong></p>
+<h3 id="3-2-Self-Ask（自问自答）"><a href="#3-2-Self-Ask（自问自答）" class="headerlink" title="3.2 Self-Ask（自问自答）"></a>3.2 Self-Ask（自问自答）</h3><p><strong>模型自己提出子问题，逐个回答，最终合成答案。</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">问题: 马拉松世界纪录保持者的出生地有多少人口？</span><br><span class="line"></span><br><span class="line">Self-Ask 推理：</span><br><span class="line">  子问题1: 马拉松世界纪录保持者是谁？</span><br><span class="line">  回答1: Kelvin Kiptum（2:00:35）</span><br><span class="line"></span><br><span class="line">  子问题2: Kelvin Kiptum 的出生地是哪里？</span><br><span class="line">  回答2: 肯尼亚 Chepkorio</span><br><span class="line"></span><br><span class="line">  子问题3: Chepkorio 有多少人口？</span><br><span class="line">  回答3: 约 3,000 人</span><br><span class="line"></span><br><span class="line">  最终答案: 马拉松世界纪录保持者 Kelvin Kiptum 的出生地 Chepkorio 约有 3,000 人。</span><br></pre></td></tr></table></figure>
+
+<p><strong>适用场景：</strong> 多跳推理（Multi-hop Reasoning），需要串联多个信息源。</p>
+<h3 id="3-3-Tree-of-Thoughts（思维树）"><a href="#3-3-Tree-of-Thoughts（思维树）" class="headerlink" title="3.3 Tree of Thoughts（思维树）"></a>3.3 Tree of Thoughts（思维树）</h3><p><strong>CoT 是单条路径，ToT 是多分支探索——像下棋一样，同时考虑多种走法。</strong></p>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+    flowchart TB
+    Q[问题: 5个数字排最大的数] --&gt; T1[思路1: 从大到小排列]
+    Q --&gt; T2[思路2: 贪心策略]
+    Q --&gt; T3[思路3: 全排列比较]
+
+    T1 --&gt; S1[&quot;85321 ✅ 评分:9&quot;]
+    T2 --&gt; S2[&quot;85321 ✅ 评分:9&quot;]
+    T3 --&gt; S3[&quot;计算量大\n但一定正确 评分:7&quot;]
+
+    S1 --&gt; BEST[最优路径: 思路1]
+    S2 --&gt; BEST
+
+    style Q fill:#ffd1d1,stroke:#e57373,stroke-width:2px,color:#333
+    style BEST fill:#e6f7e6,stroke:#4caf50,stroke-width:2px,color:#333
+  </pre></div>
+
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># ToT 的搜索策略</span></span><br><span class="line"><span class="comment"># BFS（广度优先）: 每层展开所有可能，选最优的继续</span></span><br><span class="line"><span class="comment"># DFS（深度优先）: 沿一条路走到底，不好就回溯</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">tree_of_thoughts</span>(<span class="params">problem, num_thoughts=<span class="number">3</span>, max_depth=<span class="number">3</span></span>):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;ToT 简化实现&quot;&quot;&quot;</span></span><br><span class="line">    candidates = [&#123;<span class="string">&quot;thought&quot;</span>: <span class="string">&quot;&quot;</span>, <span class="string">&quot;state&quot;</span>: problem&#125;]</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> depth <span class="keyword">in</span> <span class="built_in">range</span>(max_depth):</span><br><span class="line">        new_candidates = []</span><br><span class="line">        <span class="keyword">for</span> candidate <span class="keyword">in</span> candidates:</span><br><span class="line">            <span class="comment"># 生成 N 个可能的下一步思路</span></span><br><span class="line">            thoughts = llm_generate_thoughts(candidate, num_thoughts)</span><br><span class="line">            <span class="keyword">for</span> thought <span class="keyword">in</span> thoughts:</span><br><span class="line">                <span class="comment"># 评估每个思路的价值</span></span><br><span class="line">                score = llm_evaluate(thought)</span><br><span class="line">                new_candidates.append(&#123;</span><br><span class="line">                    <span class="string">&quot;thought&quot;</span>: candidate[<span class="string">&quot;thought&quot;</span>] + thought,</span><br><span class="line">                    <span class="string">&quot;score&quot;</span>: score,</span><br><span class="line">                &#125;)</span><br><span class="line">        <span class="comment"># 只保留得分最高的 K 个</span></span><br><span class="line">        candidates = <span class="built_in">sorted</span>(new_candidates, key=<span class="keyword">lambda</span> x: x[<span class="string">&quot;score&quot;</span>])[:num_thoughts]</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> candidates[<span class="number">0</span>][<span class="string">&quot;thought&quot;</span>]  <span class="comment"># 最优路径</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>三种推理模式对比：</strong></p>
+<table>
+<thead>
+<tr>
+<th align="left">维度</th>
+<th align="left">CoT</th>
+<th align="left">Self-Ask</th>
+<th align="left">ToT</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>路径</strong></td>
+<td align="left">单条线性</td>
+<td align="left">单条阶梯式</td>
+<td align="left">多分支树状</td>
+</tr>
+<tr>
+<td align="left"><strong>探索性</strong></td>
+<td align="left">低</td>
+<td align="left">中</td>
+<td align="left">高</td>
+</tr>
+<tr>
+<td align="left"><strong>Token 消耗</strong></td>
+<td align="left">低</td>
+<td align="left">中</td>
+<td align="left">很高</td>
+</tr>
+<tr>
+<td align="left"><strong>适用场景</strong></td>
+<td align="left">常规推理</td>
+<td align="left">多跳问答</td>
+<td align="left">规划、创意、博弈</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="4-Layer-2-—-行动模式"><a href="#4-Layer-2-—-行动模式" class="headerlink" title="4. Layer 2 — 行动模式"></a>4. Layer 2 — 行动模式</h2><h3 id="4-1-Function-Calling（函数调用）"><a href="#4-1-Function-Calling（函数调用）" class="headerlink" title="4.1 Function Calling（函数调用）"></a>4.1 Function Calling（函数调用）</h3><p><strong>最基础的行动模式——LLM 输出结构化的函数调用指令，由代码执行。</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">用户: 上海今天天气如何？</span><br><span class="line"></span><br><span class="line">LLM 输出（不是自然语言，而是结构化数据）:</span><br><span class="line">&#123;</span><br><span class="line">  &quot;tool_calls&quot;: [&#123;</span><br><span class="line">    &quot;name&quot;: &quot;get_weather&quot;,</span><br><span class="line">    &quot;args&quot;: &#123;&quot;city&quot;: &quot;上海&quot;&#125;</span><br><span class="line">  &#125;]</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">代码执行 → &quot;上海，晴，25°C&quot;</span><br><span class="line"></span><br><span class="line">LLM 基于结果回答: &quot;上海今天晴天，气温25°C。&quot;</span><br></pre></td></tr></table></figure>
+
+<p><strong>关键：LLM 自己不执行任何操作，它只告诉你”该调什么、传什么参数”。</strong></p>
+<h3 id="4-2-ReAct（推理-行动）"><a href="#4-2-ReAct（推理-行动）" class="headerlink" title="4.2 ReAct（推理 + 行动）"></a>4.2 ReAct（推理 + 行动）</h3><p><strong>将 CoT 推理与工具调用结合，形成 “思考→行动→观察” 循环。</strong></p>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+    flowchart TB
+    S[用户提问] --&gt; T1[&quot;Thought\n用户想知道腾讯股价\n我需要搜索&quot;]
+    T1 --&gt; A1[&quot;Action\nsearch(&#39;腾讯股价&#39;)&quot;]
+    A1 --&gt; O1[&quot;Observation\n380.5 港元&quot;]
+    O1 --&gt; T2[&quot;Thought\n得到了答案\n可以回复了&quot;]
+    T2 --&gt; F[&quot;Final Answer\n腾讯当前股价 380.5 港元&quot;]
+
+    style T1 fill:#d1e8ff,stroke:#42a5f5,stroke-width:2px,color:#333
+    style T2 fill:#d1e8ff,stroke:#42a5f5,stroke-width:2px,color:#333
+    style A1 fill:#e6f7e6,stroke:#4caf50,stroke-width:2px,color:#333
+    style O1 fill:#fff3d1,stroke:#ffb74d,stroke-width:2px,color:#333
+    style F fill:#e6f7e6,stroke:#4caf50,stroke-width:2px,color:#333
+  </pre></div>
+
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># ReAct 在 LangGraph 中的实现（已学过，这里复习核心结构）</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">agent_node</span>(<span class="params">state</span>):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;LLM 思考并决定下一步&quot;&quot;&quot;</span></span><br><span class="line">    response = llm_with_tools.invoke(state[<span class="string">&quot;messages&quot;</span>])</span><br><span class="line">    <span class="keyword">return</span> &#123;<span class="string">&quot;messages&quot;</span>: [response]&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">tool_node</span>(<span class="params">state</span>):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;执行工具&quot;&quot;&quot;</span></span><br><span class="line">    last = state[<span class="string">&quot;messages&quot;</span>][-<span class="number">1</span>]</span><br><span class="line">    results = [tool_map[tc[<span class="string">&quot;name&quot;</span>]].invoke(tc[<span class="string">&quot;args&quot;</span>]) <span class="keyword">for</span> tc <span class="keyword">in</span> last.tool_calls]</span><br><span class="line">    <span class="keyword">return</span> &#123;<span class="string">&quot;messages&quot;</span>: results&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">should_continue</span>(<span class="params">state</span>):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;有 tool_calls 就继续，否则结束&quot;&quot;&quot;</span></span><br><span class="line">    <span class="keyword">return</span> <span class="string">&quot;tools&quot;</span> <span class="keyword">if</span> state[<span class="string">&quot;messages&quot;</span>][-<span class="number">1</span>].tool_calls <span class="keyword">else</span> <span class="string">&quot;end&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>ReAct 的优缺点：</strong></p>
+<table>
+<thead>
+<tr>
+<th align="left">维度</th>
+<th align="left">评价</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>灵活性</strong></td>
+<td align="left">最高——每步根据上一步结果调整</td>
+</tr>
+<tr>
+<td align="left"><strong>调试友好</strong></td>
+<td align="left">每一步 Thought 都可观察</td>
+</tr>
+<tr>
+<td align="left"><strong>Token 成本</strong></td>
+<td align="left">每步一次 LLM 调用，线性增长</td>
+</tr>
+<tr>
+<td align="left"><strong>风险</strong></td>
+<td align="left">超过 5-7 步后成本和延迟显著上升；可能陷入循环</td>
+</tr>
+</tbody></table>
+<h3 id="4-3-CodeAct（代码即行动）"><a href="#4-3-CodeAct（代码即行动）" class="headerlink" title="4.3 CodeAct（代码即行动）"></a>4.3 CodeAct（代码即行动）</h3><p><strong>最新模式——Agent 通过编写和执行代码来完成任务，而不是调用预定义工具。</strong></p>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+    flowchart TB
+    S[用户: 分析这份 CSV 数据] --&gt; R[&quot;Reason\n理解需求&quot;]
+    R --&gt; C[&quot;Code\n生成 Python 分析代码&quot;]
+    C --&gt; E[&quot;Execute\n沙箱中执行代码&quot;]
+    E --&gt; O[&quot;Observe\n查看执行结果&quot;]
+    O --&gt; |&quot;成功&quot;| F[&quot;输出结果&quot;]
+    O --&gt; |&quot;报错&quot;| D[&quot;Debug\n修改代码&quot;]
+    D --&gt; E
+
+    style C fill:#d1e8ff,stroke:#42a5f5,stroke-width:2px,color:#333
+    style E fill:#fff3d1,stroke:#ffb74d,stroke-width:2px,color:#333
+    style D fill:#ffd1d1,stroke:#e57373,stroke-width:2px,color:#333
+  </pre></div>
+
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># CodeAct 的核心循环</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">code_act_agent</span>(<span class="params">task: <span class="built_in">str</span></span>):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;代码即行动的 Agent&quot;&quot;&quot;</span></span><br><span class="line">    messages = [&#123;<span class="string">&quot;role&quot;</span>: <span class="string">&quot;user&quot;</span>, <span class="string">&quot;content&quot;</span>: task&#125;]</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> _ <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">10</span>):  <span class="comment"># 最大迭代次数</span></span><br><span class="line">        <span class="comment"># LLM 生成代码</span></span><br><span class="line">        response = llm.invoke(messages)</span><br><span class="line">        code = extract_code(response)</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> <span class="keyword">not</span> code:</span><br><span class="line">            <span class="keyword">return</span> response  <span class="comment"># 不需要代码，直接回答</span></span><br><span class="line"></span><br><span class="line">        <span class="comment"># 沙箱执行代码</span></span><br><span class="line">        result = sandbox_execute(code)</span><br><span class="line"></span><br><span class="line">        <span class="comment"># 把执行结果反馈给 LLM</span></span><br><span class="line">        messages.append(&#123;<span class="string">&quot;role&quot;</span>: <span class="string">&quot;assistant&quot;</span>, <span class="string">&quot;content&quot;</span>: response&#125;)</span><br><span class="line">        messages.append(&#123;<span class="string">&quot;role&quot;</span>: <span class="string">&quot;user&quot;</span>, <span class="string">&quot;content&quot;</span>: <span class="string">f&quot;执行结果:\n<span class="subst">&#123;result&#125;</span>&quot;</span>&#125;)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> messages[-<span class="number">1</span>]</span><br></pre></td></tr></table></figure>
+
+<p><strong>ReAct vs CodeAct：</strong></p>
+<table>
+<thead>
+<tr>
+<th align="left">维度</th>
+<th align="left">ReAct</th>
+<th align="left">CodeAct</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>行动方式</strong></td>
+<td align="left">调用预定义工具函数</td>
+<td align="left">编写任意代码执行</td>
+</tr>
+<tr>
+<td align="left"><strong>灵活性</strong></td>
+<td align="left">受限于工具集</td>
+<td align="left">理论无限</td>
+</tr>
+<tr>
+<td align="left"><strong>安全性</strong></td>
+<td align="left">高（工具可控）</td>
+<td align="left">需要沙箱隔离</td>
+</tr>
+<tr>
+<td align="left"><strong>适用场景</strong></td>
+<td align="left">明确的 API 调用</td>
+<td align="left">数据分析、复杂计算</td>
+</tr>
+<tr>
+<td align="left"><strong>代表产品</strong></td>
+<td align="left">LangChain Agent</td>
+<td align="left">Claude Code、Devin</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="5-Layer-3-—-规划模式"><a href="#5-Layer-3-—-规划模式" class="headerlink" title="5. Layer 3 — 规划模式"></a>5. Layer 3 — 规划模式</h2><h3 id="5-1-Plan-and-Execute（先规划再执行）"><a href="#5-1-Plan-and-Execute（先规划再执行）" class="headerlink" title="5.1 Plan-and-Execute（先规划再执行）"></a>5.1 Plan-and-Execute（先规划再执行）</h3><p><strong>将 “规划” 和 “执行” 分离为两个角色。</strong></p>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+    flowchart TB
+    S[START] --&gt; P[&quot;Planner\n规划全部步骤&quot;]
+    P --&gt; |&quot;步骤列表&quot;| E1[&quot;Executor\n执行步骤1&quot;]
+    E1 --&gt; C1{&quot;还有步骤?&quot;}
+    C1 --&gt;|&quot;是&quot;| E2[&quot;Executor\n执行步骤2&quot;]
+    E2 --&gt; C2{&quot;还有步骤?&quot;}
+    C2 --&gt;|&quot;否&quot;| SUM[&quot;Summarizer\n汇总报告&quot;]
+    C1 --&gt;|&quot;否&quot;| SUM
+    SUM --&gt; E[END]
+
+    style P fill:#ffd1d1,stroke:#e57373,stroke-width:2px,color:#333
+    style E1 fill:#e6f7e6,stroke:#4caf50,stroke-width:2px,color:#333
+    style E2 fill:#e6f7e6,stroke:#4caf50,stroke-width:2px,color:#333
+  </pre></div>
+
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">PlanState</span>(<span class="title class_ inherited__">TypedDict</span>):</span><br><span class="line">    task: <span class="built_in">str</span>                <span class="comment"># 原始任务</span></span><br><span class="line">    plan: <span class="built_in">list</span>[<span class="built_in">str</span>]          <span class="comment"># 规划的步骤列表</span></span><br><span class="line">    current_step: <span class="built_in">int</span>        <span class="comment"># 当前执行到第几步</span></span><br><span class="line">    step_results: <span class="built_in">list</span>[<span class="built_in">str</span>]  <span class="comment"># 每步结果</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 关键：Planner 和 Executor 可以用不同模型</span></span><br><span class="line">planner = ChatOpenAI(model=<span class="string">&quot;glm-5.1&quot;</span>)   <span class="comment"># 强模型做规划</span></span><br><span class="line">executor = ChatOpenAI(model=<span class="string">&quot;glm-4-flash&quot;</span>)  <span class="comment"># 弱模型做执行（省钱）</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>优势：</strong> 10 步任务 ReAct 需要 10+ 次 LLM 调用，Plan-and-Execute 只需 1-3 次。</p>
+<p><strong>风险：</strong> “计划漂移”（Plan Drift）——执行过程中现实变化，原计划失效。需要 Replan 机制。</p>
+<h3 id="5-2-ReWOO（无观察推理）"><a href="#5-2-ReWOO（无观察推理）" class="headerlink" title="5.2 ReWOO（无观察推理）"></a>5.2 ReWOO（无观察推理）</h3><p><strong>一次规划所有工具调用，并行执行，只调 2 次 LLM。</strong></p>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+    flowchart TB
+    S[START] --&gt; P[&quot;Planner\n一次规划全部调用&quot;]
+    P --&gt; |&quot;#E1 &#x3D; Search[&#39;澳网冠军&#39;]\n#E2 &#x3D; Search[&#39;#E1 的家乡&#39;]&quot;| W[&quot;Worker\n并行执行所有工具&quot;]
+    W --&gt; |&quot;结果1, 结果2, ...&quot;| SOL[&quot;Solver\n一次汇总答案&quot;]
+    SOL --&gt; E[END]
+
+    style P fill:#ffd1d1,stroke:#e57373,stroke-width:2px,color:#333
+    style W fill:#e6f7e6,stroke:#4caf50,stroke-width:2px,color:#333
+    style SOL fill:#d1e8ff,stroke:#42a5f5,stroke-width:2px,color:#333
+  </pre></div>
+
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># ReWOO 的三阶段</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 阶段 1: Planner 一次性生成完整计划（1 次 LLM）</span></span><br><span class="line">plan = planner.invoke(<span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">问题: 澳网冠军的家乡有多少人口？</span></span><br><span class="line"><span class="string">请生成计划（用占位符引用前面的结果）:</span></span><br><span class="line"><span class="string">#E1 = Search[&#x27;澳大利亚网球公开赛最近一届冠军&#x27;]</span></span><br><span class="line"><span class="string">#E2 = Search[&#x27;#E1 的出生城市&#x27;]</span></span><br><span class="line"><span class="string">#E3 = Search[&#x27;#E2 的人口&#x27;]</span></span><br><span class="line"><span class="string">&quot;&quot;&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 阶段 2: Worker 并行执行所有工具调用（0 次 LLM，纯代码执行）</span></span><br><span class="line">results = &#123;</span><br><span class="line">    <span class="string">&quot;#E1&quot;</span>: search(<span class="string">&quot;澳大利亚网球公开赛最近一届冠军&quot;</span>),</span><br><span class="line">    <span class="string">&quot;#E2&quot;</span>: search(<span class="string">&quot;Sinner 的出生城市&quot;</span>),</span><br><span class="line">    <span class="string">&quot;#E3&quot;</span>: search(<span class="string">&quot;San Candido 的人口&quot;</span>),</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment"># 阶段 3: Solver 汇总所有结果（1 次 LLM）</span></span><br><span class="line">answer = solver.invoke(<span class="string">f&quot;基于以下结果回答问题: <span class="subst">&#123;results&#125;</span>&quot;</span>)</span><br><span class="line"><span class="comment"># 总计: 2 次 LLM 调用！</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>三种规划模式 Token 效率对比：</strong></p>
+<table>
+<thead>
+<tr>
+<th align="left">模式</th>
+<th align="left">10步任务的 LLM 调用</th>
+<th align="left">能中途调整吗</th>
+<th align="left">并行性</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>ReAct</strong></td>
+<td align="left">10+ 次</td>
+<td align="left">能（每步灵活）</td>
+<td align="left">不能</td>
+</tr>
+<tr>
+<td align="left"><strong>Plan-and-Execute</strong></td>
+<td align="left">3-5 次</td>
+<td align="left">能（可 Replan）</td>
+<td align="left">部分</td>
+</tr>
+<tr>
+<td align="left"><strong>ReWOO</strong></td>
+<td align="left">2 次</td>
+<td align="left">不能（计划固定）</td>
+<td align="left">完全并行</td>
+</tr>
+</tbody></table>
+<p><strong>ReWOO 的致命弱点：</strong> 零中途适应能力。如果步骤 2 的结果意味着步骤 4 应该改变，ReWOO 无法感知。</p>
+<h3 id="5-3-LATS（语言智能体树搜索）"><a href="#5-3-LATS（语言智能体树搜索）" class="headerlink" title="5.3 LATS（语言智能体树搜索）"></a>5.3 LATS（语言智能体树搜索）</h3><p><strong>将蒙特卡洛树搜索（MCTS）应用于 Agent——像 AlphaGo 一样思考。</strong></p>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+    flowchart TB
+    S[&quot;Select\n选择最有潜力的节点&quot;] --&gt; E[&quot;Expand\n展开子节点&quot;]
+    E --&gt; V[&quot;Evaluate\n评估子节点价值&quot;]
+    V --&gt; B[&quot;Backpropagate\n向上更新祖先价值&quot;]
+    B --&gt; |&quot;重复N次&quot;| S
+    S --&gt; |&quot;预算用完&quot;| F[&quot;Extract\n沿最高价值路径提取结果&quot;]
+
+    style S fill:#d1e8ff,stroke:#42a5f5,stroke-width:2px,color:#333
+    style E fill:#e6f7e6,stroke:#4caf50,stroke-width:2px,color:#333
+    style V fill:#fff3d1,stroke:#ffb74d,stroke-width:2px,color:#333
+    style B fill:#ffd1d1,stroke:#e57373,stroke-width:2px,color:#333
+    style F fill:#e6f7e6,stroke:#4caf50,stroke-width:2px,color:#333
+  </pre></div>
+
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># LATS 简化实现</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">lats_search</span>(<span class="params">problem, iterations=<span class="number">10</span>, expansions=<span class="number">3</span></span>):</span><br><span class="line">    root = Node(state=problem)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> _ <span class="keyword">in</span> <span class="built_in">range</span>(iterations):</span><br><span class="line">        <span class="comment"># 1. Select: 用 UCB 公式选最有潜力的节点</span></span><br><span class="line">        node = select_best_child(root)</span><br><span class="line"></span><br><span class="line">        <span class="comment"># 2. Expand: 生成 N 个可能的下一步</span></span><br><span class="line">        children = llm_expand(node, num=expansions)</span><br><span class="line"></span><br><span class="line">        <span class="comment"># 3. Evaluate: 评估每个子节点的价值</span></span><br><span class="line">        <span class="keyword">for</span> child <span class="keyword">in</span> children:</span><br><span class="line">            child.value = llm_evaluate(child)</span><br><span class="line"></span><br><span class="line">        <span class="comment"># 4. Backpropagate: 向上更新价值</span></span><br><span class="line">        backpropagate(node, children)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 提取最优路径</span></span><br><span class="line">    <span class="keyword">return</span> extract_best_path(root)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 10 次迭代 × 3 个展开 = 40+ 次 LLM 调用</span></span><br><span class="line"><span class="comment"># 但能找到真正最优的解决方案</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>LATS 的代价与回报：</strong></p>
+<table>
+<thead>
+<tr>
+<th align="left">维度</th>
+<th align="left">评价</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>质量</strong></td>
+<td align="left">最高——系统性地探索多种可能</td>
+</tr>
+<tr>
+<td align="left"><strong>成本</strong></td>
+<td align="left">极高——10 次迭代 × 3 展开 &#x3D; 40+ 次 LLM 调用</td>
+</tr>
+<tr>
+<td align="left"><strong>适用场景</strong></td>
+<td align="left">博弈、复杂规划、多方案比选</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="6-Layer-4-—-反思模式"><a href="#6-Layer-4-—-反思模式" class="headerlink" title="6. Layer 4 — 反思模式"></a>6. Layer 4 — 反思模式</h2><h3 id="6-1-Reflexion（自我反思）"><a href="#6-1-Reflexion（自我反思）" class="headerlink" title="6.1 Reflexion（自我反思）"></a>6.1 Reflexion（自我反思）</h3><p><strong>做完之后自我检查，不合格就重做。</strong></p>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+    flowchart TB
+    S[START] --&gt; G[&quot;Generator\n生成代码&quot;]
+    G --&gt; R[&quot;Reviewer\n审查代码&quot;]
+    R --&gt; C{&quot;审查通过?&quot;}
+    C --&gt;|&quot;FAIL&quot;| RE[&quot;记录反思\n存入记忆&quot;]
+    RE --&gt; G
+    C --&gt;|&quot;PASS&quot;| F[&quot;Final\n输出结果&quot;]
+    F --&gt; E[END]
+
+    style G fill:#e6f7e6,stroke:#4caf50,stroke-width:2px,color:#333
+    style R fill:#ffd1d1,stroke:#e57373,stroke-width:2px,color:#333
+    style RE fill:#fff3d1,stroke:#ffb74d,stroke-width:2px,color:#333
+  </pre></div>
+
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">ReflexionState</span>(<span class="title class_ inherited__">TypedDict</span>):</span><br><span class="line">    task: <span class="built_in">str</span></span><br><span class="line">    code: <span class="built_in">str</span>               <span class="comment"># 生成的代码</span></span><br><span class="line">    review: <span class="built_in">str</span>             <span class="comment"># 审查意见</span></span><br><span class="line">    reflection_history: <span class="built_in">list</span>[<span class="built_in">str</span>]  <span class="comment"># 历史反思（episodic memory）</span></span><br><span class="line">    iteration: <span class="built_in">int</span></span><br><span class="line">    approved: <span class="built_in">bool</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">generator</span>(<span class="params">state: ReflexionState</span>) -&gt; <span class="built_in">dict</span>:</span><br><span class="line">    <span class="string">&quot;&quot;&quot;生成代码，带上历史反思作为参考&quot;&quot;&quot;</span></span><br><span class="line">    reflections = <span class="string">&quot;\n&quot;</span>.join(state.get(<span class="string">&quot;reflection_history&quot;</span>, []))</span><br><span class="line">    prompt = <span class="string">f&quot;&quot;&quot;任务: <span class="subst">&#123;state[<span class="string">&#x27;task&#x27;</span>]&#125;</span></span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">之前的尝试和反思:</span></span><br><span class="line"><span class="string"><span class="subst">&#123;reflections&#125;</span></span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">请基于以上反思改进代码。&quot;&quot;&quot;</span></span><br><span class="line"></span><br><span class="line">    code = llm.invoke(prompt)</span><br><span class="line">    <span class="keyword">return</span> &#123;<span class="string">&quot;code&quot;</span>: code, <span class="string">&quot;iteration&quot;</span>: state.get(<span class="string">&quot;iteration&quot;</span>, <span class="number">0</span>) + <span class="number">1</span>&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">reviewer</span>(<span class="params">state: ReflexionState</span>) -&gt; <span class="built_in">dict</span>:</span><br><span class="line">    <span class="string">&quot;&quot;&quot;审查代码质量&quot;&quot;&quot;</span></span><br><span class="line">    review = llm.invoke(<span class="string">f&quot;&quot;&quot;审查以下代码:</span></span><br><span class="line"><span class="string"><span class="subst">&#123;state[<span class="string">&#x27;code&#x27;</span>]&#125;</span></span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">检查: 1.正确性 2.边界情况 3.代码风格</span></span><br><span class="line"><span class="string">回复 APPROVED 或需要修改的具体意见。&quot;&quot;&quot;</span>)</span><br><span class="line"></span><br><span class="line">    approved = <span class="string">&quot;APPROVED&quot;</span> <span class="keyword">in</span> review</span><br><span class="line">    new_history = <span class="built_in">list</span>(state.get(<span class="string">&quot;reflection_history&quot;</span>, []))</span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">not</span> approved:</span><br><span class="line">        new_history.append(<span class="string">f&quot;第<span class="subst">&#123;state[<span class="string">&#x27;iteration&#x27;</span>]&#125;</span>次: <span class="subst">&#123;review&#125;</span>&quot;</span>)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> &#123;<span class="string">&quot;review&quot;</span>: review, <span class="string">&quot;approved&quot;</span>: approved, <span class="string">&quot;reflection_history&quot;</span>: new_history&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>关键数据：</strong> Reflexion 在 HumanEval 上将 GPT-4 的通过率从 80% 提升到 91%。但大多数改进集中在前 2-3 次迭代，超过 5 次后模型会强化自身盲点。</p>
+<h3 id="6-2-Self-Critic（自我批评）"><a href="#6-2-Self-Critic（自我批评）" class="headerlink" title="6.2 Self-Critic（自我批评）"></a>6.2 Self-Critic（自我批评）</h3><p><strong>与 Reflexion 类似，但引入第二个模型做审查——避免”自己审自己”的盲区。</strong></p>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+    flowchart TB
+    S[START] --&gt; G[&quot;Generator\n(模型A) 生成&quot;]
+    G --&gt; C[&quot;Critic\n(模型B) 批评&quot;]
+    C --&gt; |&quot;改进意见&quot;| G
+    C --&gt; |&quot;通过&quot;| F[&quot;Final 输出&quot;]
+    F --&gt; E[END]
+
+    style G fill:#e6f7e6,stroke:#4caf50,stroke-width:2px,color:#333
+    style C fill:#ffd1d1,stroke:#e57373,stroke-width:2px,color:#333
+  </pre></div>
+
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># Self-Critic vs Reflexion 的关键区别</span></span><br><span class="line"><span class="comment"># Reflexion: 同一个模型既生成又审查</span></span><br><span class="line"><span class="comment"># Self-Critic: 不同模型分别负责生成和审查</span></span><br><span class="line"></span><br><span class="line">generator = ChatOpenAI(model=<span class="string">&quot;glm-5.1&quot;</span>)       <span class="comment"># 强模型生成</span></span><br><span class="line">critic = ChatOpenAI(model=<span class="string">&quot;glm-5.1&quot;</span>,          <span class="comment"># 同样强但不同配置</span></span><br><span class="line">                     temperature=<span class="number">0.1</span>)          <span class="comment"># 低温度，更严格</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>Reflexion vs Self-Critic：</strong></p>
+<table>
+<thead>
+<tr>
+<th align="left">维度</th>
+<th align="left">Reflexion</th>
+<th align="left">Self-Critic</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>审查者</strong></td>
+<td align="left">自己审自己</td>
+<td align="left">独立模型审查</td>
+</tr>
+<tr>
+<td align="left"><strong>盲区风险</strong></td>
+<td align="left">高（强化自身偏见）</td>
+<td align="left">低（视角不同）</td>
+</tr>
+<tr>
+<td align="left"><strong>成本</strong></td>
+<td align="left">中（一个模型）</td>
+<td align="left">高（两个模型）</td>
+</tr>
+<tr>
+<td align="left"><strong>改进幅度</strong></td>
+<td align="left">前 2-3 次显著</td>
+<td align="left">更持续稳定</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="7-Layer-5-—-多智能体协作模式"><a href="#7-Layer-5-—-多智能体协作模式" class="headerlink" title="7. Layer 5 — 多智能体协作模式"></a>7. Layer 5 — 多智能体协作模式</h2><h3 id="7-1-Supervisor（主管模式）"><a href="#7-1-Supervisor（主管模式）" class="headerlink" title="7.1 Supervisor（主管模式）"></a>7.1 Supervisor（主管模式）</h3><p><strong>一个”主管”负责分发任务，多个”专家”负责执行。</strong></p>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+    flowchart TB
+    U[用户] --&gt; SUP[&quot;Supervisor\n主管决策&quot;]
+    SUP --&gt; |&quot;调研任务&quot;| R[&quot;Researcher\n调研专家&quot;]
+    SUP --&gt; |&quot;编程任务&quot;| C[&quot;Coder\n编程专家&quot;]
+    SUP --&gt; |&quot;分析任务&quot;| A[&quot;Analyst\n分析专家&quot;]
+    R --&gt; SUP
+    C --&gt; SUP
+    A --&gt; SUP
+    SUP --&gt; |&quot;全部完成&quot;| F[&quot;汇总回复&quot;]
+    F --&gt; OUT[输出]
+
+    style SUP fill:#ffd1d1,stroke:#e57373,stroke-width:3px,color:#333
+    style R fill:#e6f7e6,stroke:#4caf50,stroke-width:2px,color:#333
+    style C fill:#e6f7e6,stroke:#4caf50,stroke-width:2px,color:#333
+    style A fill:#e6f7e6,stroke:#4caf50,stroke-width:2px,color:#333
+  </pre></div>
+
+<blockquote>
+<p>已在 <a href="/2026/04/21/AI-Python-06.6-LangGraph%E7%8A%B6%E6%80%81%E6%9C%BA%E7%BC%96%E6%8E%92/" title="AI-Python-06.6-LangGraph状态机编排">06.6 LangGraph 状态机编排</a> 中详细实现，此处不再重复代码。</p>
+</blockquote>
+<h3 id="7-2-Swarm-Handoff（群体交接模式）"><a href="#7-2-Swarm-Handoff（群体交接模式）" class="headerlink" title="7.2 Swarm &#x2F; Handoff（群体交接模式）"></a>7.2 Swarm &#x2F; Handoff（群体交接模式）</h3><p><strong>没有主管，Agent 之间平等交接任务。</strong></p>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+    flowchart LR
+    A[&quot;客服 Agent\n处理咨询&quot;] --&gt; |&quot;转技术支持&quot;| B[&quot;技术 Agent\n处理故障&quot;]
+    B --&gt; |&quot;需要回访&quot;| C[&quot;回访 Agent\n满意度调查&quot;]
+    C --&gt; |&quot;新问题&quot;| A
+
+    style A fill:#e6f7e6,stroke:#4caf50,stroke-width:2px,color:#333
+    style B fill:#d1e8ff,stroke:#42a5f5,stroke-width:2px,color:#333
+    style C fill:#fff3d1,stroke:#ffb74d,stroke-width:2px,color:#333
+  </pre></div>
+
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># Swarm 的核心：每个 Agent 可以把任务交接给其他 Agent</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">customer_service_agent</span>(<span class="params">state</span>):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;客服 Agent&quot;&quot;&quot;</span></span><br><span class="line">    response = llm.invoke(<span class="string">f&quot;用户问题: <span class="subst">&#123;state[<span class="string">&#x27;message&#x27;</span>]&#125;</span>&quot;</span>)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> <span class="string">&quot;故障&quot;</span> <span class="keyword">in</span> response <span class="keyword">or</span> <span class="string">&quot;报错&quot;</span> <span class="keyword">in</span> response:</span><br><span class="line">        <span class="keyword">return</span> &#123;<span class="string">&quot;next_agent&quot;</span>: <span class="string">&quot;tech_support&quot;</span>, <span class="string">&quot;context&quot;</span>: response&#125;</span><br><span class="line">    <span class="keyword">elif</span> <span class="string">&quot;退款&quot;</span> <span class="keyword">in</span> response:</span><br><span class="line">        <span class="keyword">return</span> &#123;<span class="string">&quot;next_agent&quot;</span>: <span class="string">&quot;billing&quot;</span>, <span class="string">&quot;context&quot;</span>: response&#125;</span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        <span class="keyword">return</span> &#123;<span class="string">&quot;next_agent&quot;</span>: <span class="string">&quot;FINISH&quot;</span>, <span class="string">&quot;response&quot;</span>: response&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>Supervisor vs Swarm：</strong></p>
+<table>
+<thead>
+<tr>
+<th align="left">维度</th>
+<th align="left">Supervisor</th>
+<th align="left">Swarm</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>控制力</strong></td>
+<td align="left">强（主管统一决策）</td>
+<td align="left">弱（Agent 自主交接）</td>
+</tr>
+<tr>
+<td align="left"><strong>调试难度</strong></td>
+<td align="left">低（集中路由）</td>
+<td align="left">高（分散决策）</td>
+</tr>
+<tr>
+<td align="left"><strong>扩展性</strong></td>
+<td align="left">主管可能成瓶颈</td>
+<td align="left">天然水平扩展</td>
+</tr>
+<tr>
+<td align="left"><strong>生产推荐</strong></td>
+<td align="left">✅ 首选</td>
+<td align="left">仅探索&#x2F;研究场景</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>行业共识（2026）：”生产环境几乎总是选 Supervisor 或 Graph 编排，Swarm 仅用于流程无法预设的探索性场景。”</p>
+</blockquote>
+<h3 id="7-3-Map-Reduce（并行分治）"><a href="#7-3-Map-Reduce（并行分治）" class="headerlink" title="7.3 Map-Reduce（并行分治）"></a>7.3 Map-Reduce（并行分治）</h3><p><strong>分而治之——拆分任务，并行执行，汇总结果。</strong></p>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+    flowchart TB
+    S[START] --&gt; A[&quot;Researcher\n调研&quot;]
+    S --&gt; B[&quot;Coder\n编码&quot;]
+    A --&gt; C[&quot;Summarizer\n汇总&quot;]
+    B --&gt; C
+    C --&gt; E[END]
+
+    style A fill:#e6f7e6,stroke:#4caf50,stroke-width:2px,color:#333
+    style B fill:#e6f7e6,stroke:#4caf50,stroke-width:2px,color:#333
+    style C fill:#ffd1d1,stroke:#e57373,stroke-width:2px,color:#333
+  </pre></div>
+
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># LangGraph 并行模式</span></span><br><span class="line">graph.add_edge(START, <span class="string">&quot;researcher&quot;</span>)   <span class="comment"># START 同时指向两个节点</span></span><br><span class="line">graph.add_edge(START, <span class="string">&quot;coder&quot;</span>)        <span class="comment"># → 自动并行</span></span><br><span class="line">graph.add_edge(<span class="string">&quot;researcher&quot;</span>, <span class="string">&quot;summarizer&quot;</span>)</span><br><span class="line">graph.add_edge(<span class="string">&quot;coder&quot;</span>, <span class="string">&quot;summarizer&quot;</span>)  <span class="comment"># summarizer 等两者都完成</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>适用场景：</strong> 独立子任务，如”同时调研 3 个竞品并汇总对比”。</p>
+<h3 id="7-4-Debate（辩论模式）"><a href="#7-4-Debate（辩论模式）" class="headerlink" title="7.4 Debate（辩论模式）"></a>7.4 Debate（辩论模式）</h3><p><strong>多个 Agent 对同一问题独立作答，互相质疑，择优输出。</strong></p>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+    flowchart TB
+    Q[问题] --&gt; A[&quot;Agent A\n主张 X&quot;]
+    Q --&gt; B[&quot;Agent B\n主张 Y&quot;]
+    A --&gt; |&quot;质疑 Y&quot;| B
+    B --&gt; |&quot;质疑 X&quot;| A
+    A --&gt; |&quot;反驳&quot;| B
+    B --&gt; |&quot;反驳&quot;| A
+    A --&gt; J[&quot;Judge\n裁判&quot;]
+    B --&gt; J
+    J --&gt; F[&quot;最终答案&quot;]
+
+    style A fill:#e6f7e6,stroke:#4caf50,stroke-width:2px,color:#333
+    style B fill:#d1e8ff,stroke:#42a5f5,stroke-width:2px,color:#333
+    style J fill:#ffd1d1,stroke:#e57373,stroke-width:2px,color:#333
+  </pre></div>
+
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># Debate 简化实现</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">debate</span>(<span class="params">question, agents, rounds=<span class="number">3</span></span>):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;多 Agent 辩论&quot;&quot;&quot;</span></span><br><span class="line">    arguments = &#123;&#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 初始轮：各自独立作答</span></span><br><span class="line">    <span class="keyword">for</span> name, agent <span class="keyword">in</span> agents.items():</span><br><span class="line">        arguments[name] = agent.invoke(question)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 辩论轮：互相批评</span></span><br><span class="line">    <span class="keyword">for</span> round_num <span class="keyword">in</span> <span class="built_in">range</span>(rounds):</span><br><span class="line">        new_arguments = &#123;&#125;</span><br><span class="line">        <span class="keyword">for</span> name, agent <span class="keyword">in</span> agents.items():</span><br><span class="line">            others = &#123;k: v <span class="keyword">for</span> k, v <span class="keyword">in</span> arguments.items() <span class="keyword">if</span> k != name&#125;</span><br><span class="line">            critique = agent.invoke(</span><br><span class="line">                <span class="string">f&quot;原问题: <span class="subst">&#123;question&#125;</span>\n你的回答: <span class="subst">&#123;arguments[name]&#125;</span>\n&quot;</span></span><br><span class="line">                <span class="string">f&quot;其他观点: <span class="subst">&#123;others&#125;</span>\n请反驳或修正你的答案。&quot;</span></span><br><span class="line">            )</span><br><span class="line">            new_arguments[name] = critique</span><br><span class="line">        arguments = new_arguments</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 裁判裁决</span></span><br><span class="line">    judge_prompt = <span class="string">f&quot;问题: <span class="subst">&#123;question&#125;</span>\n各方观点: <span class="subst">&#123;arguments&#125;</span>\n请选最优答案。&quot;</span></span><br><span class="line">    <span class="keyword">return</span> judge.invoke(judge_prompt)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 使用示例</span></span><br><span class="line">agents = &#123;</span><br><span class="line">    <span class="string">&quot;conservative&quot;</span>: ChatOpenAI(model=<span class="string">&quot;glm-5.1&quot;</span>, temperature=<span class="number">0.1</span>),</span><br><span class="line">    <span class="string">&quot;creative&quot;</span>: ChatOpenAI(model=<span class="string">&quot;glm-5.1&quot;</span>, temperature=<span class="number">0.9</span>),</span><br><span class="line">&#125;</span><br><span class="line">result = debate(<span class="string">&quot;如何设计高并发系统？&quot;</span>, agents)</span><br></pre></td></tr></table></figure>
+
+<p><strong>适用场景：</strong> 需要高质量决策、对抗性推理（如安全审查、方案比选）。</p>
+<h3 id="7-5-Hierarchical（层级模式）"><a href="#7-5-Hierarchical（层级模式）" class="headerlink" title="7.5 Hierarchical（层级模式）"></a>7.5 Hierarchical（层级模式）</h3><p><strong>多层 Supervisor 嵌套——像企业组织架构一样分层管理。</strong></p>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+    flowchart TB
+    U[用户] --&gt; CEO[&quot;CEO Agent\n战略决策&quot;]
+    CEO --&gt; |&quot;技术线&quot;| CTO[&quot;CTO Agent\n技术管理&quot;]
+    CEO --&gt; |&quot;产品线&quot;| PM[&quot;PM Agent\n产品管理&quot;]
+    CTO --&gt; |&quot;后端&quot;| BE[&quot;Backend Agent\n后端开发&quot;]
+    CTO --&gt; |&quot;前端&quot;| FE[&quot;Frontend Agent\n前端开发&quot;]
+    PM --&gt; |&quot;设计&quot;| DES[&quot;Design Agent\nUI设计&quot;]
+    PM --&gt; |&quot;测试&quot;| QA[&quot;QA Agent\n质量测试&quot;]
+
+    BE --&gt; CTO
+    FE --&gt; CTO
+    DES --&gt; PM
+    QA --&gt; PM
+    CTO --&gt; CEO
+    PM --&gt; CEO
+    CEO --&gt; OUT[输出]
+
+    style CEO fill:#ffd1d1,stroke:#e57373,stroke-width:3px,color:#333
+    style CTO fill:#d1e8ff,stroke:#42a5f5,stroke-width:2px,color:#333
+    style PM fill:#d1e8ff,stroke:#42a5f5,stroke-width:2px,color:#333
+    style BE fill:#e6f7e6,stroke:#4caf50,stroke-width:2px,color:#333
+    style FE fill:#e6f7e6,stroke:#4caf50,stroke-width:2px,color:#333
+    style DES fill:#e6f7e6,stroke:#4caf50,stroke-width:2px,color:#333
+    style QA fill:#e6f7e6,stroke:#4caf50,stroke-width:2px,color:#333
+  </pre></div>
+
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 层级模式的关键：每层 Supervisor 只关注自己管辖的 Agent</span></span><br><span class="line"><span class="comment"># CEO 不知道 Backend Agent 的存在，只管 CTO</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">HierarchicalState</span>(<span class="title class_ inherited__">TypedDict</span>):</span><br><span class="line">    task: <span class="built_in">str</span></span><br><span class="line">    ceo_decision: <span class="built_in">str</span></span><br><span class="line">    cto_result: <span class="built_in">str</span></span><br><span class="line">    pm_result: <span class="built_in">str</span></span><br><span class="line">    final_output: <span class="built_in">str</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># CEO 节点：只做战略分配</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">ceo_node</span>(<span class="params">state</span>):</span><br><span class="line">    decision = ceo_llm.invoke(<span class="string">f&quot;任务: <span class="subst">&#123;state[<span class="string">&#x27;task&#x27;</span>]&#125;</span>\n你管 CTO 和 PM，分配给谁？&quot;</span>)</span><br><span class="line">    <span class="keyword">return</span> &#123;<span class="string">&quot;ceo_decision&quot;</span>: decision&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment"># CTO 节点：管理技术团队</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">cto_node</span>(<span class="params">state</span>):</span><br><span class="line">    result = cto_llm.invoke(<span class="string">f&quot;CEO 分配: <span class="subst">&#123;state[<span class="string">&#x27;ceo_decision&#x27;</span>]&#125;</span>\n分配给后端还是前端？&quot;</span>)</span><br><span class="line">    <span class="keyword">return</span> &#123;<span class="string">&quot;cto_result&quot;</span>: result&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>适用场景：</strong> 大型企业工作流、复杂项目管理、组织架构映射。</p>
+<h3 id="7-6-Pipeline（流水线模式）"><a href="#7-6-Pipeline（流水线模式）" class="headerlink" title="7.6 Pipeline（流水线模式）"></a>7.6 Pipeline（流水线模式）</h3><p><strong>Agent 按固定顺序依次处理，每个 Agent 处理前一个的输出。</strong></p>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+    flowchart LR
+    A[&quot;收集 Agent\n采集数据&quot;] --&gt; B[&quot;分析 Agent\n提取洞察&quot;]
+    B --&gt; C[&quot;写作 Agent\n生成报告&quot;]
+    C --&gt; D[&quot;审核 Agent\n质量检查&quot;]
+    D --&gt; E[&quot;发布&quot;]
+
+    style A fill:#e6f7e6,stroke:#4caf50,stroke-width:2px,color:#333
+    style B fill:#d1e8ff,stroke:#42a5f5,stroke-width:2px,color:#333
+    style C fill:#fff3d1,stroke:#ffb74d,stroke-width:2px,color:#333
+    style D fill:#ffd1d1,stroke:#e57373,stroke-width:2px,color:#333
+  </pre></div>
+
+<p><strong>适用场景：</strong> 流程固定的任务链，如数据处理管道、内容生成流水线。</p>
+<hr>
+<h2 id="8-全景模式速查表"><a href="#8-全景模式速查表" class="headerlink" title="8. 全景模式速查表"></a>8. 全景模式速查表</h2><h3 id="单-Agent-模式"><a href="#单-Agent-模式" class="headerlink" title="单 Agent 模式"></a>单 Agent 模式</h3><table>
+<thead>
+<tr>
+<th align="left">模式</th>
+<th align="left">LLM 调用</th>
+<th align="left">灵活性</th>
+<th align="left">成本</th>
+<th align="left">适用场景</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>CoT</strong></td>
+<td align="left">1</td>
+<td align="left">低</td>
+<td align="left">最低</td>
+<td align="left">常规推理</td>
+</tr>
+<tr>
+<td align="left"><strong>Self-Ask</strong></td>
+<td align="left">1-3</td>
+<td align="left">中</td>
+<td align="left">低</td>
+<td align="left">多跳问答</td>
+</tr>
+<tr>
+<td align="left"><strong>ToT</strong></td>
+<td align="left">10-30</td>
+<td align="left">高</td>
+<td align="left">高</td>
+<td align="left">复杂规划、创意</td>
+</tr>
+<tr>
+<td align="left"><strong>ReAct</strong></td>
+<td align="left">N（线性）</td>
+<td align="left">最高</td>
+<td align="left">中</td>
+<td align="left">通用探索性任务</td>
+</tr>
+<tr>
+<td align="left"><strong>Plan-and-Execute</strong></td>
+<td align="left">2-5</td>
+<td align="left">中</td>
+<td align="left">低-中</td>
+<td align="left">结构化多步任务</td>
+</tr>
+<tr>
+<td align="left"><strong>ReWOO</strong></td>
+<td align="left">2</td>
+<td align="left">无（固定）</td>
+<td align="left">最低</td>
+<td align="left">可预测的并行任务</td>
+</tr>
+<tr>
+<td align="left"><strong>LATS</strong></td>
+<td align="left">40-80+</td>
+<td align="left">极高</td>
+<td align="left">极高</td>
+<td align="left">博弈、复杂推理</td>
+</tr>
+<tr>
+<td align="left"><strong>Reflexion</strong></td>
+<td align="left">N×（重试）</td>
+<td align="left">高</td>
+<td align="left">高</td>
+<td align="left">可验证的任务</td>
+</tr>
+<tr>
+<td align="left"><strong>Self-Critic</strong></td>
+<td align="left">N×（双模型）</td>
+<td align="left">高</td>
+<td align="left">很高</td>
+<td align="left">高可靠性要求</td>
+</tr>
+<tr>
+<td align="left"><strong>CodeAct</strong></td>
+<td align="left">N</td>
+<td align="left">极高</td>
+<td align="left">中-高</td>
+<td align="left">数据分析、编程</td>
+</tr>
+</tbody></table>
+<h3 id="多-Agent-模式"><a href="#多-Agent-模式" class="headerlink" title="多 Agent 模式"></a>多 Agent 模式</h3><table>
+<thead>
+<tr>
+<th align="left">模式</th>
+<th align="left">控制方式</th>
+<th align="left">协调成本</th>
+<th align="left">生产推荐</th>
+<th align="left">适用场景</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>Supervisor</strong></td>
+<td align="left">集中</td>
+<td align="left">中</td>
+<td align="left">✅ 首选</td>
+<td align="left">角色明确的协作</td>
+</tr>
+<tr>
+<td align="left"><strong>Swarm&#x2F;Handoff</strong></td>
+<td align="left">分散</td>
+<td align="left">高</td>
+<td align="left">⚠️ 谨慎</td>
+<td align="left">客服、灵活转移</td>
+</tr>
+<tr>
+<td align="left"><strong>Map-Reduce</strong></td>
+<td align="left">并行</td>
+<td align="left">低</td>
+<td align="left">✅ 推荐</td>
+<td align="left">独立子任务</td>
+</tr>
+<tr>
+<td align="left"><strong>Debate</strong></td>
+<td align="left">裁判</td>
+<td align="left">高</td>
+<td align="left">⚠️ 特定</td>
+<td align="left">方案比选、安全审查</td>
+</tr>
+<tr>
+<td align="left"><strong>Hierarchical</strong></td>
+<td align="left">分层</td>
+<td align="left">中-高</td>
+<td align="left">✅ 推荐</td>
+<td align="left">大型企业工作流</td>
+</tr>
+<tr>
+<td align="left"><strong>Pipeline</strong></td>
+<td align="left">顺序</td>
+<td align="left">低</td>
+<td align="left">✅ 推荐</td>
+<td align="left">固定流程</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="9-模式选择决策树"><a href="#9-模式选择决策树" class="headerlink" title="9. 模式选择决策树"></a>9. 模式选择决策树</h2><div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+    flowchart TB
+    START[&quot;你的任务是什么？&quot;] --&gt; Q1{&quot;需要多步完成？&quot;}
+    Q1 --&gt;|&quot;否&quot;| FC[&quot;Function Calling\n单次调用即可&quot;]
+    Q1 --&gt;|&quot;是&quot;| Q2{&quot;步骤确定吗？&quot;}
+
+    Q2 --&gt;|&quot;不确定&quot;| Q3{&quot;需要调用工具？&quot;}
+    Q3 --&gt;|&quot;是&quot;| REACT[&quot;ReAct\n边想边做&quot;]
+    Q3 --&gt;|&quot;否&quot;| COT[&quot;CoT &#x2F; ToT\n纯推理&quot;]
+
+    Q2 --&gt;|&quot;确定&quot;| Q4{&quot;能并行执行？&quot;}
+    Q4 --&gt;|&quot;能&quot;| REWOO[&quot;ReWOO\n一次规划并行执行&quot;]
+    Q4 --&gt;|&quot;不能&quot;| PE[&quot;Plan-and-Execute\n先规划再执行&quot;]
+
+    REACT --&gt; Q5{&quot;容易出错？&quot;}
+    PE --&gt; Q5
+    Q5 --&gt;|&quot;是&quot;| REF[&quot;+ Reflexion\n加上自我反思&quot;]
+    Q5 --&gt;|&quot;否&quot;| OK[&quot;✅ 够用&quot;]
+
+    Q3 --&gt; Q6{&quot;需要分工？&quot;}
+    Q6 --&gt;|&quot;是&quot;| Q7{&quot;流程固定？&quot;}
+    Q7 --&gt;|&quot;是&quot;| PIPE[&quot;Pipeline &#x2F; Supervisor&quot;]
+    Q7 --&gt;|&quot;否&quot;| Q8{&quot;角色明确？&quot;}
+    Q8 --&gt;|&quot;是&quot;| SUP[&quot;Supervisor\n主管分发&quot;]
+    Q8 --&gt;|&quot;否&quot;| SWARM[&quot;Swarm\n平等交接&quot;]
+
+    style START fill:#f5f5f5,stroke:#333,stroke-width:2px,color:#333
+    style FC fill:#e6f7e6,stroke:#4caf50,stroke-width:2px,color:#333
+    style REACT fill:#d1e8ff,stroke:#42a5f5,stroke-width:2px,color:#333
+    style REWOO fill:#e6f7e6,stroke:#4caf50,stroke-width:2px,color:#333
+    style PE fill:#fff3d1,stroke:#ffb74d,stroke-width:2px,color:#333
+    style REF fill:#fce4ec,stroke:#e91e63,stroke-width:2px,color:#333
+    style SUP fill:#f3e5f5,stroke:#9c27b0,stroke-width:2px,color:#333
+    style SWARM fill:#f3e5f5,stroke:#9c27b0,stroke-width:2px,color:#333
+  </pre></div>
+
+<p><strong>选择口诀：</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">单步直接调，多步看确定</span><br><span class="line">确定可并行 → ReWOO</span><br><span class="line">确定不可并行 → Plan-and-Execute</span><br><span class="line">不确定要工具 → ReAct</span><br><span class="line">不确定纯推理 → CoT / ToT</span><br><span class="line">容易出错 → 加 Reflexion</span><br><span class="line">需要分工 → Supervisor（生产）/ Swarm（探索）</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="10-模式组合最佳实践"><a href="#10-模式组合最佳实践" class="headerlink" title="10. 模式组合最佳实践"></a>10. 模式组合最佳实践</h2><p>生产系统不是选一个模式，而是<strong>组合使用</strong>：</p>
+<h3 id="10-1-常见组合"><a href="#10-1-常见组合" class="headerlink" title="10.1 常见组合"></a>10.1 常见组合</h3><table>
+<thead>
+<tr>
+<th align="left">组合</th>
+<th align="left">模式</th>
+<th align="left">适用场景</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>基础组合</strong></td>
+<td align="left">ReAct + Function Calling</td>
+<td align="left">通用 Agent</td>
+</tr>
+<tr>
+<td align="left"><strong>自愈组合</strong></td>
+<td align="left">ReAct + Reflexion</td>
+<td align="left">容错 Agent</td>
+</tr>
+<tr>
+<td align="left"><strong>高效组合</strong></td>
+<td align="left">Plan-and-Execute + ReWOO</td>
+<td align="left">可预测任务</td>
+</tr>
+<tr>
+<td align="left"><strong>高可靠组合</strong></td>
+<td align="left">ReAct + Self-Critic</td>
+<td align="left">代码生成、关键决策</td>
+</tr>
+<tr>
+<td align="left"><strong>团队组合</strong></td>
+<td align="left">Supervisor + ReAct（每个 Worker）</td>
+<td align="left">多角色协作</td>
+</tr>
+<tr>
+<td align="left"><strong>企业组合</strong></td>
+<td align="left">Hierarchical + Plan-and-Execute + Reflexion</td>
+<td align="left">大型工作流</td>
+</tr>
+</tbody></table>
+<h3 id="10-2-渐进式架构升级路径"><a href="#10-2-渐进式架构升级路径" class="headerlink" title="10.2 渐进式架构升级路径"></a>10.2 渐进式架构升级路径</h3><div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+    flowchart LR
+    L1[&quot;Step 1\nReAct 基线&quot;] --&gt; L2[&quot;Step 2\n+ Reflexion&quot;]
+    L2 --&gt; L3[&quot;Step 3\n+ ReWOO 快路径&quot;]
+    L3 --&gt; L4[&quot;Step 4\n+ Supervisor&quot;]
+    L4 --&gt; L5[&quot;Step 5\n+ Hierarchical&quot;]
+
+    L1 -.- N1[&quot;1 Agent\n2-5 步&quot;]
+    L2 -.- N2[&quot;自愈能力\n2-3 次重试&quot;]
+    L3 -.- N3[&quot;简单任务\n2 次 LLM&quot;]
+    L4 -.- N4[&quot;3-5 Agent\n角色分工&quot;]
+    L5 -.- N5[&quot;N Agent\n企业级&quot;]
+
+    style L1 fill:#e6f7e6,stroke:#4caf50,stroke-width:2px,color:#333
+    style L2 fill:#d1e8ff,stroke:#42a5f5,stroke-width:2px,color:#333
+    style L3 fill:#fff3d1,stroke:#ffb74d,stroke-width:2px,color:#333
+    style L4 fill:#f3e5f5,stroke:#9c27b0,stroke-width:2px,color:#333
+    style L5 fill:#ffd1d1,stroke:#e57373,stroke-width:2px,color:#333
+  </pre></div>
+
+<p><strong>关键原则：</strong></p>
+<ol>
+<li><strong>从 ReAct 基线开始</strong> — 先让单 Agent 能跑通</li>
+<li><strong>测量瓶颈再加</strong> — 不要在 Agent 还没到上限时就加多 Agent</li>
+<li><strong>工具 &gt; 模式</strong> — 大多数 Agent 失败是工具定义不好，不是模式选错</li>
+<li><strong>先建评估再选架构</strong> — 如果无法衡量成功，任何模式都救不了你</li>
+</ol>
+<hr>
+<h2 id="11-框架支持矩阵"><a href="#11-框架支持矩阵" class="headerlink" title="11. 框架支持矩阵"></a>11. 框架支持矩阵</h2><table>
+<thead>
+<tr>
+<th align="left">框架</th>
+<th align="center">ReAct</th>
+<th align="center">Plan-Execute</th>
+<th align="center">ReWOO</th>
+<th align="center">Reflexion</th>
+<th align="center">Supervisor</th>
+<th align="center">Swarm</th>
+<th align="left">备注</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>LangGraph</strong></td>
+<td align="center">✅</td>
+<td align="center">✅</td>
+<td align="center">✅</td>
+<td align="center">✅</td>
+<td align="center">✅</td>
+<td align="center">✅</td>
+<td align="left">全模式支持</td>
+</tr>
+<tr>
+<td align="left"><strong>AutoGen</strong></td>
+<td align="center">✅</td>
+<td align="center">✅</td>
+<td align="center">✅</td>
+<td align="center">✅</td>
+<td align="center">✅</td>
+<td align="center">✅</td>
+<td align="left">多 Agent 强项</td>
+</tr>
+<tr>
+<td align="left"><strong>CrewAI</strong></td>
+<td align="center">✅</td>
+<td align="center">✅</td>
+<td align="center">⚠️</td>
+<td align="center">✅</td>
+<td align="center">✅</td>
+<td align="center">❌</td>
+<td align="left">角色驱动</td>
+</tr>
+<tr>
+<td align="left"><strong>OpenAI Agents SDK</strong></td>
+<td align="center">✅</td>
+<td align="center">❌</td>
+<td align="center">❌</td>
+<td align="center">❌</td>
+<td align="center">✅</td>
+<td align="center">✅</td>
+<td align="left">Handoff 为主</td>
+</tr>
+<tr>
+<td align="left"><strong>Microsoft Agent Framework</strong></td>
+<td align="center">✅</td>
+<td align="center">✅</td>
+<td align="center">✅</td>
+<td align="center">✅</td>
+<td align="center">✅</td>
+<td align="center">✅</td>
+<td align="left">Graph 编排</td>
+</tr>
+</tbody></table>
+<p><strong>选框架的建议：</strong> 根据团队熟悉度和运维集成选，不要按模式支持选——主流框架都覆盖了核心模式。</p>
+<hr>
+<h2 id="12-与已学内容的对应"><a href="#12-与已学内容的对应" class="headerlink" title="12. 与已学内容的对应"></a>12. 与已学内容的对应</h2><table>
+<thead>
+<tr>
+<th align="left">已学章节</th>
+<th align="left">对应模式</th>
+<th align="left">本文扩展</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">06.5 Tool与Agent</td>
+<td align="left">Function Calling、ReAct</td>
+<td align="left">深化了 ReAct 的优缺点分析</td>
+</tr>
+<tr>
+<td align="left">06.6 LangGraph</td>
+<td align="left">ReAct、Plan-and-Execute、Reflexion、Supervisor</td>
+<td align="left">新增 ReWOO、LATS、ToT、CodeAct、Debate、Hierarchical</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><p><strong>论文：</strong></p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://arxiv.org/abs/2201.11903">Chain-of-Thought Prompting - Wei et al. 2022</a></li>
+<li><a target="_blank" rel="noopener" href="https://arxiv.org/abs/2305.10601">Tree of Thoughts - Yao et al. 2023</a></li>
+<li><a target="_blank" rel="noopener" href="https://arxiv.org/abs/2210.03629">ReAct: Synergizing Reasoning and Acting - Yao et al. 2022</a></li>
+<li><a target="_blank" rel="noopener" href="https://arxiv.org/abs/2303.11366">Reflexion: Language Agents with Verbal Reinforcement Learning - Shinn et al. 2023</a></li>
+<li><a target="_blank" rel="noopener" href="https://arxiv.org/abs/2305.18323">ReWOO: Decoupling Reasoning from Observation - Xu et al. 2023</a></li>
+<li><a target="_blank" rel="noopener" href="https://arxiv.org/abs/2310.04444">LATS: Language Agent Tree Search - Zhou et al. 2024</a></li>
+</ul>
+<p><strong>教程与指南：</strong></p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://learn.deeplearning.ai/courses/agentic-ai">Agentic Design Patterns - DeepLearning.AI</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.digitalapplied.com/blog/agent-architecture-patterns-taxonomy-2026">Agent Architecture Patterns: 2026 Taxonomy - Digital Applied</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.sitepoint.com/the-definitive-guide-to-agentic-design-patterns-in-2026/">The Definitive Guide to Agentic Design Patterns in 2026 - SitePoint</a></li>
+<li><a target="_blank" rel="noopener" href="https://agentcenter.cloud/blogs/multi-agent-design-patterns">Multi-Agent Design Patterns - AgentCenter</a></li>
+</ul>
+<hr>
+<h2 id="下一步"><a href="#下一步" class="headerlink" title="下一步"></a>下一步</h2><ul>
+<li><input disabled="" type="checkbox"> Module 08.2: Agent 实战 — 构建 ReAct + Reflexion 自愈型 Agent</li>
+<li><input disabled="" type="checkbox"> Module 08.3: Agent 实战 — Supervisor 多 Agent 协作系统</li>
+<li><input disabled="" type="checkbox"> Module 08.4: Agent 实战 — ReWOO 高效并行 Agent</li>
+</ul>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>Author: </span><span class="post-copyright-info"><a href="http://example.com">david</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>Link: </span><span class="post-copyright-info"><a href="http://example.com/2026/05/14/AI-Python-08.1-Agent%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%E5%85%A8%E6%99%AF/">http://example.com/2026/05/14/AI-Python-08.1-Agent%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%E5%85%A8%E6%99%AF/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>Copyright Notice: </span><span class="post-copyright-info">All articles on this blog are licensed under <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> unless otherwise stated.</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/AI/">AI</a><a class="post-meta__tags" href="/tags/Agent/">Agent</a><a class="post-meta__tags" href="/tags/Python/">Python</a><a class="post-meta__tags" href="/tags/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">学习笔记</a><a class="post-meta__tags" href="/tags/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/">设计模式</a><a class="post-meta__tags" href="/tags/LangGraph/">LangGraph</a><a class="post-meta__tags" href="/tags/ReAct/">ReAct</a><a class="post-meta__tags" href="/tags/Multi-Agent/">Multi-Agent</a></div><div class="post-share"><div class="social-share" data-image="/img/butterfly-icon.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2026/05/19/AI-Python-08.2-Agent%E5%AE%9E%E6%88%98%E4%BB%8E%E9%9B%B6%E6%9E%84%E5%BB%BA%E6%99%BA%E8%83%BD%E4%BD%93/" title="AI-Python-08.2-Agent实战从零构建智能体"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">Previous</div><div class="info-item-2">AI-Python-08.2-Agent实战从零构建智能体</div></div><div class="info-2"><div class="info-item-1">AI-Python-08.2: Agent 实战 — 从零构建智能体 核心认知：Agent &#x3D; LLM（大脑推理）+ Tool（手脚交互）+ Memory（记忆上下文）+ Planning（规划策略），通过 ReAct 循环（思考→行动→观察）协同工作。 本文路径：先拆解 Agent 的四大组件，理解每个组件的职责；再用 50 行纯 Python 手搓一个 Agent；最后用 LangChain&#x2F;LangGraph 框架重构。先懂原理，再用框架。  1. Agent 的本质与组成1.1 什么是 Agent？ “An AI agent is a system that combines LLMs for reasoning and decision-making with tools for real-world interaction.” — Andrew Ng   “AI agents are autonomous systems that can understand queries, plan workflows, and execute complex...</div></div></div></a><a class="pagination-related" href="/2026/05/07/AI-Python-07.6-LLM%20Wiki%E5%AE%9E%E6%88%98-%E4%BB%8E%E9%9B%B6%E6%9E%84%E5%BB%BA%E5%8D%9A%E5%AE%A2%E7%9F%A5%E8%AF%86%E5%BA%93/" title="AI-Python-07.6-LLM Wiki实战-从零构建博客知识库"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">Next</div><div class="info-item-2">AI-Python-07.6-LLM Wiki实战-从零构建博客知识库</div></div><div class="info-2"><div class="info-item-1">AI-Python-07.6: LLM Wiki 实战 — 从零构建博客知识库 07.5 章全景对比了六大 RAG 架构后，选定 LLM Wiki 模式（预编译知识库）作为最适合个人博客的方案。本章完整记录从架构设计到代码实现、全量编译、查询优化的全过程，将 124 篇 Hexo 博客编译为结构化 Wiki 知识库，实现零基础设施的智能问答。   1. 项目背景1.1 知识资产盘点经过一年多的 AI 学习，积累了 124 篇技术博客，涵盖多个领域：    系列 篇数 内容范围    AI-Python-01.x 7 Python 语法精髓（类型、切片、推导式、装饰器、魔法方法、dataclass）   AI-Python-02.x 5 Python OOP&#x2F;元编程（面向对象、继承、元类、描述符、ABC）   AI-Python-03.x 3 Python 并发（GIL&#x2F;多线程、Asyncio、多进程）   AI-Python-04.x 3 数据科学（NumPy、Pandas、Matplotlib）   AI-Python-05.x 3 深度学习（PyTorch...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>Related Articles</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/2026/05/19/AI-Python-08.2-Agent%E5%AE%9E%E6%88%98%E4%BB%8E%E9%9B%B6%E6%9E%84%E5%BB%BA%E6%99%BA%E8%83%BD%E4%BD%93/" title="AI-Python-08.2-Agent实战从零构建智能体"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-05-19</div><div class="info-item-2">AI-Python-08.2-Agent实战从零构建智能体</div></div><div class="info-2"><div class="info-item-1">AI-Python-08.2: Agent 实战 — 从零构建智能体 核心认知：Agent &#x3D; LLM（大脑推理）+ Tool（手脚交互）+ Memory（记忆上下文）+ Planning（规划策略），通过 ReAct 循环（思考→行动→观察）协同工作。 本文路径：先拆解 Agent 的四大组件，理解每个组件的职责；再用 50 行纯 Python 手搓一个 Agent；最后用 LangChain&#x2F;LangGraph 框架重构。先懂原理，再用框架。  1. Agent 的本质与组成1.1 什么是 Agent？ “An AI agent is a system that combines LLMs for reasoning and decision-making with tools for real-world interaction.” — Andrew Ng   “AI agents are autonomous systems that can understand queries, plan workflows, and execute complex...</div></div></div></a><a class="pagination-related" href="/2026/05/20/AI-Python-08.3-%E5%A4%9A%E6%99%BA%E8%83%BD%E4%BD%93%E5%8D%8F%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%AE%9E%E6%88%98/" title="AI-Python-08.3-多智能体协作系统实战"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-05-20</div><div class="info-item-2">AI-Python-08.3-多智能体协作系统实战</div></div><div class="info-2"><div class="info-item-1">AI-Python-08.3: 多智能体协作系统实战 前面我们学会了构建单个 Agent（08.2），但现实中的复杂任务往往需要多个 Agent 协作。本文从三种最实用的协作模式入手，用 LangGraph StateGraph 构建完整的多 Agent 系统。  前置知识：  06.6 LangGraph 状态机编排：StateGraph 基础 + Supervisor 概念 08.1 Agent 设计模式全景：15 种模式理论（含 6 种协作模式） 08.2 Agent 实战：单 Agent 的完整构建过程   1. 从单 Agent 到多 Agent1.1 单 Agent 的瓶颈当任务变复杂，单 Agent 会遇到三个问题：    问题 原因 表现    角色混乱 一个 Agent 既要搜索又要分析又要写作 Prompt 太长，LLM 不知道优先做什么   工具爆炸 搜索 + 阅读 + 计算 + 翻译全塞一起 LLM 选错工具、参数幻觉   无法并行 一个 Agent 只能串行处理 3 个独立任务也要排队   1.2 多 Agent 的核心：分工 + 协调多 Agent 的...</div></div></div></a><a class="pagination-related" href="/2026/04/21/AI-Python-06.6-LangGraph%E7%8A%B6%E6%80%81%E6%9C%BA%E7%BC%96%E6%8E%92/" title="AI-Python-06.6-LangGraph状态机编排"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-04-21</div><div class="info-item-2">AI-Python-06.6-LangGraph状态机编排</div></div><div class="info-2"><div class="info-item-1">AI-Python-06.6: LangGraph 状态机编排 LangChain Agent 是”黑盒”，LLM 自己决定一切。LangGraph 把 Agent 拆成”白盒”——每个步骤都是显式的节点，节点之间用明确的规则连接。本章深入理解 State、Node、Edge 和多 Agent 协作模式。   1. 为什么需要 LangGraph？1.1 LangChain Agent 的局限1234567agent = create_agent(model=llm, tools=tools)result = agent.invoke(&#123;&quot;messages&quot;: [...]&#125;)# 你无法控制中间过程：# - 不知道 LLM 会调用几次工具# - 无法在关键步骤暂停让人审批# - 无法设定固定的流程# - 循环次数不可控  1.2 LangGraph 的解决思路把 Agent 拆成状态机——每个步骤是节点，节点之间是明确的规则：      flowchart LR     subgraph LangChain Agent 黑盒         ...</div></div></div></a><a class="pagination-related" href="/2025/03/18/AI-Python-01.5-%E8%A3%85%E9%A5%B0%E5%99%A8%E5%9F%BA%E7%A1%80/" title="AI-Python-01.5 装饰器基础"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-03-18</div><div class="info-item-2">AI-Python-01.5 装饰器基础</div></div><div class="info-2"><div class="info-item-1">AI-Python-01.5: 装饰器基础 装饰器是 Python 的强大特性，用于在不修改原函数的情况下扩展其功能。在 AI 开发中常用于日志记录、性能测试、权限验证等场景。   1. 装饰器基础语法1.1 基础装饰器12345678910111213141516171819202122232425262728293031&quot;&quot;&quot;装饰器基础语法示例装饰器是一个接受函数并返回新函数的函数。&quot;&quot;&quot;import functools# 基础装饰器def simple_decorator(func):    &quot;&quot;&quot;    基础装饰器    Args:        func: 被装饰的函数    Returns:        装饰后的新函数    &quot;&quot;&quot;    @functools.wraps(func)  # 等价于 wrapper = simple_decorator(func)    def wrapper(*args, **kwargs):        pri...</div></div></div></a><a class="pagination-related" href="/2026/03/31/AI-Python-06.1-LangChain%E5%9F%BA%E7%A1%80/" title="AI-Python-06.1-LangChain基础"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-03-31</div><div class="info-item-2">AI-Python-06.1-LangChain基础</div></div><div class="info-2"><div class="info-item-1">AI-Python-06.1: LangChain 基础 LangChain 是当前最流行的 LLM 应用开发框架，让开发者快速搭建智能体、问答系统、对话机器人、知识库等复杂功能。   1. 什么是 LangChain？1.1 为什么需要 LangChain？众所周知，OpenAI 的 API 是无法联网的。如果想实现：  联网搜索并给出回答 总结 PDF 文档 基于某个视频进行问答 连接企业数据库  直接调用 API 是无法实现的。LangChain 就是为了解决这些问题而诞生的。 1.2 LangChain 的两大核心能力     flowchart TD     subgraph LangChain核心能力         direction TB         A[1. 将 LLM 与外部数据源连接]         A1[文档 &#x2F; 数据库 &#x2F; API &#x2F; 搜索引擎]         B[2. 允许与 LLM 进行交互]         B1[多轮对话 &#x2F; 工具调用 &#x2F; 链式编排]     end      A --&g...</div></div></div></a><a class="pagination-related" href="/2026/04/21/AI-Python-06.5-Tool%E4%B8%8EAgent/" title="AI-Python-06.5-Tool与Agent"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-04-21</div><div class="info-item-2">AI-Python-06.5-Tool与Agent</div></div><div class="info-2"><div class="info-item-1">AI-Python-06.5: Tool 与 Agent LLM 只会”说话”，Tool 让它能”做事”，Agent 让它自主决定”用什么工具做事”。本章深入理解 Tool 定义、Function Calling 机制和 Agent 的决策原理。   1. 为什么需要 Tool？1.1 LLM 的局限LLM 本质上只会生成文本，它不能：  搜索网络获取实时信息 执行精确的数学计算 查询数据库 调用外部 API 读写文件  1.2 Tool 的作用Tool &#x3D; 给 AI 装上”手脚” 1234567没有 Tool：用户: 135 × 246 等于多少？AI:   让我算一下... 33120（可能算错！）有 Tool：用户: 135 × 246 等于多少？AI:   [调用 multiply(135, 246)] → 33210（精确结果）   2. Function Calling 机制在学 Tool 之前，必须理解底层的 Function Calling（也叫 Tool Use）。 2.1 没有 Function Calling 时12用户: 135 × 246 等于...</div></div></div></a></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/butterfly-icon.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">david</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">134</div></a><a href="/tags/"><div class="headline">Tags</div><div class="length-num">324</div></a><a href="/categories/"><div class="headline">Categories</div><div class="length-num">23</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>Announcement</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>Contents</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#AI-Python-08-1-Agent-%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%E5%85%A8%E6%99%AF"><span class="toc-number">1.</span> <span class="toc-text">AI-Python-08.1: Agent 设计模式全景</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-%E4%B8%BA%E4%BB%80%E4%B9%88%E9%9C%80%E8%A6%81%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%EF%BC%9F"><span class="toc-number">1.1.</span> <span class="toc-text">1. 为什么需要设计模式？</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-%E5%90%8C%E4%B8%80%E4%B8%AA%E4%BB%BB%E5%8A%A1%EF%BC%8C%E4%B8%8D%E5%90%8C%E6%A8%A1%E5%BC%8F%E5%A4%A9%E5%B7%AE%E5%9C%B0%E5%88%AB"><span class="toc-number">1.1.1.</span> <span class="toc-text">1.1 同一个任务，不同模式天差地别</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-Andrew-Ng-%E7%9A%84%E5%9B%9B%E5%A4%A7%E6%A8%A1%E5%BC%8F"><span class="toc-number">1.1.2.</span> <span class="toc-text">1.2 Andrew Ng 的四大模式</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-%E4%BB%8E%E5%9B%9B%E5%A4%A7%E7%B1%BB%E5%88%B0%E4%BA%94%E5%B1%82%E6%9E%B6%E6%9E%84"><span class="toc-number">1.2.</span> <span class="toc-text">2. 从四大类到五层架构</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-%E6%98%A0%E5%B0%84%E5%85%B3%E7%B3%BB"><span class="toc-number">1.2.1.</span> <span class="toc-text">2.1 映射关系</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-%E4%BA%94%E5%B1%82%E6%80%BB%E8%A7%88"><span class="toc-number">1.2.2.</span> <span class="toc-text">2.2 五层总览</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-Layer-1-%E2%80%94-%E6%8E%A8%E7%90%86%E6%A8%A1%E5%BC%8F"><span class="toc-number">1.3.</span> <span class="toc-text">3. Layer 1 — 推理模式</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-Chain-of-Thought%EF%BC%88%E6%80%9D%E7%BB%B4%E9%93%BE%EF%BC%89"><span class="toc-number">1.3.1.</span> <span class="toc-text">3.1 Chain of Thought（思维链）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-Self-Ask%EF%BC%88%E8%87%AA%E9%97%AE%E8%87%AA%E7%AD%94%EF%BC%89"><span class="toc-number">1.3.2.</span> <span class="toc-text">3.2 Self-Ask（自问自答）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-Tree-of-Thoughts%EF%BC%88%E6%80%9D%E7%BB%B4%E6%A0%91%EF%BC%89"><span class="toc-number">1.3.3.</span> <span class="toc-text">3.3 Tree of Thoughts（思维树）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-Layer-2-%E2%80%94-%E8%A1%8C%E5%8A%A8%E6%A8%A1%E5%BC%8F"><span class="toc-number">1.4.</span> <span class="toc-text">4. Layer 2 — 行动模式</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-Function-Calling%EF%BC%88%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%EF%BC%89"><span class="toc-number">1.4.1.</span> <span class="toc-text">4.1 Function Calling（函数调用）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-ReAct%EF%BC%88%E6%8E%A8%E7%90%86-%E8%A1%8C%E5%8A%A8%EF%BC%89"><span class="toc-number">1.4.2.</span> <span class="toc-text">4.2 ReAct（推理 + 行动）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-3-CodeAct%EF%BC%88%E4%BB%A3%E7%A0%81%E5%8D%B3%E8%A1%8C%E5%8A%A8%EF%BC%89"><span class="toc-number">1.4.3.</span> <span class="toc-text">4.3 CodeAct（代码即行动）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-Layer-3-%E2%80%94-%E8%A7%84%E5%88%92%E6%A8%A1%E5%BC%8F"><span class="toc-number">1.5.</span> <span class="toc-text">5. Layer 3 — 规划模式</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-Plan-and-Execute%EF%BC%88%E5%85%88%E8%A7%84%E5%88%92%E5%86%8D%E6%89%A7%E8%A1%8C%EF%BC%89"><span class="toc-number">1.5.1.</span> <span class="toc-text">5.1 Plan-and-Execute（先规划再执行）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-ReWOO%EF%BC%88%E6%97%A0%E8%A7%82%E5%AF%9F%E6%8E%A8%E7%90%86%EF%BC%89"><span class="toc-number">1.5.2.</span> <span class="toc-text">5.2 ReWOO（无观察推理）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-3-LATS%EF%BC%88%E8%AF%AD%E8%A8%80%E6%99%BA%E8%83%BD%E4%BD%93%E6%A0%91%E6%90%9C%E7%B4%A2%EF%BC%89"><span class="toc-number">1.5.3.</span> <span class="toc-text">5.3 LATS（语言智能体树搜索）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-Layer-4-%E2%80%94-%E5%8F%8D%E6%80%9D%E6%A8%A1%E5%BC%8F"><span class="toc-number">1.6.</span> <span class="toc-text">6. Layer 4 — 反思模式</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#6-1-Reflexion%EF%BC%88%E8%87%AA%E6%88%91%E5%8F%8D%E6%80%9D%EF%BC%89"><span class="toc-number">1.6.1.</span> <span class="toc-text">6.1 Reflexion（自我反思）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-2-Self-Critic%EF%BC%88%E8%87%AA%E6%88%91%E6%89%B9%E8%AF%84%EF%BC%89"><span class="toc-number">1.6.2.</span> <span class="toc-text">6.2 Self-Critic（自我批评）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7-Layer-5-%E2%80%94-%E5%A4%9A%E6%99%BA%E8%83%BD%E4%BD%93%E5%8D%8F%E4%BD%9C%E6%A8%A1%E5%BC%8F"><span class="toc-number">1.7.</span> <span class="toc-text">7. Layer 5 — 多智能体协作模式</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#7-1-Supervisor%EF%BC%88%E4%B8%BB%E7%AE%A1%E6%A8%A1%E5%BC%8F%EF%BC%89"><span class="toc-number">1.7.1.</span> <span class="toc-text">7.1 Supervisor（主管模式）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-2-Swarm-Handoff%EF%BC%88%E7%BE%A4%E4%BD%93%E4%BA%A4%E6%8E%A5%E6%A8%A1%E5%BC%8F%EF%BC%89"><span class="toc-number">1.7.2.</span> <span class="toc-text">7.2 Swarm &#x2F; Handoff（群体交接模式）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-3-Map-Reduce%EF%BC%88%E5%B9%B6%E8%A1%8C%E5%88%86%E6%B2%BB%EF%BC%89"><span class="toc-number">1.7.3.</span> <span class="toc-text">7.3 Map-Reduce（并行分治）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-4-Debate%EF%BC%88%E8%BE%A9%E8%AE%BA%E6%A8%A1%E5%BC%8F%EF%BC%89"><span class="toc-number">1.7.4.</span> <span class="toc-text">7.4 Debate（辩论模式）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-5-Hierarchical%EF%BC%88%E5%B1%82%E7%BA%A7%E6%A8%A1%E5%BC%8F%EF%BC%89"><span class="toc-number">1.7.5.</span> <span class="toc-text">7.5 Hierarchical（层级模式）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-6-Pipeline%EF%BC%88%E6%B5%81%E6%B0%B4%E7%BA%BF%E6%A8%A1%E5%BC%8F%EF%BC%89"><span class="toc-number">1.7.6.</span> <span class="toc-text">7.6 Pipeline（流水线模式）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#8-%E5%85%A8%E6%99%AF%E6%A8%A1%E5%BC%8F%E9%80%9F%E6%9F%A5%E8%A1%A8"><span class="toc-number">1.8.</span> <span class="toc-text">8. 全景模式速查表</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8D%95-Agent-%E6%A8%A1%E5%BC%8F"><span class="toc-number">1.8.1.</span> <span class="toc-text">单 Agent 模式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A4%9A-Agent-%E6%A8%A1%E5%BC%8F"><span class="toc-number">1.8.2.</span> <span class="toc-text">多 Agent 模式</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#9-%E6%A8%A1%E5%BC%8F%E9%80%89%E6%8B%A9%E5%86%B3%E7%AD%96%E6%A0%91"><span class="toc-number">1.9.</span> <span class="toc-text">9. 模式选择决策树</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#10-%E6%A8%A1%E5%BC%8F%E7%BB%84%E5%90%88%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5"><span class="toc-number">1.10.</span> <span class="toc-text">10. 模式组合最佳实践</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#10-1-%E5%B8%B8%E8%A7%81%E7%BB%84%E5%90%88"><span class="toc-number">1.10.1.</span> <span class="toc-text">10.1 常见组合</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#10-2-%E6%B8%90%E8%BF%9B%E5%BC%8F%E6%9E%B6%E6%9E%84%E5%8D%87%E7%BA%A7%E8%B7%AF%E5%BE%84"><span class="toc-number">1.10.2.</span> <span class="toc-text">10.2 渐进式架构升级路径</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#11-%E6%A1%86%E6%9E%B6%E6%94%AF%E6%8C%81%E7%9F%A9%E9%98%B5"><span class="toc-number">1.11.</span> <span class="toc-text">11. 框架支持矩阵</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#12-%E4%B8%8E%E5%B7%B2%E5%AD%A6%E5%86%85%E5%AE%B9%E7%9A%84%E5%AF%B9%E5%BA%94"><span class="toc-number">1.12.</span> <span class="toc-text">12. 与已学内容的对应</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%82%E8%80%83%E8%B5%84%E6%96%99"><span class="toc-number">1.13.</span> <span class="toc-text">参考资料</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%8B%E4%B8%80%E6%AD%A5"><span class="toc-number">1.14.</span> <span class="toc-text">下一步</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>Recent Posts</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/05/21/AI-Python-09.2-%E8%AF%AD%E9%9F%B3%E4%BA%A4%E4%BA%92%E4%B8%8E%E8%AF%AD%E9%9F%B3Agent/" title="AI-Python-09.2-语音交互与语音Agent">AI-Python-09.2-语音交互与语音Agent</a><time datetime="2026-05-21T06:00:00.000Z" title="Created 2026-05-21 14:00:00">2026-05-21</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/05/21/AI-Python-09.1-Vision-Language%E5%A4%9A%E6%A8%A1%E6%80%81%E7%90%86%E8%A7%A3/" title="AI-Python-09.1-Vision-Language多模态理解">AI-Python-09.1-Vision-Language多模态理解</a><time datetime="2026-05-21T03:00:00.000Z" title="Created 2026-05-21 11:00:00">2026-05-21</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/05/20/AI-Python-08.3-%E5%A4%9A%E6%99%BA%E8%83%BD%E4%BD%93%E5%8D%8F%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%AE%9E%E6%88%98/" title="AI-Python-08.3-多智能体协作系统实战">AI-Python-08.3-多智能体协作系统实战</a><time datetime="2026-05-20T03:00:00.000Z" title="Created 2026-05-20 11:00:00">2026-05-20</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/05/19/AI-Python-08.2-Agent%E5%AE%9E%E6%88%98%E4%BB%8E%E9%9B%B6%E6%9E%84%E5%BB%BA%E6%99%BA%E8%83%BD%E4%BD%93/" title="AI-Python-08.2-Agent实战从零构建智能体">AI-Python-08.2-Agent实战从零构建智能体</a><time datetime="2026-05-19T02:00:00.000Z" title="Created 2026-05-19 10:00:00">2026-05-19</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/05/19/AI-Python-07.6-RAG%E7%9F%A5%E8%AF%86%E5%BA%93%E8%AF%84%E6%B5%8B%E4%B8%8E%E4%BC%98%E5%8C%96%E5%AE%9E%E6%88%98/" title="AI-Python-07.6-RAG知识库评测与优化实战">AI-Python-07.6-RAG知识库评测与优化实战</a><time datetime="2026-05-19T02:00:00.000Z" title="Created 2026-05-19 10:00:00">2026-05-19</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By david</span><span class="framework-info"><span>Framework </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>Theme </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.4.3</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="Reading Mode"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="Toggle Between Light and Dark Mode"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="Toggle Between Single-column and Double-column"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="Settings"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="Table of Contents"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="Back to Top"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><div class="js-pjax"><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (false) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
