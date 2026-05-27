@@ -1,0 +1,472 @@
+<!DOCTYPE html><html lang="en" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>AI Agent 面试实战 — 第5周：模型路由、Skill 执行与条件路由 | Hexo</title><meta name="author" content="david"><meta name="copyright" content="david"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="AI Agent 面试实战 — 第5周：模型路由、Skill 执行与条件路由 第5周完成 L3 策略层——模型智能路由（成本降低 80%）、Skill 可执行指令系统、条件路由 AST 求值器。让系统从”能做”变为”会做”。   一、模型路由与成本优化Q1: 什么是模型路由（Model Router）？你们是怎么实现的？难度：⭐⭐⭐（进阶）频率：★★★★★（必问） 回答结构： “模型路由的核心思路">
+<meta property="og:type" content="article">
+<meta property="og:title" content="AI Agent 面试实战 — 第5周：模型路由、Skill 执行与条件路由">
+<meta property="og:url" content="http://example.com/2026/05/27/AI-Agent-%E9%9D%A2%E8%AF%95%E5%AE%9E%E6%88%98-%E7%AC%AC5%E5%91%A8-%E6%A8%A1%E5%9E%8B%E8%B7%AF%E7%94%B1Skill%E6%89%A7%E8%A1%8C%E4%B8%8E%E6%9D%A1%E4%BB%B6%E8%B7%AF%E7%94%B1/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="AI Agent 面试实战 — 第5周：模型路由、Skill 执行与条件路由 第5周完成 L3 策略层——模型智能路由（成本降低 80%）、Skill 可执行指令系统、条件路由 AST 求值器。让系统从”能做”变为”会做”。   一、模型路由与成本优化Q1: 什么是模型路由（Model Router）？你们是怎么实现的？难度：⭐⭐⭐（进阶）频率：★★★★★（必问） 回答结构： “模型路由的核心思路">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://example.com/img/butterfly-icon.png">
+<meta property="article:published_time" content="2026-05-27T02:00:00.000Z">
+<meta property="article:modified_time" content="2026-05-27T07:03:07.805Z">
+<meta property="article:author" content="david">
+<meta property="article:tag" content="AI">
+<meta property="article:tag" content="Agent">
+<meta property="article:tag" content="学习笔记">
+<meta property="article:tag" content="面试">
+<meta property="article:tag" content="工程实践">
+<meta property="article:tag" content="Skill">
+<meta property="article:tag" content="模型路由">
+<meta property="article:tag" content="条件路由">
+<meta property="article:tag" content="Prompt组装">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/img/butterfly-icon.png"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "AI Agent 面试实战 — 第5周：模型路由、Skill 执行与条件路由",
+  "url": "http://example.com/2026/05/27/AI-Agent-%E9%9D%A2%E8%AF%95%E5%AE%9E%E6%88%98-%E7%AC%AC5%E5%91%A8-%E6%A8%A1%E5%9E%8B%E8%B7%AF%E7%94%B1Skill%E6%89%A7%E8%A1%8C%E4%B8%8E%E6%9D%A1%E4%BB%B6%E8%B7%AF%E7%94%B1/",
+  "image": "http://example.com/img/butterfly-icon.png",
+  "datePublished": "2026-05-27T02:00:00.000Z",
+  "dateModified": "2026-05-27T07:03:07.805Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "david",
+      "url": "http://example.com"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://example.com/2026/05/27/AI-Agent-%E9%9D%A2%E8%AF%95%E5%AE%9E%E6%88%98-%E7%AC%AC5%E5%91%A8-%E6%A8%A1%E5%9E%8B%E8%B7%AF%E7%94%B1Skill%E6%89%A7%E8%A1%8C%E4%B8%8E%E6%9D%A1%E4%BB%B6%E8%B7%AF%E7%94%B1/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: 'Copy Successful',
+    error: 'Copy Failed',
+    noSupport: 'Browser Not Supported'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: 'Just now',
+    min: 'minutes ago',
+    hour: 'hours ago',
+    day: 'days ago',
+    month: 'months ago'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid/dist/infinitegrid.min.js',
+    buttonText: 'Load More'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'AI Agent 面试实战 — 第5周：模型路由、Skill 执行与条件路由',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Hexo</span></a><a class="nav-page-title" href="/"><span class="site-name">AI Agent 面试实战 — 第5周：模型路由、Skill 执行与条件路由</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  Back to Home</span></span></a></span><div id="menus"></div></nav><div id="post-info"><h1 class="post-title">AI Agent 面试实战 — 第5周：模型路由、Skill 执行与条件路由</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">Created</span><time class="post-meta-date-created" datetime="2026-05-27T02:00:00.000Z" title="Created 2026-05-27 10:00:00">2026-05-27</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">Updated</span><time class="post-meta-date-updated" datetime="2026-05-27T07:03:07.805Z" title="Updated 2026-05-27 15:03:07">2026-05-27</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/AI%E5%AD%A6%E4%B9%A0/">AI学习</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/AI%E5%AD%A6%E4%B9%A0/Agent/">Agent</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/AI%E5%AD%A6%E4%B9%A0/Agent/%E9%9D%A2%E8%AF%95/">面试</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">Post Views:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h2 id="AI-Agent-面试实战-—-第5周：模型路由、Skill-执行与条件路由"><a href="#AI-Agent-面试实战-—-第5周：模型路由、Skill-执行与条件路由" class="headerlink" title="AI Agent 面试实战 — 第5周：模型路由、Skill 执行与条件路由"></a>AI Agent 面试实战 — 第5周：模型路由、Skill 执行与条件路由</h2><blockquote>
+<p>第5周完成 L3 策略层——模型智能路由（成本降低 80%）、Skill 可执行指令系统、条件路由 AST 求值器。让系统从”能做”变为”会做”。</p>
+</blockquote>
+<hr>
+<h2 id="一、模型路由与成本优化"><a href="#一、模型路由与成本优化" class="headerlink" title="一、模型路由与成本优化"></a>一、模型路由与成本优化</h2><h3 id="Q1-什么是模型路由（Model-Router）？你们是怎么实现的？"><a href="#Q1-什么是模型路由（Model-Router）？你们是怎么实现的？" class="headerlink" title="Q1: 什么是模型路由（Model Router）？你们是怎么实现的？"></a>Q1: 什么是模型路由（Model Router）？你们是怎么实现的？</h3><p><strong>难度</strong>：⭐⭐⭐（进阶）<br><strong>频率</strong>：★★★★★（必问）</p>
+<p><strong>回答结构</strong>：</p>
+<p>“模型路由的核心思路是：<strong>不同任务用不同模型，在成本和质量间自动平衡。</strong></p>
+<p>我们实现了一个自动路由层：</p>
+<ol>
+<li><strong>任务复杂度分类</strong>：对用户输入进行快速评估。消息长度 &lt; 50 字且无特殊关键词 → SIMPLE；包含’架构&#x2F;设计&#x2F;选型’或长度 &gt; 300 字 → COMPLEX；其余为 STANDARD。分类器用规则引擎实现，轻量且无额外 API 消耗。</li>
+<li><strong>模型选择</strong>：复杂度映射到模型池：</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>复杂度</th>
+<th>模型</th>
+<th>特点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>SIMPLE</td>
+<td>Haiku &#x2F; GLM-4-Flash</td>
+<td>最快、最便宜</td>
+</tr>
+<tr>
+<td>STANDARD</td>
+<td>Sonnet &#x2F; GPT-4o &#x2F; GLM-5.1</td>
+<td>性价比</td>
+</tr>
+<tr>
+<td>COMPLEX</td>
+<td>Opus &#x2F; Claude-Sonnet-4-6</td>
+<td>最高质量</td>
+</tr>
+</tbody></table>
+<ol start="3">
+<li><strong>Fallback 链</strong>：如果主模型不可用（429、500、超时），自动按顺序尝试下一个。每失败一次增加退避，最多 3 次，最终降级到 HITL。</li>
+</ol>
+<p>效果：在日常开发中，约 <strong>60% 的简单对话自动使用 Haiku，单次成本降低了 80%</strong>，而复杂任务仍保证用最强模型完成。”</p>
+<blockquote>
+<p><strong>追问：复杂度分类只用规则？有没有考虑过用 LLM 分类？</strong></p>
+</blockquote>
+<p>“规则分类在初期已覆盖 95% 的场景，且零延迟、零成本。但我们在代码里预留了 <code>classify_by_llm</code> 的扩展点，当规则判断不确定时（如长度中等的模糊需求），可降级调用轻量模型做补充分类。这是典型的<strong>快速启动 + 渐进式增强</strong>策略。”</p>
+<hr>
+<h3 id="Q2-Fallback-链是怎么设计的？怎样避免雪崩？"><a href="#Q2-Fallback-链是怎么设计的？怎样避免雪崩？" class="headerlink" title="Q2: Fallback 链是怎么设计的？怎样避免雪崩？"></a>Q2: Fallback 链是怎么设计的？怎样避免雪崩？</h3><p><strong>难度</strong>：⭐⭐⭐（进阶）<br><strong>频率</strong>：★★★★（常见）</p>
+<p><strong>回答结构</strong>：</p>
+<p>“Fallback 链是模型路由的’保险丝’。</p>
+<p>设计上遵循<strong>指数退避 + 最大尝试</strong>：</p>
+<ol>
+<li>主模型失败时，立即尝试下一个候选模型（首次不退避）</li>
+<li>第二次失败后等待 2 秒，第三次等待 4 秒</li>
+<li>超过 3 次全部失败，抛出异常并告警，此时 Orchestrator 会降级到 HITL，由人工兜底</li>
+</ol>
+<p>为了防止雪崩，我们做了两个关键控制：</p>
+<ul>
+<li><strong>全局限流</strong>：所有调用共享 Token Bucket，单个模型流量暴增会被限流，不会把压力传递到下一个模型。</li>
+<li><strong>熔断器</strong>：实时监控模型错误率，连续失败超过阈值直接熔断，避免向已不可用的模型发送请求。</li>
+</ul>
+<p>这样即使在某个 Provider 全面故障时，系统仍能秒级平滑切换。”</p>
+<hr>
+<h2 id="二、Skill-执行与指令注入"><a href="#二、Skill-执行与指令注入" class="headerlink" title="二、Skill 执行与指令注入"></a>二、Skill 执行与指令注入</h2><h3 id="Q3-Skill-是怎么被-Agent-真正执行的？和直接写-Prompt-有什么区别？"><a href="#Q3-Skill-是怎么被-Agent-真正执行的？和直接写-Prompt-有什么区别？" class="headerlink" title="Q3: Skill 是怎么被 Agent 真正执行的？和直接写 Prompt 有什么区别？"></a>Q3: Skill 是怎么被 Agent 真正执行的？和直接写 Prompt 有什么区别？</h3><p><strong>难度</strong>：⭐⭐⭐（进阶）<br><strong>频率</strong>：★★★★（常见）</p>
+<p><strong>回答结构</strong>：</p>
+<p>“Skill 不是简单的 Prompt 复制，而是一个<strong>自包含的执行单元</strong>。</p>
+<p>执行流程：</p>
+<ol>
+<li><strong>加载 Skill 定义</strong>：从 Skill Registry 读取 SKILL.md 中的指令（Instructions）和输出格式（Output Format），以及 config.yaml 中的参数列表。</li>
+<li><strong>参数注入</strong>：SOP 节点将任务上下文（TaskState）中的相关变量按 config.yaml 定义的参数映射注入 Skill。</li>
+<li><strong>组装 Skill Prompt</strong>：使用专门的 Skill 模板，把指令和当前任务组装成独立上下文块，注入到 Agent 的 System Prompt 中。</li>
+<li><strong>Agent 执行</strong>：Agent 基于这个 System Prompt + Skill Instructions + Tools 去调用 LLM，按照 Skill 规定的步骤完成任务。</li>
+<li><strong>输出校验</strong>：AI 回答后，校验其格式是否符合 SKILL.md 中定义的 Output Format（如 Markdown 表格、JSON 结构），若不符合则触发自动重试。</li>
+</ol>
+<p><strong>与直接写 Prompt 的区别</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>直接写 Prompt</th>
+<th>Skill</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>复用性</td>
+<td>一次性</td>
+<td>可复用、可版本管理</td>
+</tr>
+<tr>
+<td>参数化</td>
+<td>无，纯文本</td>
+<td>有明确输入参数定义</td>
+</tr>
+<tr>
+<td>质量保证</td>
+<td>无输出校验</td>
+<td>自带 Output Format 校验</td>
+</tr>
+<tr>
+<td>调度方式</td>
+<td>手动触发</td>
+<td>SOP 节点可像函数一样调度</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p><strong>追问：如果一个 Skill 执行失败（比如输出了错误格式），会怎样？</strong></p>
+</blockquote>
+<p>“Skill 执行器内置了输出校验器。如果格式与 SKILL.md 中定义的 Output Format 不匹配，会触发两件事：</p>
+<ol>
+<li><strong>自动重试</strong>：将错误信息（格式不符的具体部分）反馈给 Agent，要求它重新输出符合格式的内容。最多重试 2 次。</li>
+<li><strong>升级 HITL</strong>：重试依然失败，将控制权交给人工，并携带当前的 Skill 上下文和失败记录，让用户快速定位是 Skill 指令不清晰还是 Agent 能力不足。”</li>
+</ol>
+<hr>
+<h3 id="Q4-Skill-和-Persona-有什么区别？为什么要分开？"><a href="#Q4-Skill-和-Persona-有什么区别？为什么要分开？" class="headerlink" title="Q4: Skill 和 Persona 有什么区别？为什么要分开？"></a>Q4: Skill 和 Persona 有什么区别？为什么要分开？</h3><p><strong>难度</strong>：⭐⭐⭐（进阶）<br><strong>频率</strong>：★★★★（常见）</p>
+<p><strong>回答结构</strong>：</p>
+<p>“<strong>Persona 定义的是’是谁’</strong>——角色身份、核心能力、行为边界。如架构师，他的长期性格是’擅长系统设计，不写代码’。</p>
+<p><strong>Skill 定义的是’会什么技能’</strong>——一个具体的任务能力，比如’代码审查’、’需求分析’。Skill 可以像一个工具包一样被任何合适的 Agent 临时加载和使用。</p>
+<p>分开的好处：</p>
+<ol>
+<li><strong>复用</strong>：一个’代码审查’ Skill 可以被架构师、程序员、Reviewer 共同使用，不需要重复定义。</li>
+<li><strong>解耦</strong>：Persona 可以独立调整（比如架构师换用更强模型），Skill 可以独立更新（如审查标准变得更严格），互不影响。</li>
+<li><strong>按需加载</strong>：Agent 不带着所有技能，只在 SOP 节点需要时才动态加载，避免 Prompt 过长而稀释注意力。</li>
+</ol>
+<p>在实际执行中，SOP 节点的绑定是 <strong>Agent + Skill</strong>，这就是’人选工具’的模式。”</p>
+<hr>
+<h2 id="三、Prompt-组装公式"><a href="#三、Prompt-组装公式" class="headerlink" title="三、Prompt 组装公式"></a>三、Prompt 组装公式</h2><h3 id="Q5-Agent-的-Prompt-最终是怎么组装的？你们有统一的模板吗？"><a href="#Q5-Agent-的-Prompt-最终是怎么组装的？你们有统一的模板吗？" class="headerlink" title="Q5: Agent 的 Prompt 最终是怎么组装的？你们有统一的模板吗？"></a>Q5: Agent 的 Prompt 最终是怎么组装的？你们有统一的模板吗？</h3><p><strong>难度</strong>：⭐⭐⭐（进阶）<br><strong>频率</strong>：★★★★（常见）</p>
+<p><strong>回答结构</strong>：</p>
+<p>“我们设计了一个统一的 Prompt 组装公式，保证所有 Agent 调用的一致性：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Agent Prompt = System Prompt（Persona 定义）</span><br><span class="line">             + Context Prompt（Memory + RAG + Task State）</span><br><span class="line">             + Skill Instructions（如果当前任务有 Skill）</span><br><span class="line">             + User Message</span><br></pre></td></tr></table></figure>
+
+<p>具体实现上，PromptBuilder 维护了三个核心模板：</p>
+<table>
+<thead>
+<tr>
+<th>模板</th>
+<th>注入内容</th>
+<th>来源</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>SYSTEM_TEMPLATE</td>
+<td>Persona 的身份、可用工具、输出偏好</td>
+<td>Persona Registry</td>
+</tr>
+<tr>
+<td>CONTEXT_TEMPLATE</td>
+<td>Memory（内部经验）+ RAG 检索结果（外部知识）+ 任务描述</td>
+<td>Memory + RAG + TaskState</td>
+</tr>
+<tr>
+<td>SKILL_TEMPLATE</td>
+<td>技能指令和输出格式</td>
+<td>Skill Registry</td>
+</tr>
+</tbody></table>
+<p>这三个模板由统一的 <code>build_full_prompt</code> 方法一次性组装，同时 Context Manager 在前面已经做了 Token 预算裁剪，保证不超过窗口。</p>
+<p>统一模板的好处是：所有的 Agent 调用都遵循相同的结构，方便调试（verbose 模式可以看到完整 Prompt 结构），也为后续的 A&#x2F;B 测试和版本监控打下了基础。”</p>
+<hr>
+<h2 id="四、条件路由与循环"><a href="#四、条件路由与循环" class="headerlink" title="四、条件路由与循环"></a>四、条件路由与循环</h2><h3 id="Q6-条件路由的实现细节？表达式求值如何保证安全？"><a href="#Q6-条件路由的实现细节？表达式求值如何保证安全？" class="headerlink" title="Q6: 条件路由的实现细节？表达式求值如何保证安全？"></a>Q6: 条件路由的实现细节？表达式求值如何保证安全？</h3><p><strong>难度</strong>：⭐⭐⭐⭐（深入）<br><strong>频率</strong>：★★★（偶见）</p>
+<p><strong>回答结构</strong>：</p>
+<p>“条件路由是 SOP 引擎的核心组件之一，它让工作流能根据 Agent 的输出动态决定下一步。</p>
+<p>实现上，ConditionRouter 接收一个表达式和当前的 TaskState，返回下一节点 ID。</p>
+<p><strong>表达式解析</strong>：表达式格式为 <code>result.score &gt;= 80</code> 或 <code>status == &#39;approved&#39;</code>。我们没有用 Python 的 <code>eval</code>（太危险），而是实现了一个<strong>受限的表达式求值器</strong>：</p>
+<ol>
+<li>解析表达式为 <strong>AST（抽象语法树）</strong></li>
+<li>只允许白名单中的操作符（<code>&gt;=</code>, <code>&lt;=</code>, <code>&gt;</code>, <code>&lt;</code>, <code>==</code>, <code>!=</code>, <code>in</code>, <code>contains</code>）</li>
+<li>变量值从 TaskState 的安全字典中获取，<strong>禁止任何函数调用或属性访问</strong></li>
+</ol>
+<p><strong>路由决策</strong>：在 edges 定义中，每个分支有一个 <code>condition</code> 和一个 <code>max_loop</code> 控制循环回退。求值器遍历条件，返回第一个为真的目标节点。如果都不匹配，走默认路径（无 condition 的分支）。</p>
+<p><strong>安全层面</strong>：AST 解析只允许比较操作和布尔运算，拒绝任何导入、函数执行等操作。测试用 50 个注入攻击用例全部被拦截。”</p>
+<blockquote>
+<p><strong>追问：循环回退怎么防止死循环？</strong></p>
+</blockquote>
+<p>“通过 <code>max_loop</code> 硬限制。TaskState 中有一个 <code>retry_count</code>，每次经过循环边时自增。当 <code>retry_count &gt;= max_loop</code> 时，路由器强制走 failed 或 HITL 分支，并记录告警日志。”</p>
+<hr>
+<h3 id="Q7-条件路由在一个真实的开发-SOP-中是怎么跑的？"><a href="#Q7-条件路由在一个真实的开发-SOP-中是怎么跑的？" class="headerlink" title="Q7: 条件路由在一个真实的开发 SOP 中是怎么跑的？"></a>Q7: 条件路由在一个真实的开发 SOP 中是怎么跑的？</h3><p><strong>难度</strong>：⭐⭐（基础）<br><strong>频率</strong>：★★★（常见）</p>
+<p><strong>回答结构</strong>：</p>
+<p>“以代码审查环节为例：</p>
+<ol>
+<li><strong>节点定义</strong>：review 节点绑定 Reviewer-01 Agent 和 code-review Skill</li>
+<li><strong>边定义</strong>：<ul>
+<li>如果 <code>review.score &gt;= 80</code> → 进入下一节点（通过）</li>
+<li>如果 <code>review.score &lt; 80</code> 且 <code>retry_count &lt; 3</code> → 回退到编码节点重新修改</li>
+<li>如果 <code>retry_count &gt;= 3</code> → 进入 HITL 人工审批节点</li>
+</ul>
+</li>
+</ol>
+<p>执行时，审查节点完成后，Router 从 TaskState 中读取 score 字段，求值并跳转。整个过程在聊天室的可视化界面上可实时看到节点亮起和路径变化。</p>
+<p>这种设计将工作流逻辑从 Agent 的 Prompt 中抽出来，变成了<strong>可配置、可追踪的显式规则</strong>，大大提升系统的确定性。”</p>
+<hr>
+<h2 id="五、整体策略层评价"><a href="#五、整体策略层评价" class="headerlink" title="五、整体策略层评价"></a>五、整体策略层评价</h2><h3 id="Q8-L3-策略层给你带来的最大价值是什么？"><a href="#Q8-L3-策略层给你带来的最大价值是什么？" class="headerlink" title="Q8: L3 策略层给你带来的最大价值是什么？"></a>Q8: L3 策略层给你带来的最大价值是什么？</h3><p><strong>难度</strong>：⭐（开放）<br><strong>频率</strong>：★★（偶见）</p>
+<p><strong>回答结构</strong>：</p>
+<p>“最大价值是让系统从’能做’变为’会做’。</p>
+<p>之前 L1 和 L2 给 Agent 提供了能力和知识，但所有任务一视同仁——简单对话也用最强模型，成本高；任务需要审查时，Agent 还是得靠冗长的 Prompt 指导。</p>
+<p>L3 带来的三个关键改变：</p>
+<ol>
+<li><strong>智能路由</strong>：省下 60% 的成本，同时不损害质量。</li>
+<li><strong>Skill 可执行</strong>：Agent 可以像使用工具一样使用 Skill，指令清晰、可复用。</li>
+<li><strong>条件路由</strong>：流程从此有了真正的决策能力，不再是线性的。</li>
+</ol>
+<p>对于面试来说，这是展示工程深度的地方——不是简单调 API，而是在上面构建了智能决策层。”</p>
+<hr>
+<h2 id="第5周面试总结"><a href="#第5周面试总结" class="headerlink" title="第5周面试总结"></a>第5周面试总结</h2><table>
+<thead>
+<tr>
+<th>问题</th>
+<th>核心话术</th>
+<th>关键词</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>模型路由？</td>
+<td>任务分类 → 模型选择 → Fallback，成本降低 80%</td>
+<td>智能选型</td>
+</tr>
+<tr>
+<td>Fallback 链？</td>
+<td>指数退避 + 全局限流 + 熔断器，防止雪崩</td>
+<td>鲁棒性</td>
+</tr>
+<tr>
+<td>Skill 执行？</td>
+<td>加载定义 → 参数注入 → 组装 Prompt → 校验输出</td>
+<td>可复用指令</td>
+</tr>
+<tr>
+<td>Skill vs Persona？</td>
+<td>Persona 是谁，Skill 会什么，解耦按需组合</td>
+<td>角色-技能分离</td>
+</tr>
+<tr>
+<td>Prompt 组装？</td>
+<td>统一公式：System + Context + Skill，标准化</td>
+<td>模板化</td>
+</tr>
+<tr>
+<td>条件路由？</td>
+<td>AST 受限求值，拒绝 eval，max_loop 防死循环</td>
+<td>安全决策</td>
+</tr>
+<tr>
+<td>SOP 中的条件路由？</td>
+<td>score &gt;&#x3D; 80 通过，&lt; 80 回退，&gt;&#x3D; 3 次 HITL</td>
+<td>可视化流程</td>
+</tr>
+<tr>
+<td>策略层价值？</td>
+<td>从”能做”到”会做”，成本、质量、决策三维提升</td>
+<td>工程深度</td>
+</tr>
+</tbody></table>
+<p><strong>一句话总结第5周</strong>：</p>
+<blockquote>
+<p>第5周完成了 L3 策略层——模型智能路由让 60% 的简单对话自动用廉价模型（成本降 80%），Skill 系统让指令可复用可校验，条件路由让 SOP 有了真正的决策能力。系统从”所有任务一视同仁”进化为”聪明地选择怎么做”。</p>
+</blockquote>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>Author: </span><span class="post-copyright-info"><a href="http://example.com">david</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>Link: </span><span class="post-copyright-info"><a href="http://example.com/2026/05/27/AI-Agent-%E9%9D%A2%E8%AF%95%E5%AE%9E%E6%88%98-%E7%AC%AC5%E5%91%A8-%E6%A8%A1%E5%9E%8B%E8%B7%AF%E7%94%B1Skill%E6%89%A7%E8%A1%8C%E4%B8%8E%E6%9D%A1%E4%BB%B6%E8%B7%AF%E7%94%B1/">http://example.com/2026/05/27/AI-Agent-%E9%9D%A2%E8%AF%95%E5%AE%9E%E6%88%98-%E7%AC%AC5%E5%91%A8-%E6%A8%A1%E5%9E%8B%E8%B7%AF%E7%94%B1Skill%E6%89%A7%E8%A1%8C%E4%B8%8E%E6%9D%A1%E4%BB%B6%E8%B7%AF%E7%94%B1/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>Copyright Notice: </span><span class="post-copyright-info">All articles on this blog are licensed under <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> unless otherwise stated.</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/AI/">AI</a><a class="post-meta__tags" href="/tags/Agent/">Agent</a><a class="post-meta__tags" href="/tags/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">学习笔记</a><a class="post-meta__tags" href="/tags/%E9%9D%A2%E8%AF%95/">面试</a><a class="post-meta__tags" href="/tags/%E5%B7%A5%E7%A8%8B%E5%AE%9E%E8%B7%B5/">工程实践</a><a class="post-meta__tags" href="/tags/Skill/">Skill</a><a class="post-meta__tags" href="/tags/%E6%A8%A1%E5%9E%8B%E8%B7%AF%E7%94%B1/">模型路由</a><a class="post-meta__tags" href="/tags/%E6%9D%A1%E4%BB%B6%E8%B7%AF%E7%94%B1/">条件路由</a><a class="post-meta__tags" href="/tags/Prompt%E7%BB%84%E8%A3%85/">Prompt组装</a></div><div class="post-share"><div class="social-share" data-image="/img/butterfly-icon.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related full-width" href="/2026/05/26/AI-Agent-%E9%9D%A2%E8%AF%95%E5%AE%9E%E6%88%98-%E7%AC%AC4%E5%91%A8-RAG%E7%9F%A5%E8%AF%86%E6%A3%80%E7%B4%A2%E4%B8%8ESkill%E5%9F%BA%E7%A1%80/" title="AI Agent 面试实战 — 第4周：RAG 知识检索与 Skill 基础"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">Next</div><div class="info-item-2">AI Agent 面试实战 — 第4周：RAG 知识检索与 Skill 基础</div></div><div class="info-2"><div class="info-item-1">AI Agent 面试实战 — 第4周：RAG 知识检索与 Skill 基础 第4周完成 L2 反思层的 RAG 知识检索——混合检索 + Reranker 重排序 + Token 预算联合裁剪 + 层级知识库 + Skill 注册基础。让 Agent 能从知识库中精准检索信息，并和记忆系统协作注入上下文。   一、RAG 整体设计Q1: 你们的 RAG 方案整体架构是怎样的？难度：⭐⭐⭐（进阶）频率：★★★★★（必问） 回答结构： “我们的 RAG 方案是基于混合检索 + 重排序 + 层级知识库的架构。 完整流程：  文档注入阶段：用户上传文档到知识库 → 语义分块（512 token &#x2F; 重叠 64 token）→ 调用 bge-m3 Embedding API 生成向量 → 存入 pgvector，同时生成 tsvector 全文索引。 检索阶段： Dense 检索：将查询向量化，在 pgvector 中做余弦相似度搜索，返回 Top-K Sparse 检索：用 PostgreSQL tsvector 做 BM25 全文检索，返回 Top-K 两路结果通过 RRF...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>Related Articles</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/2026/05/26/AI-Agent-%E9%9D%A2%E8%AF%95%E5%AE%9E%E6%88%98-%E7%AC%AC4%E5%91%A8-RAG%E7%9F%A5%E8%AF%86%E6%A3%80%E7%B4%A2%E4%B8%8ESkill%E5%9F%BA%E7%A1%80/" title="AI Agent 面试实战 — 第4周：RAG 知识检索与 Skill 基础"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-05-26</div><div class="info-item-2">AI Agent 面试实战 — 第4周：RAG 知识检索与 Skill 基础</div></div><div class="info-2"><div class="info-item-1">AI Agent 面试实战 — 第4周：RAG 知识检索与 Skill 基础 第4周完成 L2 反思层的 RAG 知识检索——混合检索 + Reranker 重排序 + Token 预算联合裁剪 + 层级知识库 + Skill 注册基础。让 Agent 能从知识库中精准检索信息，并和记忆系统协作注入上下文。   一、RAG 整体设计Q1: 你们的 RAG 方案整体架构是怎样的？难度：⭐⭐⭐（进阶）频率：★★★★★（必问） 回答结构： “我们的 RAG 方案是基于混合检索 + 重排序 + 层级知识库的架构。 完整流程：  文档注入阶段：用户上传文档到知识库 → 语义分块（512 token &#x2F; 重叠 64 token）→ 调用 bge-m3 Embedding API 生成向量 → 存入 pgvector，同时生成 tsvector 全文索引。 检索阶段： Dense 检索：将查询向量化，在 pgvector 中做余弦相似度搜索，返回 Top-K Sparse 检索：用 PostgreSQL tsvector 做 BM25 全文检索，返回 Top-K 两路结果通过 RRF...</div></div></div></a><a class="pagination-related" href="/2026/05/25/AI-Agent-%E9%9D%A2%E8%AF%95%E5%AE%9E%E6%88%98-%E7%AC%AC1%E5%91%A8-%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%B7%A5%E7%A8%8B%E5%9F%BA%E7%A1%80/" title="AI Agent 面试实战 — 第1周：架构设计与工程基础"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-05-25</div><div class="info-item-2">AI Agent 面试实战 — 第1周：架构设计与工程基础</div></div><div class="info-2"><div class="info-item-1">AI Agent 面试实战 — 第1周：架构设计与工程基础 边做 The Boy Assistant 项目，边整理高频面试题。第1周完成系统地基——从零搭建 FastAPI 项目、Model Adapter、API Key 管理、数据表设计。以下是这一周遇到的高频面试问题。   一、架构设计类Q1: 为什么选 FastAPI 而不是 Django 或 Flask？难度：⭐（基础）频率：★★★★★（几乎必问） 回答结构： “选 FastAPI 是基于三个核心考量：** 第一：async 原生支持。 Agent 系统需要大量并发 API 调用——同时调用多个 LLM Provider、同时处理多个 Agent 的请求、同时推送 WebSocket 流式输出。FastAPI 原生支持 async&#x2F;await，而 Django 的 async 支持是后来加的，稳定性不够；Flask 根本没有原生 async。 第二：WebSocket 内置支持。 我们的聊天室需要实时推送 SOP 执行进度、Agent 对话流。FastAPI 的 WebSocket 是内置的，同一个框架同时处理...</div></div></div></a><a class="pagination-related" href="/2026/05/25/AI-Agent-%E9%9D%A2%E8%AF%95%E5%AE%9E%E6%88%98-%E7%AC%AC2%E5%91%A8-%E5%B7%A5%E5%85%B7%E7%B3%BB%E7%BB%9F%E4%B8%8EAgent%E6%9E%84%E5%BB%BA/" title="AI Agent 面试实战 — 第2周：工具系统与 Agent 构建"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-05-25</div><div class="info-item-2">AI Agent 面试实战 — 第2周：工具系统与 Agent 构建</div></div><div class="info-2"><div class="info-item-1">AI Agent 面试实战 — 第2周：工具系统与 Agent 构建 第2周完成 L1 能力层核心——Tool Registry 三层权限模型、有状态工具生命周期管理、Agent Factory 组合构建。让 Agent 有了”手”和”边界”。   一、工具系统设计Q1: 工具注册表（Tool Registry）是怎么设计的？难度：⭐⭐（基础+）频率：★★★★★（必问） 回答结构： “Tool Registry 是整个工具系统的中枢，负责工具的注册、发现、权限校验。 设计上分三层： 第一层：注册层。 所有工具在 Registry 中注册，包括 name、description、参数 Schema（JSON Schema 格式）、工具类型（function &#x2F; mcp &#x2F; api）、是否是有状态工具。这个是全局唯一的，所有 Agent 都能看到这个注册表。 第二层：声明层。 每个 Persona 在创建时，声明自己需要哪些工具。比如架构师声明自己需要 file-ops-readonly（只读文件操作），程序员声明自己需要 file-ops + terminal（...</div></div></div></a><a class="pagination-related" href="/2026/05/25/AI-Agent-%E9%9D%A2%E8%AF%95%E5%AE%9E%E6%88%98-%E7%AC%AC3%E5%91%A8-%E5%9B%9B%E5%B1%82%E8%AE%B0%E5%BF%86%E7%B3%BB%E7%BB%9F%E4%B8%8E%E4%B8%8A%E4%B8%8B%E6%96%87%E7%AE%A1%E7%90%86/" title="AI Agent 面试实战 — 第3周：四层记忆系统与上下文管理"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-05-25</div><div class="info-item-2">AI Agent 面试实战 — 第3周：四层记忆系统与上下文管理</div></div><div class="info-2"><div class="info-item-1">AI Agent 面试实战 — 第3周：四层记忆系统与上下文管理 第3周完成 L2 反思层的核心——四层记忆系统（全局&#x2F;团队&#x2F;个人&#x2F;上下文）、Token 预算管理、摘要压缩与硬裁剪策略。让 Agent 能”记住”团队决策和个人经验，同时不会浪费 Token。   一、记忆系统设计Q1: 四层记忆系统是如何设计的？每层的作用是什么？难度：⭐⭐⭐（进阶）频率：★★★★★（必问） 回答结构： “我设计了一个四层记忆系统，解决 Agent 协作中的记忆隔离、经验积累和上下文管理问题。 L1 系统记忆：全局通用知识，所有团队和 Agent 共享。比如 API 设计规范、安全基线。由管理员维护，任何 Agent 创建后自动继承。 L2 团队记忆：团队级共享基座。同一个 Team 内的所有 Agent 都能看到。比如架构决策、Sprint 目标、团队编码规范。关键设计是 Leader 决策自动写入 L2，所有 Member 下次对话自动同步，不需要手动传播。 L3 Agent 全局记忆：跟随 Agent 跨团队的个人经验。比如语言偏好（Python）、工具熟练度。...</div></div></div></a><a class="pagination-related" href="/2026/03/31/AI-Python-06.1-LangChain%E5%9F%BA%E7%A1%80/" title="AI-Python-06.1-LangChain基础"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-03-31</div><div class="info-item-2">AI-Python-06.1-LangChain基础</div></div><div class="info-2"><div class="info-item-1">AI-Python-06.1: LangChain 基础 LangChain 是当前最流行的 LLM 应用开发框架，让开发者快速搭建智能体、问答系统、对话机器人、知识库等复杂功能。   1. 什么是 LangChain？1.1 为什么需要 LangChain？众所周知，OpenAI 的 API 是无法联网的。如果想实现：  联网搜索并给出回答 总结 PDF 文档 基于某个视频进行问答 连接企业数据库  直接调用 API 是无法实现的。LangChain 就是为了解决这些问题而诞生的。 1.2 LangChain 的两大核心能力     flowchart TD     subgraph LangChain核心能力         direction TB         A[1. 将 LLM 与外部数据源连接]         A1[文档 &#x2F; 数据库 &#x2F; API &#x2F; 搜索引擎]         B[2. 允许与 LLM 进行交互]         B1[多轮对话 &#x2F; 工具调用 &#x2F; 链式编排]     end      A --&g...</div></div></div></a><a class="pagination-related" href="/2026/04/21/AI-Python-06.5-Tool%E4%B8%8EAgent/" title="AI-Python-06.5-Tool与Agent"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-04-21</div><div class="info-item-2">AI-Python-06.5-Tool与Agent</div></div><div class="info-2"><div class="info-item-1">AI-Python-06.5: Tool 与 Agent LLM 只会”说话”，Tool 让它能”做事”，Agent 让它自主决定”用什么工具做事”。本章深入理解 Tool 定义、Function Calling 机制和 Agent 的决策原理。   1. 为什么需要 Tool？1.1 LLM 的局限LLM 本质上只会生成文本，它不能：  搜索网络获取实时信息 执行精确的数学计算 查询数据库 调用外部 API 读写文件  1.2 Tool 的作用Tool &#x3D; 给 AI 装上”手脚” 1234567没有 Tool：用户: 135 × 246 等于多少？AI:   让我算一下... 33120（可能算错！）有 Tool：用户: 135 × 246 等于多少？AI:   [调用 multiply(135, 246)] → 33210（精确结果）   2. Function Calling 机制在学 Tool 之前，必须理解底层的 Function Calling（也叫 Tool Use）。 2.1 没有 Function Calling 时12用户: 135 × 246 等于...</div></div></div></a></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/butterfly-icon.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">david</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">139</div></a><a href="/tags/"><div class="headline">Tags</div><div class="length-num">336</div></a><a href="/categories/"><div class="headline">Categories</div><div class="length-num">24</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>Announcement</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>Contents</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#AI-Agent-%E9%9D%A2%E8%AF%95%E5%AE%9E%E6%88%98-%E2%80%94-%E7%AC%AC5%E5%91%A8%EF%BC%9A%E6%A8%A1%E5%9E%8B%E8%B7%AF%E7%94%B1%E3%80%81Skill-%E6%89%A7%E8%A1%8C%E4%B8%8E%E6%9D%A1%E4%BB%B6%E8%B7%AF%E7%94%B1"><span class="toc-number">1.</span> <span class="toc-text">AI Agent 面试实战 — 第5周：模型路由、Skill 执行与条件路由</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E6%A8%A1%E5%9E%8B%E8%B7%AF%E7%94%B1%E4%B8%8E%E6%88%90%E6%9C%AC%E4%BC%98%E5%8C%96"><span class="toc-number">2.</span> <span class="toc-text">一、模型路由与成本优化</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Q1-%E4%BB%80%E4%B9%88%E6%98%AF%E6%A8%A1%E5%9E%8B%E8%B7%AF%E7%94%B1%EF%BC%88Model-Router%EF%BC%89%EF%BC%9F%E4%BD%A0%E4%BB%AC%E6%98%AF%E6%80%8E%E4%B9%88%E5%AE%9E%E7%8E%B0%E7%9A%84%EF%BC%9F"><span class="toc-number">2.1.</span> <span class="toc-text">Q1: 什么是模型路由（Model Router）？你们是怎么实现的？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Q2-Fallback-%E9%93%BE%E6%98%AF%E6%80%8E%E4%B9%88%E8%AE%BE%E8%AE%A1%E7%9A%84%EF%BC%9F%E6%80%8E%E6%A0%B7%E9%81%BF%E5%85%8D%E9%9B%AA%E5%B4%A9%EF%BC%9F"><span class="toc-number">2.2.</span> <span class="toc-text">Q2: Fallback 链是怎么设计的？怎样避免雪崩？</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81Skill-%E6%89%A7%E8%A1%8C%E4%B8%8E%E6%8C%87%E4%BB%A4%E6%B3%A8%E5%85%A5"><span class="toc-number">3.</span> <span class="toc-text">二、Skill 执行与指令注入</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Q3-Skill-%E6%98%AF%E6%80%8E%E4%B9%88%E8%A2%AB-Agent-%E7%9C%9F%E6%AD%A3%E6%89%A7%E8%A1%8C%E7%9A%84%EF%BC%9F%E5%92%8C%E7%9B%B4%E6%8E%A5%E5%86%99-Prompt-%E6%9C%89%E4%BB%80%E4%B9%88%E5%8C%BA%E5%88%AB%EF%BC%9F"><span class="toc-number">3.1.</span> <span class="toc-text">Q3: Skill 是怎么被 Agent 真正执行的？和直接写 Prompt 有什么区别？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Q4-Skill-%E5%92%8C-Persona-%E6%9C%89%E4%BB%80%E4%B9%88%E5%8C%BA%E5%88%AB%EF%BC%9F%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A6%81%E5%88%86%E5%BC%80%EF%BC%9F"><span class="toc-number">3.2.</span> <span class="toc-text">Q4: Skill 和 Persona 有什么区别？为什么要分开？</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81Prompt-%E7%BB%84%E8%A3%85%E5%85%AC%E5%BC%8F"><span class="toc-number">4.</span> <span class="toc-text">三、Prompt 组装公式</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Q5-Agent-%E7%9A%84-Prompt-%E6%9C%80%E7%BB%88%E6%98%AF%E6%80%8E%E4%B9%88%E7%BB%84%E8%A3%85%E7%9A%84%EF%BC%9F%E4%BD%A0%E4%BB%AC%E6%9C%89%E7%BB%9F%E4%B8%80%E7%9A%84%E6%A8%A1%E6%9D%BF%E5%90%97%EF%BC%9F"><span class="toc-number">4.1.</span> <span class="toc-text">Q5: Agent 的 Prompt 最终是怎么组装的？你们有统一的模板吗？</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E6%9D%A1%E4%BB%B6%E8%B7%AF%E7%94%B1%E4%B8%8E%E5%BE%AA%E7%8E%AF"><span class="toc-number">5.</span> <span class="toc-text">四、条件路由与循环</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Q6-%E6%9D%A1%E4%BB%B6%E8%B7%AF%E7%94%B1%E7%9A%84%E5%AE%9E%E7%8E%B0%E7%BB%86%E8%8A%82%EF%BC%9F%E8%A1%A8%E8%BE%BE%E5%BC%8F%E6%B1%82%E5%80%BC%E5%A6%82%E4%BD%95%E4%BF%9D%E8%AF%81%E5%AE%89%E5%85%A8%EF%BC%9F"><span class="toc-number">5.1.</span> <span class="toc-text">Q6: 条件路由的实现细节？表达式求值如何保证安全？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Q7-%E6%9D%A1%E4%BB%B6%E8%B7%AF%E7%94%B1%E5%9C%A8%E4%B8%80%E4%B8%AA%E7%9C%9F%E5%AE%9E%E7%9A%84%E5%BC%80%E5%8F%91-SOP-%E4%B8%AD%E6%98%AF%E6%80%8E%E4%B9%88%E8%B7%91%E7%9A%84%EF%BC%9F"><span class="toc-number">5.2.</span> <span class="toc-text">Q7: 条件路由在一个真实的开发 SOP 中是怎么跑的？</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E6%95%B4%E4%BD%93%E7%AD%96%E7%95%A5%E5%B1%82%E8%AF%84%E4%BB%B7"><span class="toc-number">6.</span> <span class="toc-text">五、整体策略层评价</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Q8-L3-%E7%AD%96%E7%95%A5%E5%B1%82%E7%BB%99%E4%BD%A0%E5%B8%A6%E6%9D%A5%E7%9A%84%E6%9C%80%E5%A4%A7%E4%BB%B7%E5%80%BC%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="toc-number">6.1.</span> <span class="toc-text">Q8: L3 策略层给你带来的最大价值是什么？</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AC%AC5%E5%91%A8%E9%9D%A2%E8%AF%95%E6%80%BB%E7%BB%93"><span class="toc-number">7.</span> <span class="toc-text">第5周面试总结</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>Recent Posts</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/05/27/AI-Agent-%E9%9D%A2%E8%AF%95%E5%AE%9E%E6%88%98-%E7%AC%AC5%E5%91%A8-%E6%A8%A1%E5%9E%8B%E8%B7%AF%E7%94%B1Skill%E6%89%A7%E8%A1%8C%E4%B8%8E%E6%9D%A1%E4%BB%B6%E8%B7%AF%E7%94%B1/" title="AI Agent 面试实战 — 第5周：模型路由、Skill 执行与条件路由">AI Agent 面试实战 — 第5周：模型路由、Skill 执行与条件路由</a><time datetime="2026-05-27T02:00:00.000Z" title="Created 2026-05-27 10:00:00">2026-05-27</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/05/26/AI-Agent-%E9%9D%A2%E8%AF%95%E5%AE%9E%E6%88%98-%E7%AC%AC4%E5%91%A8-RAG%E7%9F%A5%E8%AF%86%E6%A3%80%E7%B4%A2%E4%B8%8ESkill%E5%9F%BA%E7%A1%80/" title="AI Agent 面试实战 — 第4周：RAG 知识检索与 Skill 基础">AI Agent 面试实战 — 第4周：RAG 知识检索与 Skill 基础</a><time datetime="2026-05-26T02:00:00.000Z" title="Created 2026-05-26 10:00:00">2026-05-26</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/05/25/AI-Agent-%E9%9D%A2%E8%AF%95%E5%AE%9E%E6%88%98-%E7%AC%AC3%E5%91%A8-%E5%9B%9B%E5%B1%82%E8%AE%B0%E5%BF%86%E7%B3%BB%E7%BB%9F%E4%B8%8E%E4%B8%8A%E4%B8%8B%E6%96%87%E7%AE%A1%E7%90%86/" title="AI Agent 面试实战 — 第3周：四层记忆系统与上下文管理">AI Agent 面试实战 — 第3周：四层记忆系统与上下文管理</a><time datetime="2026-05-25T04:00:00.000Z" title="Created 2026-05-25 12:00:00">2026-05-25</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/05/25/AI-Agent-%E9%9D%A2%E8%AF%95%E5%AE%9E%E6%88%98-%E7%AC%AC2%E5%91%A8-%E5%B7%A5%E5%85%B7%E7%B3%BB%E7%BB%9F%E4%B8%8EAgent%E6%9E%84%E5%BB%BA/" title="AI Agent 面试实战 — 第2周：工具系统与 Agent 构建">AI Agent 面试实战 — 第2周：工具系统与 Agent 构建</a><time datetime="2026-05-25T03:00:00.000Z" title="Created 2026-05-25 11:00:00">2026-05-25</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/05/25/AI-Agent-%E9%9D%A2%E8%AF%95%E5%AE%9E%E6%88%98-%E7%AC%AC1%E5%91%A8-%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%B7%A5%E7%A8%8B%E5%9F%BA%E7%A1%80/" title="AI Agent 面试实战 — 第1周：架构设计与工程基础">AI Agent 面试实战 — 第1周：架构设计与工程基础</a><time datetime="2026-05-25T02:00:00.000Z" title="Created 2026-05-25 10:00:00">2026-05-25</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By david</span><span class="framework-info"><span>Framework </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>Theme </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.4.3</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="Reading Mode"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="Toggle Between Light and Dark Mode"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="Toggle Between Single-column and Double-column"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="Settings"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="Table of Contents"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="Back to Top"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><div class="js-pjax"><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (false) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
