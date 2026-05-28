@@ -1,0 +1,348 @@
+<!DOCTYPE html><html lang="en" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>AI Agent 面试实战 — 第7周：Agent Pool、Session 隔离、调度与通信 | Hexo</title><meta name="author" content="david"><meta name="copyright" content="david"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="AI Agent 面试实战 — 第7周：Agent Pool、Session 隔离、调度与通信 第7周完善 L4 编排层——Agent Pool 资源管理（状态机 + 并发安全 + 能力匹配）、Session 全维度隔离（上下文&#x2F;Memory&#x2F;Workspace&#x2F;有状态工具）、资源感知调度器、Blackboard 事件驱动通信。   一、Agent Pool 资源管理">
+<meta property="og:type" content="article">
+<meta property="og:title" content="AI Agent 面试实战 — 第7周：Agent Pool、Session 隔离、调度与通信">
+<meta property="og:url" content="http://example.com/2026/05/28/AI-Agent-%E9%9D%A2%E8%AF%95%E5%AE%9E%E6%88%98-%E7%AC%AC7%E5%91%A8-Agent-Pool-Session%E9%9A%94%E7%A6%BB-%E8%B0%83%E5%BA%A6%E4%B8%8E%E9%80%9A%E4%BF%A1/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="AI Agent 面试实战 — 第7周：Agent Pool、Session 隔离、调度与通信 第7周完善 L4 编排层——Agent Pool 资源管理（状态机 + 并发安全 + 能力匹配）、Session 全维度隔离（上下文&#x2F;Memory&#x2F;Workspace&#x2F;有状态工具）、资源感知调度器、Blackboard 事件驱动通信。   一、Agent Pool 资源管理">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://example.com/img/butterfly-icon.png">
+<meta property="article:published_time" content="2026-05-28T08:00:00.000Z">
+<meta property="article:modified_time" content="2026-05-28T07:39:06.009Z">
+<meta property="article:author" content="david">
+<meta property="article:tag" content="AI">
+<meta property="article:tag" content="Agent">
+<meta property="article:tag" content="学习笔记">
+<meta property="article:tag" content="面试">
+<meta property="article:tag" content="工程实践">
+<meta property="article:tag" content="Agent-Pool">
+<meta property="article:tag" content="Session隔离">
+<meta property="article:tag" content="调度器">
+<meta property="article:tag" content="Blackboard">
+<meta property="article:tag" content="并发安全">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/img/butterfly-icon.png"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "AI Agent 面试实战 — 第7周：Agent Pool、Session 隔离、调度与通信",
+  "url": "http://example.com/2026/05/28/AI-Agent-%E9%9D%A2%E8%AF%95%E5%AE%9E%E6%88%98-%E7%AC%AC7%E5%91%A8-Agent-Pool-Session%E9%9A%94%E7%A6%BB-%E8%B0%83%E5%BA%A6%E4%B8%8E%E9%80%9A%E4%BF%A1/",
+  "image": "http://example.com/img/butterfly-icon.png",
+  "datePublished": "2026-05-28T08:00:00.000Z",
+  "dateModified": "2026-05-28T07:39:06.009Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "david",
+      "url": "http://example.com"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://example.com/2026/05/28/AI-Agent-%E9%9D%A2%E8%AF%95%E5%AE%9E%E6%88%98-%E7%AC%AC7%E5%91%A8-Agent-Pool-Session%E9%9A%94%E7%A6%BB-%E8%B0%83%E5%BA%A6%E4%B8%8E%E9%80%9A%E4%BF%A1/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: 'Copy Successful',
+    error: 'Copy Failed',
+    noSupport: 'Browser Not Supported'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: 'Just now',
+    min: 'minutes ago',
+    hour: 'hours ago',
+    day: 'days ago',
+    month: 'months ago'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid/dist/infinitegrid.min.js',
+    buttonText: 'Load More'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'AI Agent 面试实战 — 第7周：Agent Pool、Session 隔离、调度与通信',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Hexo</span></a><a class="nav-page-title" href="/"><span class="site-name">AI Agent 面试实战 — 第7周：Agent Pool、Session 隔离、调度与通信</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  Back to Home</span></span></a></span><div id="menus"></div></nav><div id="post-info"><h1 class="post-title">AI Agent 面试实战 — 第7周：Agent Pool、Session 隔离、调度与通信</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">Created</span><time class="post-meta-date-created" datetime="2026-05-28T08:00:00.000Z" title="Created 2026-05-28 16:00:00">2026-05-28</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">Updated</span><time class="post-meta-date-updated" datetime="2026-05-28T07:39:06.009Z" title="Updated 2026-05-28 15:39:06">2026-05-28</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/AI%E5%AD%A6%E4%B9%A0/">AI学习</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/AI%E5%AD%A6%E4%B9%A0/Agent/">Agent</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/AI%E5%AD%A6%E4%B9%A0/Agent/%E9%9D%A2%E8%AF%95/">面试</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">Post Views:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h2 id="AI-Agent-面试实战-—-第7周：Agent-Pool、Session-隔离、调度与通信"><a href="#AI-Agent-面试实战-—-第7周：Agent-Pool、Session-隔离、调度与通信" class="headerlink" title="AI Agent 面试实战 — 第7周：Agent Pool、Session 隔离、调度与通信"></a>AI Agent 面试实战 — 第7周：Agent Pool、Session 隔离、调度与通信</h2><blockquote>
+<p>第7周完善 L4 编排层——Agent Pool 资源管理（状态机 + 并发安全 + 能力匹配）、Session 全维度隔离（上下文&#x2F;Memory&#x2F;Workspace&#x2F;有状态工具）、资源感知调度器、Blackboard 事件驱动通信。</p>
+</blockquote>
+<hr>
+<h2 id="一、Agent-Pool-资源管理"><a href="#一、Agent-Pool-资源管理" class="headerlink" title="一、Agent Pool 资源管理"></a>一、Agent Pool 资源管理</h2><h3 id="Q1-Agent-Pool-的资源分配机制是怎样的？如何保证并发安全和能力匹配？"><a href="#Q1-Agent-Pool-的资源分配机制是怎样的？如何保证并发安全和能力匹配？" class="headerlink" title="Q1: Agent Pool 的资源分配机制是怎样的？如何保证并发安全和能力匹配？"></a>Q1: Agent Pool 的资源分配机制是怎样的？如何保证并发安全和能力匹配？</h3><p><strong>难度</strong>：⭐⭐⭐⭐（深入）<br><strong>频率</strong>：★★★★（常见）</p>
+<p><strong>回答结构</strong>：</p>
+<p>“Agent Pool 是整个系统的’人力资源部’，负责管理所有 Agent 的状态（空闲、忙碌、故障）和按需分配。核心实现有四个关键点：</p>
+<p><strong>状态机</strong></p>
+<p>Agent 只有三种状态：idle（可分配）、busy（正在执行任务）、error（例如模型不可用，需人工恢复）。所有状态变更通过 <code>asyncio.Lock</code> 保护的原子操作完成。</p>
+<p><strong>能力匹配</strong></p>
+<p>调用 <code>acquire(required_capabilities)</code> 时，会遍历所有 idle 的 Agent，检查其 <code>Persona.capabilities</code> 是否覆盖请求的每一项能力。公式：<code>agent.caps[c] &gt;= required[c]</code> 对所有 key 成立。如果有多个匹配，优先选择在当前团队已有 L4 上下文记忆的 Agent，减少学习成本。</p>
+<p><strong>并发安全</strong></p>
+<p>由于 SOP Engine 是异步的，多个协程可能同时请求同一个 Agent。通过在 <code>acquire</code> 内部使用 <code>asyncio.Lock</code>，保证’检查状态 → 标记 busy → 返回 Agent’是一个原子操作。后来的请求会收到 <code>AgentBusyError</code>，节点执行器会按配置重试（指数退避），超过重试次数则任务失败。</p>
+<p><strong>资源回收</strong></p>
+<p>节点执行结束后，在 <code>finally</code> 块中调用 <code>release</code>，将 Agent 状态置回 idle，并清除该 agent 的当前 session 引用。如果 Agent 处于 error 状态，不会自动回收，需要人工排查并调用 <code>mark_error</code> 恢复。”</p>
+<blockquote>
+<p><strong>追问：如果长时间没有空闲 Agent，任务会无限排队吗？</strong></p>
+</blockquote>
+<p>“不会。创建任务时可以配置 <code>timeout</code>（默认 10 分钟）。如果超时仍未获得 Agent，任务自动标记为 failed，并通知用户。另外 Scheduler 有一个防饥饿机制，记录了每个任务的等待时间，可以动态提升优先级，防止低优先级任务永远得不到资源。”</p>
+<hr>
+<h2 id="二、Session-隔离与有状态工具管理"><a href="#二、Session-隔离与有状态工具管理" class="headerlink" title="二、Session 隔离与有状态工具管理"></a>二、Session 隔离与有状态工具管理</h2><h3 id="Q2-Agent-同时参与多个团队，如何保证记忆和工作环境不互相污染？"><a href="#Q2-Agent-同时参与多个团队，如何保证记忆和工作环境不互相污染？" class="headerlink" title="Q2: Agent 同时参与多个团队，如何保证记忆和工作环境不互相污染？"></a>Q2: Agent 同时参与多个团队，如何保证记忆和工作环境不互相污染？</h3><p><strong>难度</strong>：⭐⭐⭐⭐（深入）<br><strong>频率</strong>：★★★★（常见）</p>
+<p><strong>回答结构</strong>：</p>
+<p>“这就是 Session Manager 的核心职责。Session 是 Agent 在特定团队内的隔离运行环境。关键隔离维度包括：</p>
+<p><strong>上下文隔离</strong></p>
+<p>每个 Session 拥有独立的对话历史，Redis 中用 <code>session_id</code> 作为 key 存储，不同 Session 无法互相读取。</p>
+<p><strong>记忆视图隔离</strong></p>
+<p>Session 创建时，MemoryManager 会生成该 Agent 在当前团队的记忆快照：L1 全局 + L2 本团队 + L3 个人 + L4 本团队上下文。Agent 换团队后，L2 和 L4 完全切换，L3 随身携带。</p>
+<p><strong>工作空间隔离</strong></p>
+<p>每个 Session 绑定一个 Workspace（文件目录）。对于 Terminal&#x2F;Docker 等有状态工具，实例存储在 <code>session.tool_instances</code> 字典中，生命周期与 Session 绑定。</p>
+<p><strong>有状态工具 GC</strong></p>
+<p>Session 关闭时，<code>close_session</code> 方法会遍历所有 <code>tool_instances</code>，调用各自的 <code>cleanup()</code> 方法（如关闭 Terminal 进程、停止 Docker 容器）。如果 Session 异常退出，后台有一个定时任务扫描 <code>last_active &gt; TTL</code> 的僵尸 Session，强制回收资源，防止文件描述符泄漏。”</p>
+<blockquote>
+<p><strong>追问：Session 在 Redis 和 PostgreSQL 中分别存了什么？</strong></p>
+</blockquote>
+<p>“Redis 存储当前活跃 Session 的对话上下文、短期记忆和临时工具状态，主要用于高速读写。PostgreSQL 存储 Session 的元数据（status、创建时间、绑定的 team&#x2F;agent）以及已持久化的 L4 记忆条目。Session 关闭时，Redis 中的关键记忆会异步刷入 PostgreSQL，保证长期可查。”</p>
+<hr>
+<h2 id="三、任务调度与优先级"><a href="#三、任务调度与优先级" class="headerlink" title="三、任务调度与优先级"></a>三、任务调度与优先级</h2><h3 id="Q3-你们的任务调度器如何平衡优先级和资源约束？"><a href="#Q3-你们的任务调度器如何平衡优先级和资源约束？" class="headerlink" title="Q3: 你们的任务调度器如何平衡优先级和资源约束？"></a>Q3: 你们的任务调度器如何平衡优先级和资源约束？</h3><p><strong>难度</strong>：⭐⭐⭐⭐（深入）<br><strong>频率</strong>：★★★（偶见）</p>
+<p><strong>回答结构</strong>：</p>
+<p>“调度器需要同时考虑三个维度：任务优先级、Agent 可用性、LLM API 限流余量。</p>
+<p><strong>优先级队列</strong></p>
+<p>基于 Redis ZSET 实现。Score &#x3D; <code>priority_weight * 10^6 + timestamp_sequence</code>，保证同优先级内 FIFO。级别：CRITICAL（HITL 恢复）、HIGH（开发 SOP）、NORMAL（学习任务）、LOW（批量分析）。</p>
+<p><strong>资源感知调度</strong></p>
+<p>主循环从队列头部取任务，但在真正执行前会检查：</p>
+<ol>
+<li>AgentPool 中是否有空闲 Agent 满足任务能力要求？</li>
+<li>ModelAdapter 的 RateLimiter 中所有涉及 Provider 的 Token Bucket 是否有足够令牌？</li>
+</ol>
+<p>如果任一条件不满足，任务重新放回队列头部，调度器短暂休眠后重试。</p>
+<p><strong>防饥饿</strong></p>
+<p>每个优先级维护一个 <code>max_wait_time</code>。当低优先级任务等待超过该时间（如 LOW 默认 30 秒），自动提升一级。避免高优先级任务持续涌入时低优先级任务永远得不到执行。</p>
+<p><strong>集成到 SOP Engine</strong></p>
+<p><code>POST /api/v1/tasks</code> 不再直接执行 SOP，而是调用 <code>scheduler.enqueue</code>。调度器后台协程 <code>run_scheduler_loop</code> 持续拉取并执行。这使得系统能同时处理大量任务，而不会立即耗尽资源。”</p>
+<blockquote>
+<p><strong>追问：如果 Agent 正在执行低优先级任务，突然来了一个 CRITICAL 任务，能抢占吗？</strong></p>
+</blockquote>
+<p>“MVP 阶段采用<strong>非抢占模式</strong>——不会强行中止正在运行的 Agent，避免 Workspace 状态混乱。如果 CRITICAL 任务必须立即执行，可以通过配置保留一个<strong>预留槽位（Reserved Slot）</strong>，始终空闲一个 Agent 专供紧急任务使用。后续我们会结合 Workspace 快照实现安全抢占，即保存当前进度、回收 Agent、执行紧急任务、再恢复原任务。”</p>
+<hr>
+<h2 id="四、Blackboard-通信模型"><a href="#四、Blackboard-通信模型" class="headerlink" title="四、Blackboard 通信模型"></a>四、Blackboard 通信模型</h2><h3 id="Q4-团队内的-Agent-如何实时感知任务状态变化？跨团队通信怎么实现？"><a href="#Q4-团队内的-Agent-如何实时感知任务状态变化？跨团队通信怎么实现？" class="headerlink" title="Q4: 团队内的 Agent 如何实时感知任务状态变化？跨团队通信怎么实现？"></a>Q4: 团队内的 Agent 如何实时感知任务状态变化？跨团队通信怎么实现？</h3><p><strong>难度</strong>：⭐⭐⭐（进阶）<br><strong>频率</strong>：★★★（常见）</p>
+<p><strong>回答结构</strong>：</p>
+<p>“我们设计了一个基于 Redis Pub&#x2F;Sub 的 <strong>Blackboard 事件总线</strong>。</p>
+<p><strong>频道结构</strong></p>
+<ul>
+<li><code>team:&#123;team_id&#125;:events</code> 用于团队内广播（task_update、agent_status 等）</li>
+<li><code>global:events</code> 用于跨团队通知和系统事件（rate_limit_warning、cross_team_request）</li>
+</ul>
+<p><strong>消息模型</strong></p>
+<p>每条消息包含 <code>event_type</code>、<code>payload</code>、<code>timestamp</code>。SOP Engine 在每个节点开始&#x2F;结束时发布 <code>task_update</code>；Agent Pool 在 Agent 状态变化时发布 <code>agent_status</code>；HITL 节点发布 <code>hitl_notification</code>。</p>
+<p><strong>前端实时更新</strong></p>
+<p>后端 WebSocket 服务订阅相关团队频道，收到消息后推送给已连接的前端。前端据此实时更新节点状态颜色和对话流。</p>
+<p><strong>跨团队请求</strong></p>
+<p>如 DevTeam 需要 DataTeam 的帮助，SOP 可通过 Blackboard 的 <code>cross_team_request</code> 事件发布需求。DataTeam 的 Leader Agent 订阅该频道，收到通知后可决定是否协助，并发送响应事件。这类似于微服务间的异步协作模式。”</p>
+<blockquote>
+<p><strong>追问：消息丢失怎么办？</strong></p>
+</blockquote>
+<p>“Redis Pub&#x2F;Sub 是 fire-and-forget，没有持久化。但我们同时在 PostgreSQL 的 <code>event_log</code> 表中存储了关键事件（如任务状态变更），前端可随时通过 REST API 获取历史状态，作为 Pub&#x2F;Sub 的补偿。对于跨团队请求，如果响应超时未收到，SOP 会重试或降级为 HITL 人工处理。”</p>
+<hr>
+<h2 id="五、并发场景下的边界处理"><a href="#五、并发场景下的边界处理" class="headerlink" title="五、并发场景下的边界处理"></a>五、并发场景下的边界处理</h2><h3 id="Q5-多个-SOP-并行执行，如果两个任务同时请求同一个-Agent，会发生什么？"><a href="#Q5-多个-SOP-并行执行，如果两个任务同时请求同一个-Agent，会发生什么？" class="headerlink" title="Q5: 多个 SOP 并行执行，如果两个任务同时请求同一个 Agent，会发生什么？"></a>Q5: 多个 SOP 并行执行，如果两个任务同时请求同一个 Agent，会发生什么？</h3><p><strong>难度</strong>：⭐⭐⭐（进阶）<br><strong>频率</strong>：★★★（场景题）</p>
+<p><strong>回答结构</strong>：</p>
+<p>“典型并发冲突场景，我们用三步解决：</p>
+<p><strong>原子获取</strong></p>
+<p><code>AgentPool.acquire</code> 内部用 <code>asyncio.Lock</code> 串行化所有请求。第一个到达的协程获得 Agent 并标记 busy，后续协程会收到 <code>AgentBusyError</code>。</p>
+<p><strong>节点级重试</strong></p>
+<p>SOP Engine 的 <code>agent_node_executor</code> 捕获该异常后，按节点配置的 <code>retryDelay</code> 等待（首次 1 秒，后续加倍），然后重新调用 <code>acquire</code>。重试次数由节点 <code>maxRetries</code> 控制。</p>
+<p><strong>超时处理</strong></p>
+<p>如果最终仍未获得，任务标记为 failed，并记录 <code>error_reason = &quot;Agent unavailable&quot;</code>。同时调度器会收到通知，可根据策略决定是否重新加入队列或转人工。”</p>
+<blockquote>
+<p><strong>追问：如果一个 Agent 执行到一半自己崩了（error），正在执行的任务怎么办？</strong></p>
+</blockquote>
+<p>“Agent 从 busy 变为 error 时，AgentPool 会通过 Blackboard 或回调通知 SOP Engine。SOP Engine 会将当前 Workspace 做一个<strong>紧急快照</strong>，然后尝试将节点重新分配给同角色的备用 Agent（如果有），从快照状态继续执行。如果没有备用 Agent，任务暂停并升级为人工恢复。”</p>
+<hr>
+<h2 id="第7周面试总结"><a href="#第7周面试总结" class="headerlink" title="第7周面试总结"></a>第7周面试总结</h2><table>
+<thead>
+<tr>
+<th>亮点</th>
+<th>解析</th>
+<th>面试价值</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Agent Pool 能力匹配+并发安全</td>
+<td>状态机+原子锁，避免超配和冲突，支持记忆关联</td>
+<td>⭐⭐⭐⭐</td>
+</tr>
+<tr>
+<td>Session 全维度隔离</td>
+<td>上下文&#x2F;Memory&#x2F;Workspace&#x2F;有状态工具四重隔离，GC 防泄漏</td>
+<td>⭐⭐⭐⭐</td>
+</tr>
+<tr>
+<td>资源感知调度</td>
+<td>优先级队列 × Agent 可用 × API 限流，三维决策</td>
+<td>⭐⭐⭐⭐</td>
+</tr>
+<tr>
+<td>Blackboard 事件驱动</td>
+<td>基于 Redis Pub&#x2F;Sub 的实时通信，解耦团队间协作</td>
+<td>⭐⭐⭐</td>
+</tr>
+<tr>
+<td>优雅降级与冲突处理</td>
+<td>并发冲突、Agent 故障等异常场景均有明确恢复路径</td>
+<td>⭐⭐⭐</td>
+</tr>
+</tbody></table>
+<p><strong>一句话总结第7周</strong>：</p>
+<blockquote>
+<p>第7周完善了 L4 编排层的”基础设施”——Agent Pool 管理多 Agent 生命周期，Session 实现全维度隔离防止数据串扰，调度器在有限资源下平衡效率与公平，Blackboard 让 Agent 实时协同而不强耦合。四者共同构成了多 Agent 系统可靠运行的底座。</p>
+</blockquote>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>Author: </span><span class="post-copyright-info"><a href="http://example.com">david</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>Link: </span><span class="post-copyright-info"><a href="http://example.com/2026/05/28/AI-Agent-%E9%9D%A2%E8%AF%95%E5%AE%9E%E6%88%98-%E7%AC%AC7%E5%91%A8-Agent-Pool-Session%E9%9A%94%E7%A6%BB-%E8%B0%83%E5%BA%A6%E4%B8%8E%E9%80%9A%E4%BF%A1/">http://example.com/2026/05/28/AI-Agent-%E9%9D%A2%E8%AF%95%E5%AE%9E%E6%88%98-%E7%AC%AC7%E5%91%A8-Agent-Pool-Session%E9%9A%94%E7%A6%BB-%E8%B0%83%E5%BA%A6%E4%B8%8E%E9%80%9A%E4%BF%A1/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>Copyright Notice: </span><span class="post-copyright-info">All articles on this blog are licensed under <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> unless otherwise stated.</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/AI/">AI</a><a class="post-meta__tags" href="/tags/Agent/">Agent</a><a class="post-meta__tags" href="/tags/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">学习笔记</a><a class="post-meta__tags" href="/tags/%E9%9D%A2%E8%AF%95/">面试</a><a class="post-meta__tags" href="/tags/%E5%B7%A5%E7%A8%8B%E5%AE%9E%E8%B7%B5/">工程实践</a><a class="post-meta__tags" href="/tags/Agent-Pool/">Agent-Pool</a><a class="post-meta__tags" href="/tags/Session%E9%9A%94%E7%A6%BB/">Session隔离</a><a class="post-meta__tags" href="/tags/%E8%B0%83%E5%BA%A6%E5%99%A8/">调度器</a><a class="post-meta__tags" href="/tags/Blackboard/">Blackboard</a><a class="post-meta__tags" href="/tags/%E5%B9%B6%E5%8F%91%E5%AE%89%E5%85%A8/">并发安全</a></div><div class="post-share"><div class="social-share" data-image="/img/butterfly-icon.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related full-width" href="/2026/05/28/AI-Agent-%E9%9D%A2%E8%AF%95%E5%AE%9E%E6%88%98-%E7%AC%AC6%E5%91%A8-SOP%E5%BC%95%E6%93%8EHITL%E4%B8%8EAgent%E5%8D%8F%E4%BD%9C/" title="AI Agent 面试实战 — 第6周：SOP 引擎、HITL 与 Agent 协作（深度篇）"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">Next</div><div class="info-item-2">AI Agent 面试实战 — 第6周：SOP 引擎、HITL 与 Agent 协作（深度篇）</div></div><div class="info-2"><div class="info-item-1">AI Agent 面试实战 — 第6周：SOP 引擎、HITL 与 Agent 协作（深度篇） 第6周进入 L4 编排层——基于 LangGraph 的 SOP 引擎深度封装、三种 HITL 模式的工程实现、并行节点工作空间隔离、错误分级恢复。这是整个系统最核心的编排能力。   一、SOP 引擎与 LangGraph 集成（深度）Q1: LangGraph 的核心概念是什么？你们在它之上做了哪些封装和增强？难度：⭐⭐⭐⭐⭐（专家级）频率：★★★★（高频，大厂必问） 回答结构： “LangGraph 把工作流抽象成一个有向图，核心要素是 StateGraph、节点（Node）和边（Edge）。每个节点接收当前的 State 字典，处理后返回更新后的 State，LangGraph 负责按边定义的路线流转，并自动处理状态持久化和断点恢复。 我们不是直接裸用 LangGraph，而是在它之上做了三层增强： 第一层：业务节点封装层 LangGraph 的节点只是一个函数签名 (state) -&gt; state。我们把它封装成了三种业务节点类型：  AgentNode：执行时自动完成 ...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>Related Articles</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/2026/05/25/AI-Agent-%E9%9D%A2%E8%AF%95%E5%AE%9E%E6%88%98-%E7%AC%AC1%E5%91%A8-%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%B7%A5%E7%A8%8B%E5%9F%BA%E7%A1%80/" title="AI Agent 面试实战 — 第1周：架构设计与工程基础"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-05-25</div><div class="info-item-2">AI Agent 面试实战 — 第1周：架构设计与工程基础</div></div><div class="info-2"><div class="info-item-1">AI Agent 面试实战 — 第1周：架构设计与工程基础 边做 The Boy Assistant 项目，边整理高频面试题。第1周完成系统地基——从零搭建 FastAPI 项目、Model Adapter、API Key 管理、数据表设计。以下是这一周遇到的高频面试问题。   一、架构设计类Q1: 为什么选 FastAPI 而不是 Django 或 Flask？难度：⭐（基础）频率：★★★★★（几乎必问） 回答结构： “选 FastAPI 是基于三个核心考量：** 第一：async 原生支持。 Agent 系统需要大量并发 API 调用——同时调用多个 LLM Provider、同时处理多个 Agent 的请求、同时推送 WebSocket 流式输出。FastAPI 原生支持 async&#x2F;await，而 Django 的 async 支持是后来加的，稳定性不够；Flask 根本没有原生 async。 第二：WebSocket 内置支持。 我们的聊天室需要实时推送 SOP 执行进度、Agent 对话流。FastAPI 的 WebSocket 是内置的，同一个框架同时处理...</div></div></div></a><a class="pagination-related" href="/2026/05/25/AI-Agent-%E9%9D%A2%E8%AF%95%E5%AE%9E%E6%88%98-%E7%AC%AC2%E5%91%A8-%E5%B7%A5%E5%85%B7%E7%B3%BB%E7%BB%9F%E4%B8%8EAgent%E6%9E%84%E5%BB%BA/" title="AI Agent 面试实战 — 第2周：工具系统与 Agent 构建"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-05-25</div><div class="info-item-2">AI Agent 面试实战 — 第2周：工具系统与 Agent 构建</div></div><div class="info-2"><div class="info-item-1">AI Agent 面试实战 — 第2周：工具系统与 Agent 构建 第2周完成 L1 能力层核心——Tool Registry 三层权限模型、有状态工具生命周期管理、Agent Factory 组合构建。让 Agent 有了”手”和”边界”。   一、工具系统设计Q1: 工具注册表（Tool Registry）是怎么设计的？难度：⭐⭐（基础+）频率：★★★★★（必问） 回答结构： “Tool Registry 是整个工具系统的中枢，负责工具的注册、发现、权限校验。 设计上分三层： 第一层：注册层。 所有工具在 Registry 中注册，包括 name、description、参数 Schema（JSON Schema 格式）、工具类型（function &#x2F; mcp &#x2F; api）、是否是有状态工具。这个是全局唯一的，所有 Agent 都能看到这个注册表。 第二层：声明层。 每个 Persona 在创建时，声明自己需要哪些工具。比如架构师声明自己需要 file-ops-readonly（只读文件操作），程序员声明自己需要 file-ops + terminal（...</div></div></div></a><a class="pagination-related" href="/2026/05/25/AI-Agent-%E9%9D%A2%E8%AF%95%E5%AE%9E%E6%88%98-%E7%AC%AC3%E5%91%A8-%E5%9B%9B%E5%B1%82%E8%AE%B0%E5%BF%86%E7%B3%BB%E7%BB%9F%E4%B8%8E%E4%B8%8A%E4%B8%8B%E6%96%87%E7%AE%A1%E7%90%86/" title="AI Agent 面试实战 — 第3周：四层记忆系统与上下文管理"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-05-25</div><div class="info-item-2">AI Agent 面试实战 — 第3周：四层记忆系统与上下文管理</div></div><div class="info-2"><div class="info-item-1">AI Agent 面试实战 — 第3周：四层记忆系统与上下文管理 第3周完成 L2 反思层的核心——四层记忆系统（全局&#x2F;团队&#x2F;个人&#x2F;上下文）、Token 预算管理、摘要压缩与硬裁剪策略。让 Agent 能”记住”团队决策和个人经验，同时不会浪费 Token。   一、记忆系统设计Q1: 四层记忆系统是如何设计的？每层的作用是什么？难度：⭐⭐⭐（进阶）频率：★★★★★（必问） 回答结构： “我设计了一个四层记忆系统，解决 Agent 协作中的记忆隔离、经验积累和上下文管理问题。 L1 系统记忆：全局通用知识，所有团队和 Agent 共享。比如 API 设计规范、安全基线。由管理员维护，任何 Agent 创建后自动继承。 L2 团队记忆：团队级共享基座。同一个 Team 内的所有 Agent 都能看到。比如架构决策、Sprint 目标、团队编码规范。关键设计是 Leader 决策自动写入 L2，所有 Member 下次对话自动同步，不需要手动传播。 L3 Agent 全局记忆：跟随 Agent 跨团队的个人经验。比如语言偏好（Python）、工具熟练度。...</div></div></div></a><a class="pagination-related" href="/2026/05/26/AI-Agent-%E9%9D%A2%E8%AF%95%E5%AE%9E%E6%88%98-%E7%AC%AC4%E5%91%A8-RAG%E7%9F%A5%E8%AF%86%E6%A3%80%E7%B4%A2%E4%B8%8ESkill%E5%9F%BA%E7%A1%80/" title="AI Agent 面试实战 — 第4周：RAG 知识检索与 Skill 基础"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-05-26</div><div class="info-item-2">AI Agent 面试实战 — 第4周：RAG 知识检索与 Skill 基础</div></div><div class="info-2"><div class="info-item-1">AI Agent 面试实战 — 第4周：RAG 知识检索与 Skill 基础 第4周完成 L2 反思层的 RAG 知识检索——混合检索 + Reranker 重排序 + Token 预算联合裁剪 + 层级知识库 + Skill 注册基础。让 Agent 能从知识库中精准检索信息，并和记忆系统协作注入上下文。   一、RAG 整体设计Q1: 你们的 RAG 方案整体架构是怎样的？难度：⭐⭐⭐（进阶）频率：★★★★★（必问） 回答结构： “我们的 RAG 方案是基于混合检索 + 重排序 + 层级知识库的架构。 完整流程：  文档注入阶段：用户上传文档到知识库 → 语义分块（512 token &#x2F; 重叠 64 token）→ 调用 bge-m3 Embedding API 生成向量 → 存入 pgvector，同时生成 tsvector 全文索引。 检索阶段： Dense 检索：将查询向量化，在 pgvector 中做余弦相似度搜索，返回 Top-K Sparse 检索：用 PostgreSQL tsvector 做 BM25 全文检索，返回 Top-K 两路结果通过 RRF...</div></div></div></a><a class="pagination-related" href="/2026/05/27/AI-Agent-%E9%9D%A2%E8%AF%95%E5%AE%9E%E6%88%98-%E7%AC%AC5%E5%91%A8-%E6%A8%A1%E5%9E%8B%E8%B7%AF%E7%94%B1Skill%E6%89%A7%E8%A1%8C%E4%B8%8E%E6%9D%A1%E4%BB%B6%E8%B7%AF%E7%94%B1/" title="AI Agent 面试实战 — 第5周：模型路由、Skill 执行与条件路由"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-05-27</div><div class="info-item-2">AI Agent 面试实战 — 第5周：模型路由、Skill 执行与条件路由</div></div><div class="info-2"><div class="info-item-1">AI Agent 面试实战 — 第5周：模型路由、Skill 执行与条件路由 第5周完成 L3 策略层——模型智能路由（成本降低 80%）、Skill 可执行指令系统、条件路由 AST 求值器。让系统从”能做”变为”会做”。   一、模型路由与成本优化Q1: 什么是模型路由（Model Router）？你们是怎么实现的？难度：⭐⭐⭐（进阶）频率：★★★★★（必问） 回答结构： “模型路由的核心思路是：不同任务用不同模型，在成本和质量间自动平衡。 我们实现了一个自动路由层：  任务复杂度分类：对用户输入进行快速评估。消息长度 &lt; 50 字且无特殊关键词 → SIMPLE；包含’架构&#x2F;设计&#x2F;选型’或长度 &gt; 300 字 → COMPLEX；其余为 STANDARD。分类器用规则引擎实现，轻量且无额外 API 消耗。 模型选择：复杂度映射到模型池：     复杂度 模型 特点    SIMPLE Haiku &#x2F; GLM-4-Flash 最快、最便宜   STANDARD Sonnet &#x2F; GPT-4o &#x2F; GLM-5.1 性...</div></div></div></a><a class="pagination-related" href="/2026/05/28/AI-Agent-%E9%9D%A2%E8%AF%95%E5%AE%9E%E6%88%98-%E7%AC%AC6%E5%91%A8-SOP%E5%BC%95%E6%93%8EHITL%E4%B8%8EAgent%E5%8D%8F%E4%BD%9C/" title="AI Agent 面试实战 — 第6周：SOP 引擎、HITL 与 Agent 协作（深度篇）"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-05-28</div><div class="info-item-2">AI Agent 面试实战 — 第6周：SOP 引擎、HITL 与 Agent 协作（深度篇）</div></div><div class="info-2"><div class="info-item-1">AI Agent 面试实战 — 第6周：SOP 引擎、HITL 与 Agent 协作（深度篇） 第6周进入 L4 编排层——基于 LangGraph 的 SOP 引擎深度封装、三种 HITL 模式的工程实现、并行节点工作空间隔离、错误分级恢复。这是整个系统最核心的编排能力。   一、SOP 引擎与 LangGraph 集成（深度）Q1: LangGraph 的核心概念是什么？你们在它之上做了哪些封装和增强？难度：⭐⭐⭐⭐⭐（专家级）频率：★★★★（高频，大厂必问） 回答结构： “LangGraph 把工作流抽象成一个有向图，核心要素是 StateGraph、节点（Node）和边（Edge）。每个节点接收当前的 State 字典，处理后返回更新后的 State，LangGraph 负责按边定义的路线流转，并自动处理状态持久化和断点恢复。 我们不是直接裸用 LangGraph，而是在它之上做了三层增强： 第一层：业务节点封装层 LangGraph 的节点只是一个函数签名 (state) -&gt; state。我们把它封装成了三种业务节点类型：  AgentNode：执行时自动完成 ...</div></div></div></a></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/butterfly-icon.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">david</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">142</div></a><a href="/tags/"><div class="headline">Tags</div><div class="length-num">344</div></a><a href="/categories/"><div class="headline">Categories</div><div class="length-num">24</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>Announcement</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>Contents</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#AI-Agent-%E9%9D%A2%E8%AF%95%E5%AE%9E%E6%88%98-%E2%80%94-%E7%AC%AC7%E5%91%A8%EF%BC%9AAgent-Pool%E3%80%81Session-%E9%9A%94%E7%A6%BB%E3%80%81%E8%B0%83%E5%BA%A6%E4%B8%8E%E9%80%9A%E4%BF%A1"><span class="toc-number">1.</span> <span class="toc-text">AI Agent 面试实战 — 第7周：Agent Pool、Session 隔离、调度与通信</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81Agent-Pool-%E8%B5%84%E6%BA%90%E7%AE%A1%E7%90%86"><span class="toc-number">2.</span> <span class="toc-text">一、Agent Pool 资源管理</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Q1-Agent-Pool-%E7%9A%84%E8%B5%84%E6%BA%90%E5%88%86%E9%85%8D%E6%9C%BA%E5%88%B6%E6%98%AF%E6%80%8E%E6%A0%B7%E7%9A%84%EF%BC%9F%E5%A6%82%E4%BD%95%E4%BF%9D%E8%AF%81%E5%B9%B6%E5%8F%91%E5%AE%89%E5%85%A8%E5%92%8C%E8%83%BD%E5%8A%9B%E5%8C%B9%E9%85%8D%EF%BC%9F"><span class="toc-number">2.1.</span> <span class="toc-text">Q1: Agent Pool 的资源分配机制是怎样的？如何保证并发安全和能力匹配？</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81Session-%E9%9A%94%E7%A6%BB%E4%B8%8E%E6%9C%89%E7%8A%B6%E6%80%81%E5%B7%A5%E5%85%B7%E7%AE%A1%E7%90%86"><span class="toc-number">3.</span> <span class="toc-text">二、Session 隔离与有状态工具管理</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Q2-Agent-%E5%90%8C%E6%97%B6%E5%8F%82%E4%B8%8E%E5%A4%9A%E4%B8%AA%E5%9B%A2%E9%98%9F%EF%BC%8C%E5%A6%82%E4%BD%95%E4%BF%9D%E8%AF%81%E8%AE%B0%E5%BF%86%E5%92%8C%E5%B7%A5%E4%BD%9C%E7%8E%AF%E5%A2%83%E4%B8%8D%E4%BA%92%E7%9B%B8%E6%B1%A1%E6%9F%93%EF%BC%9F"><span class="toc-number">3.1.</span> <span class="toc-text">Q2: Agent 同时参与多个团队，如何保证记忆和工作环境不互相污染？</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E4%BB%BB%E5%8A%A1%E8%B0%83%E5%BA%A6%E4%B8%8E%E4%BC%98%E5%85%88%E7%BA%A7"><span class="toc-number">4.</span> <span class="toc-text">三、任务调度与优先级</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Q3-%E4%BD%A0%E4%BB%AC%E7%9A%84%E4%BB%BB%E5%8A%A1%E8%B0%83%E5%BA%A6%E5%99%A8%E5%A6%82%E4%BD%95%E5%B9%B3%E8%A1%A1%E4%BC%98%E5%85%88%E7%BA%A7%E5%92%8C%E8%B5%84%E6%BA%90%E7%BA%A6%E6%9D%9F%EF%BC%9F"><span class="toc-number">4.1.</span> <span class="toc-text">Q3: 你们的任务调度器如何平衡优先级和资源约束？</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81Blackboard-%E9%80%9A%E4%BF%A1%E6%A8%A1%E5%9E%8B"><span class="toc-number">5.</span> <span class="toc-text">四、Blackboard 通信模型</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Q4-%E5%9B%A2%E9%98%9F%E5%86%85%E7%9A%84-Agent-%E5%A6%82%E4%BD%95%E5%AE%9E%E6%97%B6%E6%84%9F%E7%9F%A5%E4%BB%BB%E5%8A%A1%E7%8A%B6%E6%80%81%E5%8F%98%E5%8C%96%EF%BC%9F%E8%B7%A8%E5%9B%A2%E9%98%9F%E9%80%9A%E4%BF%A1%E6%80%8E%E4%B9%88%E5%AE%9E%E7%8E%B0%EF%BC%9F"><span class="toc-number">5.1.</span> <span class="toc-text">Q4: 团队内的 Agent 如何实时感知任务状态变化？跨团队通信怎么实现？</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E5%B9%B6%E5%8F%91%E5%9C%BA%E6%99%AF%E4%B8%8B%E7%9A%84%E8%BE%B9%E7%95%8C%E5%A4%84%E7%90%86"><span class="toc-number">6.</span> <span class="toc-text">五、并发场景下的边界处理</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Q5-%E5%A4%9A%E4%B8%AA-SOP-%E5%B9%B6%E8%A1%8C%E6%89%A7%E8%A1%8C%EF%BC%8C%E5%A6%82%E6%9E%9C%E4%B8%A4%E4%B8%AA%E4%BB%BB%E5%8A%A1%E5%90%8C%E6%97%B6%E8%AF%B7%E6%B1%82%E5%90%8C%E4%B8%80%E4%B8%AA-Agent%EF%BC%8C%E4%BC%9A%E5%8F%91%E7%94%9F%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="toc-number">6.1.</span> <span class="toc-text">Q5: 多个 SOP 并行执行，如果两个任务同时请求同一个 Agent，会发生什么？</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AC%AC7%E5%91%A8%E9%9D%A2%E8%AF%95%E6%80%BB%E7%BB%93"><span class="toc-number">7.</span> <span class="toc-text">第7周面试总结</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>Recent Posts</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/05/28/AI-Agent-%E9%9D%A2%E8%AF%95%E5%AE%9E%E6%88%98-%E7%AC%AC7%E5%91%A8-Agent-Pool-Session%E9%9A%94%E7%A6%BB-%E8%B0%83%E5%BA%A6%E4%B8%8E%E9%80%9A%E4%BF%A1/" title="AI Agent 面试实战 — 第7周：Agent Pool、Session 隔离、调度与通信">AI Agent 面试实战 — 第7周：Agent Pool、Session 隔离、调度与通信</a><time datetime="2026-05-28T08:00:00.000Z" title="Created 2026-05-28 16:00:00">2026-05-28</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/05/28/AI-Agent-%E9%9D%A2%E8%AF%95%E5%AE%9E%E6%88%98-%E7%AC%AC6%E5%91%A8-SOP%E5%BC%95%E6%93%8EHITL%E4%B8%8EAgent%E5%8D%8F%E4%BD%9C/" title="AI Agent 面试实战 — 第6周：SOP 引擎、HITL 与 Agent 协作（深度篇）">AI Agent 面试实战 — 第6周：SOP 引擎、HITL 与 Agent 协作（深度篇）</a><time datetime="2026-05-28T02:00:00.000Z" title="Created 2026-05-28 10:00:00">2026-05-28</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/05/27/AI-Agent-%E9%9D%A2%E8%AF%95%E9%A2%98%E5%BA%93-%E7%B4%A2%E5%BC%95%E7%9B%AE%E5%BD%95/" title="AI Agent 面试题库 — 索引目录">AI Agent 面试题库 — 索引目录</a><time datetime="2026-05-27T04:00:00.000Z" title="Created 2026-05-27 12:00:00">2026-05-27</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/05/27/AI-Agent-%E9%9D%A2%E8%AF%95%E5%AE%9E%E6%88%98-%E7%AC%AC5%E5%91%A8-%E6%A8%A1%E5%9E%8B%E8%B7%AF%E7%94%B1Skill%E6%89%A7%E8%A1%8C%E4%B8%8E%E6%9D%A1%E4%BB%B6%E8%B7%AF%E7%94%B1/" title="AI Agent 面试实战 — 第5周：模型路由、Skill 执行与条件路由">AI Agent 面试实战 — 第5周：模型路由、Skill 执行与条件路由</a><time datetime="2026-05-27T02:00:00.000Z" title="Created 2026-05-27 10:00:00">2026-05-27</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/05/26/AI-Agent-%E9%9D%A2%E8%AF%95%E5%AE%9E%E6%88%98-%E7%AC%AC4%E5%91%A8-RAG%E7%9F%A5%E8%AF%86%E6%A3%80%E7%B4%A2%E4%B8%8ESkill%E5%9F%BA%E7%A1%80/" title="AI Agent 面试实战 — 第4周：RAG 知识检索与 Skill 基础">AI Agent 面试实战 — 第4周：RAG 知识检索与 Skill 基础</a><time datetime="2026-05-26T02:00:00.000Z" title="Created 2026-05-26 10:00:00">2026-05-26</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By david</span><span class="framework-info"><span>Framework </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>Theme </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.4.3</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="Reading Mode"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="Toggle Between Light and Dark Mode"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="Toggle Between Single-column and Double-column"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="Settings"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="Table of Contents"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="Back to Top"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><div class="js-pjax"><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (false) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
