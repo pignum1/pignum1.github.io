@@ -1,0 +1,358 @@
+<!DOCTYPE html><html lang="en" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>AI Agent 面试实战 — 第8周：SOP 设计器、实时同步、可观测性与测试 | Hexo</title><meta name="author" content="david"><meta name="copyright" content="david"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="AI Agent 面试实战 — 第8周：SOP 设计器、实时同步、可观测性与测试 第8周 L4 编排层收尾 + Harness 启动——SOP 可视化设计器（React Flow + YAML 双向同步）、聊天室 WebSocket 实时同步、Observer 轻量级 Agent Trace、Workspace Manager 隔离与快照、四层测试体系。   一、SOP 设计器前端（React F">
+<meta property="og:type" content="article">
+<meta property="og:title" content="AI Agent 面试实战 — 第8周：SOP 设计器、实时同步、可观测性与测试">
+<meta property="og:url" content="http://example.com/2026/05/28/AI-Agent-%E9%9D%A2%E8%AF%95%E5%AE%9E%E6%88%98-%E7%AC%AC8%E5%91%A8-SOP%E8%AE%BE%E8%AE%A1%E5%99%A8-%E5%AE%9E%E6%97%B6%E5%90%8C%E6%AD%A5-%E5%8F%AF%E8%A7%82%E6%B5%8B%E6%80%A7%E4%B8%8E%E6%B5%8B%E8%AF%95/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="AI Agent 面试实战 — 第8周：SOP 设计器、实时同步、可观测性与测试 第8周 L4 编排层收尾 + Harness 启动——SOP 可视化设计器（React Flow + YAML 双向同步）、聊天室 WebSocket 实时同步、Observer 轻量级 Agent Trace、Workspace Manager 隔离与快照、四层测试体系。   一、SOP 设计器前端（React F">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://example.com/img/butterfly-icon.png">
+<meta property="article:published_time" content="2026-05-28T12:00:00.000Z">
+<meta property="article:modified_time" content="2026-05-29T09:00:30.094Z">
+<meta property="article:author" content="david">
+<meta property="article:tag" content="AI">
+<meta property="article:tag" content="Agent">
+<meta property="article:tag" content="学习笔记">
+<meta property="article:tag" content="面试">
+<meta property="article:tag" content="WebSocket">
+<meta property="article:tag" content="工程实践">
+<meta property="article:tag" content="React-Flow">
+<meta property="article:tag" content="Observer">
+<meta property="article:tag" content="Workspace-Manager">
+<meta property="article:tag" content="端到端测试">
+<meta property="article:tag" content="可观测性">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/img/butterfly-icon.png"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "AI Agent 面试实战 — 第8周：SOP 设计器、实时同步、可观测性与测试",
+  "url": "http://example.com/2026/05/28/AI-Agent-%E9%9D%A2%E8%AF%95%E5%AE%9E%E6%88%98-%E7%AC%AC8%E5%91%A8-SOP%E8%AE%BE%E8%AE%A1%E5%99%A8-%E5%AE%9E%E6%97%B6%E5%90%8C%E6%AD%A5-%E5%8F%AF%E8%A7%82%E6%B5%8B%E6%80%A7%E4%B8%8E%E6%B5%8B%E8%AF%95/",
+  "image": "http://example.com/img/butterfly-icon.png",
+  "datePublished": "2026-05-28T12:00:00.000Z",
+  "dateModified": "2026-05-29T09:00:30.094Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "david",
+      "url": "http://example.com"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://example.com/2026/05/28/AI-Agent-%E9%9D%A2%E8%AF%95%E5%AE%9E%E6%88%98-%E7%AC%AC8%E5%91%A8-SOP%E8%AE%BE%E8%AE%A1%E5%99%A8-%E5%AE%9E%E6%97%B6%E5%90%8C%E6%AD%A5-%E5%8F%AF%E8%A7%82%E6%B5%8B%E6%80%A7%E4%B8%8E%E6%B5%8B%E8%AF%95/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: 'Copy Successful',
+    error: 'Copy Failed',
+    noSupport: 'Browser Not Supported'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: 'Just now',
+    min: 'minutes ago',
+    hour: 'hours ago',
+    day: 'days ago',
+    month: 'months ago'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid/dist/infinitegrid.min.js',
+    buttonText: 'Load More'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'AI Agent 面试实战 — 第8周：SOP 设计器、实时同步、可观测性与测试',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Hexo</span></a><a class="nav-page-title" href="/"><span class="site-name">AI Agent 面试实战 — 第8周：SOP 设计器、实时同步、可观测性与测试</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  Back to Home</span></span></a></span><div id="menus"></div></nav><div id="post-info"><h1 class="post-title">AI Agent 面试实战 — 第8周：SOP 设计器、实时同步、可观测性与测试</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">Created</span><time class="post-meta-date-created" datetime="2026-05-28T12:00:00.000Z" title="Created 2026-05-28 20:00:00">2026-05-28</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">Updated</span><time class="post-meta-date-updated" datetime="2026-05-29T09:00:30.094Z" title="Updated 2026-05-29 17:00:30">2026-05-29</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/AI%E5%AD%A6%E4%B9%A0/">AI学习</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/AI%E5%AD%A6%E4%B9%A0/Agent/">Agent</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/AI%E5%AD%A6%E4%B9%A0/Agent/%E9%9D%A2%E8%AF%95/">面试</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">Post Views:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h2 id="AI-Agent-面试实战-—-第8周：SOP-设计器、实时同步、可观测性与测试"><a href="#AI-Agent-面试实战-—-第8周：SOP-设计器、实时同步、可观测性与测试" class="headerlink" title="AI Agent 面试实战 — 第8周：SOP 设计器、实时同步、可观测性与测试"></a>AI Agent 面试实战 — 第8周：SOP 设计器、实时同步、可观测性与测试</h2><blockquote>
+<p>第8周 L4 编排层收尾 + Harness 启动——SOP 可视化设计器（React Flow + YAML 双向同步）、聊天室 WebSocket 实时同步、Observer 轻量级 Agent Trace、Workspace Manager 隔离与快照、四层测试体系。</p>
+</blockquote>
+<hr>
+<h2 id="一、SOP-设计器前端（React-Flow）"><a href="#一、SOP-设计器前端（React-Flow）" class="headerlink" title="一、SOP 设计器前端（React Flow）"></a>一、SOP 设计器前端（React Flow）</h2><h3 id="Q1-你们的-SOP-设计器是怎么实现的？为什么选择-React-Flow？"><a href="#Q1-你们的-SOP-设计器是怎么实现的？为什么选择-React-Flow？" class="headerlink" title="Q1: 你们的 SOP 设计器是怎么实现的？为什么选择 React Flow？"></a>Q1: 你们的 SOP 设计器是怎么实现的？为什么选择 React Flow？</h3><p><strong>难度</strong>：⭐⭐⭐（进阶）<br><strong>频率</strong>：★★★（常见）</p>
+<p><strong>回答结构</strong>：</p>
+<p>“我们基于 React Flow 构建了可视化 SOP 编辑器。React Flow 是 LangGraph Studio、Flowise、Dify 等主流 Agent 平台的共同选择，它提供了开箱即用的节点拖拽、连线、缩放平移、自定义节点渲染等能力，让我们把精力集中在业务逻辑上。</p>
+<p><strong>核心功能模块</strong>：</p>
+<ul>
+<li><strong>节点面板</strong>：左侧有五种节点类型（Start、Agent Action、HITL、Validation、End），支持拖拽到画布。</li>
+<li><strong>属性编辑</strong>：点击节点，右侧面板动态显示该节点类型的配置项。例如 Agent Action 节点可以下拉选择 Role Slot 和 Skill，配置 retry 参数；HITL 节点可以设置人工审批还是自动通过，甚至配置条件自动审批。</li>
+<li><strong>连线与条件路由</strong>：从一个节点的 handle 拖出连线到另一个节点，点击连线可以编辑 condition 表达式（如 <code>hitl_result == &#39;approve&#39;</code>），支持配置 max_loop。</li>
+<li><strong>YAML 双向同步</strong>：画布操作会实时生成 YAML 预览在底部面板；用户也可以直接编辑 YAML，画布自动重新渲染。这得益于我们设计的一套 <strong>YAML ↔ Graph 双向绑定</strong>的状态管理。</li>
+<li><strong>校验</strong>：保存前自动检查孤立节点、死循环、必填字段、Role Slot 是否有对应 Agent 等，给出错误提示。</li>
+</ul>
+<p><strong>技术决策</strong>：用 dagre 做自动布局，js-yaml 做解析生成，节点颜色&#x2F;图标与后端执行引擎保持一致，降低认知负担。</p>
+<p><strong>亮点</strong>：YAML 和画布的双向同步不是简单的字符串替换，而是通过一个中间数据结构（SOP Graph Model）进行转换，确保画布的图形信息和 YAML 的文本信息完全等价。这是很多同类工具容易出 Bug 的地方。”</p>
+<blockquote>
+<p><strong>追问：为什么不是纯 YAML 编辑，而是加了一套可视化画布？</strong></p>
+</blockquote>
+<p>“纯 YAML 适合开发者快速定义简单流程，但面对复杂分支、循环、并行节点时，文本的嵌套结构容易出错，可读性也差。可视化画布直观展示了流程的拓扑和状态流转，同时我们保留了 YAML 预览和直接编辑能力，两者共存。未来我们可以在节点上直接显示上次执行耗时、成功率等指标，把编辑器升级为’流程观测与优化控制台’。”</p>
+<hr>
+<h2 id="二、聊天室-WebSocket-实时同步"><a href="#二、聊天室-WebSocket-实时同步" class="headerlink" title="二、聊天室 WebSocket 实时同步"></a>二、聊天室 WebSocket 实时同步</h2><h3 id="Q2-前端聊天室如何实时展示-SOP-执行进度和-Agent-对话？WebSocket-断开怎么处理？"><a href="#Q2-前端聊天室如何实时展示-SOP-执行进度和-Agent-对话？WebSocket-断开怎么处理？" class="headerlink" title="Q2: 前端聊天室如何实时展示 SOP 执行进度和 Agent 对话？WebSocket 断开怎么处理？"></a>Q2: 前端聊天室如何实时展示 SOP 执行进度和 Agent 对话？WebSocket 断开怎么处理？</h3><p><strong>难度</strong>：⭐⭐⭐（进阶）<br><strong>频率</strong>：★★★★（常见）</p>
+<p><strong>回答结构</strong>：</p>
+<p>“聊天室是用户观察 Agent 协作的核心窗口。我们通过 WebSocket 实现实时同步，配合 REST 兜底保证数据完整性。</p>
+<p><strong>数据流</strong>：</p>
+<ol>
+<li>SOP Engine 在每个节点开始&#x2F;结束时，通过 Blackboard（Redis Pub&#x2F;Sub）发布 <code>task_update</code> 事件。</li>
+<li>后端 WebSocket 服务订阅相应团队频道，将事件推送给前端。</li>
+<li>前端维护一个节点状态映射表，根据事件更新每个节点的颜色&#x2F;动画（pending 灰、running 蓝旋转、done 绿、failed 红、paused 黄）。</li>
+</ol>
+<p><strong>Agent 对话流</strong>：</p>
+<p>当 Agent 流式输出时，每收到一个 token，后端推送一个 <code>agent_message</code> 事件片段，前端模拟打字机效果。内容支持 Markdown 渲染（用 react-markdown），代码块、表格都能正确展示，提升可读性。</p>
+<p><strong>HITL 审批 UI</strong>：</p>
+<p>到达 HITL 节点时，前端弹出审批对话框，显示消息内容、超时倒计时，并提供’通过’和’驳回’按钮。用户操作后调用 REST API 恢复任务。</p>
+<p><strong>断线重连与状态补偿</strong>：</p>
+<p>WebSocket 断开是分布式系统的常见问题。我们设计了三层保障：</p>
+<ol>
+<li>前端自动重连，指数退避（1s, 2s, 4s，最多 5 次）。</li>
+<li>重连成功后，立即调用任务状态 REST API（<code>GET /api/v1/tasks/&#123;task_id&#125;</code>）获取当前完整状态，全量刷新 UI，确保不丢任何进度。</li>
+<li>如果短时间无法重连，前端显示友好提示，用户可手动刷新。</li>
+</ol>
+<p><strong>亮点</strong>：WebSocket 做增量推送，REST 做全量补偿。这避免了单纯依赖 WebSocket 导致断线期间状态丢失的经典问题，同时保持了极低的网络开销。”</p>
+<blockquote>
+<p><strong>追问：为什么不直接用 WebSocket 做所有的状态同步，还要保留 REST？</strong></p>
+</blockquote>
+<p>“WebSocket 推送的本质是’事件流’，适合通知变化，但无法提供当前’完整态’。当页面初次加载或断线重连时，必须有一个全量数据源来恢复现场。REST 就是这个数据源。两者职责清晰：WebSocket 负责实时增量，REST 负责全量快照，配合起来才能应对复杂网络环境。”</p>
+<hr>
+<h2 id="三、Observer-可观测性基础"><a href="#三、Observer-可观测性基础" class="headerlink" title="三、Observer 可观测性基础"></a>三、Observer 可观测性基础</h2><h3 id="Q3-Observer-模块是如何追踪整个-SOP-调用链的？和分布式追踪有什么异同？"><a href="#Q3-Observer-模块是如何追踪整个-SOP-调用链的？和分布式追踪有什么异同？" class="headerlink" title="Q3: Observer 模块是如何追踪整个 SOP 调用链的？和分布式追踪有什么异同？"></a>Q3: Observer 模块是如何追踪整个 SOP 调用链的？和分布式追踪有什么异同？</h3><p><strong>难度</strong>：⭐⭐⭐⭐（深入）<br><strong>频率</strong>：★★★★（常见）</p>
+<p><strong>回答结构</strong>：</p>
+<p>“Observer 是系统的’黑匣子’，核心能力包括 Trace 追踪、结构化日志和 Token 统计。</p>
+<p><strong>Trace 追踪（简版 OpenTelemetry）</strong>：</p>
+<p>我们设计了一个 Span 树模型。每个任务创建一个 Trace，每个执行步骤（SOP 工作流、节点执行、LLM 调用、工具调用）创建一个 Span，形成父子关系。</p>
+<p>例如一次开发 SOP 的完整 Trace：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">Trace: task_001</span><br><span class="line">  └ Span: sop_workflow (12.4s)</span><br><span class="line">      ├ Span: node_analyze (3.2s)</span><br><span class="line">      │   ├ Span: llm_call (model: gpt-4o, tokens: 450, latency: 2.8s)</span><br><span class="line">      │   └ Span: tool_call (tool: file-ops, latency: 0.2s)</span><br><span class="line">      └ Span: node_coding (4.1s)</span><br><span class="line">          └ Span: llm_call (model: sonnet, tokens: 320, latency: 3.9s)</span><br></pre></td></tr></table></figure>
+
+<p>数据持久化到 PostgreSQL，可通过 API 查询完整调用树。这让我们能精确回答：<strong>“这次任务哪个节点最慢？哪个模型成本最高？Agent 调用了哪些工具？”</strong></p>
+<p><strong>与分布式追踪的区别</strong>：</p>
+<p>传统分布式追踪（Jaeger&#x2F;Zipkin）关注跨服务 RPC 调用，我们需要追踪的是单进程内的异步调用链，且关注 LLM 特化属性（模型名、Token 数、温度参数）。我们参考了 OpenTelemetry 的 Span 概念，但做了轻量化实现，无需 sidecar 或 collector。</p>
+<p><strong>集成方式</strong>：</p>
+<p>通过 Python 装饰器 <code>@observer.trace(name)</code> 无侵入地注入到 ModelAdapter、ToolExecutor 等关键方法。装饰器自动创建 Span、捕获异常、记录耗时和属性。在 FastAPI 中间件层，自动为每个请求创建 Trace。</p>
+<p><strong>Token 统计</strong>：</p>
+<p>每次 LLM 调用后，在 Span 中附加 <code>prompt_tokens</code>、<code>completion_tokens</code>，同时实时聚合到 Redis（按小时），异步持久化到 PG。提供 API 查询成本趋势、团队费用排名。</p>
+<p><strong>亮点</strong>：我们在没有引入完整 OpenTelemetry 栈的情况下，用约 300 行 Python 代码实现了 Agent 领域的定制化追踪，开销极低（每个 Span &lt; 1ms）。这对于理解 Agent 行为、优化 Prompt 和成本分配至关重要。”</p>
+<hr>
+<h2 id="四、Workspace-Manager-基础"><a href="#四、Workspace-Manager-基础" class="headerlink" title="四、Workspace Manager 基础"></a>四、Workspace Manager 基础</h2><h3 id="Q4-Agent-操作文件时，如何防止多个-Agent-并发修改冲突？Snapshot-快照是怎么做的？"><a href="#Q4-Agent-操作文件时，如何防止多个-Agent-并发修改冲突？Snapshot-快照是怎么做的？" class="headerlink" title="Q4: Agent 操作文件时，如何防止多个 Agent 并发修改冲突？Snapshot 快照是怎么做的？"></a>Q4: Agent 操作文件时，如何防止多个 Agent 并发修改冲突？Snapshot 快照是怎么做的？</h3><p><strong>难度</strong>：⭐⭐⭐⭐（深入）<br><strong>频率</strong>：★★★（偶见但高价值）</p>
+<p><strong>回答结构</strong>：</p>
+<p>“Workspace Manager 是文件系统的’隔离沙箱’和’回滚装置’。</p>
+<p><strong>隔离策略</strong>：</p>
+<p>每个 Session 拥有独立的工作目录。所有 Agent 的文件操作（读写、执行）都通过 WorkspaceManager 代理，确保操作限定在 Session 的工作空间内，不同 Agent 的临时文件不会互相污染。</p>
+<p><strong>并发控制</strong>：</p>
+<p>使用 <code>asyncio.Lock</code> 实现文件级别的读写锁。读操作共享锁（允许多个 Agent 同时读取），写操作排他锁（写文件时其他 Agent 等待）。锁的 key 是规范化后的文件路径，避免死锁通过超时释放机制解决。</p>
+<p><strong>Snapshot 快照</strong>：</p>
+<p>基础版本使用文件哈希 + 备份目录方式实现：</p>
+<ul>
+<li><code>create_snapshot(workspace)</code> 会计算当前所有文件的 SHA256 哈希，并将文件复制到一个 backup 子目录。</li>
+<li><code>restore_snapshot(workspace, snapshot_id)</code> 读取备份目录中的记录，将文件原样覆盖回工作空间。</li>
+<li>快照列表及元数据存储在 SQLite 或 JSON 文件中，简单可靠。</li>
+</ul>
+<p><strong>应用场景</strong>：</p>
+<p>Snapshot 是 Feedback Loop 的基础设施。当 Agent 的输出在 Validation Gate 校验失败时，我们将工作空间回滚到变更前的快照，再注入错误信息让 Agent 重试，确保每次重试都基于干净状态。</p>
+<p><strong>进阶设计</strong>：</p>
+<p>后续会升级为基于 Git 的增量快照，利用 Git 的 three-way merge 能力处理并行分支合并，并可通过 <code>git diff</code> 直接查看 Agent 的代码改动，方便 Code Review。”</p>
+<hr>
+<h2 id="五、集成测试与端到端验证"><a href="#五、集成测试与端到端验证" class="headerlink" title="五、集成测试与端到端验证"></a>五、集成测试与端到端验证</h2><h3 id="Q5-整个多-Agent-系统的端到端测试你们是怎么设计的？如何覆盖异步和并发场景？"><a href="#Q5-整个多-Agent-系统的端到端测试你们是怎么设计的？如何覆盖异步和并发场景？" class="headerlink" title="Q5: 整个多 Agent 系统的端到端测试你们是怎么设计的？如何覆盖异步和并发场景？"></a>Q5: 整个多 Agent 系统的端到端测试你们是怎么设计的？如何覆盖异步和并发场景？</h3><p><strong>难度</strong>：⭐⭐⭐（进阶）<br><strong>频率</strong>：★★★（常见）</p>
+<p><strong>回答结构</strong>：</p>
+<p>“端到端测试是保证系统可靠性的关键。我们设计了四层测试策略：</p>
+<p><strong>单元测试（pytest + asyncio）</strong>：</p>
+<p>Mock 外部 LLM 调用和数据库，验证每个 Service 层的核心逻辑，如 AgentPool 的 acquire&#x2F;release 并发安全、ConditionRouter 的各种表达式。</p>
+<p><strong>集成测试</strong>：</p>
+<p>真实数据库（测试 PostgreSQL）+ Mock 的 LLM 适配器。布置完整的 SOP，模拟各类输出，验证状态流转、HITL 流程、错误恢复路径。</p>
+<p><strong>并发压力测试</strong>：</p>
+<p>用 <code>asyncio.gather</code> 同时发起多个 SOP 执行任务，检查 Agent Pool 的独占性、Session 隔离、Scheduler 优先级排序。用 <code>pytest-timeout</code> 防止死锁。</p>
+<p><strong>E2E 验收测试</strong>：</p>
+<p>启动完整 Docker 环境，用 <code>httpx</code> 执行任务 API，用 <code>playwright</code> 打开前端，检查聊天室节点变色、WebSocket 消息推送。模拟真实用户操作（审批、驳回）。</p>
+<p><strong>异步测试技巧</strong>：</p>
+<p>由于整个系统大量使用 <code>async/await</code>，所有测试必须用 <code>@pytest.mark.asyncio</code>，并使用 <code>pytest-asyncio</code> 插件。对于需要等待真实时间的场景（如重试延迟），我们用 <code>asyncio.sleep(0.1)</code> 加速，避免测试太慢。</p>
+<p><strong>测试数据管理</strong>：每个测试类开始时，通过 fixture 创建独立的 Team、Agent、SOP，测试结束后自动清理，保证互不干扰。”</p>
+<hr>
+<h2 id="第8周面试总结"><a href="#第8周面试总结" class="headerlink" title="第8周面试总结"></a>第8周面试总结</h2><table>
+<thead>
+<tr>
+<th>亮点</th>
+<th>深度解析</th>
+<th>面试价值</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>SOP 设计器 YAML 双向同步</td>
+<td>通过 Graph Model 中间层实现画布与 YAML 完全等价，避免不一致</td>
+<td>⭐⭐⭐</td>
+</tr>
+<tr>
+<td>WebSocket + REST 双重同步</td>
+<td>增量推送 + 全量补偿，保证极端网络下进度不丢</td>
+<td>⭐⭐⭐⭐</td>
+</tr>
+<tr>
+<td>轻量级 Agent Trace 实现</td>
+<td>参考 OpenTelemetry 但无重型依赖，专注 Agent 特化追踪和成本分析</td>
+<td>⭐⭐⭐⭐</td>
+</tr>
+<tr>
+<td>Workspace 隔离与 Snapshot 基础</td>
+<td>文件级锁、工作空间隔离、快照回滚，为 Feedback Loop 铺路</td>
+<td>⭐⭐⭐⭐</td>
+</tr>
+<tr>
+<td>异步并发测试体系</td>
+<td>四层测试策略覆盖并发冲突、重试、HITL 等复杂场景</td>
+<td>⭐⭐⭐</td>
+</tr>
+</tbody></table>
+<p><strong>一句话总结第8周</strong>：</p>
+<blockquote>
+<p>第8周完成了 L4 编排层收尾并启动 Harness——SOP 设计器实现画布与 YAML 双向同步，聊天室通过 WebSocket + REST 双重保障实时同步，Observer 用 300 行代码实现 Agent 级 Trace，Workspace Manager 提供隔离与快照能力，四层测试体系保证系统可靠性。从”能跑”到”可观测、可测试、可交互”。</p>
+</blockquote>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>Author: </span><span class="post-copyright-info"><a href="http://example.com">david</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>Link: </span><span class="post-copyright-info"><a href="http://example.com/2026/05/28/AI-Agent-%E9%9D%A2%E8%AF%95%E5%AE%9E%E6%88%98-%E7%AC%AC8%E5%91%A8-SOP%E8%AE%BE%E8%AE%A1%E5%99%A8-%E5%AE%9E%E6%97%B6%E5%90%8C%E6%AD%A5-%E5%8F%AF%E8%A7%82%E6%B5%8B%E6%80%A7%E4%B8%8E%E6%B5%8B%E8%AF%95/">http://example.com/2026/05/28/AI-Agent-%E9%9D%A2%E8%AF%95%E5%AE%9E%E6%88%98-%E7%AC%AC8%E5%91%A8-SOP%E8%AE%BE%E8%AE%A1%E5%99%A8-%E5%AE%9E%E6%97%B6%E5%90%8C%E6%AD%A5-%E5%8F%AF%E8%A7%82%E6%B5%8B%E6%80%A7%E4%B8%8E%E6%B5%8B%E8%AF%95/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>Copyright Notice: </span><span class="post-copyright-info">All articles on this blog are licensed under <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> unless otherwise stated.</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/AI/">AI</a><a class="post-meta__tags" href="/tags/Agent/">Agent</a><a class="post-meta__tags" href="/tags/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">学习笔记</a><a class="post-meta__tags" href="/tags/%E9%9D%A2%E8%AF%95/">面试</a><a class="post-meta__tags" href="/tags/WebSocket/">WebSocket</a><a class="post-meta__tags" href="/tags/%E5%B7%A5%E7%A8%8B%E5%AE%9E%E8%B7%B5/">工程实践</a><a class="post-meta__tags" href="/tags/React-Flow/">React-Flow</a><a class="post-meta__tags" href="/tags/Observer/">Observer</a><a class="post-meta__tags" href="/tags/Workspace-Manager/">Workspace-Manager</a><a class="post-meta__tags" href="/tags/%E7%AB%AF%E5%88%B0%E7%AB%AF%E6%B5%8B%E8%AF%95/">端到端测试</a><a class="post-meta__tags" href="/tags/%E5%8F%AF%E8%A7%82%E6%B5%8B%E6%80%A7/">可观测性</a></div><div class="post-share"><div class="social-share" data-image="/img/butterfly-icon.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related full-width" href="/2026/05/28/AI-Agent-%E9%9D%A2%E8%AF%95%E5%AE%9E%E6%88%98-%E7%AC%AC7%E5%91%A8-Agent-Pool-Session%E9%9A%94%E7%A6%BB-%E8%B0%83%E5%BA%A6%E4%B8%8E%E9%80%9A%E4%BF%A1/" title="AI Agent 面试实战 — 第7周：Agent Pool、Session 隔离、调度与通信"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">Next</div><div class="info-item-2">AI Agent 面试实战 — 第7周：Agent Pool、Session 隔离、调度与通信</div></div><div class="info-2"><div class="info-item-1">AI Agent 面试实战 — 第7周：Agent Pool、Session 隔离、调度与通信 第7周完善 L4 编排层——Agent Pool 资源管理（状态机 + 并发安全 + 能力匹配）、Session 全维度隔离（上下文&#x2F;Memory&#x2F;Workspace&#x2F;有状态工具）、资源感知调度器、Blackboard 事件驱动通信。   一、Agent Pool 资源管理Q1: Agent Pool 的资源分配机制是怎样的？如何保证并发安全和能力匹配？难度：⭐⭐⭐⭐（深入）频率：★★★★（常见） 回答结构： “Agent Pool 是整个系统的’人力资源部’，负责管理所有 Agent 的状态（空闲、忙碌、故障）和按需分配。核心实现有四个关键点： 状态机 Agent 只有三种状态：idle（可分配）、busy（正在执行任务）、error（例如模型不可用，需人工恢复）。所有状态变更通过 asyncio.Lock 保护的原子操作完成。 能力匹配 调用 acquire(required_capabilities) 时，会遍历所有 idle 的 Agent，检查其...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>Related Articles</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/2026/05/25/AI-Agent-%E9%9D%A2%E8%AF%95%E5%AE%9E%E6%88%98-%E7%AC%AC1%E5%91%A8-%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%B7%A5%E7%A8%8B%E5%9F%BA%E7%A1%80/" title="AI Agent 面试实战 — 第1周：架构设计与工程基础"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-05-25</div><div class="info-item-2">AI Agent 面试实战 — 第1周：架构设计与工程基础</div></div><div class="info-2"><div class="info-item-1">AI Agent 面试实战 — 第1周：架构设计与工程基础 边做 The Boy Assistant 项目，边整理高频面试题。第1周完成系统地基——从零搭建 FastAPI 项目、Model Adapter、API Key 管理、数据表设计。以下是这一周遇到的高频面试问题。   一、架构设计类Q1: 为什么选 FastAPI 而不是 Django 或 Flask？难度：⭐（基础）频率：★★★★★（几乎必问） 回答结构： “选 FastAPI 是基于三个核心考量：** 第一：async 原生支持。 Agent 系统需要大量并发 API 调用——同时调用多个 LLM Provider、同时处理多个 Agent 的请求、同时推送 WebSocket 流式输出。FastAPI 原生支持 async&#x2F;await，而 Django 的 async 支持是后来加的，稳定性不够；Flask 根本没有原生 async。 第二：WebSocket 内置支持。 我们的聊天室需要实时推送 SOP 执行进度、Agent 对话流。FastAPI 的 WebSocket 是内置的，同一个框架同时处理...</div></div></div></a><a class="pagination-related" href="/2026/05/25/AI-Agent-%E9%9D%A2%E8%AF%95%E5%AE%9E%E6%88%98-%E7%AC%AC2%E5%91%A8-%E5%B7%A5%E5%85%B7%E7%B3%BB%E7%BB%9F%E4%B8%8EAgent%E6%9E%84%E5%BB%BA/" title="AI Agent 面试实战 — 第2周：工具系统与 Agent 构建"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-05-25</div><div class="info-item-2">AI Agent 面试实战 — 第2周：工具系统与 Agent 构建</div></div><div class="info-2"><div class="info-item-1">AI Agent 面试实战 — 第2周：工具系统与 Agent 构建 第2周完成 L1 能力层核心——Tool Registry 三层权限模型、有状态工具生命周期管理、Agent Factory 组合构建。让 Agent 有了”手”和”边界”。   一、工具系统设计Q1: 工具注册表（Tool Registry）是怎么设计的？难度：⭐⭐（基础+）频率：★★★★★（必问） 回答结构： “Tool Registry 是整个工具系统的中枢，负责工具的注册、发现、权限校验。 设计上分三层： 第一层：注册层。 所有工具在 Registry 中注册，包括 name、description、参数 Schema（JSON Schema 格式）、工具类型（function &#x2F; mcp &#x2F; api）、是否是有状态工具。这个是全局唯一的，所有 Agent 都能看到这个注册表。 第二层：声明层。 每个 Persona 在创建时，声明自己需要哪些工具。比如架构师声明自己需要 file-ops-readonly（只读文件操作），程序员声明自己需要 file-ops + terminal（...</div></div></div></a><a class="pagination-related" href="/2026/05/25/AI-Agent-%E9%9D%A2%E8%AF%95%E5%AE%9E%E6%88%98-%E7%AC%AC3%E5%91%A8-%E5%9B%9B%E5%B1%82%E8%AE%B0%E5%BF%86%E7%B3%BB%E7%BB%9F%E4%B8%8E%E4%B8%8A%E4%B8%8B%E6%96%87%E7%AE%A1%E7%90%86/" title="AI Agent 面试实战 — 第3周：四层记忆系统与上下文管理"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-05-25</div><div class="info-item-2">AI Agent 面试实战 — 第3周：四层记忆系统与上下文管理</div></div><div class="info-2"><div class="info-item-1">AI Agent 面试实战 — 第3周：四层记忆系统与上下文管理 第3周完成 L2 反思层的核心——四层记忆系统（全局&#x2F;团队&#x2F;个人&#x2F;上下文）、Token 预算管理、摘要压缩与硬裁剪策略。让 Agent 能”记住”团队决策和个人经验，同时不会浪费 Token。   一、记忆系统设计Q1: 四层记忆系统是如何设计的？每层的作用是什么？难度：⭐⭐⭐（进阶）频率：★★★★★（必问） 回答结构： “我设计了一个四层记忆系统，解决 Agent 协作中的记忆隔离、经验积累和上下文管理问题。 L1 系统记忆：全局通用知识，所有团队和 Agent 共享。比如 API 设计规范、安全基线。由管理员维护，任何 Agent 创建后自动继承。 L2 团队记忆：团队级共享基座。同一个 Team 内的所有 Agent 都能看到。比如架构决策、Sprint 目标、团队编码规范。关键设计是 Leader 决策自动写入 L2，所有 Member 下次对话自动同步，不需要手动传播。 L3 Agent 全局记忆：跟随 Agent 跨团队的个人经验。比如语言偏好（Python）、工具熟练度。...</div></div></div></a><a class="pagination-related" href="/2026/05/26/AI-Agent-%E9%9D%A2%E8%AF%95%E5%AE%9E%E6%88%98-%E7%AC%AC4%E5%91%A8-RAG%E7%9F%A5%E8%AF%86%E6%A3%80%E7%B4%A2%E4%B8%8ESkill%E5%9F%BA%E7%A1%80/" title="AI Agent 面试实战 — 第4周：RAG 知识检索与 Skill 基础"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-05-26</div><div class="info-item-2">AI Agent 面试实战 — 第4周：RAG 知识检索与 Skill 基础</div></div><div class="info-2"><div class="info-item-1">AI Agent 面试实战 — 第4周：RAG 知识检索与 Skill 基础 第4周完成 L2 反思层的 RAG 知识检索——混合检索 + Reranker 重排序 + Token 预算联合裁剪 + 层级知识库 + Skill 注册基础。让 Agent 能从知识库中精准检索信息，并和记忆系统协作注入上下文。   一、RAG 整体设计Q1: 你们的 RAG 方案整体架构是怎样的？难度：⭐⭐⭐（进阶）频率：★★★★★（必问） 回答结构： “我们的 RAG 方案是基于混合检索 + 重排序 + 层级知识库的架构。 完整流程：  文档注入阶段：用户上传文档到知识库 → 语义分块（512 token &#x2F; 重叠 64 token）→ 调用 bge-m3 Embedding API 生成向量 → 存入 pgvector，同时生成 tsvector 全文索引。 检索阶段： Dense 检索：将查询向量化，在 pgvector 中做余弦相似度搜索，返回 Top-K Sparse 检索：用 PostgreSQL tsvector 做 BM25 全文检索，返回 Top-K 两路结果通过 RRF...</div></div></div></a><a class="pagination-related" href="/2026/05/27/AI-Agent-%E9%9D%A2%E8%AF%95%E5%AE%9E%E6%88%98-%E7%AC%AC5%E5%91%A8-%E6%A8%A1%E5%9E%8B%E8%B7%AF%E7%94%B1Skill%E6%89%A7%E8%A1%8C%E4%B8%8E%E6%9D%A1%E4%BB%B6%E8%B7%AF%E7%94%B1/" title="AI Agent 面试实战 — 第5周：模型路由、Skill 执行与条件路由"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-05-27</div><div class="info-item-2">AI Agent 面试实战 — 第5周：模型路由、Skill 执行与条件路由</div></div><div class="info-2"><div class="info-item-1">AI Agent 面试实战 — 第5周：模型路由、Skill 执行与条件路由 第5周完成 L3 策略层——模型智能路由（成本降低 80%）、Skill 可执行指令系统、条件路由 AST 求值器。让系统从”能做”变为”会做”。   一、模型路由与成本优化Q1: 什么是模型路由（Model Router）？你们是怎么实现的？难度：⭐⭐⭐（进阶）频率：★★★★★（必问） 回答结构： “模型路由的核心思路是：不同任务用不同模型，在成本和质量间自动平衡。 我们实现了一个自动路由层：  任务复杂度分类：对用户输入进行快速评估。消息长度 &lt; 50 字且无特殊关键词 → SIMPLE；包含’架构&#x2F;设计&#x2F;选型’或长度 &gt; 300 字 → COMPLEX；其余为 STANDARD。分类器用规则引擎实现，轻量且无额外 API 消耗。 模型选择：复杂度映射到模型池：     复杂度 模型 特点    SIMPLE Haiku &#x2F; GLM-4-Flash 最快、最便宜   STANDARD Sonnet &#x2F; GPT-4o &#x2F; GLM-5.1 性...</div></div></div></a><a class="pagination-related" href="/2026/05/28/AI-Agent-%E9%9D%A2%E8%AF%95%E5%AE%9E%E6%88%98-%E7%AC%AC6%E5%91%A8-SOP%E5%BC%95%E6%93%8EHITL%E4%B8%8EAgent%E5%8D%8F%E4%BD%9C/" title="AI Agent 面试实战 — 第6周：SOP 引擎、HITL 与 Agent 协作（深度篇）"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-05-28</div><div class="info-item-2">AI Agent 面试实战 — 第6周：SOP 引擎、HITL 与 Agent 协作（深度篇）</div></div><div class="info-2"><div class="info-item-1">AI Agent 面试实战 — 第6周：SOP 引擎、HITL 与 Agent 协作（深度篇） 第6周进入 L4 编排层——基于 LangGraph 的 SOP 引擎深度封装、三种 HITL 模式的工程实现、并行节点工作空间隔离、错误分级恢复。这是整个系统最核心的编排能力。   一、SOP 引擎与 LangGraph 集成（深度）Q1: LangGraph 的核心概念是什么？你们在它之上做了哪些封装和增强？难度：⭐⭐⭐⭐⭐（专家级）频率：★★★★（高频，大厂必问） 回答结构： “LangGraph 把工作流抽象成一个有向图，核心要素是 StateGraph、节点（Node）和边（Edge）。每个节点接收当前的 State 字典，处理后返回更新后的 State，LangGraph 负责按边定义的路线流转，并自动处理状态持久化和断点恢复。 我们不是直接裸用 LangGraph，而是在它之上做了三层增强： 第一层：业务节点封装层 LangGraph 的节点只是一个函数签名 (state) -&gt; state。我们把它封装成了三种业务节点类型：  AgentNode：执行时自动完成 ...</div></div></div></a></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/butterfly-icon.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">david</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">143</div></a><a href="/tags/"><div class="headline">Tags</div><div class="length-num">349</div></a><a href="/categories/"><div class="headline">Categories</div><div class="length-num">24</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>Announcement</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>Contents</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#AI-Agent-%E9%9D%A2%E8%AF%95%E5%AE%9E%E6%88%98-%E2%80%94-%E7%AC%AC8%E5%91%A8%EF%BC%9ASOP-%E8%AE%BE%E8%AE%A1%E5%99%A8%E3%80%81%E5%AE%9E%E6%97%B6%E5%90%8C%E6%AD%A5%E3%80%81%E5%8F%AF%E8%A7%82%E6%B5%8B%E6%80%A7%E4%B8%8E%E6%B5%8B%E8%AF%95"><span class="toc-number">1.</span> <span class="toc-text">AI Agent 面试实战 — 第8周：SOP 设计器、实时同步、可观测性与测试</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81SOP-%E8%AE%BE%E8%AE%A1%E5%99%A8%E5%89%8D%E7%AB%AF%EF%BC%88React-Flow%EF%BC%89"><span class="toc-number">2.</span> <span class="toc-text">一、SOP 设计器前端（React Flow）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Q1-%E4%BD%A0%E4%BB%AC%E7%9A%84-SOP-%E8%AE%BE%E8%AE%A1%E5%99%A8%E6%98%AF%E6%80%8E%E4%B9%88%E5%AE%9E%E7%8E%B0%E7%9A%84%EF%BC%9F%E4%B8%BA%E4%BB%80%E4%B9%88%E9%80%89%E6%8B%A9-React-Flow%EF%BC%9F"><span class="toc-number">2.1.</span> <span class="toc-text">Q1: 你们的 SOP 设计器是怎么实现的？为什么选择 React Flow？</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E8%81%8A%E5%A4%A9%E5%AE%A4-WebSocket-%E5%AE%9E%E6%97%B6%E5%90%8C%E6%AD%A5"><span class="toc-number">3.</span> <span class="toc-text">二、聊天室 WebSocket 实时同步</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Q2-%E5%89%8D%E7%AB%AF%E8%81%8A%E5%A4%A9%E5%AE%A4%E5%A6%82%E4%BD%95%E5%AE%9E%E6%97%B6%E5%B1%95%E7%A4%BA-SOP-%E6%89%A7%E8%A1%8C%E8%BF%9B%E5%BA%A6%E5%92%8C-Agent-%E5%AF%B9%E8%AF%9D%EF%BC%9FWebSocket-%E6%96%AD%E5%BC%80%E6%80%8E%E4%B9%88%E5%A4%84%E7%90%86%EF%BC%9F"><span class="toc-number">3.1.</span> <span class="toc-text">Q2: 前端聊天室如何实时展示 SOP 执行进度和 Agent 对话？WebSocket 断开怎么处理？</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81Observer-%E5%8F%AF%E8%A7%82%E6%B5%8B%E6%80%A7%E5%9F%BA%E7%A1%80"><span class="toc-number">4.</span> <span class="toc-text">三、Observer 可观测性基础</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Q3-Observer-%E6%A8%A1%E5%9D%97%E6%98%AF%E5%A6%82%E4%BD%95%E8%BF%BD%E8%B8%AA%E6%95%B4%E4%B8%AA-SOP-%E8%B0%83%E7%94%A8%E9%93%BE%E7%9A%84%EF%BC%9F%E5%92%8C%E5%88%86%E5%B8%83%E5%BC%8F%E8%BF%BD%E8%B8%AA%E6%9C%89%E4%BB%80%E4%B9%88%E5%BC%82%E5%90%8C%EF%BC%9F"><span class="toc-number">4.1.</span> <span class="toc-text">Q3: Observer 模块是如何追踪整个 SOP 调用链的？和分布式追踪有什么异同？</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81Workspace-Manager-%E5%9F%BA%E7%A1%80"><span class="toc-number">5.</span> <span class="toc-text">四、Workspace Manager 基础</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Q4-Agent-%E6%93%8D%E4%BD%9C%E6%96%87%E4%BB%B6%E6%97%B6%EF%BC%8C%E5%A6%82%E4%BD%95%E9%98%B2%E6%AD%A2%E5%A4%9A%E4%B8%AA-Agent-%E5%B9%B6%E5%8F%91%E4%BF%AE%E6%94%B9%E5%86%B2%E7%AA%81%EF%BC%9FSnapshot-%E5%BF%AB%E7%85%A7%E6%98%AF%E6%80%8E%E4%B9%88%E5%81%9A%E7%9A%84%EF%BC%9F"><span class="toc-number">5.1.</span> <span class="toc-text">Q4: Agent 操作文件时，如何防止多个 Agent 并发修改冲突？Snapshot 快照是怎么做的？</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E9%9B%86%E6%88%90%E6%B5%8B%E8%AF%95%E4%B8%8E%E7%AB%AF%E5%88%B0%E7%AB%AF%E9%AA%8C%E8%AF%81"><span class="toc-number">6.</span> <span class="toc-text">五、集成测试与端到端验证</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Q5-%E6%95%B4%E4%B8%AA%E5%A4%9A-Agent-%E7%B3%BB%E7%BB%9F%E7%9A%84%E7%AB%AF%E5%88%B0%E7%AB%AF%E6%B5%8B%E8%AF%95%E4%BD%A0%E4%BB%AC%E6%98%AF%E6%80%8E%E4%B9%88%E8%AE%BE%E8%AE%A1%E7%9A%84%EF%BC%9F%E5%A6%82%E4%BD%95%E8%A6%86%E7%9B%96%E5%BC%82%E6%AD%A5%E5%92%8C%E5%B9%B6%E5%8F%91%E5%9C%BA%E6%99%AF%EF%BC%9F"><span class="toc-number">6.1.</span> <span class="toc-text">Q5: 整个多 Agent 系统的端到端测试你们是怎么设计的？如何覆盖异步和并发场景？</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AC%AC8%E5%91%A8%E9%9D%A2%E8%AF%95%E6%80%BB%E7%BB%93"><span class="toc-number">7.</span> <span class="toc-text">第8周面试总结</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>Recent Posts</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/05/28/AI-Agent-%E9%9D%A2%E8%AF%95%E5%AE%9E%E6%88%98-%E7%AC%AC8%E5%91%A8-SOP%E8%AE%BE%E8%AE%A1%E5%99%A8-%E5%AE%9E%E6%97%B6%E5%90%8C%E6%AD%A5-%E5%8F%AF%E8%A7%82%E6%B5%8B%E6%80%A7%E4%B8%8E%E6%B5%8B%E8%AF%95/" title="AI Agent 面试实战 — 第8周：SOP 设计器、实时同步、可观测性与测试">AI Agent 面试实战 — 第8周：SOP 设计器、实时同步、可观测性与测试</a><time datetime="2026-05-28T12:00:00.000Z" title="Created 2026-05-28 20:00:00">2026-05-28</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/05/28/AI-Agent-%E9%9D%A2%E8%AF%95%E5%AE%9E%E6%88%98-%E7%AC%AC7%E5%91%A8-Agent-Pool-Session%E9%9A%94%E7%A6%BB-%E8%B0%83%E5%BA%A6%E4%B8%8E%E9%80%9A%E4%BF%A1/" title="AI Agent 面试实战 — 第7周：Agent Pool、Session 隔离、调度与通信">AI Agent 面试实战 — 第7周：Agent Pool、Session 隔离、调度与通信</a><time datetime="2026-05-28T08:00:00.000Z" title="Created 2026-05-28 16:00:00">2026-05-28</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/05/28/AI-Agent-%E9%9D%A2%E8%AF%95%E5%AE%9E%E6%88%98-%E7%AC%AC6%E5%91%A8-SOP%E5%BC%95%E6%93%8EHITL%E4%B8%8EAgent%E5%8D%8F%E4%BD%9C/" title="AI Agent 面试实战 — 第6周：SOP 引擎、HITL 与 Agent 协作（深度篇）">AI Agent 面试实战 — 第6周：SOP 引擎、HITL 与 Agent 协作（深度篇）</a><time datetime="2026-05-28T02:00:00.000Z" title="Created 2026-05-28 10:00:00">2026-05-28</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/05/27/AI-Agent-%E9%9D%A2%E8%AF%95%E9%A2%98%E5%BA%93-%E7%B4%A2%E5%BC%95%E7%9B%AE%E5%BD%95/" title="AI Agent 面试题库 — 索引目录">AI Agent 面试题库 — 索引目录</a><time datetime="2026-05-27T04:00:00.000Z" title="Created 2026-05-27 12:00:00">2026-05-27</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/05/27/AI-Agent-%E9%9D%A2%E8%AF%95%E5%AE%9E%E6%88%98-%E7%AC%AC5%E5%91%A8-%E6%A8%A1%E5%9E%8B%E8%B7%AF%E7%94%B1Skill%E6%89%A7%E8%A1%8C%E4%B8%8E%E6%9D%A1%E4%BB%B6%E8%B7%AF%E7%94%B1/" title="AI Agent 面试实战 — 第5周：模型路由、Skill 执行与条件路由">AI Agent 面试实战 — 第5周：模型路由、Skill 执行与条件路由</a><time datetime="2026-05-27T02:00:00.000Z" title="Created 2026-05-27 10:00:00">2026-05-27</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By david</span><span class="framework-info"><span>Framework </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>Theme </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.4.3</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="Reading Mode"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="Toggle Between Light and Dark Mode"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="Toggle Between Single-column and Double-column"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="Settings"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="Table of Contents"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="Back to Top"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><div class="js-pjax"><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (false) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
