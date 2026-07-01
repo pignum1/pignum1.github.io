@@ -1,0 +1,525 @@
+<!DOCTYPE html><html lang="en" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>AI Agent 面试实战 — 第9周：多 Agent 协作系统 M0-M8 核心设计 | Hexo</title><meta name="author" content="david"><meta name="copyright" content="david"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="AI Agent 面试实战 — 第9周：多 Agent 协作系统 M0-M8 核心设计 M0-M8 核心设计：解决什么问题、为什么这么设计、面试如何回答。   一、M0 意图识别解决的问题所有消息都走完整的多 Agent 协作流程，导致简单请求（如”什么是 JWT”）也触发 M1→M2→…→M7，浪费大量 Token 和延迟。 为什么这么设计规则优先 + LLM 兜底的两级路由，85% 的消息零">
+<meta property="og:type" content="article">
+<meta property="og:title" content="AI Agent 面试实战 — 第9周：多 Agent 协作系统 M0-M8 核心设计">
+<meta property="og:url" content="http://example.com/2026/06/08/AI-Agent-%E9%9D%A2%E8%AF%95%E5%AE%9E%E6%88%98-%E7%AC%AC9%E5%91%A8-%E5%A4%9AAgent%E5%8D%8F%E4%BD%9C%E7%B3%BB%E7%BB%9FM0-M8%E6%A0%B8%E5%BF%83%E8%AE%BE%E8%AE%A1/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="AI Agent 面试实战 — 第9周：多 Agent 协作系统 M0-M8 核心设计 M0-M8 核心设计：解决什么问题、为什么这么设计、面试如何回答。   一、M0 意图识别解决的问题所有消息都走完整的多 Agent 协作流程，导致简单请求（如”什么是 JWT”）也触发 M1→M2→…→M7，浪费大量 Token 和延迟。 为什么这么设计规则优先 + LLM 兜底的两级路由，85% 的消息零">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://example.com/img/butterfly-icon.png">
+<meta property="article:published_time" content="2026-06-08T15:00:00.000Z">
+<meta property="article:modified_time" content="2026-06-08T07:45:21.749Z">
+<meta property="article:author" content="david">
+<meta property="article:tag" content="AI">
+<meta property="article:tag" content="Agent">
+<meta property="article:tag" content="面试">
+<meta property="article:tag" content="学习笔记">
+<meta property="article:tag" content="LangGraph">
+<meta property="article:tag" content="HITL">
+<meta property="article:tag" content="Multi-Agent">
+<meta property="article:tag" content="DAG">
+<meta property="article:tag" content="协作系统">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/img/butterfly-icon.png"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "AI Agent 面试实战 — 第9周：多 Agent 协作系统 M0-M8 核心设计",
+  "url": "http://example.com/2026/06/08/AI-Agent-%E9%9D%A2%E8%AF%95%E5%AE%9E%E6%88%98-%E7%AC%AC9%E5%91%A8-%E5%A4%9AAgent%E5%8D%8F%E4%BD%9C%E7%B3%BB%E7%BB%9FM0-M8%E6%A0%B8%E5%BF%83%E8%AE%BE%E8%AE%A1/",
+  "image": "http://example.com/img/butterfly-icon.png",
+  "datePublished": "2026-06-08T15:00:00.000Z",
+  "dateModified": "2026-06-08T07:45:21.749Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "david",
+      "url": "http://example.com"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://example.com/2026/06/08/AI-Agent-%E9%9D%A2%E8%AF%95%E5%AE%9E%E6%88%98-%E7%AC%AC9%E5%91%A8-%E5%A4%9AAgent%E5%8D%8F%E4%BD%9C%E7%B3%BB%E7%BB%9FM0-M8%E6%A0%B8%E5%BF%83%E8%AE%BE%E8%AE%A1/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: 'Copy Successful',
+    error: 'Copy Failed',
+    noSupport: 'Browser Not Supported'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: 'Just now',
+    min: 'minutes ago',
+    hour: 'hours ago',
+    day: 'days ago',
+    month: 'months ago'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid/dist/infinitegrid.min.js',
+    buttonText: 'Load More'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'AI Agent 面试实战 — 第9周：多 Agent 协作系统 M0-M8 核心设计',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Hexo</span></a><a class="nav-page-title" href="/"><span class="site-name">AI Agent 面试实战 — 第9周：多 Agent 协作系统 M0-M8 核心设计</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  Back to Home</span></span></a></span><div id="menus"></div></nav><div id="post-info"><h1 class="post-title">AI Agent 面试实战 — 第9周：多 Agent 协作系统 M0-M8 核心设计</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">Created</span><time class="post-meta-date-created" datetime="2026-06-08T15:00:00.000Z" title="Created 2026-06-08 23:00:00">2026-06-08</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">Updated</span><time class="post-meta-date-updated" datetime="2026-06-08T07:45:21.749Z" title="Updated 2026-06-08 15:45:21">2026-06-08</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/AI%E5%AD%A6%E4%B9%A0/">AI学习</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/AI%E5%AD%A6%E4%B9%A0/Agent/">Agent</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/AI%E5%AD%A6%E4%B9%A0/Agent/%E9%9D%A2%E8%AF%95/">面试</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">Post Views:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h2 id="AI-Agent-面试实战-—-第9周：多-Agent-协作系统-M0-M8-核心设计"><a href="#AI-Agent-面试实战-—-第9周：多-Agent-协作系统-M0-M8-核心设计" class="headerlink" title="AI Agent 面试实战 — 第9周：多 Agent 协作系统 M0-M8 核心设计"></a>AI Agent 面试实战 — 第9周：多 Agent 协作系统 M0-M8 核心设计</h2><blockquote>
+<p>M0-M8 核心设计：解决什么问题、为什么这么设计、面试如何回答。</p>
+</blockquote>
+<hr>
+<h2 id="一、M0-意图识别"><a href="#一、M0-意图识别" class="headerlink" title="一、M0 意图识别"></a>一、M0 意图识别</h2><h3 id="解决的问题"><a href="#解决的问题" class="headerlink" title="解决的问题"></a>解决的问题</h3><p>所有消息都走完整的多 Agent 协作流程，导致简单请求（如”什么是 JWT”）也触发 M1→M2→…→M7，浪费大量 Token 和延迟。</p>
+<h3 id="为什么这么设计"><a href="#为什么这么设计" class="headerlink" title="为什么这么设计"></a>为什么这么设计</h3><p>规则优先 + LLM 兜底的两级路由，85% 的消息零 LLM 调用就完成路由。</p>
+<h3 id="面试回答"><a href="#面试回答" class="headerlink" title="面试回答"></a>面试回答</h3><p>“M0 要解决的核心问题是：<strong>不是所有消息都需要多 Agent 协作。</strong> 用户问’什么是 JWT’只需要一个 Agent 回答就行，但如果也走完整的多 Agent 流程，会浪费 5-10 秒和几千 Token。</p>
+<p>我的设计是两级路由：</p>
+<ul>
+<li><strong>第一级是规则引擎</strong>，零 LLM 调用。检测 @AgentName、闲聊关键词、多 Agent 触发词（’帮我写’、’开发’、’设计’），覆盖 85% 的场景。</li>
+<li><strong>第二级是 LLM 兜底</strong>，当规则无法判断时，调用 Haiku 级别的轻量模型，只输出 single 或 multi，不做内容生成。</li>
+</ul>
+<p>这样设计的原因是：<strong>高频场景用规则快速处理，低频模糊场景用 LLM 准确判断。</strong> 简单问答 200ms 内返回结果，复杂需求才走协作流程。”</p>
+<hr>
+<h2 id="二、M1-需求分析"><a href="#二、M1-需求分析" class="headerlink" title="二、M1 需求分析"></a>二、M1 需求分析</h2><h3 id="解决的问题-1"><a href="#解决的问题-1" class="headerlink" title="解决的问题"></a>解决的问题</h3><p>Supervisor Agent 在分析需求时没有参考信息，只能凭模型自身的知识，导致每个任务的执行路径差异大、不稳定。</p>
+<h3 id="为什么这么设计-1"><a href="#为什么这么设计-1" class="headerlink" title="为什么这么设计"></a>为什么这么设计</h3><p>注入团队工作流模板作为参考，提供最佳实践但不强制遵循。</p>
+<h3 id="面试回答-1"><a href="#面试回答-1" class="headerlink" title="面试回答"></a>面试回答</h3><p>“M1 要解决的核心问题是：<strong>需求分析不能没有上下文。</strong> 没有团队规范的参考，同一个需求今天和明天的执行路径可能完全不同，用户无法预期系统行为。</p>
+<p>我的设计是在分析 Prompt 中注入团队绑定的工作流模板：</p>
+<ul>
+<li>如果团队绑定了模板，作为<strong>结构化参考</strong>注入</li>
+<li>模板不是强制路径，Prompt 中明确写’如果模板与需求冲突，以实际需求为准’</li>
+<li>Supervisor Agent 可以沿用、裁剪、合并或完全忽略模板</li>
+</ul>
+<p>这样设计的原因是：<strong>在标准化和灵活性之间找到平衡。</strong> 模板提供最佳实践的起点，但不限制 Agent 的发挥空间。成熟业务用模板保证流程稳定性，创新任务可以自由规划。”</p>
+<hr>
+<h2 id="三、M2-需求澄清"><a href="#三、M2-需求澄清" class="headerlink" title="三、M2 需求澄清"></a>三、M2 需求澄清</h2><h3 id="解决的问题-2"><a href="#解决的问题-2" class="headerlink" title="解决的问题"></a>解决的问题</h3><p>需求不明确时直接启动协作，执行到一半才发现理解错了，导致大量返工浪费。</p>
+<h3 id="为什么这么设计-2"><a href="#为什么这么设计-2" class="headerlink" title="为什么这么设计"></a>为什么这么设计</h3><p>在进入执行之前就澄清需求，减少返工成本。一次性问完所有问题，不反复打扰用户。</p>
+<h3 id="面试回答-2"><a href="#面试回答-2" class="headerlink" title="面试回答"></a>面试回答</h3><p>“M2 要解决的核心问题是：<strong>需求理解错了，后面做再多都是浪费。</strong> 如果用户说’帮我做一个登录系统’，但没说是 JWT 还是 OAuth2、没说是前后端分离还是模板渲染，直接执行到一半才发现理解错了，前面所有 task 都要重做。</p>
+<p>我的设计是在 M1 输出的 <code>clarity_score &lt; 0.7</code> 时触发澄清：</p>
+<ul>
+<li>把所有不确定的点<strong>合并为一个 HITL 卡片</strong>，一次性展示给用户</li>
+<li>用户可以不回答全部问题，只补充他知道的部分</li>
+<li>用户回答后 M1 重新分析，<code>clarity_score</code> 重新计算</li>
+<li><strong>超时 5 分钟</strong>后按默认配置继续执行</li>
+</ul>
+<p>这样设计的原因是：<strong>执行前的 30 秒澄清可能节省执行后的 30 分钟返工。</strong> 在源头把需求锁死，后面的任务分解和执行才有意义。”</p>
+<hr>
+<h2 id="四、M3-Agent-编排"><a href="#四、M3-Agent-编排" class="headerlink" title="四、M3 Agent 编排"></a>四、M3 Agent 编排</h2><h3 id="解决的问题-3"><a href="#解决的问题-3" class="headerlink" title="解决的问题"></a>解决的问题</h3><p>Supervisor 分析出需要哪些角色，但团队中可能没有对应的 Agent，或者 Agent 正在忙。</p>
+<h3 id="为什么这么设计-3"><a href="#为什么这么设计-3" class="headerlink" title="为什么这么设计"></a>为什么这么设计</h3><p>将”需要什么角色”和”有没有这个 Agent”解耦，缺失角色通过 HITL 让用户决策。</p>
+<h3 id="面试回答-3"><a href="#面试回答-3" class="headerlink" title="面试回答"></a>面试回答</h3><p>“M3 要解决的核心问题是：<strong>需求分析出来了，但团队能力跟不上。</strong> M1 说需要后端工程师，但团队里只有前端和架构师。如果系统直接报错，用户体验很差。</p>
+<p>我的设计是检查可用性，分两种情况处理：</p>
+<ul>
+<li>如果 Agent 都存在 → <strong>直接分配</strong></li>
+<li>如果有缺失 → 通过 HITL 通知用户，提供两个选择：<ul>
+<li><strong>‘邀请新 Agent’</strong>（跳转到创建页面）</li>
+<li><strong>‘跳过该角色’</strong>（降低复杂度，由现有 Agent 分担）</li>
+</ul>
+</li>
+</ul>
+<p>这样设计的原因是：<strong>不要让系统因为 Agent 缺失而崩溃，给用户选择权。</strong> 用户知道自己的团队能力边界，他们能做出最合理的决策。”</p>
+<hr>
+<h2 id="五、M4-任务分解"><a href="#五、M4-任务分解" class="headerlink" title="五、M4 任务分解"></a>五、M4 任务分解</h2><h3 id="解决的问题-4"><a href="#解决的问题-4" class="headerlink" title="解决的问题"></a>解决的问题</h3><p>Agent 拿到需求后不知道从哪开始，或者自己决定执行顺序，导致关键步骤遗漏或依赖关系错乱。</p>
+<h3 id="为什么这么设计-4"><a href="#为什么这么设计-4" class="headerlink" title="为什么这么设计"></a>为什么这么设计</h3><p>用 LLM 动态生成 DAG，拓扑排序保证合法性，文件冲突检测保证并行安全。</p>
+<h3 id="面试回答-4"><a href="#面试回答-4" class="headerlink" title="面试回答"></a>面试回答</h3><p>“M4 要解决的核心问题是：<strong>模糊的需求无法直接执行，必须拆解为具体的、有依赖关系的可执行任务。</strong> 用户说’做一个登录系统’，不能直接丢给 Coder-01 让他自己猜——架构设计还没做，数据库表还没创建，直接写代码肯定会出问题。</p>
+<p>我的设计是 LLM 动态生成 DAG，核心机制是：</p>
+<ul>
+<li><strong>LLM 生成</strong>：输入确认后的需求和可用角色，输出分阶段的任务列表，每个任务标注 role 和 <code>depends_on</code></li>
+<li><strong>环检测</strong>：用 Kahn 算法的拓扑排序验证 DAG 合法性，有环则拒绝输出并重试</li>
+<li><strong>文件冲突预防</strong>：扫描所有 task 的 description，如果两个 task 都提到同一个文件名，自动添加依赖关系，确保串行修改</li>
+</ul>
+<p>这样设计的原因是：<strong>让 LLM 做它擅长的事（语义理解、任务拆解），让代码做它擅长的事（合法性校验、冲突检测）。</strong> 两者结合，既灵活又可靠。”</p>
+<hr>
+<h2 id="六、M5-上下文管理"><a href="#六、M5-上下文管理" class="headerlink" title="六、M5 上下文管理"></a>六、M5 上下文管理</h2><h3 id="一、M5-上下文管理的分类"><a href="#一、M5-上下文管理的分类" class="headerlink" title="一、M5 上下文管理的分类"></a>一、M5 上下文管理的分类</h3><p>在 M5 中，我把上下文分成了 5 类：</p>
+<table>
+<thead>
+<tr>
+<th>类别</th>
+<th>内容</th>
+<th>来源</th>
+<th align="center">占比</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>System Prompt</td>
+<td>Agent 的角色定义、能力边界、行为规则</td>
+<td>Persona 配置</td>
+<td align="center">10%</td>
+</tr>
+<tr>
+<td>Memory Context</td>
+<td>团队记忆（L2）+ 个人记忆（L3+L4）</td>
+<td>Memory Manager</td>
+<td align="center">40%</td>
+</tr>
+<tr>
+<td>RAG Context</td>
+<td>知识库中检索到的相关文档</td>
+<td>RAG Engine</td>
+<td align="center">30%</td>
+</tr>
+<tr>
+<td>Task Context</td>
+<td>当前任务的输入、前置任务的产出</td>
+<td>TaskState</td>
+<td align="center">15%</td>
+</tr>
+<tr>
+<td>Skill Instructions</td>
+<td>当前任务绑定的 Skill 指令</td>
+<td>Skill Registry</td>
+<td align="center">5%</td>
+</tr>
+</tbody></table>
+<h3 id="二、为什么这么设计？每个分类解决什么问题？"><a href="#二、为什么这么设计？每个分类解决什么问题？" class="headerlink" title="二、为什么这么设计？每个分类解决什么问题？"></a>二、为什么这么设计？每个分类解决什么问题？</h3><p><strong>1. System Prompt（10%）</strong></p>
+<p><strong>解决的问题</strong>：Agent 不知道自己的角色和能力边界。</p>
+<p>没有 System Prompt 时，Agent 只能凭模型自身的知识回答，不知道自己是架构师还是程序员，不知道能用什么工具。把 System Prompt 独立出来，保证 Agent 每次执行都明确自己的身份。</p>
+<p><strong>为什么不放大比例</strong>：System Prompt 通常是 500-1000 tokens，10% 已经够用。多了会挤压 Memory 和 RAG 的空间。</p>
+<p><strong>2. Memory Context（40%）</strong></p>
+<p><strong>解决的问题</strong>：Agent 没有团队经验和历史记忆。</p>
+<p>如果 Agent 不记得团队之前的技术决策（”后端用 FastAPI”），可能会做出不一致的方案。Memory Context 提供了四层记忆：</p>
+<ul>
+<li>L1 系统记忆：全局规范，所有 Agent 共享</li>
+<li>L2 团队记忆：团队决策、架构选型，Leader 写入自动同步</li>
+<li>L3 个人记忆：Agent 的跨团队经验，随身携带</li>
+<li>L4 上下文记忆：当前 Session 的对话历史</li>
+</ul>
+<p><strong>为什么占 40%</strong>：团队经验是 Agent 做出正确决策的最重要参考。过去决策的上下文，比通用知识库更关键。裁剪时，L4 最先裁，L1 最后裁。</p>
+<p><strong>3. RAG Context（30%）</strong></p>
+<p><strong>解决的问题</strong>：Agent 不知道外部知识库的相关内容。</p>
+<p>用户需求可能涉及特定的技术文档、API 规范、代码库结构。没有 RAG，Agent 只能依赖模型训练数据中的知识（可能过时或不相关）。</p>
+<p><strong>为什么占 30%</strong>：外部知识重要，但优先级低于团队内部记忆。裁剪时，RAG 比 Memory 先裁。</p>
+<p><strong>4. Task Context（15%）</strong></p>
+<p><strong>解决的问题</strong>：Agent 不知道当前要做什么、前置任务做了什么。</p>
+<p>M4 分解出的每个 task 是孤立的。Agent 需要知道：</p>
+<ul>
+<li>这个 task 的输入是什么？（”设计用户模型”）</li>
+<li>前置 task 的产出是什么？（架构师输出的接口定义）</li>
+<li>当前进度是什么？（第 2 个 phase 的第 1 个 task）</li>
+</ul>
+<p><strong>为什么占 15%</strong>：Task Context 是当前任务的核心输入，不能裁。但内容通常较短，15% 已经够用。</p>
+<p><strong>5. Skill Instructions（5%）</strong></p>
+<p><strong>解决的问题</strong>：Agent 不知道当前 task 有没有特殊的执行要求。</p>
+<p>如果 task 绑定了 Skill（如”代码审查”），Agent 需要知道 Skill 的指令和输出格式。没有这个，Agent 可能会用默认方式执行，而不是按照团队定义的标准流程。</p>
+<p><strong>为什么只占 5%</strong>：Skill 指令通常很短（200-500 tokens），5% 足够。</p>
+<h3 id="三、这样设计有什么优势？"><a href="#三、这样设计有什么优势？" class="headerlink" title="三、这样设计有什么优势？"></a>三、这样设计有什么优势？</h3><p><strong>优势 1：剪裁时知道先扔什么</strong></p>
+<p>Token 不足时的裁剪顺序（从先到后）：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">1. RAG Context（减少 Top-K 数量）</span><br><span class="line">2. L4 Memory（低 importance 的先裁）</span><br><span class="line">3. L3 Memory（低 importance 的先裁）</span><br><span class="line">4. L2 Memory（早期决策裁掉）</span><br><span class="line">5. L1 Memory（几乎不裁）</span><br><span class="line">6. Task Context（不裁）</span><br><span class="line">7. System Prompt（不裁）</span><br></pre></td></tr></table></figure>
+
+<p>如果没有分类，裁剪时只能一刀切（”把上下文截断到 8000 tokens”），可能把关键的 Task Context 截掉，保留了不太重要的 RAG 结果。</p>
+<p><strong>优势 2：调试时知道问题在哪</strong></p>
+<p>如果 Agent 执行结果不好，可以快速定位：</p>
+<table>
+<thead>
+<tr>
+<th>问题现象</th>
+<th>排查方向</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Agent 没有引用团队决策</td>
+<td>Memory 不够</td>
+</tr>
+<tr>
+<td>Agent 用了过时的信息</td>
+<td>RAG 没检索到合适的文档</td>
+</tr>
+<tr>
+<td>Agent 偏离了角色</td>
+<td>System Prompt 不清晰</td>
+</tr>
+<tr>
+<td>Agent 忽略了 Skill 要求</td>
+<td>Skill Instructions 没注入</td>
+</tr>
+</tbody></table>
+<p><strong>优势 3：每个 Agent 看到的内容不同</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">Architect-01 执行 t1（架构设计）时看到：</span><br><span class="line">  - System Prompt：你是高级架构师</span><br><span class="line">  - Memory：团队之前的技术决策（L2）+ 自己的设计经验（L3）</span><br><span class="line">  - RAG：架构设计模式文档</span><br><span class="line">  - Task Context：用户需求</span><br><span class="line">  - Skill：架构设计 Skill</span><br><span class="line"></span><br><span class="line">Coder-01 执行 t2（编码实现）时看到：</span><br><span class="line">  - System Prompt：你是后端工程师</span><br><span class="line">  - Memory：同一团队的 L2（共享决策）+ 自己的编码经验（L3）</span><br><span class="line">  - RAG：接口文档、API 示例</span><br><span class="line">  - Task Context：Architect-01 的 t1 产出 + 用户需求</span><br><span class="line">  - Skill：编码实现 Skill</span><br></pre></td></tr></table></figure>
+
+<p>两个 Agent 看到的 L2 Memory 相同（共享团队决策），但 L3 Memory 和 Task Context 不同（Coder 看到 Architect 的产出），System Prompt 和 Skill 也不同。<strong>这是 M5 的核心价值。</strong></p>
+<h3 id="四、面试回答"><a href="#四、面试回答" class="headerlink" title="四、面试回答"></a>四、面试回答</h3><p>面试官问：”<strong>你的上下文管理器怎么设计的？为什么分这么多类？</strong>“</p>
+<p>“我的上下文管理器把 Agent 看到的内容分成了 5 类：System Prompt、Memory、RAG、Task Context、Skill Instructions。</p>
+<p>分 5 类的核心原因是：<strong>不同类型的上下文有不同的生命周期和重要性，不能同等对待。</strong></p>
+<ul>
+<li>System Prompt 是 Agent 的根基，不能裁</li>
+<li>Memory 是内部经验，最重要的参考</li>
+<li>RAG 是外部知识，优先级低于内部经验</li>
+<li>Task Context 是当前任务的输入，不能裁</li>
+<li>Skill Instructions 是特殊要求，通常很小</li>
+</ul>
+<p>这样设计的最大好处是<strong>剪裁时知道先扔什么</strong>。Token 不够时，先裁 RAG 的 Top-K 数量，再裁 L4 Memory 中重要性低的条目，最后才裁 L2 团队记忆。System Prompt 和 Task Context 从来不裁。</p>
+<p>如果我不分这 5 类，把所有的上下文拼在一起，Token 不够时只能一刀切——截断文件、丢失关键信息。有了分类，剪裁是精准的、可预期的。”</p>
+<p>面试官可能追问：”<strong>Memory 占了 40%，如果 Memory 内容很多怎么办？</strong>“</p>
+<p>“Memory 占了 40%，是因为它是 Agent 做出正确决策的最重要参考。但确实可能很多。</p>
+<p>我们的处理是三级缓冲：</p>
+<ol>
+<li><strong>剪裁</strong>：先裁 L4 中 importance 最低的条目，再裁 L3，最后才动 L2</li>
+<li><strong>压缩</strong>：如果剪裁不够，调用轻量 LLM 把多条记忆压缩为一段摘要（70% 触发）</li>
+<li><strong>硬限制</strong>：每个 Agent 的 Memory Token 预算固定，超了就裁，不能超</li>
+</ol>
+<p>极端情况下，Agent 可能只看到最重要的 5 条记忆，但它能看到最相关的。这比看到 50 条不相关的记忆要好。”</p>
+<hr>
+<h2 id="七、M6-DAG-执行"><a href="#七、M6-DAG-执行" class="headerlink" title="七、M6 DAG 执行"></a>七、M6 DAG 执行</h2><h3 id="解决的问题-5"><a href="#解决的问题-5" class="headerlink" title="解决的问题"></a>解决的问题</h3><p>多个 Agent 的任务有依赖关系，必须按顺序执行；无依赖的任务如果能并行执行，可以显著缩短总耗时。</p>
+<h3 id="为什么这么设计-5"><a href="#为什么这么设计-5" class="headerlink" title="为什么这么设计"></a>为什么这么设计</h3><p>拓扑排序 + 并行执行 + 进度推送 + 三级失败处理。</p>
+<h3 id="面试回答-5"><a href="#面试回答-5" class="headerlink" title="面试回答"></a>面试回答</h3><p>“M6 要解决的核心问题是：<strong>有依赖关系的任务不能乱序执行，无依赖关系的任务应该并行执行以节省时间。</strong> 比如必须先完成架构设计（t1），才能开始编码（t2、t3）。但 t3 和 t4（注册 API 和登录 API）没有互相依赖，可以并行写。</p>
+<p>我的设计是一个执行循环，核心机制是：</p>
+<ul>
+<li><strong>拓扑排序</strong>：每次从 DAG 中找出所有依赖已完成的 task，作为一个 batch 并行执行</li>
+<li><strong>工作空间隔离</strong>：并行 task 在各自的 Copy-on-Write 副本上操作，互不干扰</li>
+<li><strong>进度推送</strong>：每完成一个 task，通过 WebSocket 推送 <code>task_completed</code> 事件，前端实时更新</li>
+<li><strong>三级失败处理</strong>：<ul>
+<li>瞬态错误（API 超时）：自动重试，指数退避</li>
+<li>内容错误（输出格式不符）：注入反馈后重试，最多 3 次</li>
+<li>持久错误（连续失败）：重规划剩余任务或升级 HITL</li>
+</ul>
+</li>
+</ul>
+<p>这样设计的原因是：<strong>不浪费可并行的机会，也不让单点故障影响全局。</strong> 并行 task 同时执行，串行 task 按依赖顺序执行，失败时只重做受影响的部分。”</p>
+<hr>
+<h2 id="八、M7-独立验证"><a href="#八、M7-独立验证" class="headerlink" title="八、M7 独立验证"></a>八、M7 独立验证</h2><h3 id="解决的问题-6"><a href="#解决的问题-6" class="headerlink" title="解决的问题"></a>解决的问题</h3><p>执行者自验存在确认偏差——自己写的代码很难客观地找出自己的 Bug。</p>
+<h3 id="为什么这么设计-6"><a href="#为什么这么设计-6" class="headerlink" title="为什么这么设计"></a>为什么这么设计</h3><p>盲审机制：验证 Agent 不知道执行过程，只看到需求和产物，保证客观性。</p>
+<h3 id="面试回答-6"><a href="#面试回答-6" class="headerlink" title="面试回答"></a>面试回答</h3><p>“M7 要解决的核心问题是：<strong>谁来做质量把关？</strong> 如果让执行者自验，他倾向于相信自己的输出是正确的（确认偏差）。如果让另一个 Agent 验证，但告诉他’这是谁写的、怎么做出来的’，他可能会受到执行过程的影响，无法客观评价。</p>
+<p>我的设计是<strong>盲审机制</strong>：</p>
+<ul>
+<li>验证 Agent 只看到两样东西：<strong>用户需求（requirements_anchor）和所有产出物（artifacts）</strong></li>
+<li>看不到：执行计划、Agent 分配、中间对话</li>
+<li>验证维度：功能完整性、一致性、安全性</li>
+<li>输出：<code>passed/failed + severity + feedback</code></li>
+</ul>
+<p>如果验证不通过，根据严重程度：</p>
+<ul>
+<li><strong>low&#x2F;medium</strong>：回到对应 Agent 重试（带上反馈信息）</li>
+<li><strong>high</strong>：升级为 HITL，由人工判断是否偏离需求</li>
+</ul>
+<p>这样设计的原因是：<strong>盲审保证了客观性。</strong> 验证者不知道谁写的、怎么写的，只从用户需求的原始角度出发，检查最终产物是否满足要求。这是 Code Review 在 Agent 系统中的等价实现。”</p>
+<hr>
+<h2 id="九、M8-对等通信"><a href="#九、M8-对等通信" class="headerlink" title="九、M8 对等通信"></a>九、M8 对等通信</h2><h3 id="解决的问题-7"><a href="#解决的问题-7" class="headerlink" title="解决的问题"></a>解决的问题</h3><p>Agent A 在执行过程中发现了会影响 Agent B 的变更，但无法通知对方。</p>
+<h3 id="为什么这么设计-7"><a href="#为什么这么设计-7" class="headerlink" title="为什么这么设计"></a>为什么这么设计</h3><p>异步消息通道，不经过 LangGraph state，低延迟通信。</p>
+<h3 id="面试回答-7"><a href="#面试回答-7" class="headerlink" title="面试回答"></a>面试回答</h3><p>“M8 要解决的核心问题是：<strong>Agent 之间需要信息同步，但不能通过 LangGraph state——state 是给人类看的，不是给 Agent 用来聊天的。</strong> 如果 Coder-01 改了接口路径，Coder-02 可能还在用旧路径写前端代码，等执行完才发现不匹配。</p>
+<p>我的设计是基于 Redis Pub&#x2F;Sub 的异步消息通道：</p>
+<ul>
+<li><strong>消息类型</strong>：<code>api_change</code>、<code>schema_update</code>、<code>question</code>、<code>share</code></li>
+<li><strong>发送</strong>：<code>peer_mailbox.send(from, to, message)</code> → 发布到目标 Agent 的频道</li>
+<li><strong>接收</strong>：<code>peer_mailbox.receive(agent_id)</code> → 消费自己频道的消息</li>
+<li><strong>延迟</strong>：&lt; 50ms</li>
+<li><strong>不经过 LangGraph state</strong>：消息不触发 Checkpointer 持久化，不增加 state 体积</li>
+</ul>
+<p>这样设计的原因是：<strong>Agent 间的沟通应该轻量、及时、不影响主流程。</strong> 通过独立通道的消息机制，Agent 可以在不影响 LangGraph 状态机的前提下，实时同步信息。”</p>
+<hr>
+<h2 id="十、面试总结"><a href="#十、面试总结" class="headerlink" title="十、面试总结"></a>十、面试总结</h2><table>
+<thead>
+<tr>
+<th align="center">模块</th>
+<th>核心问题</th>
+<th>设计方案</th>
+<th>面试关键词</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">M0</td>
+<td>所有消息都走多 Agent 流程</td>
+<td>规则优先 + LLM 兜底</td>
+<td>两级路由，85% 零 LLM</td>
+</tr>
+<tr>
+<td align="center">M1</td>
+<td>需求分析没有参考信息</td>
+<td>注入工作流模板</td>
+<td>参考建议非强制</td>
+</tr>
+<tr>
+<td align="center">M2</td>
+<td>需求不明确导致返工</td>
+<td>问题合并一次性澄清</td>
+<td>源头锁定，减少返工</td>
+</tr>
+<tr>
+<td align="center">M3</td>
+<td>团队能力跟不上需求</td>
+<td>Agent 可用性检查</td>
+<td>缺失角色用户决策</td>
+</tr>
+<tr>
+<td align="center">M4</td>
+<td>模糊需求无法直接执行</td>
+<td>DAG 生成 + 拓扑排序</td>
+<td>环检测 + 文件冲突预防</td>
+</tr>
+<tr>
+<td align="center">M5</td>
+<td>5 类上下文同等对待导致裁剪不可控</td>
+<td>分类管理 + 三级缓冲（剪裁→压缩→硬限制）</td>
+<td>分类裁剪，知道先扔什么</td>
+</tr>
+<tr>
+<td align="center">M6</td>
+<td>依赖关系导致执行混乱</td>
+<td>拓扑排序 + 并行执行</td>
+<td>三级失败处理</td>
+</tr>
+<tr>
+<td align="center">M7</td>
+<td>执行者自验有偏见</td>
+<td>盲审机制</td>
+<td>只看到需求和产物</td>
+</tr>
+<tr>
+<td align="center">M8</td>
+<td>Agent 间需要信息同步</td>
+<td>异步消息通道</td>
+<td>不经过 state，低延迟</td>
+</tr>
+</tbody></table>
+<p><strong>一句话总结</strong>：</p>
+<blockquote>
+<p>M0-M8 的设计核心是：把多 Agent 协作拆解为”识别→分析→澄清→编排→分解→组装→执行→通信→验证”九个独立环节，每个环节只做一件事。<strong>让 LLM 做语义理解，让代码做合法性校验，两者结合既灵活又可靠。</strong></p>
+</blockquote>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>Author: </span><span class="post-copyright-info"><a href="http://example.com">david</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>Link: </span><span class="post-copyright-info"><a href="http://example.com/2026/06/08/AI-Agent-%E9%9D%A2%E8%AF%95%E5%AE%9E%E6%88%98-%E7%AC%AC9%E5%91%A8-%E5%A4%9AAgent%E5%8D%8F%E4%BD%9C%E7%B3%BB%E7%BB%9FM0-M8%E6%A0%B8%E5%BF%83%E8%AE%BE%E8%AE%A1/">http://example.com/2026/06/08/AI-Agent-%E9%9D%A2%E8%AF%95%E5%AE%9E%E6%88%98-%E7%AC%AC9%E5%91%A8-%E5%A4%9AAgent%E5%8D%8F%E4%BD%9C%E7%B3%BB%E7%BB%9FM0-M8%E6%A0%B8%E5%BF%83%E8%AE%BE%E8%AE%A1/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>Copyright Notice: </span><span class="post-copyright-info">All articles on this blog are licensed under <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> unless otherwise stated.</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/AI/">AI</a><a class="post-meta__tags" href="/tags/Agent/">Agent</a><a class="post-meta__tags" href="/tags/%E9%9D%A2%E8%AF%95/">面试</a><a class="post-meta__tags" href="/tags/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">学习笔记</a><a class="post-meta__tags" href="/tags/LangGraph/">LangGraph</a><a class="post-meta__tags" href="/tags/HITL/">HITL</a><a class="post-meta__tags" href="/tags/Multi-Agent/">Multi-Agent</a><a class="post-meta__tags" href="/tags/DAG/">DAG</a><a class="post-meta__tags" href="/tags/%E5%8D%8F%E4%BD%9C%E7%B3%BB%E7%BB%9F/">协作系统</a></div><div class="post-share"><div class="social-share" data-image="/img/butterfly-icon.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2026/06/08/AI-Python-08.3-%E5%A4%9AAgent%E5%8D%8F%E4%BD%9C%E9%9D%A2%E8%AF%95Q&amp;A%E6%89%8B%E5%86%8C/" title="AI-Python-08.4 | 多 Agent 协作系统面试 Q&amp;A 手册"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">Previous</div><div class="info-item-2">AI-Python-08.4 | 多 Agent 协作系统面试 Q&A 手册</div></div><div class="info-2"><div class="info-item-1">前言本文档是对《第 8-9 周多 Agent 协作系统重新设计》的深度面试整理，涵盖架构重构、M0-M8 各模块的技术细节、以及实战中的挑战与解决方案。每一道题都基于真实的项目经验，适合作为技术面试的参考。  一、整体架构重构Q1: 为什么要把 collaboration 模块全部重写？之前的架构有什么问题？难度：⭐⭐⭐⭐⭐（专家级）频率：★★★★★（必问） 回答结构“重写的直接原因是 supervisor_analyzer.py 这个文件已经膨胀到了 700+ 行，一个人承担了意图分类、LLM 分析、Worker 执行等所有职责。这在代码层面表现为：一个函数内部同时在做三件事——先判断用户想干什么，再调用 LLM 做分析，然后根据结果直接执行任务。修改任何一个逻辑都需要在这个文件里改，测试也变得越来越困难。 更深层的问题是模块没有真正串联。虽然项目里已经有了 context_pipeline.py、dag_executor.py、peer_mailbox.py 这些设计良好的模块，但它们没有被接入主流程。supervisor_analyzer.py 的执行路径直接调了 agen...</div></div></div></a><a class="pagination-related" href="/2026/06/07/AI-Python-08.3-%E5%A4%9AAgent%E5%8D%8F%E4%BD%9C%E7%9A%84%E6%A0%B8%E5%BF%83%E9%93%BE%E8%B7%AF%E4%B8%8E%E7%BB%84%E4%BB%B6/" title="AI-Python-08.3 | 多 Agent 协作的核心链路与组件"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">Next</div><div class="info-item-2">AI-Python-08.3 | 多 Agent 协作的核心链路与组件</div></div><div class="info-2"><div class="info-item-1">前言在单 Agent 系统中，我们通过工具调用、记忆管理、规划能力让 AI 能够完成复杂任务。但当任务涉及多个专业领域、需要多种技能协同工作时，单 Agent 就显得力不从心了。 多 Agent 协作让不同的 AI 角色（如架构师、程序员、测试工程师）各司其职，通过分工合作完成更复杂的任务。 一、多 Agent 协作的核心链路以用户说”帮我做一个登录系统”为例，多 Agent 协作的完整链路如下： 1234567891011121314151617181920212223242526272829303132333435363738用户输入  │  ▼┌─────────────────────────────────────────────────┐│                 Orchestrator 层                    ││                                                   ││ 1. 意图识别 (M0)  → 判断需要多 Agent 协作          ││ 2. 需求分析 (M1)  → 分...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>Related Articles</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/2026/06/24/AI-Agent-%E9%9D%A2%E8%AF%95%E5%AE%9E%E6%88%98-%E7%AC%AC9%E5%91%A8%E8%A1%A5%E5%85%85-%E8%81%8A%E5%A4%A9%E5%AE%A4%E4%B8%8E%E4%B8%89%E6%A8%A1%E5%BC%8F%E5%8D%8F%E4%BD%9C%E7%B3%BB%E7%BB%9F/" title="AI Agent 面试实战 — 第9周补充：聊天室与三模式协作系统 Q&amp;A"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-06-24</div><div class="info-item-2">AI Agent 面试实战 — 第9周补充：聊天室与三模式协作系统 Q&amp;A</div></div><div class="info-2"><div class="info-item-1">AI Agent 面试实战 — 第9周补充：聊天室与三模式协作系统 Q&amp;A 基于《The Boy Assistant》聊天室与三模式协作系统，涵盖整体架构、Swarm&#x2F;Supervisor&#x2F;LangGraph 三引擎、暗流信息架构、Harness 横切层、输入框行为机等高频面试题。   一、整体架构设计Q1: 你们的三模式协作引擎是什么？为什么用三种模式而不是一个通用引擎？难度：⭐⭐⭐⭐（深入）频率：★★★★★（必问） 回答： “我们的系统提供了三种协作模式：Swarm（群聊模式）、Supervisor（主管模式）、LangGraph（工作流模式）。它们不是三个独立产品，而是从非结构化讨论到严格 SOP 执行的连续光谱。 Swarm 模式是自由讨论模式，Agent 地位平等，通过三阶段流水线（平行讨论→并行执行→HITL 决策）完成头脑风暴或开放设计任务。适合没有标准答案、需要多方视角碰撞的场景。 Supervisor 模式是主管决策模式，一个 Leader Agent（Supervisor）负责分析需求、分解任务、委派给专业 Agent 执行。M0-...</div></div></div></a><a class="pagination-related" href="/2026/05/28/AI-Agent-%E9%9D%A2%E8%AF%95%E5%AE%9E%E6%88%98-%E7%AC%AC6%E5%91%A8-SOP%E5%BC%95%E6%93%8EHITL%E4%B8%8EAgent%E5%8D%8F%E4%BD%9C/" title="AI Agent 面试实战 — 第6周：SOP 引擎、HITL 与 Agent 协作（深度篇）"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-05-28</div><div class="info-item-2">AI Agent 面试实战 — 第6周：SOP 引擎、HITL 与 Agent 协作（深度篇）</div></div><div class="info-2"><div class="info-item-1">AI Agent 面试实战 — 第6周：SOP 引擎、HITL 与 Agent 协作（深度篇） 第6周进入 L4 编排层——基于 LangGraph 的 SOP 引擎深度封装、三种 HITL 模式的工程实现、并行节点工作空间隔离、错误分级恢复。这是整个系统最核心的编排能力。   一、SOP 引擎与 LangGraph 集成（深度）Q1: LangGraph 的核心概念是什么？你们在它之上做了哪些封装和增强？难度：⭐⭐⭐⭐⭐（专家级）频率：★★★★（高频，大厂必问） 回答结构： “LangGraph 把工作流抽象成一个有向图，核心要素是 StateGraph、节点（Node）和边（Edge）。每个节点接收当前的 State 字典，处理后返回更新后的 State，LangGraph 负责按边定义的路线流转，并自动处理状态持久化和断点恢复。 我们不是直接裸用 LangGraph，而是在它之上做了三层增强： 第一层：业务节点封装层 LangGraph 的节点只是一个函数签名 (state) -&gt; state。我们把它封装成了三种业务节点类型：  AgentNode：执行时自动完成 ...</div></div></div></a><a class="pagination-related" href="/2026/05/14/AI-Python-08.1-Agent%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%E5%85%A8%E6%99%AF/" title="AI-Python-08.1-Agent设计模式全景"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-05-14</div><div class="info-item-2">AI-Python-08.1-Agent设计模式全景</div></div><div class="info-2"><div class="info-item-1">AI-Python-08.1: Agent 设计模式全景 构建 Agent 不是选一个框架然后开始写代码——而是先理解设计模式，再决定架构。本文系统梳理 Agent 的 推理、规划、反思、协作 四大类设计模式，建立完整的模式选型思维框架。   1. 为什么需要设计模式？1.1 同一个任务，不同模式天差地别123456789101112131415任务：写一份技术调研报告ReAct 模式：  搜索 → 读结果 → 发现不够 → 再搜索 → 读结果 → 写报告 → 发现遗漏 → 再搜索...  （10+ 次 LLM 调用，边走边看）Plan-and-Execute 模式：  规划：1.搜索A 2.搜索B 3.对比分析 4.写报告  执行：搜索A → 搜索B → 对比 → 写报告  （4 步完成，路径清晰）ReWOO 模式：  一次规划所有搜索：[搜索A, 搜索B, 搜索C]  并行执行 → 一次汇总  （2 次 LLM 调用 + 并行工具调用，最快）  同样的任务，LLM 调用次数可以从 2 次到 10+ 次，成本差 5 倍。 1.2 Andrew Ng 的四大模式Andrew Ng...</div></div></div></a><a class="pagination-related" href="/2026/05/20/AI-Python-08.3-%E5%A4%9A%E6%99%BA%E8%83%BD%E4%BD%93%E5%8D%8F%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%AE%9E%E6%88%98/" title="AI-Python-08.3-多智能体协作系统实战"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-05-20</div><div class="info-item-2">AI-Python-08.3-多智能体协作系统实战</div></div><div class="info-2"><div class="info-item-1">AI-Python-08.3: 多智能体协作系统实战 前面我们学会了构建单个 Agent（08.2），但现实中的复杂任务往往需要多个 Agent 协作。本文从三种最实用的协作模式入手，用 LangGraph StateGraph 构建完整的多 Agent 系统。  前置知识：  06.6 LangGraph 状态机编排：StateGraph 基础 + Supervisor 概念 08.1 Agent 设计模式全景：15 种模式理论（含 6 种协作模式） 08.2 Agent 实战：单 Agent 的完整构建过程   1. 从单 Agent 到多 Agent1.1 单 Agent 的瓶颈当任务变复杂，单 Agent 会遇到三个问题：    问题 原因 表现    角色混乱 一个 Agent 既要搜索又要分析又要写作 Prompt 太长，LLM 不知道优先做什么   工具爆炸 搜索 + 阅读 + 计算 + 翻译全塞一起 LLM 选错工具、参数幻觉   无法并行 一个 Agent 只能串行处理 3 个独立任务也要排队   1.2 多 Agent 的核心：分工 + 协调多 Agent 的...</div></div></div></a><a class="pagination-related" href="/2026/05/25/AI-Agent-%E9%9D%A2%E8%AF%95%E5%AE%9E%E6%88%98-%E7%AC%AC1%E5%91%A8-%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%B7%A5%E7%A8%8B%E5%9F%BA%E7%A1%80/" title="AI Agent 面试实战 — 第1周：架构设计与工程基础"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-05-25</div><div class="info-item-2">AI Agent 面试实战 — 第1周：架构设计与工程基础</div></div><div class="info-2"><div class="info-item-1">AI Agent 面试实战 — 第1周：架构设计与工程基础 边做 The Boy Assistant 项目，边整理高频面试题。第1周完成系统地基——从零搭建 FastAPI 项目、Model Adapter、API Key 管理、数据表设计。以下是这一周遇到的高频面试问题。   一、架构设计类Q1: 为什么选 FastAPI 而不是 Django 或 Flask？难度：⭐（基础）频率：★★★★★（几乎必问） 回答结构： “选 FastAPI 是基于三个核心考量：** 第一：async 原生支持。 Agent 系统需要大量并发 API 调用——同时调用多个 LLM Provider、同时处理多个 Agent 的请求、同时推送 WebSocket 流式输出。FastAPI 原生支持 async&#x2F;await，而 Django 的 async 支持是后来加的，稳定性不够；Flask 根本没有原生 async。 第二：WebSocket 内置支持。 我们的聊天室需要实时推送 SOP 执行进度、Agent 对话流。FastAPI 的 WebSocket 是内置的，同一个框架同时处理...</div></div></div></a><a class="pagination-related" href="/2026/05/25/AI-Agent-%E9%9D%A2%E8%AF%95%E5%AE%9E%E6%88%98-%E7%AC%AC2%E5%91%A8-%E5%B7%A5%E5%85%B7%E7%B3%BB%E7%BB%9F%E4%B8%8EAgent%E6%9E%84%E5%BB%BA/" title="AI Agent 面试实战 — 第2周：工具系统与 Agent 构建"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-05-25</div><div class="info-item-2">AI Agent 面试实战 — 第2周：工具系统与 Agent 构建</div></div><div class="info-2"><div class="info-item-1">AI Agent 面试实战 — 第2周：工具系统与 Agent 构建 第2周完成 L1 能力层核心——Tool Registry 三层权限模型、有状态工具生命周期管理、Agent Factory 组合构建。让 Agent 有了”手”和”边界”。   一、工具系统设计Q1: 工具注册表（Tool Registry）是怎么设计的？难度：⭐⭐（基础+）频率：★★★★★（必问） 回答结构： “Tool Registry 是整个工具系统的中枢，负责工具的注册、发现、权限校验。 设计上分三层： 第一层：注册层。 所有工具在 Registry 中注册，包括 name、description、参数 Schema（JSON Schema 格式）、工具类型（function &#x2F; mcp &#x2F; api）、是否是有状态工具。这个是全局唯一的，所有 Agent 都能看到这个注册表。 第二层：声明层。 每个 Persona 在创建时，声明自己需要哪些工具。比如架构师声明自己需要 file-ops-readonly（只读文件操作），程序员声明自己需要 file-ops + terminal（...</div></div></div></a></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/butterfly-icon.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">david</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">151</div></a><a href="/tags/"><div class="headline">Tags</div><div class="length-num">359</div></a><a href="/categories/"><div class="headline">Categories</div><div class="length-num">28</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>Announcement</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>Contents</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#AI-Agent-%E9%9D%A2%E8%AF%95%E5%AE%9E%E6%88%98-%E2%80%94-%E7%AC%AC9%E5%91%A8%EF%BC%9A%E5%A4%9A-Agent-%E5%8D%8F%E4%BD%9C%E7%B3%BB%E7%BB%9F-M0-M8-%E6%A0%B8%E5%BF%83%E8%AE%BE%E8%AE%A1"><span class="toc-number">1.</span> <span class="toc-text">AI Agent 面试实战 — 第9周：多 Agent 协作系统 M0-M8 核心设计</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81M0-%E6%84%8F%E5%9B%BE%E8%AF%86%E5%88%AB"><span class="toc-number">2.</span> <span class="toc-text">一、M0 意图识别</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%A7%A3%E5%86%B3%E7%9A%84%E9%97%AE%E9%A2%98"><span class="toc-number">2.1.</span> <span class="toc-text">解决的问题</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E8%BF%99%E4%B9%88%E8%AE%BE%E8%AE%A1"><span class="toc-number">2.2.</span> <span class="toc-text">为什么这么设计</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%9D%A2%E8%AF%95%E5%9B%9E%E7%AD%94"><span class="toc-number">2.3.</span> <span class="toc-text">面试回答</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81M1-%E9%9C%80%E6%B1%82%E5%88%86%E6%9E%90"><span class="toc-number">3.</span> <span class="toc-text">二、M1 需求分析</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%A7%A3%E5%86%B3%E7%9A%84%E9%97%AE%E9%A2%98-1"><span class="toc-number">3.1.</span> <span class="toc-text">解决的问题</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E8%BF%99%E4%B9%88%E8%AE%BE%E8%AE%A1-1"><span class="toc-number">3.2.</span> <span class="toc-text">为什么这么设计</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%9D%A2%E8%AF%95%E5%9B%9E%E7%AD%94-1"><span class="toc-number">3.3.</span> <span class="toc-text">面试回答</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81M2-%E9%9C%80%E6%B1%82%E6%BE%84%E6%B8%85"><span class="toc-number">4.</span> <span class="toc-text">三、M2 需求澄清</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%A7%A3%E5%86%B3%E7%9A%84%E9%97%AE%E9%A2%98-2"><span class="toc-number">4.1.</span> <span class="toc-text">解决的问题</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E8%BF%99%E4%B9%88%E8%AE%BE%E8%AE%A1-2"><span class="toc-number">4.2.</span> <span class="toc-text">为什么这么设计</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%9D%A2%E8%AF%95%E5%9B%9E%E7%AD%94-2"><span class="toc-number">4.3.</span> <span class="toc-text">面试回答</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81M3-Agent-%E7%BC%96%E6%8E%92"><span class="toc-number">5.</span> <span class="toc-text">四、M3 Agent 编排</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%A7%A3%E5%86%B3%E7%9A%84%E9%97%AE%E9%A2%98-3"><span class="toc-number">5.1.</span> <span class="toc-text">解决的问题</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E8%BF%99%E4%B9%88%E8%AE%BE%E8%AE%A1-3"><span class="toc-number">5.2.</span> <span class="toc-text">为什么这么设计</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%9D%A2%E8%AF%95%E5%9B%9E%E7%AD%94-3"><span class="toc-number">5.3.</span> <span class="toc-text">面试回答</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81M4-%E4%BB%BB%E5%8A%A1%E5%88%86%E8%A7%A3"><span class="toc-number">6.</span> <span class="toc-text">五、M4 任务分解</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%A7%A3%E5%86%B3%E7%9A%84%E9%97%AE%E9%A2%98-4"><span class="toc-number">6.1.</span> <span class="toc-text">解决的问题</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E8%BF%99%E4%B9%88%E8%AE%BE%E8%AE%A1-4"><span class="toc-number">6.2.</span> <span class="toc-text">为什么这么设计</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%9D%A2%E8%AF%95%E5%9B%9E%E7%AD%94-4"><span class="toc-number">6.3.</span> <span class="toc-text">面试回答</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81M5-%E4%B8%8A%E4%B8%8B%E6%96%87%E7%AE%A1%E7%90%86"><span class="toc-number">7.</span> <span class="toc-text">六、M5 上下文管理</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%80%E3%80%81M5-%E4%B8%8A%E4%B8%8B%E6%96%87%E7%AE%A1%E7%90%86%E7%9A%84%E5%88%86%E7%B1%BB"><span class="toc-number">7.1.</span> <span class="toc-text">一、M5 上下文管理的分类</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E4%B8%BA%E4%BB%80%E4%B9%88%E8%BF%99%E4%B9%88%E8%AE%BE%E8%AE%A1%EF%BC%9F%E6%AF%8F%E4%B8%AA%E5%88%86%E7%B1%BB%E8%A7%A3%E5%86%B3%E4%BB%80%E4%B9%88%E9%97%AE%E9%A2%98%EF%BC%9F"><span class="toc-number">7.2.</span> <span class="toc-text">二、为什么这么设计？每个分类解决什么问题？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E8%BF%99%E6%A0%B7%E8%AE%BE%E8%AE%A1%E6%9C%89%E4%BB%80%E4%B9%88%E4%BC%98%E5%8A%BF%EF%BC%9F"><span class="toc-number">7.3.</span> <span class="toc-text">三、这样设计有什么优势？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E9%9D%A2%E8%AF%95%E5%9B%9E%E7%AD%94"><span class="toc-number">7.4.</span> <span class="toc-text">四、面试回答</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%83%E3%80%81M6-DAG-%E6%89%A7%E8%A1%8C"><span class="toc-number">8.</span> <span class="toc-text">七、M6 DAG 执行</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%A7%A3%E5%86%B3%E7%9A%84%E9%97%AE%E9%A2%98-5"><span class="toc-number">8.1.</span> <span class="toc-text">解决的问题</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E8%BF%99%E4%B9%88%E8%AE%BE%E8%AE%A1-5"><span class="toc-number">8.2.</span> <span class="toc-text">为什么这么设计</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%9D%A2%E8%AF%95%E5%9B%9E%E7%AD%94-5"><span class="toc-number">8.3.</span> <span class="toc-text">面试回答</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AB%E3%80%81M7-%E7%8B%AC%E7%AB%8B%E9%AA%8C%E8%AF%81"><span class="toc-number">9.</span> <span class="toc-text">八、M7 独立验证</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%A7%A3%E5%86%B3%E7%9A%84%E9%97%AE%E9%A2%98-6"><span class="toc-number">9.1.</span> <span class="toc-text">解决的问题</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E8%BF%99%E4%B9%88%E8%AE%BE%E8%AE%A1-6"><span class="toc-number">9.2.</span> <span class="toc-text">为什么这么设计</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%9D%A2%E8%AF%95%E5%9B%9E%E7%AD%94-6"><span class="toc-number">9.3.</span> <span class="toc-text">面试回答</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B9%9D%E3%80%81M8-%E5%AF%B9%E7%AD%89%E9%80%9A%E4%BF%A1"><span class="toc-number">10.</span> <span class="toc-text">九、M8 对等通信</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%A7%A3%E5%86%B3%E7%9A%84%E9%97%AE%E9%A2%98-7"><span class="toc-number">10.1.</span> <span class="toc-text">解决的问题</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E8%BF%99%E4%B9%88%E8%AE%BE%E8%AE%A1-7"><span class="toc-number">10.2.</span> <span class="toc-text">为什么这么设计</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%9D%A2%E8%AF%95%E5%9B%9E%E7%AD%94-7"><span class="toc-number">10.3.</span> <span class="toc-text">面试回答</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E3%80%81%E9%9D%A2%E8%AF%95%E6%80%BB%E7%BB%93"><span class="toc-number">11.</span> <span class="toc-text">十、面试总结</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>Recent Posts</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/06/29/LeetCode-Hot100-Day03-%E6%BB%91%E5%8A%A8%E7%AA%97%E5%8F%A3/" title="LeetCode Hot 100 Day 03 — 滑动窗口">LeetCode Hot 100 Day 03 — 滑动窗口</a><time datetime="2026-06-29T14:00:00.000Z" title="Created 2026-06-29 22:00:00">2026-06-29</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/06/24/AI-Agent-%E9%9D%A2%E8%AF%95%E5%AE%9E%E6%88%98-%E7%AC%AC9%E5%91%A8%E8%A1%A5%E5%85%85-%E8%81%8A%E5%A4%A9%E5%AE%A4%E4%B8%8E%E4%B8%89%E6%A8%A1%E5%BC%8F%E5%8D%8F%E4%BD%9C%E7%B3%BB%E7%BB%9F/" title="AI Agent 面试实战 — 第9周补充：聊天室与三模式协作系统 Q&amp;A">AI Agent 面试实战 — 第9周补充：聊天室与三模式协作系统 Q&amp;A</a><time datetime="2026-06-24T14:00:00.000Z" title="Created 2026-06-24 22:00:00">2026-06-24</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/06/23/LeetCode-Hot100-Day02-%E5%8F%8C%E6%8C%87%E9%92%88/" title="LeetCode Hot 100 Day 02 — 双指针应用">LeetCode Hot 100 Day 02 — 双指针应用</a><time datetime="2026-06-23T15:00:00.000Z" title="Created 2026-06-23 23:00:00">2026-06-23</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/06/16/LeetCode-Hot100-Day01-%E5%93%88%E5%B8%8C%E8%A1%A8/" title="LeetCode Hot 100 Day 01 — 哈希表">LeetCode Hot 100 Day 01 — 哈希表</a><time datetime="2026-06-16T14:10:00.000Z" title="Created 2026-06-16 22:10:00">2026-06-16</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/06/16/LeetCode-Hot100-%E5%AD%A6%E4%B9%A0%E8%B7%AF%E7%BA%BF%E4%B8%8E%E8%BF%9B%E5%BA%A6/" title="LeetCode Hot 100 — 学习路线与进度">LeetCode Hot 100 — 学习路线与进度</a><time datetime="2026-06-16T14:00:00.000Z" title="Created 2026-06-16 22:00:00">2026-06-16</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By david</span><span class="framework-info"><span>Framework </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>Theme </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.4.3</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="Reading Mode"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="Toggle Between Light and Dark Mode"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="Toggle Between Single-column and Double-column"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="Settings"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="Table of Contents"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="Back to Top"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><div class="js-pjax"><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (false) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
