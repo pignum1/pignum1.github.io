@@ -1,0 +1,303 @@
+<!DOCTYPE html><html lang="en" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>JavaSE-异常处理 | Hexo</title><meta name="author" content="david"><meta name="copyright" content="david"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="JavaSE - 异常处理 (Exception Handling)异常处理是 Java 语言中一个强大的机制，它提供了一种结构化的方式来处理程序在运行时可能出现的错误或“异常”情况，从而增强程序的健壮性和容错性。 1. 异常体系结构Java 中所有的异常都派生自 java.lang.Throwable 类。Throwable 有两个主要的子类：Error 和 Exception。      gr">
+<meta property="og:type" content="article">
+<meta property="og:title" content="JavaSE-异常处理">
+<meta property="og:url" content="http://example.com/2025/10/22/java/JavaSE-%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="JavaSE - 异常处理 (Exception Handling)异常处理是 Java 语言中一个强大的机制，它提供了一种结构化的方式来处理程序在运行时可能出现的错误或“异常”情况，从而增强程序的健壮性和容错性。 1. 异常体系结构Java 中所有的异常都派生自 java.lang.Throwable 类。Throwable 有两个主要的子类：Error 和 Exception。      gr">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://example.com/img/butterfly-icon.png">
+<meta property="article:published_time" content="2025-10-22T02:00:00.000Z">
+<meta property="article:modified_time" content="2025-11-06T11:46:10.063Z">
+<meta property="article:author" content="david">
+<meta property="article:tag" content="Java">
+<meta property="article:tag" content="异常处理">
+<meta property="article:tag" content="Exception">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/img/butterfly-icon.png"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "JavaSE-异常处理",
+  "url": "http://example.com/2025/10/22/java/JavaSE-%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/",
+  "image": "http://example.com/img/butterfly-icon.png",
+  "datePublished": "2025-10-22T02:00:00.000Z",
+  "dateModified": "2025-11-06T11:46:10.063Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "david",
+      "url": "http://example.com"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://example.com/2025/10/22/java/JavaSE-%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: 'Copy Successful',
+    error: 'Copy Failed',
+    noSupport: 'Browser Not Supported'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: 'Just now',
+    min: 'minutes ago',
+    hour: 'hours ago',
+    day: 'days ago',
+    month: 'months ago'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid/dist/infinitegrid.min.js',
+    buttonText: 'Load More'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'JavaSE-异常处理',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Hexo</span></a><a class="nav-page-title" href="/"><span class="site-name">JavaSE-异常处理</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  Back to Home</span></span></a></span><div id="menus"></div></nav><div id="post-info"><h1 class="post-title">JavaSE-异常处理</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">Created</span><time class="post-meta-date-created" datetime="2025-10-22T02:00:00.000Z" title="Created 2025-10-22 10:00:00">2025-10-22</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">Updated</span><time class="post-meta-date-updated" datetime="2025-11-06T11:46:10.063Z" title="Updated 2025-11-06 19:46:10">2025-11-06</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E6%A0%B8%E5%BF%83Java%E4%B8%8EJVM%E7%B2%BE%E9%80%9A/">核心Java与JVM精通</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E6%A0%B8%E5%BF%83Java%E4%B8%8EJVM%E7%B2%BE%E9%80%9A/Java%E8%AF%AD%E8%A8%80%E5%9F%BA%E7%A1%80%E4%B8%8E%E9%AB%98%E7%BA%A7%E7%89%B9%E6%80%A7/">Java语言基础与高级特性</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">Post Views:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h2 id="JavaSE-异常处理-Exception-Handling"><a href="#JavaSE-异常处理-Exception-Handling" class="headerlink" title="JavaSE - 异常处理 (Exception Handling)"></a>JavaSE - 异常处理 (Exception Handling)</h2><p>异常处理是 Java 语言中一个强大的机制，它提供了一种结构化的方式来处理程序在运行时可能出现的错误或“异常”情况，从而增强程序的健壮性和容错性。</p>
+<h3 id="1-异常体系结构"><a href="#1-异常体系结构" class="headerlink" title="1. 异常体系结构"></a>1. 异常体系结构</h3><p>Java 中所有的异常都派生自 <code>java.lang.Throwable</code> 类。<code>Throwable</code> 有两个主要的子类：<code>Error</code> 和 <code>Exception</code>。</p>
+<div class="mermaid-wrap"><pre class="mermaid-src" hidden>
+    graph TD
+    A(Throwable) --&gt; B(Error)
+    A --&gt; C(Exception)
+
+    B --&gt; D[OutOfMemoryError]
+    B --&gt; E[StackOverflowError]
+
+    C --&gt; F(Checked Exception)
+    C --&gt; G(RuntimeException)
+
+    F --&gt; H[IOException]
+    F --&gt; I[SQLException]
+    G --&gt; J[NullPointerException]
+    G --&gt; K[ArrayIndexOutOfBoundsException]
+    G --&gt; L[ClassCastException]
+
+    classDef error fill:#ffcccb,stroke:#f00
+    classDef checked fill:#add8e6,stroke:#00f
+    classDef unchecked fill:#90ee90,stroke:#080
+
+    class B,D,E error
+    class F,H,I checked
+    class G,J,K,L unchecked
+  </pre></div>
+
+<h4 id="Error-错误"><a href="#Error-错误" class="headerlink" title="Error (错误)"></a><code>Error</code> (错误)</h4><ul>
+<li><strong>定义</strong>: <code>Error</code> 类及其子类代表了 Java 运行时环境中出现的、非常严重的、<strong>通常无法恢复</strong>的错误。这些错误通常与 JVM 本身的资源耗尽或硬件问题有关。</li>
+<li><strong>特点</strong>: 应用程序<strong>不应该</strong>也<strong>无法</strong>捕获和处理 <code>Error</code>。</li>
+<li><strong>示例</strong>: <ul>
+<li><code>OutOfMemoryError</code>: 内存溢出错误。</li>
+<li><code>StackOverflowError</code>: 栈溢出错误（通常由无限递归引起）。</li>
+</ul>
+</li>
+</ul>
+<h4 id="Exception-异常"><a href="#Exception-异常" class="headerlink" title="Exception (异常)"></a><code>Exception</code> (异常)</h4><p><code>Exception</code> 类及其子类代表了程序本身可以处理的异常情况。它又分为两大类：</p>
+<ol>
+<li><p><strong>受检异常 (Checked Exception)</strong></p>
+<ul>
+<li><strong>定义</strong>: 除了 <code>RuntimeException</code> 及其子类之外的所有 <code>Exception</code>。它们是编译器在编译阶段强制要求程序员必须处理的异常。</li>
+<li><strong>处理方式</strong>: 必须使用 <code>try-catch</code> 块捕获，或者在方法签名上使用 <code>throws</code> 关键字声明抛出。</li>
+<li><strong>目的</strong>: 提醒开发者注意并处理那些在正常情况下也可能发生的、可预见的外部问题。</li>
+<li><strong>示例</strong>: <code>IOException</code> (读写文件时发生错误), <code>SQLException</code> (数据库访问错误), <code>ClassNotFoundException</code>。</li>
+</ul>
+</li>
+<li><p><strong>非受检异常 &#x2F; 运行时异常 (Unchecked Exception &#x2F; RuntimeException)</strong></p>
+<ul>
+<li><strong>定义</strong>: <code>RuntimeException</code> 类及其所有子类。</li>
+<li><strong>特点</strong>: 编译器<strong>不强制</strong>要求处理。这些异常通常是由程序自身的<strong>逻辑错误</strong>引起的。</li>
+<li><strong>目的</strong>: 如果这类异常频繁发生，通常意味着代码存在 Bug，应该修改代码逻辑来避免它，而不是通过 <code>try-catch</code> 来掩盖问题。</li>
+<li><strong>示例</strong>: <ul>
+<li><code>NullPointerException</code>: 对 <code>null</code> 对象进行操作。</li>
+<li><code>ArrayIndexOutOfBoundsException</code>: 数组索引越界。</li>
+<li><code>ClassCastException</code>: 类型转换异常。</li>
+<li><code>IllegalArgumentException</code>: 非法参数异常。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ol>
+<h3 id="2-异常处理机制"><a href="#2-异常处理机制" class="headerlink" title="2. 异常处理机制"></a>2. 异常处理机制</h3><h4 id="try-catch-finally"><a href="#try-catch-finally" class="headerlink" title="try-catch-finally"></a><code>try-catch-finally</code></h4><p>这是 Java 中处理异常的核心语法结构。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">try</span> &#123;</span><br><span class="line">    <span class="comment">// 可能会抛出异常的代码块</span></span><br><span class="line">&#125; <span class="keyword">catch</span> (ExceptionType1 e1) &#123;</span><br><span class="line">    <span class="comment">// 捕获并处理 ExceptionType1 类型的异常</span></span><br><span class="line">&#125; <span class="keyword">catch</span> (ExceptionType2 e2) &#123;</span><br><span class="line">    <span class="comment">// 捕获并处理 ExceptionType2 类型的异常</span></span><br><span class="line">&#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">    <span class="comment">// 无论是否发生异常，都一定会执行的代码块</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><strong><code>try</code> 块</strong>: 包围可能产生异常的代码。</li>
+<li><strong><code>catch</code> 块</strong>: 用于捕获并处理特定类型的异常。可以有多个 <code>catch</code> 块，用于捕获不同类型的异常。如果异常类型有继承关系，应该将子类异常的 <code>catch</code> 块放在父类异常的前面。</li>
+<li><strong><code>finally</code> 块</strong>: 无论 <code>try</code> 块中是否发生异常，<code>finally</code> 块中的代码<strong>总会</strong>被执行。它通常用于执行资源释放操作，如关闭文件流、数据库连接等，以确保资源不会泄露。</li>
+</ul>
+<h4 id="throws-关键字"><a href="#throws-关键字" class="headerlink" title="throws 关键字"></a><code>throws</code> 关键字</h4><p>如果一个方法内部可能会抛出受检异常，但它本身不打算处理，可以使用 <code>throws</code> 关键字在方法签名上声明该异常，将处理责任“甩锅”给调用者。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">readFile</span><span class="params">(String filePath)</span> <span class="keyword">throws</span> IOException &#123;</span><br><span class="line">    <span class="comment">// ... 读文件的代码，可能会抛出 IOException</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 调用者必须处理这个 IOException</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">processFile</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        readFile(<span class="string">&quot;test.txt&quot;</span>);</span><br><span class="line">    &#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;文件读取失败！&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="throw-关键字"><a href="#throw-关键字" class="headerlink" title="throw 关键字"></a><code>throw</code> 关键字</h4><p><code>throw</code> 用于在代码中<strong>主动抛出</strong>一个异常对象。通常用于在检测到某种错误逻辑时，手动创建一个异常实例并将其抛出。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">setAge</span><span class="params">(<span class="type">int</span> age)</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (age &lt; <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">IllegalArgumentException</span>(<span class="string">&quot;年龄不能为负数！&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">this</span>.age = age;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-try-with-resources-Java-7"><a href="#3-try-with-resources-Java-7" class="headerlink" title="3. try-with-resources (Java 7+)"></a>3. <code>try-with-resources</code> (Java 7+)</h3><p>在 <code>finally</code> 块中释放资源虽然可行，但代码比较冗长。Java 7 引入了 <code>try-with-resources</code> 语句，可以更优雅地处理资源释放。</p>
+<ul>
+<li><strong>要求</strong>: 资源类必须实现 <code>java.lang.AutoCloseable</code> 接口。</li>
+<li><strong>工作方式</strong>: 在 <code>try</code> 关键字后的括号中声明并初始化资源。当 <code>try</code> 块执行完毕或发生异常时，JVM 会<strong>自动调用</strong>这些资源的 <code>close()</code> 方法。</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 传统方式</span></span><br><span class="line"><span class="type">FileInputStream</span> <span class="variable">fis</span> <span class="operator">=</span> <span class="literal">null</span>;</span><br><span class="line"><span class="keyword">try</span> &#123;</span><br><span class="line">    fis = <span class="keyword">new</span> <span class="title class_">FileInputStream</span>(<span class="string">&quot;file.txt&quot;</span>);</span><br><span class="line">    <span class="comment">// ... 使用 fis</span></span><br><span class="line">&#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">    e.printStackTrace();</span><br><span class="line">&#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (fis != <span class="literal">null</span>) &#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            fis.close();</span><br><span class="line">        &#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// try-with-resources 方式 (更简洁、更安全)</span></span><br><span class="line"><span class="keyword">try</span> (<span class="type">FileInputStream</span> <span class="variable">fis</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">FileInputStream</span>(<span class="string">&quot;file.txt&quot;</span>)) &#123;</span><br><span class="line">    <span class="comment">// ... 使用 fis</span></span><br><span class="line">&#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">    e.printStackTrace();</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// fis 会在这里被自动关闭</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="4-异常处理最佳实践"><a href="#4-异常处理最佳实践" class="headerlink" title="4. 异常处理最佳实践"></a>4. 异常处理最佳实践</h3><ol>
+<li><strong>只捕获需要处理的异常</strong>: 不要用一个宽泛的 <code>catch (Exception e)</code> 来捕获所有异常，这会掩盖程序中潜在的 <code>RuntimeException</code>。</li>
+<li><strong>不要“生吞”异常</strong>: 空的 <code>catch</code> 块是“异常黑洞”，它会悄无声息地隐藏问题，给调试带来巨大困难。至少应该记录日志。</li>
+<li><strong><code>finally</code> 优先于 <code>return</code></strong>: 如果 <code>try</code> 块和 <code>finally</code> 块中都有 <code>return</code> 语句，<code>finally</code> 块中的 <code>return</code> 会覆盖 <code>try</code> 块的 <code>return</code>。应避免在 <code>finally</code> 中使用 <code>return</code>。</li>
+<li><strong>抛出具体的异常</strong>: 尽量抛出能描述具体问题的异常类型，而不是笼统的 <code>Exception</code>。</li>
+<li><strong>优先使用 <code>try-with-resources</code></strong>: 对于需要关闭的资源，优先使用 <code>try-with-resources</code> 来确保其被正确关闭。</li>
+</ol>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>Author: </span><span class="post-copyright-info"><a href="http://example.com">david</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>Link: </span><span class="post-copyright-info"><a href="http://example.com/2025/10/22/java/JavaSE-%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/">http://example.com/2025/10/22/java/JavaSE-%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>Copyright Notice: </span><span class="post-copyright-info">All articles on this blog are licensed under <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> unless otherwise stated.</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Java/">Java</a><a class="post-meta__tags" href="/tags/%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/">异常处理</a><a class="post-meta__tags" href="/tags/Exception/">Exception</a></div><div class="post-share"><div class="social-share" data-image="/img/butterfly-icon.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2025/10/22/java/JavaSE-%E6%B3%9B%E5%9E%8B/" title="JavaSE-泛型"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">Previous</div><div class="info-item-2">JavaSE-泛型</div></div><div class="info-2"><div class="info-item-1">JavaSE - 泛型 (Generics)泛型（Generics）是 Java 5 引入的一个重要特性，它允许在定义类、接口和方法时使用类型参数。泛型的核心目标是提高代码的类型安全性和消除强制类型转换，同时增强代码的可重用性。 1. 为什么需要泛型？在泛型出现之前，Java 集合框架（如 ArrayList）只能存储 Object 类型的对象。这意味着：  类型不安全: 任何类型的对象都可以被添加到集合中，导致运行时可能出现 ClassCastException。 需要强制类型转换: 从集合中取出元素时，必须进行强制类型转换，代码冗余且容易出错。  123456789// 泛型出现之前List list = new ArrayList();list.add(&quot;hello&quot;);list.add(123); // 编译时不会报错String s = (String) list.get(0); // 需要强制类型转换Integer i = (Integer) list.get(1); // 需要强制类型转换// String s2 = (String) list....</div></div></div></a><a class="pagination-related" href="/2025/10/22/java/JavaSE-%E5%B8%B8%E7%94%A8API/" title="JavaSE-常用API"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">Next</div><div class="info-item-2">JavaSE-常用API</div></div><div class="info-2"><div class="info-item-1">JavaSE - 常用 APIJava Development Kit (JDK) 提供了大量功能强大的 API (Application Programming Interface)，这些 API 是我们日常开发的基础工具。熟练掌握常用 API 能极大地提高开发效率和代码质量。 1. String 类String 是 Java 中最重要、最常用的类之一，用于表示字符串。String 对象是不可变的 (immutable)，一旦创建，其内容就不能被修改。 1.1 String 的不可变性 优点:  线程安全: 因为不可变，所以可以在多线程环境中安全共享，无需同步。 可作为 HashMap 的键: String 的 hashCode() 是缓存的，因为字符串内容不变，所以哈希码也不变，提高了 HashMap 的性能。 字符串常量池 (String Pool): 不可变性是字符串常量池实现的基础，可以节省大量内存。   缺点: 每次对 String 对象进行修改（如拼接、替换），都会创建一个新的 String 对象，这在大量操作时会产生性能开销和内存垃圾。  1.2 常用方法 int...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>Related Articles</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/2025/10/22/case-studies/%E6%A1%88%E4%BE%8B%E8%AE%BE%E8%AE%A1-%E5%BC%82%E5%9C%B0%E5%A4%9A%E6%B4%BB%E5%AE%9E%E6%88%98/" title="案例设计-异地多活实战"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-10-22</div><div class="info-item-2">案例设计-异地多活实战</div></div><div class="info-2"><div class="info-item-1">异地多活架构设计：挑战物理极限当业务规模达到支付宝、微信级别，或者金融系统要求 99.999% 可用性时，单机房容灾（Active-Standby）已无法满足需求。我们需要 异地多活 (Multi-Geo Multi-Active)，即多个机房同时对外提供服务。 1. 核心挑战：物理距离与 CAP 定理 同城双活: 距离 &lt; 100km，光纤延迟 &lt; 2ms。近似看作内网，数据库可同步。 异地多活: 距离 &gt; 1000km（如北京-上海），延迟 ~30ms。 问题: 数据库不能做同步写（Sync Replication），否则一个事务要 60ms+，性能无法接受。必须采用 异步复制。 代价: 数据存在延迟。如果切流，可能会丢数据或读到旧数据。    2. 终极架构：单元化 (Unitization &#x2F; Set &#x2F; Cell)为了解决跨机房延迟问题，必须遵循 “就近访问，流量闭环” 原则。 2.1 流量路由与切片 分片键 (Sharding Key): 通常选择 User ID。 路由规则:  UserId % 100，0-49 分给 北京单元...</div></div></div></a><a class="pagination-related" href="/2025/10/22/cloud-native/%E9%AB%98%E5%B9%B6%E5%8F%91%E4%B8%8E%E9%AB%98%E5%8F%AF%E7%94%A8%E5%AE%9E%E6%88%98-%E6%A0%B8%E5%BF%83%E6%8A%80%E6%9C%AF%E7%AF%87/" title="高并发与高可用实战-核心技术篇"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-10-22</div><div class="info-item-2">高并发与高可用实战-核心技术篇</div></div><div class="info-2"><div class="info-item-1">高并发与高可用实战：挡、疏、导的艺术在高并发场景下，系统的设计核心不再是“如何实现功能”，而是“如何优雅地应对极端流量”。 1. 负载均衡：流量的“守门员”大厂通常采用 LVS + Nginx 的混合架构。 1.1 四层 LVS vs 七层 Nginx LVS (OSI 第四层 - 传输层): 原理: 仅根据 IP 和 端口进行转发。 性能: 极高（百万级 QPS）。它不解析 HTTP 协议，只负责把报文甩给后面的 Nginx。   Nginx (OSI 第七层 - 应用层): 原理: 解析 HTTP 头部、URL、Cookie。 功能: 支持动静分离、Gzip 压缩、反向代理、SSL 卸载。   最佳实践: LVS 作为总入口（虚拟 IP），将流量负载到多台 Nginx 上，Nginx 再负载到真正的业务微服务上。   2. 限流算法：保护系统的“大闸”当流量超过系统极限时，限流是最后的尊严。 2.1 漏桶算法 (Leaky Bucket) 原理: 水（请求）进入桶，桶底下有个洞，以恒定速率滴出。 特点: 绝对平滑。适合需要强制平稳处理的场景，无法应对突发流量。  2.2 令牌...</div></div></div></a><a class="pagination-related" href="/2026/06/23/algorithms/LeetCode-Hot100-Day02-%E5%8F%8C%E6%8C%87%E9%92%88/" title="LeetCode Hot 100 Day 02 — 双指针应用"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-06-23</div><div class="info-item-2">LeetCode Hot 100 Day 02 — 双指针应用</div></div><div class="info-2"><div class="info-item-1">LeetCode Hot 100 Day 02 — 双指针应用（移动零 &#x2F; 盛水容器 &#x2F; 接雨水） 双指针有两个子模式：快慢指针（同向而行，一快一慢）和左右指针（相向而行，两端往中间靠）。今天三道题，各练一种，外加一道进阶。  本日题目：    # 题目 难度 双指针类型 核心思想    283 移动零 Easy 快慢（同向） slow&#x3D;写入位，fast&#x3D;扫描位，遇非零交换   11 盛最多水的容器 Medium 左右（相向） 动矮的那根——动高的永远不划算   42 接雨水 Hard 左右（相向） 维护左右 max，动 max 小的那边    一、#283 移动零 — 快慢指针题目速览给数组 nums，所有 0 移到末尾，保持非零元素相对顺序，原地操作。  [0,1,0,3,12] → [1,3,12,0,0]  思路：slow &#x3D; 写入位，fast &#x3D; 扫描位fast 从左到右扫，遇到非零就和 slow 交换，slow++。slow 永远指向「下一个非零该放的位置」。 123slow 左边 = 已就位的非零slow....</div></div></div></a><a class="pagination-related" href="/2025/10/22/case-studies/%E6%A1%88%E4%BE%8B%E8%AE%BE%E8%AE%A1-%E7%A7%92%E6%9D%80%E7%B3%BB%E7%BB%9F%E5%AE%9E%E6%88%98/" title="案例设计-秒杀系统实战"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-10-22</div><div class="info-item-2">案例设计-秒杀系统实战</div></div><div class="info-2"><div class="info-item-1">秒杀系统架构设计：从 10w 到 1000w QPS秒杀是典型的高并发、写多读少（或写少读极多）场景。其核心挑战在于：如何在短时间内处理数百万倍于平时的请求，同时保证数据一致性（不超卖、不少卖）。 1. 架构全景与分层漏斗设计秒杀系统的核心思想是 “层层过滤，漏斗模型”。将请求尽量拦截在上游，只有极少数有效请求能到达数据库。 1.1 流量漏斗模型 CDN 层: 拦截 90% 静态资源请求（图片、CSS、JS）。 网关层 (Nginx&#x2F;Gateway): 拦截恶意刷单、IP 限流、身份校验。 服务层 (Service):  业务限流: 令牌桶算法，拒绝超载请求。 缓存扣减: Redis 预减库存。   数据层 (DB): 异步写入订单，最终持久化。   2. 核心痛点与解决方案 (P7 必考)2.1 超卖问题 (Over-selling) —— 致命 Bug 错误做法: select stock from table; if (stock &gt; 0) update stock - 1; 在高并发下，多个线程同时读到 stock=1，导致卖出多份。   正确做法 1 (...</div></div></div></a><a class="pagination-related" href="/2026/06/29/algorithms/LeetCode-Hot100-Day03-%E6%BB%91%E5%8A%A8%E7%AA%97%E5%8F%A3/" title="LeetCode Hot 100 Day 03 — 滑动窗口"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-06-29</div><div class="info-item-2">LeetCode Hot 100 Day 03 — 滑动窗口</div></div><div class="info-2"><div class="info-item-1">LeetCode Hot 100 Day 03 — 滑动窗口（#3 &#x2F; #438） 滑动窗口是双指针的子串专精版——两个指针 left &#x2F; right 都从左往右走，维护中间一段连续区间，像一扇窗户在字符串上滑过去。核心操作就两个：right 扩张、left 收缩。  本日题目：    # 题目 难度 窗口类型 核心思想    3 无重复字符的最长子串 Medium 变长窗口 right 扩，遇重复→left 跳到重复之后   438 找到所有字母异位词 Medium 固定长窗口 窗口长度 &#x3D; p.len，每次滑一格，改两个计数    滑动窗口万能骨架123456789int left = 0;for (int right = 0; right &lt; n; right++) &#123;    // 1. 把 s[right] 加入窗口    // 2. 窗口不满足条件 → left 收缩直到合法    while (不满足条件) &#123;        // 移出 s[left]; left++;    &#125;    // 3. 窗口...</div></div></div></a><a class="pagination-related" href="/2026/07/05/algorithms/LeetCode-Hot100-Day04-%E5%AD%90%E4%B8%B2%E4%B8%8E%E6%BB%91%E5%8A%A8%E7%AA%97%E5%8F%A3%E8%BF%9B%E9%98%B6/" title="LeetCode Hot 100 Day 04 — 子串与滑动窗口进阶"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-07-05</div><div class="info-item-2">LeetCode Hot 100 Day 04 — 子串与滑动窗口进阶</div></div><div class="info-2"><div class="info-item-1">LeetCode Hot 100 Day 04 — 子串与滑动窗口进阶（#560 &#x2F; #76 &#x2F; #239） Day 03 掌握了变长和固定窗口的基本骨架。今天三道题各跨一个新维度：前缀和转化、valid 条件收缩、单调队列查最值。  本日题目：    # 题目 难度 套路 核心思想    560 和为 K 的子数组 Medium 前缀和 + HashMap preSum[j] - preSum[i] = k → 两数之和   76 最小覆盖子串 Hard 变长窗口 + valid right 扩到够 → left 收到最短   239 滑动窗口最大值 Hard 单调递减队列 新人踢掉所有比自己小的，队头即最大    一、#560 和为 K 的子数组 — 前缀和 + HashMap题目速览给整数数组 nums 和整数 k，统计和为 k 的连续子数组的个数。  nums = [1,2,3], k = 3 → 2（[1,2] 和 [3]）  为什么滑动窗口不行数组有负数——right 扩张和不一定会增大，left 收缩和不一定会减小。窗口失去方向性。 思路：前缀和...</div></div></div></a></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/butterfly-icon.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">david</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">147</div></a><a href="/tags/"><div class="headline">Tags</div><div class="length-num">340</div></a><a href="/categories/"><div class="headline">Categories</div><div class="length-num">28</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>Announcement</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>Contents</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#JavaSE-%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86-Exception-Handling"><span class="toc-number">1.</span> <span class="toc-text">JavaSE - 异常处理 (Exception Handling)</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E5%BC%82%E5%B8%B8%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84"><span class="toc-number">1.1.</span> <span class="toc-text">1. 异常体系结构</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Error-%E9%94%99%E8%AF%AF"><span class="toc-number">1.1.1.</span> <span class="toc-text">Error (错误)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Exception-%E5%BC%82%E5%B8%B8"><span class="toc-number">1.1.2.</span> <span class="toc-text">Exception (异常)</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86%E6%9C%BA%E5%88%B6"><span class="toc-number">1.2.</span> <span class="toc-text">2. 异常处理机制</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#try-catch-finally"><span class="toc-number">1.2.1.</span> <span class="toc-text">try-catch-finally</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#throws-%E5%85%B3%E9%94%AE%E5%AD%97"><span class="toc-number">1.2.2.</span> <span class="toc-text">throws 关键字</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#throw-%E5%85%B3%E9%94%AE%E5%AD%97"><span class="toc-number">1.2.3.</span> <span class="toc-text">throw 关键字</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-try-with-resources-Java-7"><span class="toc-number">1.3.</span> <span class="toc-text">3. try-with-resources (Java 7+)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5"><span class="toc-number">1.4.</span> <span class="toc-text">4. 异常处理最佳实践</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>Recent Posts</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/14/rag/AI-Python-RAG-01-%E5%9F%BA%E7%A1%80%E7%AF%87-Indexing-Retrieval-Generation/" title="AI Python 学习 — RAG 从零到一 01：基础篇（Indexing / Retrieval / Generation）">AI Python 学习 — RAG 从零到一 01：基础篇（Indexing / Retrieval / Generation）</a><time datetime="2026-07-14T13:00:00.000Z" title="Created 2026-07-14 21:00:00">2026-07-14</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/13/rag/AI-Python-RAG-05-%E9%AB%98%E7%BA%A7%E6%A3%80%E7%B4%A2%E4%B8%8E%E7%94%9F%E6%88%90%E7%AF%87/" title="AI Python 学习 — RAG 从零到一 05：高级检索与生成篇（Re-ranking / CRAG / Self-RAG / Long Context）">AI Python 学习 — RAG 从零到一 05：高级检索与生成篇（Re-ranking / CRAG / Self-RAG / Long Context）</a><time datetime="2026-07-13T13:00:00.000Z" title="Created 2026-07-13 21:00:00">2026-07-13</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/13/rag/AI-Python-RAG-04-%E9%AB%98%E7%BA%A7%E7%B4%A2%E5%BC%95%E7%AF%87/" title="AI Python 学习 — RAG 从零到一 04：高级索引篇（Multi-representation / RAPTOR / ColBERT）">AI Python 学习 — RAG 从零到一 04：高级索引篇（Multi-representation / RAPTOR / ColBERT）</a><time datetime="2026-07-13T12:00:00.000Z" title="Created 2026-07-13 20:00:00">2026-07-13</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/rag/AI-Python-RAG-03-%E8%B7%AF%E7%94%B1%E4%B8%8E%E6%9F%A5%E8%AF%A2%E6%9E%84%E9%80%A0%E7%AF%87/" title="AI Python 学习 — RAG 从零到一 03：路由与查询构造篇（Routing / Query Structuring）">AI Python 学习 — RAG 从零到一 03：路由与查询构造篇（Routing / Query Structuring）</a><time datetime="2026-07-10T13:00:00.000Z" title="Created 2026-07-10 21:00:00">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/rag/AI-Python-RAG-02-%E6%9F%A5%E8%AF%A2%E5%8F%98%E6%8D%A2%E7%AF%87/" title="AI Python 学习 — RAG 从零到一 02：查询变换篇（Multi Query / RAG-Fusion / Decomposition / Step Back / HyDE）">AI Python 学习 — RAG 从零到一 02：查询变换篇（Multi Query / RAG-Fusion / Decomposition / Step Back / HyDE）</a><time datetime="2026-07-10T12:00:00.000Z" title="Created 2026-07-10 20:00:00">2026-07-10</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By david</span><span class="framework-info"><span>Framework </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>Theme </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.4.3</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="Reading Mode"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="Toggle Between Light and Dark Mode"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="Toggle Between Single-column and Double-column"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="Settings"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="Table of Contents"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="Back to Top"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><div class="js-pjax"><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (false) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
