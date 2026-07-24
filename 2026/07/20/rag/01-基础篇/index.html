@@ -1,0 +1,1273 @@
+<!DOCTYPE html><html lang="en" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>RAG 01：基础篇 — 从零搭建 RAG，理解三大核心组件 | Hexo</title><meta name="author" content="david"><meta name="copyright" content="david"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="RAG 01：基础篇 — 从零搭建 RAG，理解三大核心组件 基于 RAG From Scratch Part 1-4。本文覆盖 RAG 系统的 Indexing（索引）、Retrieval（检索）、Generation（生成）三大组件。 核心观点：RAG 的质量不取决于底层 LLM 有多强，而取决于三个工程决策——怎么切（Chunking）、怎么搜（Retrieval）、怎么排（Rerank）。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="RAG 01：基础篇 — 从零搭建 RAG，理解三大核心组件">
+<meta property="og:url" content="http://example.com/2026/07/20/rag/01-%E5%9F%BA%E7%A1%80%E7%AF%87/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="RAG 01：基础篇 — 从零搭建 RAG，理解三大核心组件 基于 RAG From Scratch Part 1-4。本文覆盖 RAG 系统的 Indexing（索引）、Retrieval（检索）、Generation（生成）三大组件。 核心观点：RAG 的质量不取决于底层 LLM 有多强，而取决于三个工程决策——怎么切（Chunking）、怎么搜（Retrieval）、怎么排（Rerank）。">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://example.com/img/butterfly-icon.png">
+<meta property="article:published_time" content="2026-07-20T00:00:00.000Z">
+<meta property="article:modified_time" content="2026-07-20T08:50:28.151Z">
+<meta property="article:author" content="david">
+<meta property="article:tag" content="面试">
+<meta property="article:tag" content="AI">
+<meta property="article:tag" content="LangChain">
+<meta property="article:tag" content="向量检索">
+<meta property="article:tag" content="Reranker">
+<meta property="article:tag" content="ChromaDB">
+<meta property="article:tag" content="Embedding">
+<meta property="article:tag" content="Chunking">
+<meta property="article:tag" content="混合检索">
+<meta property="article:tag" content="BM25">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/img/butterfly-icon.png"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "RAG 01：基础篇 — 从零搭建 RAG，理解三大核心组件",
+  "url": "http://example.com/2026/07/20/rag/01-%E5%9F%BA%E7%A1%80%E7%AF%87/",
+  "image": "http://example.com/img/butterfly-icon.png",
+  "datePublished": "2026-07-20T00:00:00.000Z",
+  "dateModified": "2026-07-20T08:50:28.151Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "david",
+      "url": "http://example.com"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://example.com/2026/07/20/rag/01-%E5%9F%BA%E7%A1%80%E7%AF%87/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: 'Copy Successful',
+    error: 'Copy Failed',
+    noSupport: 'Browser Not Supported'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: 'Just now',
+    min: 'minutes ago',
+    hour: 'hours ago',
+    day: 'days ago',
+    month: 'months ago'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid/dist/infinitegrid.min.js',
+    buttonText: 'Load More'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'RAG 01：基础篇 — 从零搭建 RAG，理解三大核心组件',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Hexo</span></a><a class="nav-page-title" href="/"><span class="site-name">RAG 01：基础篇 — 从零搭建 RAG，理解三大核心组件</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  Back to Home</span></span></a></span><div id="menus"></div></nav><div id="post-info"><h1 class="post-title">RAG 01：基础篇 — 从零搭建 RAG，理解三大核心组件</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">Created</span><time class="post-meta-date-created" datetime="2026-07-20T00:00:00.000Z" title="Created 2026-07-20 08:00:00">2026-07-20</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">Updated</span><time class="post-meta-date-updated" datetime="2026-07-20T08:50:28.151Z" title="Updated 2026-07-20 16:50:28">2026-07-20</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/AI%E5%AD%A6%E4%B9%A0/">AI学习</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/AI%E5%AD%A6%E4%B9%A0/RAG/">RAG</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">Post Views:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h2 id="RAG-01：基础篇-—-从零搭建-RAG，理解三大核心组件"><a href="#RAG-01：基础篇-—-从零搭建-RAG，理解三大核心组件" class="headerlink" title="RAG 01：基础篇 — 从零搭建 RAG，理解三大核心组件"></a>RAG 01：基础篇 — 从零搭建 RAG，理解三大核心组件</h2><blockquote>
+<p>基于 <a target="_blank" rel="noopener" href="https://github.com/langchain-ai/rag-from-scratch">RAG From Scratch Part 1-4</a>。本文覆盖 RAG 系统的 Indexing（索引）、Retrieval（检索）、Generation（生成）三大组件。</p>
+<p><strong>核心观点</strong>：RAG 的质量不取决于底层 LLM 有多强，而取决于三个工程决策——<strong>怎么切（Chunking）、怎么搜（Retrieval）、怎么排（Rerank）</strong>。这三个决策做好了，用 GPT-3.5 也能达到 GPT-4 直答的效果。</p>
+</blockquote>
+<hr>
+<h2 id="零、RAG-系统全景图"><a href="#零、RAG-系统全景图" class="headerlink" title="零、RAG 系统全景图"></a>零、RAG 系统全景图</h2><p><img src="/images/rag-full-pipeline.png" alt="RAG 系统全景架构图"></p>
+<blockquote>
+<p>上图展示了 RAG 系统的完整技术栈，从底层基础设施到上层检索增强生成的全链路。本文聚焦中间的 <strong>Indexing → Retrieval → Generation</strong> 三大核心组件。其余进阶模块（查询变换、路由、高级索引、CRAG&#x2F;Self-RAG）将在后续文章中逐一展开。</p>
+</blockquote>
+<h3 id="系列文章导航"><a href="#系列文章导航" class="headerlink" title="系列文章导航"></a>系列文章导航</h3><table>
+<thead>
+<tr>
+<th align="center">篇</th>
+<th>文章</th>
+<th>覆盖内容</th>
+<th align="center">面试权重</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center"><strong>01</strong></td>
+<td><strong>基础篇（本文）</strong></td>
+<td>Indexing &#x2F; Chunking &#x2F; Embedding &#x2F; 混合检索 &#x2F; Rerank &#x2F; Generation</td>
+<td align="center">⭐⭐⭐⭐⭐</td>
+</tr>
+<tr>
+<td align="center"><a href="/2026/07/19/rag/02-%E6%9F%A5%E8%AF%A2%E5%8F%98%E6%8D%A2%E7%AF%87/">02</a></td>
+<td>查询变换篇</td>
+<td>Multi Query &#x2F; RAG-Fusion &#x2F; Decomposition &#x2F; Step Back &#x2F; HyDE</td>
+<td align="center">⭐⭐⭐⭐</td>
+</tr>
+<tr>
+<td align="center"><a href="/2026/07/18/rag/03-%E8%B7%AF%E7%94%B1%E7%AF%87/">03</a></td>
+<td>路由与查询构造篇</td>
+<td>逻辑路由 &#x2F; 语义路由 &#x2F; Query Structuring</td>
+<td align="center">⭐⭐⭐</td>
+</tr>
+<tr>
+<td align="center"><a href="/2026/07/17/rag/04-%E9%AB%98%E7%BA%A7%E7%B4%A2%E5%BC%95%E7%AF%87/">04</a></td>
+<td>高级索引篇</td>
+<td>Multi-representation &#x2F; RAPTOR &#x2F; ColBERT</td>
+<td align="center">⭐⭐⭐⭐</td>
+</tr>
+<tr>
+<td align="center"><a href="/2026/07/16/rag/05-%E9%AB%98%E7%BA%A7%E6%A3%80%E7%B4%A2%E7%AF%87/">05</a></td>
+<td>高级检索与生成篇</td>
+<td>Re-ranking &#x2F; CRAG &#x2F; Self-RAG &#x2F; Long Context vs RAG</td>
+<td align="center">⭐⭐⭐⭐⭐</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>📖 全部面试题汇总：<a href="/2026/07/08/AI-Agent-%E9%9D%A2%E8%AF%95%E9%A2%98%E5%BA%93-%E6%8C%89%E7%9F%A5%E8%AF%86%E9%A2%86%E5%9F%9F%E5%88%86%E7%B1%BB/#%E5%9B%9Brag-%E4%B8%8E%E7%9F%A5%E8%AF%86%E6%A3%80%E7%B4%A2">RAG 面试 7 题</a></p>
+</blockquote>
+<hr>
+<h2 id="一、核心速查表"><a href="#一、核心速查表" class="headerlink" title="一、核心速查表"></a>一、核心速查表</h2><p>每个组件的关键决策、影响范围和面试要点：</p>
+<table>
+<thead>
+<tr>
+<th align="center">阶段</th>
+<th>组件</th>
+<th>核心 API</th>
+<th>关键决策</th>
+<th align="center">对最终质量的影响</th>
+<th>一句话</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center"><strong>Indexing</strong></td>
+<td>Loader</td>
+<td><code>WebBaseLoader</code> &#x2F; <code>PyPDFLoader</code></td>
+<td>选对数据源，过滤噪音</td>
+<td align="center">⭐⭐</td>
+<td>“垃圾进、垃圾出”</td>
+</tr>
+<tr>
+<td align="center"><strong>Indexing</strong></td>
+<td>Splitter</td>
+<td><code>RecursiveCharacterTextSplitter</code></td>
+<td><strong>chunk_size（500-1000）</strong>、chunk_overlap（10-20%）、<strong>按文档类型选策略</strong></td>
+<td align="center">⭐⭐⭐⭐⭐</td>
+<td>“切得好，检索已经成功一半”</td>
+</tr>
+<tr>
+<td align="center"><strong>Indexing</strong></td>
+<td>Embedding</td>
+<td><code>OpenAIEmbeddings</code> &#x2F; BGE-M3</td>
+<td>模型维度、最大输入长度、中英文支持</td>
+<td align="center">⭐⭐⭐⭐</td>
+<td>“语义匹配的基石”</td>
+</tr>
+<tr>
+<td align="center"><strong>Indexing</strong></td>
+<td>VectorStore</td>
+<td><code>Chroma</code> &#x2F; <code>pgvector</code> &#x2F; Milvus</td>
+<td>本地用 Chroma，生产用 pgvector</td>
+<td align="center">⭐⭐</td>
+<td>“选对存储，别成为瓶颈”</td>
+</tr>
+<tr>
+<td align="center"><strong>Retrieval</strong></td>
+<td>向量检索</td>
+<td><code>vectorstore.as_retriever()</code></td>
+<td>K 值（4-10）、search_type</td>
+<td align="center">⭐⭐⭐</td>
+<td>“快，但同义词&#x2F;缩写匹配差”</td>
+</tr>
+<tr>
+<td align="center"><strong>Retrieval</strong></td>
+<td>BM25 关键词</td>
+<td><code>BM25Retriever</code></td>
+<td>中文需分词（jieba&#x2F;HanLP）</td>
+<td align="center">⭐⭐⭐</td>
+<td>“补向量检索的短板（精确匹配）”</td>
+</tr>
+<tr>
+<td align="center"><strong>Retrieval</strong></td>
+<td>混合检索</td>
+<td>向量 + BM25 → RRF 融合</td>
+<td>RRF 的 k 参数（默认 60）</td>
+<td align="center">⭐⭐⭐⭐⭐</td>
+<td>“1+1&gt;2，工业界标配”</td>
+</tr>
+<tr>
+<td align="center"><strong>Retrieval</strong></td>
+<td>Rerank</td>
+<td>Cross-Encoder（Cohere &#x2F; bge-reranker）</td>
+<td>粗排 20→精排 5</td>
+<td align="center">⭐⭐⭐⭐</td>
+<td>“粗排捞候选，精排挑精华”</td>
+</tr>
+<tr>
+<td align="center"><strong>Generation</strong></td>
+<td>Prompt</td>
+<td><code>ChatPromptTemplate</code></td>
+<td>“不知道就说不知道”、限制输出长度</td>
+<td align="center">⭐⭐⭐</td>
+<td>“防幻觉的第一道防线”</td>
+</tr>
+<tr>
+<td align="center"><strong>Generation</strong></td>
+<td>LLM</td>
+<td><code>ChatOpenAI</code></td>
+<td>temperature&#x3D;0（检索场景）</td>
+<td align="center">⭐⭐</td>
+<td>“RAG 场景不要创造性”</td>
+</tr>
+</tbody></table>
+<p><strong>性能基线</strong>（基于典型企业知识库，10000 文档）：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">向量检索 alone:      Recall@5 = 72%</span><br><span class="line">  + BM25 混合检索:   Recall@5 = 79%   (+7%)</span><br><span class="line">  + Rerank 精排:     Recall@5 = 88%   (+9%)</span><br><span class="line">  + 查询变换(02章):  Recall@5 = 91%   (+3%)</span><br><span class="line"></span><br><span class="line">全链路延迟: ~300-500ms（检索 65% + LLM 生成 35%）</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="二、40-行代码速览：完整-RAG-系统"><a href="#二、40-行代码速览：完整-RAG-系统" class="headerlink" title="二、40 行代码速览：完整 RAG 系统"></a>二、40 行代码速览：完整 RAG 系统</h2><p>先看整体，再逐行拆解。下面这 40 行代码就是一个能用的 RAG 系统：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> bs4</span><br><span class="line"><span class="keyword">from</span> langchain <span class="keyword">import</span> hub</span><br><span class="line"><span class="keyword">from</span> langchain.text_splitter <span class="keyword">import</span> RecursiveCharacterTextSplitter</span><br><span class="line"><span class="keyword">from</span> langchain_community.document_loaders <span class="keyword">import</span> WebBaseLoader</span><br><span class="line"><span class="keyword">from</span> langchain_community.vectorstores <span class="keyword">import</span> Chroma</span><br><span class="line"><span class="keyword">from</span> langchain_core.output_parsers <span class="keyword">import</span> StrOutputParser</span><br><span class="line"><span class="keyword">from</span> langchain_core.runnables <span class="keyword">import</span> RunnablePassthrough</span><br><span class="line"><span class="keyword">from</span> langchain_openai <span class="keyword">import</span> ChatOpenAI, OpenAIEmbeddings</span><br><span class="line"></span><br><span class="line"><span class="comment"># ============ INDEXING（离线，建库时跑一次）============</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 1. 加载文档</span></span><br><span class="line">loader = WebBaseLoader(</span><br><span class="line">    web_paths=(<span class="string">&quot;https://lilianweng.github.io/posts/2023-06-23-agent/&quot;</span>,),</span><br><span class="line">    bs_kwargs=<span class="built_in">dict</span>(parse_only=bs4.SoupStrainer(</span><br><span class="line">        class_=(<span class="string">&quot;post-content&quot;</span>, <span class="string">&quot;post-title&quot;</span>, <span class="string">&quot;post-header&quot;</span>)))</span><br><span class="line">)</span><br><span class="line">docs = loader.load()</span><br><span class="line"></span><br><span class="line"><span class="comment"># 2. 切分 ← 这里是最关键的决策！</span></span><br><span class="line">text_splitter = RecursiveCharacterTextSplitter(chunk_size=<span class="number">1000</span>, chunk_overlap=<span class="number">200</span>)</span><br><span class="line">splits = text_splitter.split_documents(docs)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 3. 向量化 + 存入向量库</span></span><br><span class="line">vectorstore = Chroma.from_documents(documents=splits, embedding=OpenAIEmbeddings())</span><br><span class="line"></span><br><span class="line"><span class="comment"># ============ RETRIEVAL &amp; GENERATION（在线，每次提问）============</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 4. 创建检索器</span></span><br><span class="line">retriever = vectorstore.as_retriever()</span><br><span class="line"></span><br><span class="line"><span class="comment"># 5. Prompt 模板</span></span><br><span class="line">prompt = hub.pull(<span class="string">&quot;rlm/rag-prompt&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 6. LLM</span></span><br><span class="line">llm = ChatOpenAI(model_name=<span class="string">&quot;gpt-3.5-turbo&quot;</span>, temperature=<span class="number">0</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 7. 格式化检索结果</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">format_docs</span>(<span class="params">docs</span>):</span><br><span class="line">    <span class="keyword">return</span> <span class="string">&quot;\n\n&quot;</span>.join(doc.page_content <span class="keyword">for</span> doc <span class="keyword">in</span> docs)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 8. 串联成 RAG Chain</span></span><br><span class="line">rag_chain = (</span><br><span class="line">    &#123;<span class="string">&quot;context&quot;</span>: retriever | format_docs, <span class="string">&quot;question&quot;</span>: RunnablePassthrough()&#125;</span><br><span class="line">    | prompt</span><br><span class="line">    | llm</span><br><span class="line">    | StrOutputParser()</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 9. 提问</span></span><br><span class="line">rag_chain.invoke(<span class="string">&quot;What is Task Decomposition?&quot;</span>)</span><br></pre></td></tr></table></figure>
+
+<p><strong>数据流一览</strong>：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">文档 → 切块 → 向量化 → 存库      问题 → 向量化 → 相似度搜索      文档 + 问题 → Prompt → LLM</span><br><span class="line">  ↑________Indexing_________↑    ↑_______Retrieval_______↑    ↑______Generation______↑</span><br></pre></td></tr></table></figure>
+
+<p><strong>为什么需要 RAG</strong>：LLM 的知识是训练时冻结的——不知道你的私有文档、不知道最新信息。RAG 让 LLM 在回答前先去你的知识库里”查资料”，就像考试带小抄。</p>
+<hr>
+<h2 id="三、Indexing-深度拆解"><a href="#三、Indexing-深度拆解" class="headerlink" title="三、Indexing 深度拆解"></a>三、Indexing 深度拆解</h2><p>Indexing 是把原始文档变成”可被检索的向量”的过程。它包含四个步骤，其中 <strong>Chunking 是对最终质量影响最大的一步</strong>。</p>
+<h3 id="3-1-文档加载（Document-Loader）"><a href="#3-1-文档加载（Document-Loader）" class="headerlink" title="3.1 文档加载（Document Loader）"></a>3.1 文档加载（Document Loader）</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">loader = WebBaseLoader(</span><br><span class="line">    web_paths=(<span class="string">&quot;https://lilianweng.github.io/posts/2023-06-23-agent/&quot;</span>,),</span><br><span class="line">    bs_kwargs=<span class="built_in">dict</span>(parse_only=bs4.SoupStrainer(</span><br><span class="line">        class_=(<span class="string">&quot;post-content&quot;</span>, <span class="string">&quot;post-title&quot;</span>, <span class="string">&quot;post-header&quot;</span>)))</span><br><span class="line">)</span><br><span class="line">docs = loader.load()</span><br></pre></td></tr></table></figure>
+
+<p><strong>做了什么</strong>：从 URL 抓取网页，只提取正文区域（<code>post-content</code> 等 class），过滤导航栏、页脚、广告等噪音。</p>
+<p><strong>Document 对象结构</strong>：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">doc = docs[<span class="number">0</span>]</span><br><span class="line"><span class="built_in">print</span>(doc.page_content[:<span class="number">200</span>])   <span class="comment"># 文档文本内容</span></span><br><span class="line"><span class="built_in">print</span>(doc.metadata)             <span class="comment"># &#123;&#x27;source&#x27;: &#x27;https://...&#x27;, ...&#125;</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>常用 Loader 速查</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>Loader</th>
+<th>数据源</th>
+<th>注意事项</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>WebBaseLoader</code></td>
+<td>网页</td>
+<td>配 <code>bs_kwargs</code> 过滤噪音区域</td>
+</tr>
+<tr>
+<td><code>PyPDFLoader</code></td>
+<td>PDF 文件</td>
+<td>表格&#x2F;图片需单独处理（见第七节）</td>
+</tr>
+<tr>
+<td><code>TextLoader</code></td>
+<td>纯文本</td>
+<td>最简单，指定 encoding</td>
+</tr>
+<tr>
+<td><code>CSVLoader</code></td>
+<td>CSV 表格</td>
+<td>一行 &#x3D; 一个 Document</td>
+</tr>
+<tr>
+<td><code>UnstructuredMarkdownLoader</code></td>
+<td>Markdown</td>
+<td>保留标题层级</td>
+</tr>
+<tr>
+<td><code>NotionDBLoader</code></td>
+<td>Notion 数据库</td>
+<td>需要 Notion API Key</td>
+</tr>
+<tr>
+<td><code>DirectoryLoader</code></td>
+<td>整个文件夹</td>
+<td>支持通配符匹配文件类型</td>
+</tr>
+</tbody></table>
+<hr>
+<h3 id="3-2-Chunking-策略-——-全文最关键的决策"><a href="#3-2-Chunking-策略-——-全文最关键的决策" class="headerlink" title="3.2 Chunking 策略 —— 全文最关键的决策"></a>3.2 Chunking 策略 —— 全文最关键的决策</h3><blockquote>
+<p><strong>面试官问”chunk_size 怎么定”，不是在等一个数字，是在等你讲出权衡。</strong></p>
+</blockquote>
+<h4 id="3-2-1-好-Chunk-的四大准则"><a href="#3-2-1-好-Chunk-的四大准则" class="headerlink" title="3.2.1 好 Chunk 的四大准则"></a>3.2.1 好 Chunk 的四大准则</h4><table>
+<thead>
+<tr>
+<th>准则</th>
+<th>含义</th>
+<th>违反后果</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>语义完整</strong></td>
+<td>一个 chunk 包含一个完整的语义单元</td>
+<td>句子截断 → 向量无意义 → 检索不到</td>
+</tr>
+<tr>
+<td><strong>粒度适中</strong></td>
+<td>不太大（噪音多），不太小（上下文断裂）</td>
+<td>过大→检索不准；过小→信息不全</td>
+</tr>
+<tr>
+<td><strong>上下文自足</strong></td>
+<td>chunk 本身可独立理解，不依赖前后文</td>
+<td>“如上所述”这种指代 → LLM 看不懂</td>
+</tr>
+<tr>
+<td><strong>可溯源</strong></td>
+<td>metadata 记录来源文档、页码、章节</td>
+<td>检索到了但不知道出自哪里</td>
+</tr>
+</tbody></table>
+<h4 id="3-2-2-五种切分策略对比"><a href="#3-2-2-五种切分策略对比" class="headerlink" title="3.2.2 五种切分策略对比"></a>3.2.2 五种切分策略对比</h4><table>
+<thead>
+<tr>
+<th>策略</th>
+<th>怎么切</th>
+<th>适合</th>
+<th>局限</th>
+<th align="center">推荐度</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>固定大小</strong></td>
+<td>每 N 字符一刀切</td>
+<td>快速原型</td>
+<td>句子被截断，语义破碎</td>
+<td align="center">⭐</td>
+</tr>
+<tr>
+<td><strong>递归分块</strong></td>
+<td><code>\n\n→\n→空格→字符</code> 逐级降级</td>
+<td><strong>通用首选</strong></td>
+<td>对表格&#x2F;代码不够友好</td>
+<td align="center">⭐⭐⭐⭐⭐</td>
+</tr>
+<tr>
+<td><strong>语义分块</strong></td>
+<td>按段落&#x2F;章节边界（用 Embedding 判断断点）</td>
+<td>结构清晰的文档</td>
+<td>依赖模型判断，有误差</td>
+<td align="center">⭐⭐⭐⭐</td>
+</tr>
+<tr>
+<td><strong>句子级</strong></td>
+<td>按句号&#x2F;换行切，保持句子完整</td>
+<td>FAQ、对话</td>
+<td>单句可能太短，信息量不足</td>
+<td align="center">⭐⭐⭐</td>
+</tr>
+<tr>
+<td><strong>Agent 分块</strong></td>
+<td>用 LLM 逐段判断”这里该不该切”</td>
+<td>复杂文档</td>
+<td>慢、贵（每条 chunk 一次 LLM 调用）</td>
+<td align="center">⭐⭐</td>
+</tr>
+</tbody></table>
+<h4 id="3-2-3-递归分块：工业界默认选择"><a href="#3-2-3-递归分块：工业界默认选择" class="headerlink" title="3.2.3 递归分块：工业界默认选择"></a>3.2.3 递归分块：工业界默认选择</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">RecursiveCharacterTextSplitter(</span><br><span class="line">    chunk_size=<span class="number">1000</span>,       <span class="comment"># 目标：每块最多 1000 字符</span></span><br><span class="line">    chunk_overlap=<span class="number">200</span>,     <span class="comment"># 相邻块重叠 200 字符（10-20%）</span></span><br><span class="line">    separators=[<span class="string">&quot;\n\n&quot;</span>, <span class="string">&quot;\n&quot;</span>, <span class="string">&quot; &quot;</span>, <span class="string">&quot;&quot;</span>]   <span class="comment"># 逐级降级的优先级</span></span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+
+<p><strong>工作过程</strong>：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">文档: &quot;第一章\n\n1.1 概述\n这是关于RAG的介绍。\n\n1.2 原理\n...&quot;</span><br><span class="line"></span><br><span class="line">第1轮: 按 &quot;\n\n&quot; 切 → 段落级，大部分段落在 1000 以内 ✅</span><br><span class="line">第2轮: 某段超过 1000 → 按 &quot;\n&quot; 再切 → 行级</span><br><span class="line">第3轮: 还超 → 按 &quot; &quot; 切 → 单词级</span><br><span class="line">第4轮: 还超 → 按字符硬切（兜底，保证不报错）</span><br></pre></td></tr></table></figure>
+
+<p><strong>chunk_overlap 为什么重要 —— 一个具体例子</strong>：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">原文: &quot;RAG 的三个步骤分别是 Indexing、Retrieval 和 Generation。其中 Indexing 负责...&quot;</span><br><span class="line">                     ↑ 假设 1000 字符处恰好是切分点</span><br><span class="line"></span><br><span class="line">没有 overlap:</span><br><span class="line">  Chunk 1: &quot;...RAG 的三个步骤分别是 Indexing、Retrieval 和 Generation。其中&quot;</span><br><span class="line">                                                                       ↑ 截断了！</span><br><span class="line">  Chunk 2: &quot;和 Generation。其中 Indexing 负责...&quot;</span><br><span class="line">  → Chunk 1 关键信息不完整，检索时匹配度低</span><br><span class="line"></span><br><span class="line">有 overlap (200 字符):</span><br><span class="line">  Chunk 1: &quot;...RAG 的三个步骤分别是 Indexing、Retrieval 和 Generation。其中 Indexing&quot;</span><br><span class="line">                                                                     ↑ 多保留了关键信息</span><br><span class="line">  Chunk 2: &quot;分别是 Indexing、Retrieval 和 Generation。其中 Indexing 负责...&quot;</span><br><span class="line">           ↑ 包含了完整的前文，可独立理解</span><br></pre></td></tr></table></figure>
+
+<h4 id="3-2-4-上下文分块（Contextual-Chunking）——-零成本提升近一倍的技巧"><a href="#3-2-4-上下文分块（Contextual-Chunking）——-零成本提升近一倍的技巧" class="headerlink" title="3.2.4 上下文分块（Contextual Chunking）—— 零成本提升近一倍的技巧"></a>3.2.4 上下文分块（Contextual Chunking）—— 零成本提升近一倍的技巧</h4><blockquote>
+<p>来自参考文章的核心技巧：给每个 chunk 前面拼接它的<strong>父标题路径</strong>。</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">❌ 普通分块:</span><br><span class="line">  Chunk: &quot;RLHF 的训练分为三个步骤：1) SFT 2) Reward Model 3) PPO...&quot;</span><br><span class="line"></span><br><span class="line">✅ 上下文分块:</span><br><span class="line">  Chunk: &quot;第二章 &gt; 2.3 对齐技术 &gt; RLHF 训练流程</span><br><span class="line">          RLHF 的训练分为三个步骤：1) SFT 2) Reward Model 3) PPO...&quot;</span><br></pre></td></tr></table></figure>
+
+<p><strong>为什么有效</strong>：向量 Embedding 会编码整个文本，包含了标题信息后，chunk 向量”知道”自己属于哪个主题。用户搜”RLHF 训练流程”时，带标题的 chunk 匹配度远高于纯内容 chunk。</p>
+<p><strong>实测数据</strong>（来自参考文章）：</p>
+<table>
+<thead>
+<tr>
+<th>方案</th>
+<th align="center">Recall@5</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>普通分块</td>
+<td align="center">41%</td>
+</tr>
+<tr>
+<td>上下文分块（拼接父标题）</td>
+<td align="center"><strong>78%</strong></td>
+</tr>
+</tbody></table>
+<p><strong>代价</strong>：几乎为零。只是在入库前多做了字符串拼接。</p>
+<p><strong>实现</strong>：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">add_context_to_chunks</span>(<span class="params">chunks, doc_structure</span>):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;给每个 chunk 拼接它在文档中的位置路径&quot;&quot;&quot;</span></span><br><span class="line">    contextualized = []</span><br><span class="line">    <span class="keyword">for</span> chunk <span class="keyword">in</span> chunks:</span><br><span class="line">        path = <span class="string">&quot; &gt; &quot;</span>.join(chunk.metadata.get(<span class="string">&quot;headings&quot;</span>, []))</span><br><span class="line">        chunk.page_content = <span class="string">f&quot;<span class="subst">&#123;path&#125;</span>\n<span class="subst">&#123;chunk.page_content&#125;</span>&quot;</span></span><br><span class="line">        contextualized.append(chunk)</span><br><span class="line">    <span class="keyword">return</span> contextualized</span><br></pre></td></tr></table></figure>
+
+<h4 id="3-2-5-不同文档类型的切法速查"><a href="#3-2-5-不同文档类型的切法速查" class="headerlink" title="3.2.5 不同文档类型的切法速查"></a>3.2.5 不同文档类型的切法速查</h4><table>
+<thead>
+<tr>
+<th>文档类型</th>
+<th>建议策略</th>
+<th align="center">chunk_size</th>
+<th>特殊处理</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>技术博客&#x2F;文章</td>
+<td>递归分块</td>
+<td align="center">500-1000</td>
+<td><strong>拼接父标题路径</strong>；保留标题作为 metadata</td>
+</tr>
+<tr>
+<td>代码</td>
+<td>AST 按函数&#x2F;类边界</td>
+<td align="center">不限</td>
+<td>按 <code>def</code>&#x2F;<code>class</code> 切，不按字符硬切</td>
+</tr>
+<tr>
+<td>FAQ</td>
+<td>按 Q&amp;A 对切</td>
+<td align="center">—</td>
+<td>一个 Q&amp;A 对 &#x3D; 一个 chunk，不需要 overlap</td>
+</tr>
+<tr>
+<td>PDF 论文</td>
+<td>递归分块</td>
+<td align="center">800-1500</td>
+<td>表格&#x2F;公式单独提取描述后再入库</td>
+</tr>
+<tr>
+<td>对话记录</td>
+<td>按轮次切</td>
+<td align="center">—</td>
+<td>保留 speaker 信息在 metadata</td>
+</tr>
+<tr>
+<td>API 文档</td>
+<td>按接口切</td>
+<td align="center">—</td>
+<td>一个接口（endpoint + params + example）&#x3D; 一个 chunk</td>
+</tr>
+<tr>
+<td>合同&#x2F;法律文书</td>
+<td>按条款切</td>
+<td align="center">不限</td>
+<td>保留条款编号，方便溯源</td>
+</tr>
+<tr>
+<td>财报&#x2F;数据报告</td>
+<td>语义分块</td>
+<td align="center">1000-2000</td>
+<td>表格转 Markdown 描述，保持完整不切</td>
+</tr>
+</tbody></table>
+<h4 id="3-2-6-chunk-size-怎么定-——-面试标准回答"><a href="#3-2-6-chunk-size-怎么定-——-面试标准回答" class="headerlink" title="3.2.6 chunk_size 怎么定 —— 面试标准回答"></a>3.2.6 chunk_size 怎么定 —— 面试标准回答</h4><blockquote>
+<p>“chunk_size 取决于文档类型和 Embedding 模型的输入上限。一般从 500-1000 开始实验。太小（&lt;200）丢失上下文，太大（&gt;2000）引入噪音。实践中加 10-20% overlap 防止关键信息被切断。对不同格式——代码用 AST 按函数切、FAQ 按 Q&amp;A 对切、表格保留完整结构——不一刀切。<strong>更重要的是做上下文分块——给每个 chunk 拼接它的父标题路径，实测 Recall 能从 41% 提升到 78%。</strong>“</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th align="center">chunk_size</th>
+<th>优势</th>
+<th>劣势</th>
+<th>适合场景</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">&lt; 200</td>
+<td>精确匹配关键词</td>
+<td>上下文断裂</td>
+<td>FAQ、代码片段</td>
+</tr>
+<tr>
+<td align="center">500-1000</td>
+<td>平衡精度和上下文</td>
+<td>—</td>
+<td><strong>通用推荐</strong></td>
+</tr>
+<tr>
+<td align="center">1000-2000</td>
+<td>语义完整</td>
+<td>噪音增多</td>
+<td>论文、长报告</td>
+</tr>
+<tr>
+<td align="center">2000+</td>
+<td>篇章级完整</td>
+<td>向量稀释严重</td>
+<td>特定摘要场景</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>📖 延伸阅读：<a href="/2026/07/17/rag/04-%E9%AB%98%E7%BA%A7%E7%B4%A2%E5%BC%95%E7%AF%87/">04 高级索引篇 — Multi-representation &#x2F; RAPTOR &#x2F; ColBERT</a> — 当 flat chunking 不够用时，如何用更聪明的方式组织索引：摘要检索返回原文、递归聚类树状索引、Token 级向量精细匹配。</p>
+</blockquote>
+<hr>
+<h3 id="3-3-向量化（Embedding）——-文字-→-数字"><a href="#3-3-向量化（Embedding）——-文字-→-数字" class="headerlink" title="3.3 向量化（Embedding）—— 文字 → 数字"></a>3.3 向量化（Embedding）—— 文字 → 数字</h3><h4 id="本质"><a href="#本质" class="headerlink" title="本质"></a>本质</h4><p>Embedding 把文字映射到高维空间中的一个点。语义相近的文字，向量距离也近。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&quot;今天天气真好&quot;  → [0.012, -0.034, 0.056, ...]  (1536维)</span><br><span class="line">&quot;今日天气不错&quot;  → [0.010, -0.031, 0.052, ...]  ← 和上面距离很近!</span><br><span class="line">&quot;机器学习算法&quot;  → [-0.045, 0.078, -0.012, ...] ← 和上面距离很远</span><br></pre></td></tr></table></figure>
+
+<h4 id="相似度计算（Cosine-Similarity）"><a href="#相似度计算（Cosine-Similarity）" class="headerlink" title="相似度计算（Cosine Similarity）"></a>相似度计算（Cosine Similarity）</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">cosine_similarity</span>(<span class="params">vec1, vec2</span>):</span><br><span class="line">    dot_product = np.dot(vec1, vec2)           <span class="comment"># 点积：方向和大小</span></span><br><span class="line">    norm_vec1 = np.linalg.norm(vec1)            <span class="comment"># 向量长度</span></span><br><span class="line">    norm_vec2 = np.linalg.norm(vec2)</span><br><span class="line">    <span class="keyword">return</span> dot_product / (norm_vec1 * norm_vec2)  <span class="comment"># 归一化到 [-1, 1]</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 1 = 完全相同方向，-1 = 完全相反，0 = 正交（无关）</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="常用-Embedding-模型速查"><a href="#常用-Embedding-模型速查" class="headerlink" title="常用 Embedding 模型速查"></a>常用 Embedding 模型速查</h4><table>
+<thead>
+<tr>
+<th>模型</th>
+<th align="center">维度</th>
+<th>最大输入</th>
+<th align="center">中文支持</th>
+<th>部署方式</th>
+<th>费用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>OpenAI <code>text-embedding-3-small</code></td>
+<td align="center">1536</td>
+<td>8191 tokens</td>
+<td align="center">⚠️ 一般</td>
+<td>API</td>
+<td>$0.02&#x2F;1M tokens</td>
+</tr>
+<tr>
+<td>OpenAI <code>text-embedding-3-large</code></td>
+<td align="center">3072</td>
+<td>8191 tokens</td>
+<td align="center">⚠️ 一般</td>
+<td>API</td>
+<td>$0.13&#x2F;1M tokens</td>
+</tr>
+<tr>
+<td><strong>BGE-M3（BAAI）</strong></td>
+<td align="center">1024</td>
+<td>8192 tokens</td>
+<td align="center">✅ <strong>优秀</strong></td>
+<td>本地 HuggingFace</td>
+<td>免费</td>
+</tr>
+<tr>
+<td>BGE-large-zh</td>
+<td align="center">1024</td>
+<td>512 tokens</td>
+<td align="center">✅ 优秀</td>
+<td>本地 HuggingFace</td>
+<td>免费</td>
+</tr>
+<tr>
+<td>Cohere Embed v3</td>
+<td align="center">1024</td>
+<td>512 tokens</td>
+<td align="center">多语言</td>
+<td>API</td>
+<td>有免费额度</td>
+</tr>
+<tr>
+<td>Jina Embeddings v2</td>
+<td align="center">768</td>
+<td>8192 tokens</td>
+<td align="center">✅ 优秀</td>
+<td>API</td>
+<td>有免费额度</td>
+</tr>
+</tbody></table>
+<p><strong>选模型的核心考量</strong>：</p>
+<ol>
+<li><strong>最大输入长度</strong> &gt; 你的 chunk_size（否则会被截断）</li>
+<li><strong>中文支持</strong> — 做中文知识库优先选 BGE 系列</li>
+<li><strong>维度</strong> — 高维度&#x3D;更精准但存储大、检索慢</li>
+</ol>
+<hr>
+<h3 id="3-4-向量存储（VectorStore）"><a href="#3-4-向量存储（VectorStore）" class="headerlink" title="3.4 向量存储（VectorStore）"></a>3.4 向量存储（VectorStore）</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">vectorstore = Chroma.from_documents(</span><br><span class="line">    documents=splits,              <span class="comment"># 切好的 chunks</span></span><br><span class="line">    embedding=OpenAIEmbeddings()   <span class="comment"># 用哪个模型做 Embedding</span></span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+
+<p><strong>内部做了什么</strong>：</p>
+<ol>
+<li>对每个 chunk 调 <code>embedding.embed_query(chunk.page_content)</code> → 向量</li>
+<li>把 <code>(向量, chunk文本, metadata)</code> 三元组存入数据库</li>
+<li>建向量索引（如 HNSW），加速近邻搜索</li>
+</ol>
+<p><strong>向量数据库选型</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>数据库</th>
+<th>定位</th>
+<th align="center">适合规模</th>
+<th>特点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Chroma</strong></td>
+<td>轻量级，嵌入式</td>
+<td align="center">&lt; 10 万</td>
+<td>本地开发首选，pip install 即用</td>
+</tr>
+<tr>
+<td><strong>pgvector</strong></td>
+<td>PostgreSQL 插件</td>
+<td align="center">&lt; 100 万</td>
+<td>和业务库共用一个 PG 实例，运维简单</td>
+</tr>
+<tr>
+<td><strong>Milvus</strong></td>
+<td>分布式向量数据库</td>
+<td align="center">百万～亿级</td>
+<td>支持 GPU 加速索引，云原生</td>
+</tr>
+<tr>
+<td><strong>Pinecone</strong></td>
+<td>全托管云服务</td>
+<td align="center">不限</td>
+<td>零运维，按量付费</td>
+</tr>
+<tr>
+<td><strong>Weaviate</strong></td>
+<td>开源 + 云托管</td>
+<td align="center">&lt; 千万</td>
+<td>自带向量化 + 混合检索</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="四、Retrieval-深度拆解"><a href="#四、Retrieval-深度拆解" class="headerlink" title="四、Retrieval 深度拆解"></a>四、Retrieval 深度拆解</h2><p>检索不是”一个向量相似度搜索”就完事了。工业界标准的检索链路是<strong>三条路径逐步收敛</strong>：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">全库 10000 个 chunk</span><br><span class="line">  ↓ 粗排（向量 + BM25 多路召回，各取 Top-50~100）</span><br><span class="line">~100 个候选</span><br><span class="line">  ↓ RRF 融合去重排序</span><br><span class="line">~60 个候选</span><br><span class="line">  ↓ 精排（Cross-Encoder Reranker 逐对打分）</span><br><span class="line">Top-5~10 精选 → 拼进 Prompt → LLM 生成</span><br></pre></td></tr></table></figure>
+
+<h3 id="4-1-向量检索（Dense-Retrieval）"><a href="#4-1-向量检索（Dense-Retrieval）" class="headerlink" title="4.1 向量检索（Dense Retrieval）"></a>4.1 向量检索（Dense Retrieval）</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">retriever = vectorstore.as_retriever(</span><br><span class="line">    search_type=<span class="string">&quot;similarity&quot;</span>,  <span class="comment"># 检索算法</span></span><br><span class="line">    search_kwargs=&#123;<span class="string">&quot;k&quot;</span>: <span class="number">4</span>&#125;     <span class="comment"># 返回 Top-K 篇文档</span></span><br><span class="line">)</span><br><span class="line">docs = retriever.get_relevant_documents(<span class="string">&quot;What is Task Decomposition?&quot;</span>)</span><br></pre></td></tr></table></figure>
+
+<p><strong>三种检索模式</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>search_type</th>
+<th>算法</th>
+<th>什么时候用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>&quot;similarity&quot;</code></td>
+<td>纯余弦相似度（默认）</td>
+<td>通用场景</td>
+</tr>
+<tr>
+<td><code>&quot;mmr&quot;</code>（Max Marginal Relevance）</td>
+<td>兼顾相似度 + 多样性</td>
+<td>Top-K 结果太雷同时（如多次返回同一段的不同 chunk）</td>
+</tr>
+<tr>
+<td><code>&quot;similarity_score_threshold&quot;</code></td>
+<td>只返回相似度 &gt; 阈值的</td>
+<td>需要过滤低分噪音（如阈值 0.7）</td>
+</tr>
+</tbody></table>
+<p><strong>K 值怎么选</strong>：</p>
+<table>
+<thead>
+<tr>
+<th align="center">K 值</th>
+<th>效果</th>
+<th>适合</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">1-2</td>
+<td>信息不足，LLM 没东西参考</td>
+<td>❌ 几乎不用</td>
+</tr>
+<tr>
+<td align="center"><strong>4-10</strong></td>
+<td>平衡信息量和噪音</td>
+<td>✅ <strong>通用推荐</strong></td>
+</tr>
+<tr>
+<td align="center">20+</td>
+<td>噪音多，Token 浪费，LLM 被无关内容干扰</td>
+<td>⚠️ 仅当配了 Reranker 精排时可用</td>
+</tr>
+</tbody></table>
+<p><strong>向量检索的天然局限</strong>：对同义词、缩写、精确关键词匹配差。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">用户问: &quot;LLM&quot;</span><br><span class="line">文档里写: &quot;Large Language Model（大语言模型）&quot;</span><br><span class="line"></span><br><span class="line">→ 纯向量检索：这两个词的向量距离可能不近（一个是缩写，一个是全称）</span><br><span class="line">→ BM25 关键词检索：直接命中 &quot;LLM&quot; 这个精确词</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="4-2-BM25-关键词检索（Sparse-Retrieval）——-补向量的短板"><a href="#4-2-BM25-关键词检索（Sparse-Retrieval）——-补向量的短板" class="headerlink" title="4.2 BM25 关键词检索（Sparse Retrieval）—— 补向量的短板"></a>4.2 BM25 关键词检索（Sparse Retrieval）—— 补向量的短板</h3><h4 id="一句话"><a href="#一句话" class="headerlink" title="一句话"></a>一句话</h4><blockquote>
+<p>向量检索管”语义相似”，BM25 管”关键词精确匹配”。两者互补，不是替代。</p>
+</blockquote>
+<h4 id="从-TF-IDF-到-BM25"><a href="#从-TF-IDF-到-BM25" class="headerlink" title="从 TF-IDF 到 BM25"></a>从 TF-IDF 到 BM25</h4><p>BM25 是 TF-IDF 的进化版，解决了两个核心问题：</p>
+<p><strong>问题 1：TF（词频）不应该无限增长</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">文档 A: &quot;RAG&quot; 出现 1 次</span><br><span class="line">文档 B: &quot;RAG&quot; 出现 100 次</span><br><span class="line"></span><br><span class="line">TF-IDF:  文档 B 的相关性是文档 A 的 100 倍 ← 不合理！</span><br><span class="line">BM25:    TF 饱和曲线，100 次 ≈ 3-4 次的效果 ← 合理</span><br></pre></td></tr></table></figure>
+
+<p><strong>问题 2：长文档天然有更高的词频</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">一篇 10000 字的文档，&quot;RAG&quot; 出现 5 次</span><br><span class="line">一篇 1000 字的文档，&quot;RAG&quot; 出现 5 次</span><br><span class="line"></span><br><span class="line">→ 1000 字文档更密集地讨论了 RAG，应该排在前面</span><br><span class="line">→ BM25 的文档长度归一化解决了这个问题</span><br></pre></td></tr></table></figure>
+
+<p><strong>BM25 公式（直观理解）</strong>：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">BM25(d, q) = Σ IDF(term) × [ TF(term, d) × (k1+1) / (TF(term, d) + k1 × (1-b+b×|d|/avgdl)) ]</span><br><span class="line"></span><br><span class="line">其中：</span><br><span class="line">  IDF(term)：词的重要性（&quot;的&quot;→不重要，&quot;RAG&quot;→重要）</span><br><span class="line">  TF(term, d)：词在文档 d 中出现次数（有饱和上限）</span><br><span class="line">  |d|/avgdl：文档相对平均文档的长度比</span><br><span class="line">  k1=1.5, b=0.75：经验参数</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>不需要记住公式。面试时说：<strong>“BM25 &#x3D; TF-IDF 的改良版，加了词频饱和和文档长度归一化”</strong> 就够了。</p>
+</blockquote>
+<h4 id="中文-BM25-需要分词"><a href="#中文-BM25-需要分词" class="headerlink" title="中文 BM25 需要分词"></a>中文 BM25 需要分词</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> jieba</span><br><span class="line"></span><br><span class="line"><span class="comment"># 英文天然空格分词</span></span><br><span class="line">text_en = <span class="string">&quot;What is Retrieval Augmented Generation?&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 中文需要先分词</span></span><br><span class="line">text_zh = <span class="string">&quot;什么是检索增强生成？&quot;</span></span><br><span class="line">tokens = <span class="built_in">list</span>(jieba.cut(text_zh))</span><br><span class="line"><span class="comment"># → [&#x27;什么&#x27;, &#x27;是&#x27;, &#x27;检索&#x27;, &#x27;增强&#x27;, &#x27;生成&#x27;, &#x27;？&#x27;]</span></span><br></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="4-3-混合检索-RRF-融合-——-工业界标配"><a href="#4-3-混合检索-RRF-融合-——-工业界标配" class="headerlink" title="4.3 混合检索 + RRF 融合 —— 工业界标配"></a>4.3 混合检索 + RRF 融合 —— 工业界标配</h3><h4 id="为什么要混合"><a href="#为什么要混合" class="headerlink" title="为什么要混合"></a>为什么要混合</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">示例查询: &quot;LLM Agent 的任务分解怎么做？&quot;</span><br><span class="line"></span><br><span class="line">向量检索 Top-5:</span><br><span class="line">  1. &quot;Agent 系统的规划与执行机制...&quot;        ← 语义相关</span><br><span class="line">  2. &quot;大语言模型驱动的自主智能体研究...&quot;      ← 语义相关</span><br><span class="line">  3. &quot;Task Planning in Autonomous...&quot;     ← 语义相关</span><br><span class="line">  4. &quot;基于 LLM 的多智能体协作框架...&quot;       ← 语义相关</span><br><span class="line">  5. &quot;Prompt Engineering 最佳实践...&quot;      ← 语义相关但内容不匹配</span><br><span class="line"></span><br><span class="line">BM25 Top-5:</span><br><span class="line">  1. &quot;任务分解（Task Decomposition）是...&quot; ← 精确命中&quot;任务分解&quot;!</span><br><span class="line">  2. &quot;分解复杂任务为子任务的三种方法...&quot;     ← 精确命中!</span><br><span class="line">  3. &quot;LLM Agent 的核心组件包括...&quot;         ← 命中&quot;LLM Agent&quot;</span><br><span class="line">  4. ...</span><br><span class="line">  5. ...</span><br><span class="line"></span><br><span class="line">→ 向量检索的结果都相关但&quot;泛&quot;，BM25 精准命中了&quot;任务分解&quot;</span><br><span class="line">→ 合并后，用户真正要的内容排在更前面</span><br></pre></td></tr></table></figure>
+
+<h4 id="RRF（Reciprocal-Rank-Fusion）——-怎么合并两路结果"><a href="#RRF（Reciprocal-Rank-Fusion）——-怎么合并两路结果" class="headerlink" title="RRF（Reciprocal Rank Fusion）—— 怎么合并两路结果"></a>RRF（Reciprocal Rank Fusion）—— 怎么合并两路结果</h4><p><strong>核心思想</strong>：不管原始分数是多少，只看排名。在多路中都排名靠前的文档，最终得分高。</p>
+<p><strong>RRF 公式</strong>：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">RRF(d) = Σ 1/(k + rank_i(d))</span><br><span class="line"></span><br><span class="line">其中：</span><br><span class="line">  k = 60（平滑常数，防止第 1 名权重过高）</span><br><span class="line">  rank_i(d) = 文档 d 在第 i 路检索中的排名（从 0 开始）</span><br></pre></td></tr></table></figure>
+
+<p><strong>直观例子</strong>：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">文档 A: 向量检索排第 1，BM25 排第 3</span><br><span class="line">  RRF(A) = 1/(60+0) + 1/(60+2) = 0.0167 + 0.0161 = 0.0328</span><br><span class="line"></span><br><span class="line">文档 B: 向量检索排第 5，BM25 排第 1</span><br><span class="line">  RRF(B) = 1/(60+4) + 1/(60+0) = 0.0156 + 0.0167 = 0.0323</span><br><span class="line"></span><br><span class="line">文档 C: 只在向量检索排第 10，BM25 未进 Top-20</span><br><span class="line">  RRF(C) = 1/(60+9) + 0 = 0.0145</span><br><span class="line"></span><br><span class="line">最终排序: A &gt; B &gt; C ✅</span><br><span class="line">→ A 在多路中都靠前，综合得分最高</span><br></pre></td></tr></table></figure>
+
+<p><strong>RRF vs 简单分数加权</strong>：</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th align="center">简单加权（如 0.7×向量分 + 0.3×BM25分）</th>
+<th align="center">RRF</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>需要调参</td>
+<td align="center">⚠️ 权重需要反复试</td>
+<td align="center">✅ 只有 k 一个参数，默认 60 通用</td>
+</tr>
+<tr>
+<td>分数量纲问题</td>
+<td align="center">⚠️ 向量分 [0,1]，BM25 分 [0, 100+]</td>
+<td align="center">✅ 只看排名，量纲无关</td>
+</tr>
+<tr>
+<td>稳定性</td>
+<td align="center">中等</td>
+<td align="center"><strong>高</strong>（基于排名，不受异常高分影响）</td>
+</tr>
+</tbody></table>
+<p><strong>代码实现</strong>：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">reciprocal_rank_fusion</span>(<span class="params">results: <span class="built_in">list</span>[<span class="built_in">list</span>], k=<span class="number">60</span></span>):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;RRF 排序融合。results 是多路检索结果，每路已按得分降序排列。&quot;&quot;&quot;</span></span><br><span class="line">    fused_scores = &#123;&#125;</span><br><span class="line">    <span class="keyword">for</span> docs <span class="keyword">in</span> results:</span><br><span class="line">        <span class="keyword">for</span> rank, doc <span class="keyword">in</span> <span class="built_in">enumerate</span>(docs):</span><br><span class="line">            doc_str = dumps(doc)</span><br><span class="line">            <span class="keyword">if</span> doc_str <span class="keyword">not</span> <span class="keyword">in</span> fused_scores:</span><br><span class="line">                fused_scores[doc_str] = <span class="number">0</span></span><br><span class="line">            fused_scores[doc_str] += <span class="number">1</span> / (rank + k)</span><br><span class="line"></span><br><span class="line">    reranked = <span class="built_in">sorted</span>(fused_scores.items(), key=<span class="keyword">lambda</span> x: x[<span class="number">1</span>], reverse=<span class="literal">True</span>)</span><br><span class="line">    <span class="keyword">return</span> [(loads(doc), score) <span class="keyword">for</span> doc, score <span class="keyword">in</span> reranked]</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="4-4-Rerank-精排-——-把”差不多”变成”就是它”"><a href="#4-4-Rerank-精排-——-把”差不多”变成”就是它”" class="headerlink" title="4.4 Rerank 精排 —— 把”差不多”变成”就是它”"></a>4.4 Rerank 精排 —— 把”差不多”变成”就是它”</h3><h4 id="Bi-Encoder-vs-Cross-Encoder"><a href="#Bi-Encoder-vs-Cross-Encoder" class="headerlink" title="Bi-Encoder vs Cross-Encoder"></a>Bi-Encoder vs Cross-Encoder</h4><p>这是理解 Rerank 的核心概念：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">Bi-Encoder（向量检索）:</span><br><span class="line">  问题 → Encoder → 向量 q</span><br><span class="line">  文档 → Encoder → 向量 d       ← 问题和文档分别独立编码！</span><br><span class="line">  similarity(q, d) → 分数</span><br><span class="line"></span><br><span class="line">  快：文档向量可以预先算好存着</span><br><span class="line">  不准：问题和文档没有&quot;交互&quot;，丢失了细粒度匹配信息</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">Cross-Encoder（Reranker）:</span><br><span class="line">  [问题 + 文档] → Encoder → 分数  ← 问题和文档拼在一起，同时过模型！</span><br><span class="line"></span><br><span class="line">  准：问题和文档在 Transformer 每一层都做 Attention 交互</span><br><span class="line">  慢：每次都要把问题+文档重新跑一遍模型，无法预计算</span><br></pre></td></tr></table></figure>
+
+<p><strong>两者的分工</strong>：</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Bi-Encoder</th>
+<th>Cross-Encoder</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>角色</strong></td>
+<td>粗排（Recall）</td>
+<td><strong>精排（Rerank）</strong></td>
+</tr>
+<tr>
+<td><strong>处理量</strong></td>
+<td>全库 10000+</td>
+<td>Top-20~50 候选</td>
+</tr>
+<tr>
+<td><strong>速度</strong></td>
+<td>快（~10ms）</td>
+<td>慢（~200ms &#x2F; 20 对）</td>
+</tr>
+<tr>
+<td><strong>精度</strong></td>
+<td>中</td>
+<td><strong>高</strong></td>
+</tr>
+<tr>
+<td><strong>代表模型</strong></td>
+<td>BGE-M3, OpenAI Embedding</td>
+<td>Cohere Rerank, bge-reranker-v2-m3</td>
+</tr>
+<tr>
+<td><strong>费用</strong></td>
+<td>API 调用 &#x2F; 本地推理</td>
+<td>API 调用 &#x2F; 本地推理</td>
+</tr>
+</tbody></table>
+<p><strong>为什么不全用 Cross-Encoder</strong>：全库 10000 篇，每篇都要和问题拼在一起跑一遍模型——太慢太贵。所以先用 Bi-Encoder 快速捞 20 个候选，再用 Cross-Encoder 精细挑出最好的 5 个。</p>
+<h4 id="代码"><a href="#代码" class="headerlink" title="代码"></a>代码</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> langchain.retrievers <span class="keyword">import</span> ContextualCompressionRetriever</span><br><span class="line"><span class="keyword">from</span> langchain.retrievers.document_compressors <span class="keyword">import</span> CohereRerank</span><br><span class="line"></span><br><span class="line"><span class="comment"># 粗排: 向量检索，取 Top-20</span></span><br><span class="line">retriever = vectorstore.as_retriever(search_kwargs=&#123;<span class="string">&quot;k&quot;</span>: <span class="number">20</span>&#125;)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 精排: Cross-Encoder Reranker</span></span><br><span class="line">compressor = CohereRerank()</span><br><span class="line">compression_retriever = ContextualCompressionRetriever(</span><br><span class="line">    base_compressor=compressor,</span><br><span class="line">    base_retriever=retriever</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 一次调用：粗排 → 精排 → 返回 Top-5</span></span><br><span class="line">docs = compression_retriever.get_relevant_documents(<span class="string">&quot;What is task decomposition?&quot;</span>)</span><br></pre></td></tr></table></figure>
+
+<h4 id="本地-Reranker（免费，推荐）"><a href="#本地-Reranker（免费，推荐）" class="headerlink" title="本地 Reranker（免费，推荐）"></a>本地 Reranker（免费，推荐）</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> FlagEmbedding <span class="keyword">import</span> FlagReranker</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">LocalReranker</span>:</span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self</span>):</span><br><span class="line">        <span class="variable language_">self</span>.model = FlagReranker(</span><br><span class="line">            <span class="string">&quot;BAAI/bge-reranker-v2-m3&quot;</span>,</span><br><span class="line">            use_fp16=<span class="literal">True</span></span><br><span class="line">        )</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">rerank</span>(<span class="params">self, query, candidates, top_k=<span class="number">5</span></span>):</span><br><span class="line">        pairs = [[query, c.page_content] <span class="keyword">for</span> c <span class="keyword">in</span> candidates]</span><br><span class="line">        scores = <span class="variable language_">self</span>.model.compute_score(pairs)</span><br><span class="line">        <span class="keyword">for</span> c, s <span class="keyword">in</span> <span class="built_in">zip</span>(candidates, scores):</span><br><span class="line">            c.metadata[<span class="string">&quot;rerank_score&quot;</span>] = <span class="built_in">float</span>(s)</span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">sorted</span>(candidates, key=<span class="keyword">lambda</span> x: x.metadata[<span class="string">&quot;rerank_score&quot;</span>], reverse=<span class="literal">True</span>)[:top_k]</span><br></pre></td></tr></table></figure>
+
+<hr>
+<blockquote>
+<p>📖 延伸阅读：</p>
+<ul>
+<li><a href="/2026/07/19/rag/02-%E6%9F%A5%E8%AF%A2%E5%8F%98%E6%8D%A2%E7%AF%87/">02 查询变换篇 — Multi Query &#x2F; RAG-Fusion &#x2F; Decomposition &#x2F; Step Back &#x2F; HyDE</a> — 检索前先改造问题：多角度查询、RRF 融合排序、问题分解、退一步问、假设文档嵌入</li>
+<li><a href="/2026/07/16/rag/05-%E9%AB%98%E7%BA%A7%E6%A3%80%E7%B4%A2%E7%AF%87/">05 高级检索与生成篇 — CRAG &#x2F; Self-RAG &#x2F; Long Context</a> — 检索结果不可信怎么办？CRAG 自动评估+补救、Self-RAG 逐句自省、Long Context 与 RAG 的互补关系</li>
+</ul>
+</blockquote>
+<h2 id="五、Generation-深度拆解"><a href="#五、Generation-深度拆解" class="headerlink" title="五、Generation 深度拆解"></a>五、Generation 深度拆解</h2><h3 id="5-1-RAG-的标准-Prompt-模板"><a href="#5-1-RAG-的标准-Prompt-模板" class="headerlink" title="5.1 RAG 的标准 Prompt 模板"></a>5.1 RAG 的标准 Prompt 模板</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> langchain <span class="keyword">import</span> hub</span><br><span class="line">prompt = hub.pull(<span class="string">&quot;rlm/rag-prompt&quot;</span>)</span><br></pre></td></tr></table></figure>
+
+<p>模板内容：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">You are an assistant for question-answering tasks.</span><br><span class="line">Use the following pieces of retrieved context to answer the question.</span><br><span class="line">If you don&#x27;t know the answer, just say that you don&#x27;t know.</span><br><span class="line">Use three sentences maximum and keep the answer concise.</span><br><span class="line"></span><br><span class="line">Question: &#123;question&#125;</span><br><span class="line">Context: &#123;context&#125;</span><br><span class="line">Answer:</span><br></pre></td></tr></table></figure>
+
+<p><strong>四个关键设计点</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>设计点</th>
+<th>作用</th>
+<th>不写的后果</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>&quot;Use the following pieces of retrieved context&quot;</code></td>
+<td>约束 LLM <strong>只用</strong>检索结果回答</td>
+<td>LLM 用自己的训练知识回答 → RAG 形同虚设</td>
+</tr>
+<tr>
+<td><code>&quot;If you don&#39;t know, say you don&#39;t know&quot;</code></td>
+<td><strong>防幻觉</strong>，强迫 LLM 承认不知道</td>
+<td>检索不到时 LLM 开始编造 → 答案看似合理实则全错</td>
+</tr>
+<tr>
+<td><code>&quot;Use three sentences maximum&quot;</code></td>
+<td>控制输出长度</td>
+<td>回答冗长，Token 浪费</td>
+</tr>
+<tr>
+<td>Context 在前、Question 在后</td>
+<td>LLM 先读材料再回答问题</td>
+<td>注意力分布不对，可能忽略 Context</td>
+</tr>
+</tbody></table>
+<h3 id="5-2-自建-Prompt-模板"><a href="#5-2-自建-Prompt-模板" class="headerlink" title="5.2 自建 Prompt 模板"></a>5.2 自建 Prompt 模板</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> langchain.prompts <span class="keyword">import</span> ChatPromptTemplate</span><br><span class="line"></span><br><span class="line">template = <span class="string">&quot;&quot;&quot;Answer the question based only on the following context:</span></span><br><span class="line"><span class="string">&#123;context&#125;</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">Question: &#123;question&#125;</span></span><br><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line">prompt = ChatPromptTemplate.from_template(template)</span><br></pre></td></tr></table></figure>
+
+<h3 id="5-3-format-docs：拼合检索结果"><a href="#5-3-format-docs：拼合检索结果" class="headerlink" title="5.3 format_docs：拼合检索结果"></a>5.3 format_docs：拼合检索结果</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">format_docs</span>(<span class="params">docs</span>):</span><br><span class="line">    <span class="keyword">return</span> <span class="string">&quot;\n\n&quot;</span>.join(doc.page_content <span class="keyword">for</span> doc <span class="keyword">in</span> docs)</span><br></pre></td></tr></table></figure>
+
+<p>把多个 Document 对象拼成一个大字符串，填入 Prompt 的 <code>&#123;context&#125;</code> 占位符。这是 RAG Chain 的关键一环。</p>
+<h3 id="5-4-LCEL-Chain-的数据流"><a href="#5-4-LCEL-Chain-的数据流" class="headerlink" title="5.4 LCEL Chain 的数据流"></a>5.4 LCEL Chain 的数据流</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">rag_chain = (</span><br><span class="line">    &#123;<span class="string">&quot;context&quot;</span>: retriever | format_docs, <span class="string">&quot;question&quot;</span>: RunnablePassthrough()&#125;</span><br><span class="line">    | prompt</span><br><span class="line">    | llm</span><br><span class="line">    | StrOutputParser()</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">用户输入: &quot;What is Task Decomposition?&quot;</span><br><span class="line">    ↓</span><br><span class="line">&#123;&quot;context&quot;: retriever | format_docs, &quot;question&quot;: RunnablePassthrough()&#125;</span><br><span class="line">    │                    │</span><br><span class="line">    │                    └── &quot;question&quot; → 原样传递用户输入</span><br><span class="line">    │</span><br><span class="line">    └── &quot;context&quot; → retriever 检索文档 → format_docs 拼成文本</span><br><span class="line">    ↓</span><br><span class="line">Prompt 模板填入 context + question</span><br><span class="line">    ↓</span><br><span class="line">LLM 生成答案</span><br><span class="line">    ↓</span><br><span class="line">StrOutputParser 提取纯文本</span><br></pre></td></tr></table></figure>
+
+<p><strong>LCEL 核心符号 <code>|</code></strong>：类似 Unix 管道，左边输出 &#x3D; 右边输入。<code>retriever | format_docs</code> &#x3D; 检索结果传给格式化函数。</p>
+<hr>
+<h2 id="六、完整检索流程与性能基准"><a href="#六、完整检索流程与性能基准" class="headerlink" title="六、完整检索流程与性能基准"></a>六、完整检索流程与性能基准</h2><h3 id="6-1-三阶段检索流水线"><a href="#6-1-三阶段检索流水线" class="headerlink" title="6.1 三阶段检索流水线"></a>6.1 三阶段检索流水线</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">            用户问题</span><br><span class="line">               ↓</span><br><span class="line">┌──────────────────────────┐</span><br><span class="line">│  Phase 1: 召回（Recall）  │  向量检索 Top-50 + BM25 Top-50</span><br><span class="line">│  延迟: ~50ms              │  → RRF 融合 → ~60 候选</span><br><span class="line">└──────────────┬───────────┘</span><br><span class="line">               ↓</span><br><span class="line">┌──────────────────────────┐</span><br><span class="line">│  Phase 2: 精排（Rerank）  │  Cross-Encoder 逐对打分 60 → 10</span><br><span class="line">│  延迟: ~150ms             │  占全链路延迟的 ~50%</span><br><span class="line">└──────────────┬───────────┘</span><br><span class="line">               ↓</span><br><span class="line">┌──────────────────────────┐</span><br><span class="line">│  Phase 3: 上下文组装      │  截断到 3-8 chunks（~4000 tokens）</span><br><span class="line">│  延迟: ~20ms              │  拼接 Prompt → LLM 生成</span><br><span class="line">└──────────────┬───────────┘</span><br><span class="line">               ↓</span><br><span class="line">           LLM 生成答案</span><br><span class="line">           延迟: ~120ms</span><br></pre></td></tr></table></figure>
+
+<h3 id="6-2-性能基准（10000-文档知识库）"><a href="#6-2-性能基准（10000-文档知识库）" class="headerlink" title="6.2 性能基准（10000 文档知识库）"></a>6.2 性能基准（10000 文档知识库）</h3><table>
+<thead>
+<tr>
+<th>方案</th>
+<th align="center">Recall@5</th>
+<th align="center">MRR</th>
+<th align="center">平均正确答案排名</th>
+<th align="center">全链路延迟</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>纯向量检索</td>
+<td align="center">72%</td>
+<td align="center">0.58</td>
+<td align="center">4.2</td>
+<td align="center">~200ms</td>
+</tr>
+<tr>
+<td>纯 BM25</td>
+<td align="center">68%</td>
+<td align="center">0.52</td>
+<td align="center">5.1</td>
+<td align="center">~50ms</td>
+</tr>
+<tr>
+<td>混合检索（向量 + BM25 + RRF）</td>
+<td align="center">79%</td>
+<td align="center">0.66</td>
+<td align="center">3.3</td>
+<td align="center">~250ms</td>
+</tr>
+<tr>
+<td>混合 + Rerank</td>
+<td align="center"><strong>88%</strong></td>
+<td align="center"><strong>0.78</strong></td>
+<td align="center"><strong>1.8</strong></td>
+<td align="center">~400ms</td>
+</tr>
+<tr>
+<td>混合 + Rerank + 查询变换（02章）</td>
+<td align="center">91%</td>
+<td align="center">0.82</td>
+<td align="center">1.5</td>
+<td align="center">~600ms</td>
+</tr>
+</tbody></table>
+<h3 id="6-3-延迟占比"><a href="#6-3-延迟占比" class="headerlink" title="6.3 延迟占比"></a>6.3 延迟占比</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Rerank（Cross-Encoder）:  ██████████████████████████████ 50% (~150ms)</span><br><span class="line">LLM 生成:                 ██████████████████ 35% (~120ms)</span><br><span class="line">向量 + BM25 检索:         ██████████ 15% (~50ms)</span><br><span class="line">上下文组装:               █ 3% (~10ms)</span><br></pre></td></tr></table></figure>
+
+<h3 id="6-4-召回率提升路线"><a href="#6-4-召回率提升路线" class="headerlink" title="6.4 召回率提升路线"></a>6.4 召回率提升路线</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">60% ────────────── 做好 Chunking（上下文分块 + 合理大小）</span><br><span class="line">  │</span><br><span class="line">75% ────────────── 加上混合检索（向量 + BM25）</span><br><span class="line">  │</span><br><span class="line">85% ────────────── 加上 Reranker ← &quot;先做到这里，再考虑是否继续投入&quot;</span><br><span class="line">  │                        ↳ 详见 05 高级检索与生成篇</span><br><span class="line">90% ────────────── 加上查询变换（Multi Query / HyDE）</span><br><span class="line">  │                        ↳ 详见 02 查询变换篇</span><br><span class="line">93%+ ───────────── 高级索引（RAPTOR / ColBERT）+ Prompt 优化</span><br><span class="line">                           ↳ 详见 04 高级索引篇</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p><strong>核心建议</strong>：从 60% 到 85% 相对容易（做好 Chunking + 混合检索 + Reranker）；85% 到 90%+ 每提升一个点都需要大量调优。<strong>先做到 85%，再根据业务需求决定是否继续投入。</strong></p>
+</blockquote>
+<hr>
+<h2 id="七、多模态-RAG-——-图片-表格-视频怎么被检索到"><a href="#七、多模态-RAG-——-图片-表格-视频怎么被检索到" class="headerlink" title="七、多模态 RAG —— 图片&#x2F;表格&#x2F;视频怎么被检索到"></a>七、多模态 RAG —— 图片&#x2F;表格&#x2F;视频怎么被检索到</h2><p>面试官问”图片、表格怎么处理”，是在考你<strong>半结构化数据的 Indexing 策略</strong>。</p>
+<h3 id="7-1-核心思路：Indexing-时统一成文本模态"><a href="#7-1-核心思路：Indexing-时统一成文本模态" class="headerlink" title="7.1 核心思路：Indexing 时统一成文本模态"></a>7.1 核心思路：Indexing 时统一成文本模态</h3><p>图和表不能直接向量化——必须在 Indexing 阶段用 Vision LLM 把它们转成文字描述，再用描述向量去检索。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">             原始文档（含文字 + 图片 + 表格）</span><br><span class="line">                        │</span><br><span class="line">      ┌─────────────────┼─────────────────┐</span><br><span class="line">      ↓                 ↓                  ↓</span><br><span class="line">   文本部分           图片/图表            表格</span><br><span class="line">直接 chunk           LLM 生成描述       转 Markdown</span><br><span class="line">      ↓                 ↓                  ↓</span><br><span class="line">  Embedding          Embedding          Embedding</span><br><span class="line">      ↓                 ↓                  ↓</span><br><span class="line">             全部存入同一个向量库</span><br><span class="line">      │                 │                  │</span><br><span class="line">      └─────────────────┴──────────────────┘</span><br><span class="line">              检索时统一用文本向量匹配</span><br></pre></td></tr></table></figure>
+
+<h3 id="7-2-不同文件类型处理速查"><a href="#7-2-不同文件类型处理速查" class="headerlink" title="7.2 不同文件类型处理速查"></a>7.2 不同文件类型处理速查</h3><table>
+<thead>
+<tr>
+<th>文件类型</th>
+<th>怎么处理</th>
+<th>关键工具</th>
+<th>面试一句话</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>图片里的文字</strong></td>
+<td>OCR 提取 → 文本向量化</td>
+<td>Tesseract &#x2F; GPT-4V</td>
+<td>“先用 Vision 模型读图，转成文字再建索引”</td>
+</tr>
+<tr>
+<td><strong>图表&#x2F;架构图</strong></td>
+<td>LLM 生成文字描述 → 向量化</td>
+<td>GPT-4V &#x2F; Qwen2-VL</td>
+<td>“让模型描述图里有什么、表达了什么趋势”</td>
+</tr>
+<tr>
+<td><strong>PDF 表格</strong></td>
+<td>保留 Markdown 结构 → 整表向量化</td>
+<td>Unstructured</td>
+<td>“表格不切，保留完整结构作为一个 chunk”</td>
+</tr>
+<tr>
+<td><strong>PPT</strong></td>
+<td>每页 &#x3D; 文本 + 图片，分别处理</td>
+<td>Unstructured</td>
+<td>“一页 PPT 拆成文本和图片两路”</td>
+</tr>
+<tr>
+<td><strong>视频</strong></td>
+<td>音频转文字 + 关键帧截图 → 描述</td>
+<td>Whisper + GPT-4V</td>
+<td>“视频 &#x3D; 音频文案 + 关键画面描述”</td>
+</tr>
+</tbody></table>
+<h3 id="7-3-面试追问：为什么不等检索时再去读图？"><a href="#7-3-面试追问：为什么不等检索时再去读图？" class="headerlink" title="7.3 面试追问：为什么不等检索时再去读图？"></a>7.3 面试追问：为什么不等检索时再去读图？</h3><blockquote>
+<p>“因为检索时只有用户问题的向量，没法直接和图片像素做相似度匹配。必须在 Indexing 阶段提前把图&#x2F;表转成文字，让它们也能被搜到。多模态 RAG 的本质就是——<strong>Indexing 时把一切统一成文本模态</strong>。”</p>
+</blockquote>
+<h3 id="7-4-实际索引结构"><a href="#7-4-实际索引结构" class="headerlink" title="7.4 实际索引结构"></a>7.4 实际索引结构</h3><figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;vector&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span><span class="number">0.012</span><span class="punctuation">,</span> <span class="number">-0.034</span><span class="punctuation">,</span> ...<span class="punctuation">]</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;text&quot;</span><span class="punctuation">:</span> <span class="string">&quot;图1：2024年Q3营收趋势图，显示收入从50亿增长到62亿...&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;metadata&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">    <span class="attr">&quot;type&quot;</span><span class="punctuation">:</span> <span class="string">&quot;image&quot;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;source&quot;</span><span class="punctuation">:</span> <span class="string">&quot;财报2024Q3.pdf&quot;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;page&quot;</span><span class="punctuation">:</span> <span class="number">3</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;original_path&quot;</span><span class="punctuation">:</span> <span class="string">&quot;s3://docs/chart_q3.png&quot;</span></span><br><span class="line">  <span class="punctuation">&#125;</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+<p>检索命中后，LLM 拿到的是文字描述 + 原始图片路径，可以展示给用户。</p>
+<blockquote>
+<p>📖 延伸阅读：<a href="/2026/07/17/rag/04-%E9%AB%98%E7%BA%A7%E7%B4%A2%E5%BC%95%E7%AF%87/">04 高级索引篇 — Multi-representation Indexing</a> — 多表征索引的核心应用场景：用摘要向量检索 + 返回原文全文，特别适合包含大量图片&#x2F;表格的长文档</p>
+</blockquote>
+<hr>
+<h2 id="八、RAG-vs-Fine-tuning-——-什么时候用什么"><a href="#八、RAG-vs-Fine-tuning-——-什么时候用什么" class="headerlink" title="八、RAG vs Fine-tuning —— 什么时候用什么"></a>八、RAG vs Fine-tuning —— 什么时候用什么</h2><h3 id="8-1-一句话区别"><a href="#8-1-一句话区别" class="headerlink" title="8.1 一句话区别"></a>8.1 一句话区别</h3><ul>
+<li><strong>RAG</strong> &#x3D; 考试带小抄（需要时查，考完扔）——知识在外面</li>
+<li><strong>Fine-tuning</strong> &#x3D; 考前死记硬背（记在脑子里）——知识在模型参数里</li>
+</ul>
+<h3 id="8-2-全景对比"><a href="#8-2-全景对比" class="headerlink" title="8.2 全景对比"></a>8.2 全景对比</h3><table>
+<thead>
+<tr>
+<th>维度</th>
+<th>RAG</th>
+<th>Fine-tuning</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>原理</strong></td>
+<td>检索外部文档 → 拼进 Prompt</td>
+<td>用标注数据继续训练 → 修改模型权重</td>
+</tr>
+<tr>
+<td><strong>知识存储</strong></td>
+<td>外部向量数据库</td>
+<td>模型参数内部</td>
+</tr>
+<tr>
+<td><strong>知识更新</strong></td>
+<td>更新文档 → 重建索引，<strong>分钟级</strong></td>
+<td>重新标注数据 → 重新训练，<strong>天~周级</strong></td>
+</tr>
+<tr>
+<td><strong>事实准确性</strong></td>
+<td><strong>高</strong>（有文档约束）</td>
+<td>中（可能用旧知识或编造）</td>
+</tr>
+<tr>
+<td><strong>答案可溯源</strong></td>
+<td>✅ 知道来自哪篇文档</td>
+<td>❌ 无法追溯</td>
+</tr>
+<tr>
+<td><strong>延迟</strong></td>
+<td>多 100~500ms（检索开销）</td>
+<td>无额外延迟</td>
+</tr>
+<tr>
+<td><strong>成本</strong></td>
+<td>API 调用付费（低）</td>
+<td>GPU 训练 + 数据标注（高）</td>
+</tr>
+<tr>
+<td><strong>数据需求</strong></td>
+<td>文档库（<strong>无需标注</strong>）</td>
+<td>标注数据集（问题-标准答案对）</td>
+</tr>
+<tr>
+<td><strong>控制目标</strong></td>
+<td><strong>“说什么”</strong>（内容&#x2F;事实）</td>
+<td><strong>“怎么说”</strong>（风格&#x2F;格式&#x2F;语气）</td>
+</tr>
+<tr>
+<td><strong>幻觉风险</strong></td>
+<td><strong>低</strong>（有文档兜底）</td>
+<td>较高（可能自信地胡说）</td>
+</tr>
+</tbody></table>
+<h3 id="8-3-一张图决定选谁"><a href="#8-3-一张图决定选谁" class="headerlink" title="8.3 一张图决定选谁"></a>8.3 一张图决定选谁</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">你的需求是什么？</span><br><span class="line">├── 需要回答基于最新文档/私有知识 → RAG</span><br><span class="line">├── 需要知道&quot;答案依据是什么&quot; → RAG</span><br><span class="line">├── 数据频繁更新（如日报、新闻）→ RAG</span><br><span class="line">├── 想让模型学会特定的输出格式/语气 → Fine-tuning</span><br><span class="line">├── 想让模型掌握领域术语的用法（不是知识本身）→ Fine-tuning</span><br><span class="line">├── 对延迟极敏感（&lt; 100ms）→ Fine-tuning</span><br><span class="line">└── 预算有限、没有 GPU → RAG</span><br></pre></td></tr></table></figure>
+
+<h3 id="8-4-两者可以一起用"><a href="#8-4-两者可以一起用" class="headerlink" title="8.4 两者可以一起用"></a>8.4 两者可以一起用</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">用户问题</span><br><span class="line">  → Fine-tuned 模型理解问题（学会了领域术语和格式）</span><br><span class="line">  → RAG 检索相关文档</span><br><span class="line">  → Fine-tuned 模型基于文档生成答案（用领域风格组织语言）</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p><strong>“Fine-tuning 教模型怎么说，RAG 教模型说什么。两者互补，不是互斥。”</strong></p>
+</blockquote>
+<hr>
+<h2 id="九、面试速查"><a href="#九、面试速查" class="headerlink" title="九、面试速查"></a>九、面试速查</h2><p><strong>Q1：chunk_size 设多少合适？</strong></p>
+<blockquote>
+<p>从 500-1000 开始实验。太小（&lt;200）丢失上下文，太大（&gt;2000）引入噪音。加 10-20% overlap。关键技巧：<strong>上下文分块（拼接父标题路径），实测 Recall 从 41%→78%。</strong></p>
+</blockquote>
+<p><strong>Q2：图片&#x2F;表格能被 RAG 检索到吗？</strong></p>
+<blockquote>
+<p>能。Indexing 时用 Vision LLM 生成文字描述，用描述向量检索。命中后返回描述 + 原始文件路径。核心原则：Indexing 时把一切统一成文本模态。</p>
+</blockquote>
+<p><strong>Q3：RAG vs Fine-tuning 怎么选？</strong></p>
+<blockquote>
+<p>知识频繁更新、需要溯源 → RAG。需要特定格式&#x2F;风格、低延迟 → Fine-tuning。两者可互补：Fine-tuning 教”怎么说”，RAG 教”说什么”。</p>
+</blockquote>
+<p><strong>Q4：向量检索的局限？怎么解决？</strong></p>
+<blockquote>
+<p>同义词&#x2F;缩写匹配差。三步解决：① 混合检索（向量 + BM25）→ Recall +7%；② Reranker 精排（Cross-Encoder）→ Recall +9%；③ 查询变换（HyDE &#x2F; Multi Query，02章）→ Recall +3%。</p>
+</blockquote>
+<p><strong>Q5：为什么不全用 Cross-Encoder 做检索？</strong></p>
+<blockquote>
+<p>全库 10000 篇每篇都要和问题拼在一起跑模型，太慢太贵。Bi-Encoder 快速捞候选（粗排），Cross-Encoder 精细挑（精排），是工业界标准做法。</p>
+</blockquote>
+<p><strong>Q6：RRF 融合比简单加权好在哪里？</strong></p>
+<blockquote>
+<p>不需要调权重（只有 k 一个参数），不受分数量纲影响（向量分 [0,1]，BM25 分可以几百），基于排名更稳定。</p>
+</blockquote>
+<p><strong>Q7：RAG 系统的性能瓶颈在哪？</strong></p>
+<blockquote>
+<p>Rerank（Cross-Encoder）占全链路延迟 ~50%，是最重的一步。优化方向：① 减少候选数（20 而非 50）；② 批量推理（多对同时打分）；③ 换更快的 Reranker 模型。</p>
+</blockquote>
+<hr>
+<h2 id="十、本节掌握要点"><a href="#十、本节掌握要点" class="headerlink" title="十、本节掌握要点"></a>十、本节掌握要点</h2><table>
+<thead>
+<tr>
+<th>必须掌握</th>
+<th>加分项</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>✅ Indexing → Retrieval → Generation 三步流水线</td>
+<td>✅ 上下文分块（拼接父标题）及其 Recall 提升数据</td>
+</tr>
+<tr>
+<td>✅ RecursiveCharacterTextSplitter 的工作原理</td>
+<td>✅ BM25 比 TF-IDF 好在哪（词频饱和 + 长度归一化）</td>
+</tr>
+<tr>
+<td>✅ chunk_size &#x2F; chunk_overlap 的选择依据</td>
+<td>✅ RRF 公式和为什么比加权好</td>
+</tr>
+<tr>
+<td>✅ Embedding 的本质（文字→向量→距离&#x3D;语义相似度）</td>
+<td>✅ Bi-Encoder vs Cross-Encoder 的架构差异</td>
+</tr>
+<tr>
+<td>✅ K 值（4-10）和 search_type 的选择</td>
+<td>✅ 三阶段检索流水线的延迟占比</td>
+</tr>
+<tr>
+<td>✅ Prompt 模板的三要素（只用 Context、不知道就说、限制长度）</td>
+<td>✅ 不同文档类型的 Chunking 策略</td>
+</tr>
+<tr>
+<td>✅ 多模态统一成文本模态的核心思路</td>
+<td>✅ 召回率提升路线图（60%→85%→90%+）</td>
+</tr>
+<tr>
+<td>✅ RAG vs Fine-tuning 的核心区别</td>
+<td>✅ RAG + Fine-tuning 互补方案</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="系列文章导航-1"><a href="#系列文章导航-1" class="headerlink" title="系列文章导航"></a>系列文章导航</h2><table>
+<thead>
+<tr>
+<th align="center">篇</th>
+<th>文章</th>
+<th>核心内容</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center"><strong>01</strong></td>
+<td><strong>基础篇（本文）</strong></td>
+<td>Indexing &#x2F; Chunking &#x2F; Embedding &#x2F; 混合检索 &#x2F; Rerank &#x2F; Generation</td>
+</tr>
+<tr>
+<td align="center"><a href="/2026/07/19/rag/02-%E6%9F%A5%E8%AF%A2%E5%8F%98%E6%8D%A2%E7%AF%87/">02</a></td>
+<td>查询变换篇</td>
+<td>Multi Query &#x2F; RAG-Fusion &#x2F; Decomposition &#x2F; Step Back &#x2F; HyDE</td>
+</tr>
+<tr>
+<td align="center"><a href="/2026/07/18/rag/03-%E8%B7%AF%E7%94%B1%E7%AF%87/">03</a></td>
+<td>路由与查询构造篇</td>
+<td>逻辑路由 &#x2F; 语义路由 &#x2F; Query Structuring</td>
+</tr>
+<tr>
+<td align="center"><a href="/2026/07/17/rag/04-%E9%AB%98%E7%BA%A7%E7%B4%A2%E5%BC%95%E7%AF%87/">04</a></td>
+<td>高级索引篇</td>
+<td>Multi-representation &#x2F; RAPTOR &#x2F; ColBERT</td>
+</tr>
+<tr>
+<td align="center"><a href="/2026/07/16/rag/05-%E9%AB%98%E7%BA%A7%E6%A3%80%E7%B4%A2%E7%AF%87/">05</a></td>
+<td>高级检索与生成篇</td>
+<td>Re-ranking &#x2F; CRAG &#x2F; Self-RAG &#x2F; Long Context vs RAG</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>下一篇：<a href="/2026/07/19/rag/02-%E6%9F%A5%E8%AF%A2%E5%8F%98%E6%8D%A2%E7%AF%87/">RAG 02：查询变换篇 — Multi Query &#x2F; RAG-Fusion &#x2F; Decomposition &#x2F; Step Back &#x2F; HyDE</a></p>
+<p>系列总览：<a href="/2026/07/21/rag/00-%E7%B3%BB%E5%88%97%E6%80%BB%E8%A7%88/">RAG 从零到一系列（18 课）</a></p>
+<p>📖 面试背诵：<a href="/2026/07/08/AI-Agent-%E9%9D%A2%E8%AF%95%E9%A2%98%E5%BA%93-%E6%8C%89%E7%9F%A5%E8%AF%86%E9%A2%86%E5%9F%9F%E5%88%86%E7%B1%BB/#%E5%9B%9Brag-%E4%B8%8E%E7%9F%A5%E8%AF%86%E6%A3%80%E7%B4%A2">RAG 面试 7 题</a></p>
+</blockquote>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>Author: </span><span class="post-copyright-info"><a href="http://example.com">david</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>Link: </span><span class="post-copyright-info"><a href="http://example.com/2026/07/20/rag/01-%E5%9F%BA%E7%A1%80%E7%AF%87/">http://example.com/2026/07/20/rag/01-%E5%9F%BA%E7%A1%80%E7%AF%87/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>Copyright Notice: </span><span class="post-copyright-info">All articles on this blog are licensed under <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> unless otherwise stated.</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E9%9D%A2%E8%AF%95/">面试</a><a class="post-meta__tags" href="/tags/AI/">AI</a><a class="post-meta__tags" href="/tags/LangChain/">LangChain</a><a class="post-meta__tags" href="/tags/%E5%90%91%E9%87%8F%E6%A3%80%E7%B4%A2/">向量检索</a><a class="post-meta__tags" href="/tags/Reranker/">Reranker</a><a class="post-meta__tags" href="/tags/ChromaDB/">ChromaDB</a><a class="post-meta__tags" href="/tags/Embedding/">Embedding</a><a class="post-meta__tags" href="/tags/Chunking/">Chunking</a><a class="post-meta__tags" href="/tags/%E6%B7%B7%E5%90%88%E6%A3%80%E7%B4%A2/">混合检索</a><a class="post-meta__tags" href="/tags/BM25/">BM25</a></div><div class="post-share"><div class="social-share" data-image="/img/butterfly-icon.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2026/07/21/rag/00-%E7%B3%BB%E5%88%97%E6%80%BB%E8%A7%88/" title="AI Python 学习 — RAG 从零到一系列"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">Previous</div><div class="info-item-2">AI Python 学习 — RAG 从零到一系列</div></div><div class="info-2"><div class="info-item-1">RAG 从零到一系列 基于 LangChain 官方 RAG From Scratch 课程，配套 YouTube 视频。5 篇文章按 5 个阶段组织，覆盖全部 18 个核心技术。从最基础的 Indexing → Retrieval → Generation 开始，逐步深入到查询变换、路由、高级索引、高级检索。   系列全景1234567891011121314151617181920212223242526┌────────────────────────────────────────────────────────────┐│                     RAG 从零到一 18 课                        │├────────────────────────────────────────────────────────────┤│                                                              ││  阶段一：基础 (Part 1-4)       阶段二：查询变换 (Part 5...</div></div></div></a><a class="pagination-related" href="/2026/07/19/rag/02-%E6%9F%A5%E8%AF%A2%E5%8F%98%E6%8D%A2%E7%AF%87/" title="RAG 02：查询变换篇 — 把问题变好，检索才能变准"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">Next</div><div class="info-item-2">RAG 02：查询变换篇 — 把问题变好，检索才能变准</div></div><div class="info-2"><div class="info-item-1">RAG 02：查询变换篇 — 把问题变好，检索才能变准 基于 RAG From Scratch Part 5-9。五种技术解决一个共同问题：用户问得不好 → 检索找不到 → 答案不对。在检索之前先改造问题。   零、本章速查表   技术 做什么 额外 LLM 调用 额外检索次数 适合场景 一句话    Multi Query 5 种不同问法各检索一次，合并去重 1 次 N 次 通用提升召回率 “多角度撒网，总能捞到鱼”   RAG-Fusion Multi Query + RRF 倒数排名融合 1 次 N 次 需要更好排序 “在多路中都靠前的，才是真正相关的”   Decomposition 复杂问题拆成子问题，逐个回答再合并 1 次 N 次 多步推理问题 “复杂问题拆开查，每个子问题都精准”   Step Back 生成更抽象的”后退问题”，补背景知识 1 次 1 次 需要先理解概念 “往上提一层，先搞懂概念再查细节”   HyDE LLM 编假答案，用假答案向量去检索 1 次 1 次 短问题、风格不匹配 “编个假答案去找真文档，假答案风格更像”   核心思想： 123❌ 用户...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>Related Articles</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/2026/07/21/rag/00-%E7%B3%BB%E5%88%97%E6%80%BB%E8%A7%88/" title="AI Python 学习 — RAG 从零到一系列"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-07-21</div><div class="info-item-2">AI Python 学习 — RAG 从零到一系列</div></div><div class="info-2"><div class="info-item-1">RAG 从零到一系列 基于 LangChain 官方 RAG From Scratch 课程，配套 YouTube 视频。5 篇文章按 5 个阶段组织，覆盖全部 18 个核心技术。从最基础的 Indexing → Retrieval → Generation 开始，逐步深入到查询变换、路由、高级索引、高级检索。   系列全景1234567891011121314151617181920212223242526┌────────────────────────────────────────────────────────────┐│                     RAG 从零到一 18 课                        │├────────────────────────────────────────────────────────────┤│                                                              ││  阶段一：基础 (Part 1-4)       阶段二：查询变换 (Part 5...</div></div></div></a><a class="pagination-related" href="/2026/07/19/rag/02-%E6%9F%A5%E8%AF%A2%E5%8F%98%E6%8D%A2%E7%AF%87/" title="RAG 02：查询变换篇 — 把问题变好，检索才能变准"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-07-19</div><div class="info-item-2">RAG 02：查询变换篇 — 把问题变好，检索才能变准</div></div><div class="info-2"><div class="info-item-1">RAG 02：查询变换篇 — 把问题变好，检索才能变准 基于 RAG From Scratch Part 5-9。五种技术解决一个共同问题：用户问得不好 → 检索找不到 → 答案不对。在检索之前先改造问题。   零、本章速查表   技术 做什么 额外 LLM 调用 额外检索次数 适合场景 一句话    Multi Query 5 种不同问法各检索一次，合并去重 1 次 N 次 通用提升召回率 “多角度撒网，总能捞到鱼”   RAG-Fusion Multi Query + RRF 倒数排名融合 1 次 N 次 需要更好排序 “在多路中都靠前的，才是真正相关的”   Decomposition 复杂问题拆成子问题，逐个回答再合并 1 次 N 次 多步推理问题 “复杂问题拆开查，每个子问题都精准”   Step Back 生成更抽象的”后退问题”，补背景知识 1 次 1 次 需要先理解概念 “往上提一层，先搞懂概念再查细节”   HyDE LLM 编假答案，用假答案向量去检索 1 次 1 次 短问题、风格不匹配 “编个假答案去找真文档，假答案风格更像”   核心思想： 123❌ 用户...</div></div></div></a><a class="pagination-related" href="/2026/07/16/rag/05-%E9%AB%98%E7%BA%A7%E6%A3%80%E7%B4%A2%E7%AF%87/" title="RAG 05：高级检索篇 — 让检索和生成形成闭环"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-07-16</div><div class="info-item-2">RAG 05：高级检索篇 — 让检索和生成形成闭环</div></div><div class="info-2"><div class="info-item-1">RAG 05：高级检索与生成篇 — 让检索和生成形成闭环 基于 RAG From Scratch Part 15-18。前面 01-04 都在优化”怎么检索得更准”。这一章更进一步：检索完了还敢不敢信？信错了怎么办？生成的内容有没有依据？ 和 04 篇的关系：04（高级索引）在 索引阶段 优化数据结构（Multi-representation &#x2F; RAPTOR &#x2F; ColBERT）→ 产出更高质量的候选 → 本章（05）拿到这些候选后，做精排（Re-ranking）、质量评估（CRAG）、逐句自省（Self-RAG）。04 是”源头优化”，05 是”末端校验”。实际项目中两者配合使用：先用 04 的技术建好索引，再用 05 的技术保证输出质量。   零、本章速查表   技术 做的判断 判断时机 核心机制 代价 一句话    Re-ranking Top-K 里谁更相关 检索后 Cross-Encoder 精排 多一轮模型推理（~150ms） “粗排捞候选，精排挑精华”   CRAG 检索结果能不能用 检索后、生成前 LLM 评估 → 补充&#x2F;切换 We...</div></div></div></a><a class="pagination-related" href="/2026/07/18/rag/03-%E8%B7%AF%E7%94%B1%E7%AF%87/" title="RAG 03：路由篇 — 不同问题走不同库"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-07-18</div><div class="info-item-2">RAG 03：路由篇 — 不同问题走不同库</div></div><div class="info-2"><div class="info-item-1">RAG 03：路由与查询构造篇 — 不同问题走不同库，元数据过滤缩小范围 基于 RAG From Scratch Part 10-11。解决两个问题：① 多个知识库，问题该查哪个？② 向量检索扫全库太慢，怎么缩小范围？   零、本章速查表   技术 做什么 判断方式 准确度 延迟 一句话    逻辑路由 LLM Function Calling 输出预设分类 → 路由到对应知识库 LLM 理解意图 高 慢（1 次 LLM 调用） “让 LLM 判断问题属于哪个库”   语义路由 问题向量 vs 各库描述向量比相似度 向量匹配 中 快（1 次 Embedding） “用向量相似度选最匹配的库”   Query Structuring 从问题中提取元数据过滤条件 → 检索时加 filter LLM 提取结构化字段 高 慢（1 次 LLM 调用） “把’2024年的’变成 WHERE year&#x3D;2024”   核心思想： 123❌ 所有问题 → 同一个向量库 → 全库扫描✅ 问题 → 路由判断 → 只查相关库 → 加元数据 filter → 精确结果   一、Routing（...</div></div></div></a><a class="pagination-related" href="/2026/07/07/rag/14-DDD%E6%9E%B6%E6%9E%84%E4%B8%8E%E5%88%86%E5%9D%97%E6%A3%80%E7%B4%A2%E7%AD%96%E7%95%A5/" title="RAG 14：DDD 架构与分块检索策略 — 六限界上下文 × 四种分块 × 四种检索"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-07-07</div><div class="info-item-2">RAG 14：DDD 架构与分块检索策略 — 六限界上下文 × 四种分块 × 四种检索</div></div><div class="info-2"><div class="info-item-1">RAG 14：DDD 架构与分块检索策略 接 13 篇的数据源分析。本文覆盖系统的架构设计（DDD 六限界上下文）和核心策略（四种分块 + 四种检索 + 路由层），这是面试中最能展示架构深度的部分。   零、本章速查表   层次 做什么 关键技术 面试关键词    DDD 架构 依赖倒置、六限界上下文 Port&#x2F;Adapter、Shared Kernel “Domain 层零外部依赖”   四种分块 不同数据类型不同切法 Semantic&#x2F;Section&#x2F;Field&#x2F;Row-to-NL “专利父子块联动”   四种检索 HyDE&#x2F;Query Structuring&#x2F;Hybrid&#x2F;Tool Router 各 KB 独立策略 “KB 类型决定策略”   路由层 LLM 判断意图→分发 KB→RRF 融合 Function Calling + RRF “跨库结果透明融合”    一、DDD 五层架构1.1 架构全景123456789101112131415161718192021222324┌────────────...</div></div></div></a><a class="pagination-related" href="/2026/07/15/rag/06-%E6%A3%80%E7%B4%A2%E5%A2%9E%E5%BC%BA%E5%AE%9E%E6%88%98/" title="RAG 06：检索增强实战 — Embedding &#x2F; ChromaDB &#x2F; Pipeline"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-07-15</div><div class="info-item-2">RAG 06：检索增强实战 — Embedding &#x2F; ChromaDB &#x2F; Pipeline</div></div><div class="info-2"><div class="info-item-1">RAG 06：检索增强实战 RAG（Retrieval-Augmented Generation）让 LLM 在回答问题前先”查资料”，解决知识过时、幻觉和缺乏私有数据三大痛点。本章从 RAG 架构全流程到 Embedding 原理、向量数据库实战，构建完整的 RAG Pipeline。   1. 什么是 RAG？1.1 为什么需要 RAG？LLM 有三大固有局限：    局限 问题 RAG 如何解决    知识过时 训练数据有截止日期，不知道最新信息 检索实时文档&#x2F;网页   幻觉 编造看似合理但错误的信息 基于真实文档生成回答   缺乏私有数据 不知道企业内部知识 连接内部知识库   1.2 RAG vs Fine-tuning   维度 RAG Fine-tuning    知识更新 实时更新文档即可 需要重新训练   成本 低（检索 + 推理） 高（GPU 训练）   可解释性 高（可以展示来源文档） 低（知识融入权重）   私有数据 天然支持 需构建训练集   适用场景 问答、知识库、客服 风格迁移、领域适应   选择建议： 需要”查资料再回答”用 RAG，需要...</div></div></div></a></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/butterfly-icon.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">david</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">151</div></a><a href="/tags/"><div class="headline">Tags</div><div class="length-num">348</div></a><a href="/categories/"><div class="headline">Categories</div><div class="length-num">28</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>Announcement</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>Contents</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#RAG-01%EF%BC%9A%E5%9F%BA%E7%A1%80%E7%AF%87-%E2%80%94-%E4%BB%8E%E9%9B%B6%E6%90%AD%E5%BB%BA-RAG%EF%BC%8C%E7%90%86%E8%A7%A3%E4%B8%89%E5%A4%A7%E6%A0%B8%E5%BF%83%E7%BB%84%E4%BB%B6"><span class="toc-number">1.</span> <span class="toc-text">RAG 01：基础篇 — 从零搭建 RAG，理解三大核心组件</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%9B%B6%E3%80%81RAG-%E7%B3%BB%E7%BB%9F%E5%85%A8%E6%99%AF%E5%9B%BE"><span class="toc-number">2.</span> <span class="toc-text">零、RAG 系统全景图</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%B3%BB%E5%88%97%E6%96%87%E7%AB%A0%E5%AF%BC%E8%88%AA"><span class="toc-number">2.1.</span> <span class="toc-text">系列文章导航</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E6%A0%B8%E5%BF%83%E9%80%9F%E6%9F%A5%E8%A1%A8"><span class="toc-number">3.</span> <span class="toc-text">一、核心速查表</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%8140-%E8%A1%8C%E4%BB%A3%E7%A0%81%E9%80%9F%E8%A7%88%EF%BC%9A%E5%AE%8C%E6%95%B4-RAG-%E7%B3%BB%E7%BB%9F"><span class="toc-number">4.</span> <span class="toc-text">二、40 行代码速览：完整 RAG 系统</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81Indexing-%E6%B7%B1%E5%BA%A6%E6%8B%86%E8%A7%A3"><span class="toc-number">5.</span> <span class="toc-text">三、Indexing 深度拆解</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-%E6%96%87%E6%A1%A3%E5%8A%A0%E8%BD%BD%EF%BC%88Document-Loader%EF%BC%89"><span class="toc-number">5.1.</span> <span class="toc-text">3.1 文档加载（Document Loader）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-Chunking-%E7%AD%96%E7%95%A5-%E2%80%94%E2%80%94-%E5%85%A8%E6%96%87%E6%9C%80%E5%85%B3%E9%94%AE%E7%9A%84%E5%86%B3%E7%AD%96"><span class="toc-number">5.2.</span> <span class="toc-text">3.2 Chunking 策略 —— 全文最关键的决策</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#3-2-1-%E5%A5%BD-Chunk-%E7%9A%84%E5%9B%9B%E5%A4%A7%E5%87%86%E5%88%99"><span class="toc-number">5.2.1.</span> <span class="toc-text">3.2.1 好 Chunk 的四大准则</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-2-2-%E4%BA%94%E7%A7%8D%E5%88%87%E5%88%86%E7%AD%96%E7%95%A5%E5%AF%B9%E6%AF%94"><span class="toc-number">5.2.2.</span> <span class="toc-text">3.2.2 五种切分策略对比</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-2-3-%E9%80%92%E5%BD%92%E5%88%86%E5%9D%97%EF%BC%9A%E5%B7%A5%E4%B8%9A%E7%95%8C%E9%BB%98%E8%AE%A4%E9%80%89%E6%8B%A9"><span class="toc-number">5.2.3.</span> <span class="toc-text">3.2.3 递归分块：工业界默认选择</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-2-4-%E4%B8%8A%E4%B8%8B%E6%96%87%E5%88%86%E5%9D%97%EF%BC%88Contextual-Chunking%EF%BC%89%E2%80%94%E2%80%94-%E9%9B%B6%E6%88%90%E6%9C%AC%E6%8F%90%E5%8D%87%E8%BF%91%E4%B8%80%E5%80%8D%E7%9A%84%E6%8A%80%E5%B7%A7"><span class="toc-number">5.2.4.</span> <span class="toc-text">3.2.4 上下文分块（Contextual Chunking）—— 零成本提升近一倍的技巧</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-2-5-%E4%B8%8D%E5%90%8C%E6%96%87%E6%A1%A3%E7%B1%BB%E5%9E%8B%E7%9A%84%E5%88%87%E6%B3%95%E9%80%9F%E6%9F%A5"><span class="toc-number">5.2.5.</span> <span class="toc-text">3.2.5 不同文档类型的切法速查</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-2-6-chunk-size-%E6%80%8E%E4%B9%88%E5%AE%9A-%E2%80%94%E2%80%94-%E9%9D%A2%E8%AF%95%E6%A0%87%E5%87%86%E5%9B%9E%E7%AD%94"><span class="toc-number">5.2.6.</span> <span class="toc-text">3.2.6 chunk_size 怎么定 —— 面试标准回答</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-%E5%90%91%E9%87%8F%E5%8C%96%EF%BC%88Embedding%EF%BC%89%E2%80%94%E2%80%94-%E6%96%87%E5%AD%97-%E2%86%92-%E6%95%B0%E5%AD%97"><span class="toc-number">5.3.</span> <span class="toc-text">3.3 向量化（Embedding）—— 文字 → 数字</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%9C%AC%E8%B4%A8"><span class="toc-number">5.3.1.</span> <span class="toc-text">本质</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%9B%B8%E4%BC%BC%E5%BA%A6%E8%AE%A1%E7%AE%97%EF%BC%88Cosine-Similarity%EF%BC%89"><span class="toc-number">5.3.2.</span> <span class="toc-text">相似度计算（Cosine Similarity）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%B8%B8%E7%94%A8-Embedding-%E6%A8%A1%E5%9E%8B%E9%80%9F%E6%9F%A5"><span class="toc-number">5.3.3.</span> <span class="toc-text">常用 Embedding 模型速查</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-4-%E5%90%91%E9%87%8F%E5%AD%98%E5%82%A8%EF%BC%88VectorStore%EF%BC%89"><span class="toc-number">5.4.</span> <span class="toc-text">3.4 向量存储（VectorStore）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81Retrieval-%E6%B7%B1%E5%BA%A6%E6%8B%86%E8%A7%A3"><span class="toc-number">6.</span> <span class="toc-text">四、Retrieval 深度拆解</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-%E5%90%91%E9%87%8F%E6%A3%80%E7%B4%A2%EF%BC%88Dense-Retrieval%EF%BC%89"><span class="toc-number">6.1.</span> <span class="toc-text">4.1 向量检索（Dense Retrieval）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-BM25-%E5%85%B3%E9%94%AE%E8%AF%8D%E6%A3%80%E7%B4%A2%EF%BC%88Sparse-Retrieval%EF%BC%89%E2%80%94%E2%80%94-%E8%A1%A5%E5%90%91%E9%87%8F%E7%9A%84%E7%9F%AD%E6%9D%BF"><span class="toc-number">6.2.</span> <span class="toc-text">4.2 BM25 关键词检索（Sparse Retrieval）—— 补向量的短板</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%B8%80%E5%8F%A5%E8%AF%9D"><span class="toc-number">6.2.1.</span> <span class="toc-text">一句话</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%BB%8E-TF-IDF-%E5%88%B0-BM25"><span class="toc-number">6.2.2.</span> <span class="toc-text">从 TF-IDF 到 BM25</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%B8%AD%E6%96%87-BM25-%E9%9C%80%E8%A6%81%E5%88%86%E8%AF%8D"><span class="toc-number">6.2.3.</span> <span class="toc-text">中文 BM25 需要分词</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-3-%E6%B7%B7%E5%90%88%E6%A3%80%E7%B4%A2-RRF-%E8%9E%8D%E5%90%88-%E2%80%94%E2%80%94-%E5%B7%A5%E4%B8%9A%E7%95%8C%E6%A0%87%E9%85%8D"><span class="toc-number">6.3.</span> <span class="toc-text">4.3 混合检索 + RRF 融合 —— 工业界标配</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A6%81%E6%B7%B7%E5%90%88"><span class="toc-number">6.3.1.</span> <span class="toc-text">为什么要混合</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#RRF%EF%BC%88Reciprocal-Rank-Fusion%EF%BC%89%E2%80%94%E2%80%94-%E6%80%8E%E4%B9%88%E5%90%88%E5%B9%B6%E4%B8%A4%E8%B7%AF%E7%BB%93%E6%9E%9C"><span class="toc-number">6.3.2.</span> <span class="toc-text">RRF（Reciprocal Rank Fusion）—— 怎么合并两路结果</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-4-Rerank-%E7%B2%BE%E6%8E%92-%E2%80%94%E2%80%94-%E6%8A%8A%E2%80%9D%E5%B7%AE%E4%B8%8D%E5%A4%9A%E2%80%9D%E5%8F%98%E6%88%90%E2%80%9D%E5%B0%B1%E6%98%AF%E5%AE%83%E2%80%9D"><span class="toc-number">6.4.</span> <span class="toc-text">4.4 Rerank 精排 —— 把”差不多”变成”就是它”</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Bi-Encoder-vs-Cross-Encoder"><span class="toc-number">6.4.1.</span> <span class="toc-text">Bi-Encoder vs Cross-Encoder</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%BB%A3%E7%A0%81"><span class="toc-number">6.4.2.</span> <span class="toc-text">代码</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%9C%AC%E5%9C%B0-Reranker%EF%BC%88%E5%85%8D%E8%B4%B9%EF%BC%8C%E6%8E%A8%E8%8D%90%EF%BC%89"><span class="toc-number">6.4.3.</span> <span class="toc-text">本地 Reranker（免费，推荐）</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81Generation-%E6%B7%B1%E5%BA%A6%E6%8B%86%E8%A7%A3"><span class="toc-number">7.</span> <span class="toc-text">五、Generation 深度拆解</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-RAG-%E7%9A%84%E6%A0%87%E5%87%86-Prompt-%E6%A8%A1%E6%9D%BF"><span class="toc-number">7.1.</span> <span class="toc-text">5.1 RAG 的标准 Prompt 模板</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-%E8%87%AA%E5%BB%BA-Prompt-%E6%A8%A1%E6%9D%BF"><span class="toc-number">7.2.</span> <span class="toc-text">5.2 自建 Prompt 模板</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-3-format-docs%EF%BC%9A%E6%8B%BC%E5%90%88%E6%A3%80%E7%B4%A2%E7%BB%93%E6%9E%9C"><span class="toc-number">7.3.</span> <span class="toc-text">5.3 format_docs：拼合检索结果</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-4-LCEL-Chain-%E7%9A%84%E6%95%B0%E6%8D%AE%E6%B5%81"><span class="toc-number">7.4.</span> <span class="toc-text">5.4 LCEL Chain 的数据流</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81%E5%AE%8C%E6%95%B4%E6%A3%80%E7%B4%A2%E6%B5%81%E7%A8%8B%E4%B8%8E%E6%80%A7%E8%83%BD%E5%9F%BA%E5%87%86"><span class="toc-number">8.</span> <span class="toc-text">六、完整检索流程与性能基准</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#6-1-%E4%B8%89%E9%98%B6%E6%AE%B5%E6%A3%80%E7%B4%A2%E6%B5%81%E6%B0%B4%E7%BA%BF"><span class="toc-number">8.1.</span> <span class="toc-text">6.1 三阶段检索流水线</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-2-%E6%80%A7%E8%83%BD%E5%9F%BA%E5%87%86%EF%BC%8810000-%E6%96%87%E6%A1%A3%E7%9F%A5%E8%AF%86%E5%BA%93%EF%BC%89"><span class="toc-number">8.2.</span> <span class="toc-text">6.2 性能基准（10000 文档知识库）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-3-%E5%BB%B6%E8%BF%9F%E5%8D%A0%E6%AF%94"><span class="toc-number">8.3.</span> <span class="toc-text">6.3 延迟占比</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-4-%E5%8F%AC%E5%9B%9E%E7%8E%87%E6%8F%90%E5%8D%87%E8%B7%AF%E7%BA%BF"><span class="toc-number">8.4.</span> <span class="toc-text">6.4 召回率提升路线</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%83%E3%80%81%E5%A4%9A%E6%A8%A1%E6%80%81-RAG-%E2%80%94%E2%80%94-%E5%9B%BE%E7%89%87-%E8%A1%A8%E6%A0%BC-%E8%A7%86%E9%A2%91%E6%80%8E%E4%B9%88%E8%A2%AB%E6%A3%80%E7%B4%A2%E5%88%B0"><span class="toc-number">9.</span> <span class="toc-text">七、多模态 RAG —— 图片&#x2F;表格&#x2F;视频怎么被检索到</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#7-1-%E6%A0%B8%E5%BF%83%E6%80%9D%E8%B7%AF%EF%BC%9AIndexing-%E6%97%B6%E7%BB%9F%E4%B8%80%E6%88%90%E6%96%87%E6%9C%AC%E6%A8%A1%E6%80%81"><span class="toc-number">9.1.</span> <span class="toc-text">7.1 核心思路：Indexing 时统一成文本模态</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-2-%E4%B8%8D%E5%90%8C%E6%96%87%E4%BB%B6%E7%B1%BB%E5%9E%8B%E5%A4%84%E7%90%86%E9%80%9F%E6%9F%A5"><span class="toc-number">9.2.</span> <span class="toc-text">7.2 不同文件类型处理速查</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-3-%E9%9D%A2%E8%AF%95%E8%BF%BD%E9%97%AE%EF%BC%9A%E4%B8%BA%E4%BB%80%E4%B9%88%E4%B8%8D%E7%AD%89%E6%A3%80%E7%B4%A2%E6%97%B6%E5%86%8D%E5%8E%BB%E8%AF%BB%E5%9B%BE%EF%BC%9F"><span class="toc-number">9.3.</span> <span class="toc-text">7.3 面试追问：为什么不等检索时再去读图？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-4-%E5%AE%9E%E9%99%85%E7%B4%A2%E5%BC%95%E7%BB%93%E6%9E%84"><span class="toc-number">9.4.</span> <span class="toc-text">7.4 实际索引结构</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AB%E3%80%81RAG-vs-Fine-tuning-%E2%80%94%E2%80%94-%E4%BB%80%E4%B9%88%E6%97%B6%E5%80%99%E7%94%A8%E4%BB%80%E4%B9%88"><span class="toc-number">10.</span> <span class="toc-text">八、RAG vs Fine-tuning —— 什么时候用什么</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#8-1-%E4%B8%80%E5%8F%A5%E8%AF%9D%E5%8C%BA%E5%88%AB"><span class="toc-number">10.1.</span> <span class="toc-text">8.1 一句话区别</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-2-%E5%85%A8%E6%99%AF%E5%AF%B9%E6%AF%94"><span class="toc-number">10.2.</span> <span class="toc-text">8.2 全景对比</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-3-%E4%B8%80%E5%BC%A0%E5%9B%BE%E5%86%B3%E5%AE%9A%E9%80%89%E8%B0%81"><span class="toc-number">10.3.</span> <span class="toc-text">8.3 一张图决定选谁</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-4-%E4%B8%A4%E8%80%85%E5%8F%AF%E4%BB%A5%E4%B8%80%E8%B5%B7%E7%94%A8"><span class="toc-number">10.4.</span> <span class="toc-text">8.4 两者可以一起用</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B9%9D%E3%80%81%E9%9D%A2%E8%AF%95%E9%80%9F%E6%9F%A5"><span class="toc-number">11.</span> <span class="toc-text">九、面试速查</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E3%80%81%E6%9C%AC%E8%8A%82%E6%8E%8C%E6%8F%A1%E8%A6%81%E7%82%B9"><span class="toc-number">12.</span> <span class="toc-text">十、本节掌握要点</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%B3%BB%E5%88%97%E6%96%87%E7%AB%A0%E5%AF%BC%E8%88%AA-1"><span class="toc-number">13.</span> <span class="toc-text">系列文章导航</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>Recent Posts</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/21/rag/00-%E7%B3%BB%E5%88%97%E6%80%BB%E8%A7%88/" title="AI Python 学习 — RAG 从零到一系列">AI Python 学习 — RAG 从零到一系列</a><time datetime="2026-07-21T00:00:00.000Z" title="Created 2026-07-21 08:00:00">2026-07-21</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/20/rag/01-%E5%9F%BA%E7%A1%80%E7%AF%87/" title="RAG 01：基础篇 — 从零搭建 RAG，理解三大核心组件">RAG 01：基础篇 — 从零搭建 RAG，理解三大核心组件</a><time datetime="2026-07-20T00:00:00.000Z" title="Created 2026-07-20 08:00:00">2026-07-20</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/19/rag/02-%E6%9F%A5%E8%AF%A2%E5%8F%98%E6%8D%A2%E7%AF%87/" title="RAG 02：查询变换篇 — 把问题变好，检索才能变准">RAG 02：查询变换篇 — 把问题变好，检索才能变准</a><time datetime="2026-07-19T00:00:00.000Z" title="Created 2026-07-19 08:00:00">2026-07-19</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/18/rag/03-%E8%B7%AF%E7%94%B1%E7%AF%87/" title="RAG 03：路由篇 — 不同问题走不同库">RAG 03：路由篇 — 不同问题走不同库</a><time datetime="2026-07-18T00:00:00.000Z" title="Created 2026-07-18 08:00:00">2026-07-18</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/17/rag/04-%E9%AB%98%E7%BA%A7%E7%B4%A2%E5%BC%95%E7%AF%87/" title="RAG 04：高级索引篇 — 用更聪明的方式组织索引">RAG 04：高级索引篇 — 用更聪明的方式组织索引</a><time datetime="2026-07-17T00:00:00.000Z" title="Created 2026-07-17 08:00:00">2026-07-17</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By david</span><span class="framework-info"><span>Framework </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>Theme </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.4.3</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="Reading Mode"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="Toggle Between Light and Dark Mode"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="Toggle Between Single-column and Double-column"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="Settings"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="Table of Contents"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="Back to Top"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><div class="js-pjax"><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (false) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>

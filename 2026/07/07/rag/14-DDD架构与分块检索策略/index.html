@@ -1,0 +1,459 @@
+<!DOCTYPE html><html lang="en" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>RAG 14：DDD 架构与分块检索策略 — 六限界上下文 × 四种分块 × 四种检索 | Hexo</title><meta name="author" content="david"><meta name="copyright" content="david"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="RAG 14：DDD 架构与分块检索策略 接 13 篇的数据源分析。本文覆盖系统的架构设计（DDD 六限界上下文）和核心策略（四种分块 + 四种检索 + 路由层），这是面试中最能展示架构深度的部分。   零、本章速查表   层次 做什么 关键技术 面试关键词    DDD 架构 依赖倒置、六限界上下文 Port&#x2F;Adapter、Shared Kernel “Domain 层零外部依赖”">
+<meta property="og:type" content="article">
+<meta property="og:title" content="RAG 14：DDD 架构与分块检索策略 — 六限界上下文 × 四种分块 × 四种检索">
+<meta property="og:url" content="http://example.com/2026/07/07/rag/14-DDD%E6%9E%B6%E6%9E%84%E4%B8%8E%E5%88%86%E5%9D%97%E6%A3%80%E7%B4%A2%E7%AD%96%E7%95%A5/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="RAG 14：DDD 架构与分块检索策略 接 13 篇的数据源分析。本文覆盖系统的架构设计（DDD 六限界上下文）和核心策略（四种分块 + 四种检索 + 路由层），这是面试中最能展示架构深度的部分。   零、本章速查表   层次 做什么 关键技术 面试关键词    DDD 架构 依赖倒置、六限界上下文 Port&#x2F;Adapter、Shared Kernel “Domain 层零外部依赖”">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://example.com/img/butterfly-icon.png">
+<meta property="article:published_time" content="2026-07-07T00:00:00.000Z">
+<meta property="article:modified_time" content="2026-07-22T07:47:58.172Z">
+<meta property="article:author" content="david">
+<meta property="article:tag" content="面试">
+<meta property="article:tag" content="AI">
+<meta property="article:tag" content="Chunking">
+<meta property="article:tag" content="RAG">
+<meta property="article:tag" content="系统设计">
+<meta property="article:tag" content="DDD">
+<meta property="article:tag" content="检索策略">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/img/butterfly-icon.png"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "RAG 14：DDD 架构与分块检索策略 — 六限界上下文 × 四种分块 × 四种检索",
+  "url": "http://example.com/2026/07/07/rag/14-DDD%E6%9E%B6%E6%9E%84%E4%B8%8E%E5%88%86%E5%9D%97%E6%A3%80%E7%B4%A2%E7%AD%96%E7%95%A5/",
+  "image": "http://example.com/img/butterfly-icon.png",
+  "datePublished": "2026-07-07T00:00:00.000Z",
+  "dateModified": "2026-07-22T07:47:58.172Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "david",
+      "url": "http://example.com"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://example.com/2026/07/07/rag/14-DDD%E6%9E%B6%E6%9E%84%E4%B8%8E%E5%88%86%E5%9D%97%E6%A3%80%E7%B4%A2%E7%AD%96%E7%95%A5/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: 'Copy Successful',
+    error: 'Copy Failed',
+    noSupport: 'Browser Not Supported'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: 'Just now',
+    min: 'minutes ago',
+    hour: 'hours ago',
+    day: 'days ago',
+    month: 'months ago'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid/dist/infinitegrid.min.js',
+    buttonText: 'Load More'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'RAG 14：DDD 架构与分块检索策略 — 六限界上下文 × 四种分块 × 四种检索',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Hexo</span></a><a class="nav-page-title" href="/"><span class="site-name">RAG 14：DDD 架构与分块检索策略 — 六限界上下文 × 四种分块 × 四种检索</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  Back to Home</span></span></a></span><div id="menus"></div></nav><div id="post-info"><h1 class="post-title">RAG 14：DDD 架构与分块检索策略 — 六限界上下文 × 四种分块 × 四种检索</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">Created</span><time class="post-meta-date-created" datetime="2026-07-07T00:00:00.000Z" title="Created 2026-07-07 08:00:00">2026-07-07</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">Updated</span><time class="post-meta-date-updated" datetime="2026-07-22T07:47:58.172Z" title="Updated 2026-07-22 15:47:58">2026-07-22</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/AI%E5%AD%A6%E4%B9%A0/">AI学习</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/AI%E5%AD%A6%E4%B9%A0/RAG/">RAG</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">Post Views:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h2 id="RAG-14：DDD-架构与分块检索策略"><a href="#RAG-14：DDD-架构与分块检索策略" class="headerlink" title="RAG 14：DDD 架构与分块检索策略"></a>RAG 14：DDD 架构与分块检索策略</h2><blockquote>
+<p>接 13 篇的数据源分析。本文覆盖系统的<strong>架构设计</strong>（DDD 六限界上下文）和<strong>核心策略</strong>（四种分块 + 四种检索 + 路由层），这是面试中最能展示架构深度的部分。</p>
+</blockquote>
+<hr>
+<h2 id="零、本章速查表"><a href="#零、本章速查表" class="headerlink" title="零、本章速查表"></a>零、本章速查表</h2><table>
+<thead>
+<tr>
+<th>层次</th>
+<th>做什么</th>
+<th>关键技术</th>
+<th>面试关键词</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>DDD 架构</strong></td>
+<td>依赖倒置、六限界上下文</td>
+<td>Port&#x2F;Adapter、Shared Kernel</td>
+<td>“Domain 层零外部依赖”</td>
+</tr>
+<tr>
+<td><strong>四种分块</strong></td>
+<td>不同数据类型不同切法</td>
+<td>Semantic&#x2F;Section&#x2F;Field&#x2F;Row-to-NL</td>
+<td>“专利父子块联动”</td>
+</tr>
+<tr>
+<td><strong>四种检索</strong></td>
+<td>HyDE&#x2F;Query Structuring&#x2F;Hybrid&#x2F;Tool Router</td>
+<td>各 KB 独立策略</td>
+<td>“KB 类型决定策略”</td>
+</tr>
+<tr>
+<td><strong>路由层</strong></td>
+<td>LLM 判断意图→分发 KB→RRF 融合</td>
+<td>Function Calling + RRF</td>
+<td>“跨库结果透明融合”</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="一、DDD-五层架构"><a href="#一、DDD-五层架构" class="headerlink" title="一、DDD 五层架构"></a>一、DDD 五层架构</h2><h3 id="1-1-架构全景"><a href="#1-1-架构全景" class="headerlink" title="1.1 架构全景"></a>1.1 架构全景</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">┌──────────────────────────────────────────────┐</span><br><span class="line">│              Integration 层                    │</span><br><span class="line">│  REST API (/search, /ingest, /health)        │</span><br><span class="line">│  MCP Tools (search_knowledge, ingest_doc)     │</span><br><span class="line">│  Anti-Corruption Layer（协议转换）              │</span><br><span class="line">└──────────────────┬───────────────────────────┘</span><br><span class="line">                   │</span><br><span class="line">┌──────────────────▼───────────────────────────┐</span><br><span class="line">│               Domain 层                        │</span><br><span class="line">│                                                │</span><br><span class="line">│  Ingestion  │ Retrieval │ KB Mgmt │ Evaluation │ Observability │ Integration</span><br><span class="line">│  (入库上下文)│ (检索上下文)│ (管理)   │ (评估)     │ (可观测)       │ (集成)</span><br><span class="line">│                                                │</span><br><span class="line">│  Shared Kernel: Document, Chunk, ScoredChunk   │</span><br><span class="line">│  7 个 Port 接口 (ABC 抽象基类)                   │</span><br><span class="line">└──────────────────┬───────────────────────────┘</span><br><span class="line">                   │  (依赖倒置)</span><br><span class="line">┌──────────────────▼───────────────────────────┐</span><br><span class="line">│           Infrastructure 层                    │</span><br><span class="line">│  Loader → Chunker → Embedding → pgvector     │</span><br><span class="line">│  Retriever → Transformer → Reranker          │</span><br><span class="line">│  Multimodal Extractor                        │</span><br><span class="line">│  Model Manager (Lazy + Semaphore)            │</span><br><span class="line">└──────────────────────────────────────────────┘</span><br></pre></td></tr></table></figure>
+
+<h3 id="1-2-为什么用-DDD-而不是传统的-MVC？"><a href="#1-2-为什么用-DDD-而不是传统的-MVC？" class="headerlink" title="1.2 为什么用 DDD 而不是传统的 MVC？"></a>1.2 为什么用 DDD 而不是传统的 MVC？</h3><table>
+<thead>
+<tr>
+<th>传统 MVC</th>
+<th>DDD 方案</th>
+<th>好处</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Service 层直接调 ORM</td>
+<td>Domain 定义 ABC 接口，Infrastructure 实现</td>
+<td>换向量库只改 Infrastructure，不改业务逻辑</td>
+</tr>
+<tr>
+<td>一个 models.py 几百行</td>
+<td>六个 Bounded Context，每个职责清晰</td>
+<td>入库逻辑改了不影响检索</td>
+</tr>
+<tr>
+<td>依赖方向混乱</td>
+<td>Integration → Domain ← Infrastructure</td>
+<td>编译时就能发现循环依赖</td>
+</tr>
+</tbody></table>
+<h3 id="1-3-核心-Port-接口"><a href="#1-3-核心-Port-接口" class="headerlink" title="1.3 核心 Port 接口"></a>1.3 核心 Port 接口</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># domain/shared/base_interfaces.py — 7 个抽象基类</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">BaseChunker</span>(<span class="title class_ inherited__">ABC</span>):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;文本分块策略&quot;&quot;&quot;</span></span><br><span class="line"><span class="meta">    @abstractmethod</span></span><br><span class="line">    <span class="keyword">async</span> <span class="keyword">def</span> <span class="title function_">split</span>(<span class="params">self, docs: <span class="built_in">list</span>[Document]</span>) -&gt; <span class="built_in">list</span>[Chunk]: ...</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">BaseEmbedder</span>(<span class="title class_ inherited__">ABC</span>):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;向量嵌入&quot;&quot;&quot;</span></span><br><span class="line"><span class="meta">    @abstractmethod</span></span><br><span class="line">    <span class="keyword">async</span> <span class="keyword">def</span> <span class="title function_">embed_documents</span>(<span class="params">self, chunks: <span class="built_in">list</span>[Chunk]</span>) -&gt; <span class="built_in">list</span>[Chunk]: ...</span><br><span class="line"><span class="meta">    @abstractmethod</span></span><br><span class="line">    <span class="keyword">async</span> <span class="keyword">def</span> <span class="title function_">embed_query</span>(<span class="params">self, query: <span class="built_in">str</span></span>) -&gt; <span class="built_in">list</span>[<span class="built_in">float</span>]: ...</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">BaseVectorStore</span>(<span class="title class_ inherited__">ABC</span>):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;向量存储&quot;&quot;&quot;</span></span><br><span class="line"><span class="meta">    @abstractmethod</span></span><br><span class="line">    <span class="keyword">async</span> <span class="keyword">def</span> <span class="title function_">store</span>(<span class="params">self, chunks: <span class="built_in">list</span>[Chunk], kb_type: <span class="built_in">str</span></span>) -&gt; <span class="built_in">list</span>[<span class="built_in">str</span>]: ...</span><br><span class="line"><span class="meta">    @abstractmethod</span></span><br><span class="line">    <span class="keyword">async</span> <span class="keyword">def</span> <span class="title function_">search</span>(<span class="params">self, query_vec, kb_type, top_k, filter_sql</span>) -&gt; <span class="built_in">list</span>[ScoredChunk]: ...</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">BaseRetriever</span>(<span class="title class_ inherited__">ABC</span>): ...</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">BaseReranker</span>(<span class="title class_ inherited__">ABC</span>): ...</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">BaseLoader</span>(<span class="title class_ inherited__">ABC</span>): ...</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">BaseMultimodalExtractor</span>(<span class="title class_ inherited__">ABC</span>): ...</span><br></pre></td></tr></table></figure>
+
+<p><strong>面试关键</strong>：依赖倒置——Domain 不依赖任何框架。测试时 mock 掉 ABC 接口，不需要真的连 pgvector。</p>
+<h3 id="1-4-四个-KB-Adapter"><a href="#1-4-四个-KB-Adapter" class="headerlink" title="1.4 四个 KB Adapter"></a>1.4 四个 KB Adapter</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">              KBRegistry</span><br><span class="line">                   │</span><br><span class="line">    ┌──────┬────────┼────────┬──────┐</span><br><span class="line">    ▼      ▼        ▼        ▼      ▼</span><br><span class="line">  Paper  Patent   Document  Business</span><br><span class="line">  Adapter Adapter  Adapter   Adapter</span><br><span class="line"></span><br><span class="line">每个 Adapter 封装：</span><br><span class="line">  - 用哪个 Chunker</span><br><span class="line">  - 用哪个 Retriever</span><br><span class="line">  - 用哪个 Query Transformer</span><br><span class="line">  - Quality Gate 阈值</span><br><span class="line">  - 是否启用 Recency Boost</span><br></pre></td></tr></table></figure>
+
+<p><strong>不是 if-else 判断 KB 类型</strong>，而是每个 KB 一个 Adapter 类，策略在构造函数里注入。</p>
+<hr>
+<h2 id="二、四种分块策略"><a href="#二、四种分块策略" class="headerlink" title="二、四种分块策略"></a>二、四种分块策略</h2><h3 id="2-1-对比总览"><a href="#2-1-对比总览" class="headerlink" title="2.1 对比总览"></a>2.1 对比总览</h3><table>
+<thead>
+<tr>
+<th></th>
+<th align="center">Semantic（文档）</th>
+<th align="center">Section（论文）</th>
+<th align="center">Field-Split（专利）</th>
+<th align="center">Row-to-NL（业务）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>怎么切</strong></td>
+<td align="center">按 <code>##</code> 标题边界</td>
+<td align="center">按 Abstract&#x2F;Intro&#x2F;Method</td>
+<td align="center">按摘要&#x2F;权利要求&#x2F;附图字段</td>
+<td align="center">一行 → 一段文字</td>
+</tr>
+<tr>
+<td><strong>overlap</strong></td>
+<td align="center">拼接父标题路径</td>
+<td align="center">保留 section 层级</td>
+<td align="center">拼接引用链（父子块）</td>
+<td align="center">无</td>
+</tr>
+<tr>
+<td><strong>单个大小</strong></td>
+<td align="center">500-1500 字</td>
+<td align="center">500-2000 字</td>
+<td align="center">200-1000 字</td>
+<td align="center">50-200 字</td>
+</tr>
+<tr>
+<td><strong>核心挑战</strong></td>
+<td align="center">操作步骤连贯性</td>
+<td align="center">公式保留完整</td>
+<td align="center">权利要求完整性</td>
+<td align="center">精确数值查询</td>
+</tr>
+</tbody></table>
+<h3 id="2-2-专利父子块联动（核心亮点）"><a href="#2-2-专利父子块联动（核心亮点）" class="headerlink" title="2.2 专利父子块联动（核心亮点）"></a>2.2 专利父子块联动（核心亮点）</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">Claim 1: 一种文本分类方法，其特征在于，包括以下步骤...</span><br><span class="line">Claim 2: 根据权利要求 1 所述的方法，其中步骤1还包括对输入进行预处理</span><br><span class="line">Claim 3: 根据权利要求 2 所述的方法，其中预处理采用 BPE 分词</span><br><span class="line"></span><br><span class="line">切分结果:</span><br><span class="line">  Chunk(claim_1): content=&quot;一种文本分类方法，其特征在于...&quot;</span><br><span class="line">                  metadata.parent_chunk_ids=[]</span><br><span class="line"></span><br><span class="line">  Chunk(claim_2): content=&quot;[前置上下文] 权利要求 1: 一种文本分类方法...</span><br><span class="line">                           [本权利要求] 根据权利要求 1 所述的方法，其中...&quot;</span><br><span class="line">                  metadata.parent_chunk_ids=[&quot;claim_1&quot;]</span><br><span class="line"></span><br><span class="line">  Chunk(claim_3): content=&quot;[前置上下文] 权利要求 1: ...\n权利要求 2: ...</span><br><span class="line">                           [本权利要求] 根据权利要求 2 所述的方法，其中...&quot;</span><br><span class="line">                  metadata.parent_chunk_ids=[&quot;claim_1&quot;, &quot;claim_2&quot;]</span><br><span class="line"></span><br><span class="line">检索时:</span><br><span class="line">  命中 claim_3 → 自动拉取 claim_1 + claim_2 的内容</span><br><span class="line">  → Agent 获得完整的权利要求上下文 ✅</span><br></pre></td></tr></table></figure>
+
+<h4 id="2-2-1-依赖关系怎么提取？需要模型吗？"><a href="#2-2-1-依赖关系怎么提取？需要模型吗？" class="headerlink" title="2.2.1 依赖关系怎么提取？需要模型吗？"></a>2.2.1 依赖关系怎么提取？需要模型吗？</h4><p><strong>不需要模型。</strong> 专利的引用关系是机器可读的固定格式，正则表达式精确匹配即可：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> re</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">extract_dependencies</span>(<span class="params">claim_text: <span class="built_in">str</span></span>) -&gt; <span class="built_in">list</span>[<span class="built_in">int</span>]:</span><br><span class="line">    <span class="string">&quot;&quot;&quot;从 &quot;根据权利要求 1 和 3 所述的方法&quot; 中提取 [1, 3]</span></span><br><span class="line"><span class="string">    </span></span><br><span class="line"><span class="string">    为什么不需要 LLM？</span></span><br><span class="line"><span class="string">    因为专利引用只有这几种固定写法，正则可以 100% 覆盖：</span></span><br><span class="line"><span class="string">      - &quot;根据权利要求 1 所述的方法&quot;</span></span><br><span class="line"><span class="string">      - &quot;根据权利要求 1-3 任一项所述&quot;</span></span><br><span class="line"><span class="string">      - &quot;如权利要求 1 至 4 中任一项&quot;</span></span><br><span class="line"><span class="string">      - &quot;根据权利要求 1 和 2 所述&quot;</span></span><br><span class="line"><span class="string">    &quot;&quot;&quot;</span></span><br><span class="line">    pattern = <span class="string">r&#x27;根据权利要求\s*([\d、和至\-]+)\s*(?:任一)?[项条]?\s*[所]?述&#x27;</span></span><br><span class="line">    <span class="keyword">match</span> = re.search(pattern, claim_text)</span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">match</span>:</span><br><span class="line">        nums = re.findall(<span class="string">r&#x27;\d+&#x27;</span>, <span class="keyword">match</span>.group(<span class="number">1</span>))</span><br><span class="line">        <span class="keyword">return</span> [<span class="built_in">int</span>(n) <span class="keyword">for</span> n <span class="keyword">in</span> nums]</span><br><span class="line">    <span class="keyword">return</span> []</span><br></pre></td></tr></table></figure>
+
+<p><strong>整个流程零 LLM 参与</strong>：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">专利 PDF</span><br><span class="line">  ↓</span><br><span class="line">正则提取 &quot;根据权利要求 X&quot; → 解析依赖关系  ← 纯正则，零模型</span><br><span class="line">  ↓</span><br><span class="line">字符串拼接父块文本 → 生成完整 content      ← 纯字符串，零模型</span><br><span class="line">  ↓</span><br><span class="line">记录 parent_chunk_ids 到 metadata        ← 纯数据结构，零模型</span><br><span class="line">  ↓</span><br><span class="line">BGE-M3 Embedding                          ← 唯一用到模型的地方</span><br><span class="line">  ↓</span><br><span class="line">存入 pgvector</span><br></pre></td></tr></table></figure>
+
+<h4 id="2-2-2-什么时候需要模型提取关联？"><a href="#2-2-2-什么时候需要模型提取关联？" class="headerlink" title="2.2.2 什么时候需要模型提取关联？"></a>2.2.2 什么时候需要模型提取关联？</h4><table>
+<thead>
+<tr>
+<th>关联类型</th>
+<th>例子</th>
+<th>提取方式</th>
+<th align="center">需要模型？</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>专利引用链</td>
+<td>“根据权利要求 1 所述”</td>
+<td>正则匹配</td>
+<td align="center">❌</td>
+</tr>
+<tr>
+<td>论文引用关系</td>
+<td>“Based on the work of Vaswani et al.”</td>
+<td>正则 + 引用解析</td>
+<td align="center">❌</td>
+</tr>
+<tr>
+<td>文档交叉引用</td>
+<td>“详见《模型部署指南》第三章”</td>
+<td>正则匹配</td>
+<td align="center">❌</td>
+</tr>
+<tr>
+<td><strong>知识图谱三元组</strong></td>
+<td>“FlashAttention 将显存从 O(N²) 降到 O(N)”</td>
+<td><strong>LLM 抽取</strong></td>
+<td align="center">✅</td>
+</tr>
+<tr>
+<td><strong>跨文档语义关联</strong></td>
+<td>论文A 和 论文B 都讨论同一个问题但没有互相引用</td>
+<td><strong>LLM 判断</strong></td>
+<td align="center">✅</td>
+</tr>
+</tbody></table>
+<p><strong>原则：能用正则解决的，坚决不用 LLM。</strong> 正则零成本、零延迟、100% 准确；LLM 有成本、有延迟、有概率出错。固定格式优先用正则，自由文本的语义关系才交给 LLM。</p>
+<hr>
+<h2 id="三、四种检索策略"><a href="#三、四种检索策略" class="headerlink" title="三、四种检索策略"></a>三、四种检索策略</h2><h3 id="3-1-论文库：HyDE-Hybrid"><a href="#3-1-论文库：HyDE-Hybrid" class="headerlink" title="3.1 论文库：HyDE + Hybrid"></a>3.1 论文库：HyDE + Hybrid</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">HyDEPaperRetriever</span>:</span><br><span class="line">    <span class="keyword">async</span> <span class="keyword">def</span> <span class="title function_">retrieve</span>(<span class="params">self, query, top_k=<span class="number">10</span></span>):</span><br><span class="line">        <span class="comment"># Step 1: LLM 生成学术风格的假答案</span></span><br><span class="line">        fake_answer = <span class="keyword">await</span> <span class="variable language_">self</span>.llm.generate(<span class="string">f&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">            用学术论文风格回答: <span class="subst">&#123;query&#125;</span></span></span><br><span class="line"><span class="string">            学术回答:&quot;&quot;&quot;</span>)</span><br><span class="line"></span><br><span class="line">        <span class="comment"># Step 2: 用假答案的向量检索（不是原始问题！）</span></span><br><span class="line">        fake_vec = <span class="keyword">await</span> <span class="variable language_">self</span>.embedder.embed(fake_answer)</span><br><span class="line">        dense = <span class="keyword">await</span> <span class="variable language_">self</span>._dense_search(fake_vec, top_k * <span class="number">2</span>)</span><br><span class="line">        sparse = <span class="keyword">await</span> <span class="variable language_">self</span>._sparse_search(query, top_k * <span class="number">2</span>)</span><br><span class="line"></span><br><span class="line">        <span class="comment"># Step 3: RRF 融合</span></span><br><span class="line">        <span class="keyword">return</span> <span class="variable language_">self</span>._rrf_fusion(dense, sparse)[:top_k]</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-2-专利库：Query-Structuring-Hybrid"><a href="#3-2-专利库：Query-Structuring-Hybrid" class="headerlink" title="3.2 专利库：Query Structuring + Hybrid"></a>3.2 专利库：Query Structuring + Hybrid</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">PatentRetriever</span>:</span><br><span class="line">    <span class="keyword">async</span> <span class="keyword">def</span> <span class="title function_">retrieve</span>(<span class="params">self, query, top_k=<span class="number">10</span></span>):</span><br><span class="line">        <span class="comment"># Step 1: LLM 提取过滤条件</span></span><br><span class="line">        filters = <span class="keyword">await</span> <span class="variable language_">self</span>._extract_filters(query)</span><br><span class="line">        <span class="comment"># → &#123;&quot;content&quot;: &quot;文本分类&quot;, &quot;filing_year&quot;: 2024&#125;</span></span><br><span class="line"></span><br><span class="line">        <span class="comment"># Step 2: 在过滤范围内做混合检索</span></span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">await</span> <span class="variable language_">self</span>._hybrid_search(</span><br><span class="line">            query=filters[<span class="string">&quot;content&quot;</span>],</span><br><span class="line">            filter_sql=<span class="string">&quot;filing_date &gt;= &#x27;2024-01-01&#x27;&quot;</span>,</span><br><span class="line">            top_k=top_k)</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-3-业务库：Tool-Router（禁止裸-SQL）"><a href="#3-3-业务库：Tool-Router（禁止裸-SQL）" class="headerlink" title="3.3 业务库：Tool Router（禁止裸 SQL）"></a>3.3 业务库：Tool Router（禁止裸 SQL）</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">ToolRouter</span>:</span><br><span class="line">    <span class="string">&quot;&quot;&quot;LLM 提取参数 → 参数化 SQL → 精确查询&quot;&quot;&quot;</span></span><br><span class="line">    </span><br><span class="line">    <span class="keyword">async</span> <span class="keyword">def</span> <span class="title function_">search</span>(<span class="params">self, query</span>):</span><br><span class="line">        <span class="comment"># Step 1: LLM 提取查询参数</span></span><br><span class="line">        params = <span class="keyword">await</span> <span class="variable language_">self</span>.llm.extract(query)</span><br><span class="line">        <span class="comment"># → &#123;&quot;metric&quot;: &quot;qps&quot;, &quot;operator&quot;: &quot;&gt;&quot;, &quot;value&quot;: 1000&#125;</span></span><br><span class="line"></span><br><span class="line">        <span class="comment"># Step 2: 参数化 SQL（不是字符串拼接！）</span></span><br><span class="line">        sql = <span class="string">&quot;SELECT * FROM models WHERE qps &gt; $1&quot;</span></span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">await</span> <span class="variable language_">self</span>.db.fetch(sql, [params[<span class="string">&quot;value&quot;</span>]])</span><br></pre></td></tr></table></figure>
+
+<p><strong>为什么禁止字符串拼接</strong>：<code>f&quot;SELECT * FROM models WHERE team=&#39;&#123;user_input&#125;&#39;&quot;</code> → 用户可以输入 <code>&#39; OR &#39;1&#39;=&#39;1</code> → 看到所有团队的模型数据。参数化查询 <code>$1</code> 从协议层面防止注入。</p>
+<hr>
+<h2 id="四、路由层"><a href="#四、路由层" class="headerlink" title="四、路由层"></a>四、路由层</h2><h3 id="4-1-KB-Router-流程"><a href="#4-1-KB-Router-流程" class="headerlink" title="4.1 KB Router 流程"></a>4.1 KB Router 流程</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">用户问: &quot;Transformer 论文里的注意力机制是怎么优化的？&quot;</span><br><span class="line"></span><br><span class="line">Step 1: LLM Function Calling 判断意图</span><br><span class="line">  → kb_type: &quot;papers&quot;</span><br><span class="line">  → confidence: 0.92</span><br><span class="line"></span><br><span class="line">Step 2: 路由到论文库 Adapter</span><br><span class="line"></span><br><span class="line">Step 3: HyDE 假答案 → 混合检索 → Top-10</span><br><span class="line"></span><br><span class="line">Step 4: 跨库? 如果置信度 &lt; 0.7 → 多库检索 → RRF 融合</span><br></pre></td></tr></table></figure>
+
+<h3 id="4-2-跨库融合"><a href="#4-2-跨库融合" class="headerlink" title="4.2 跨库融合"></a>4.2 跨库融合</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">用户问: &quot;关于模型部署的文档和最佳实践的论文&quot;</span><br><span class="line"></span><br><span class="line">路由: confidence(papers)=0.65, confidence(docs)=0.60 → 两个都在阈值内</span><br><span class="line">  → 论文库 Top-5 + 文档库 Top-5 → RRF 融合 → Top-8 返回</span><br></pre></td></tr></table></figure>
+
+<h3 id="4-3-质量门（Quality-Gate）"><a href="#4-3-质量门（Quality-Gate）" class="headerlink" title="4.3 质量门（Quality Gate）"></a>4.3 质量门（Quality Gate）</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">QualityGate</span>:</span><br><span class="line">    <span class="string">&quot;&quot;&quot;检索结果质量不够 → 降级或拒绝回答&quot;&quot;&quot;</span></span><br><span class="line"></span><br><span class="line">    KB_THRESHOLDS = &#123;</span><br><span class="line">        <span class="string">&quot;papers&quot;</span>:   <span class="number">0.35</span>,  <span class="comment"># 论文语义复杂，阈值最低</span></span><br><span class="line">        <span class="string">&quot;patents&quot;</span>:  <span class="number">0.30</span>,  <span class="comment"># 专利法律语言，匹配度偏低</span></span><br><span class="line">        <span class="string">&quot;docs&quot;</span>:     <span class="number">0.25</span>,  <span class="comment"># 文档用语接近，阈值最高</span></span><br><span class="line">        <span class="string">&quot;business&quot;</span>: <span class="number">0.40</span>,  <span class="comment"># SQL 查询，有结果就是高分</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">check</span>(<span class="params">self, results, kb_type</span>):</span><br><span class="line">        avg_score = <span class="built_in">sum</span>(r.score <span class="keyword">for</span> r <span class="keyword">in</span> results) / <span class="built_in">len</span>(results)</span><br><span class="line">        <span class="keyword">if</span> avg_score &lt; <span class="variable language_">self</span>.KB_THRESHOLDS[kb_type]:</span><br><span class="line">            <span class="keyword">return</span> QualityResult.REJECT  <span class="comment"># 质量太差，拒绝回答</span></span><br><span class="line">        <span class="keyword">return</span> QualityResult.PASS</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="五、面试速查"><a href="#五、面试速查" class="headerlink" title="五、面试速查"></a>五、面试速查</h2><p><strong>Q：DDD 架构在 RAG 系统里有什么实际好处？</strong></p>
+<blockquote>
+<p>“传统方式 Service 直接调 pgvector SDK，换向量库要全改。我们用 Port&#x2F;Adapter——Domain 定义 ABC 接口，Infrastructure 实现。将来换 Milvus，只改 Infrastructure 不改业务逻辑。而且测试时 mock ABC 就行，不需要真连数据库。”</p>
+</blockquote>
+<p><strong>Q：专利为什么要设计父子块联动？</strong></p>
+<blockquote>
+<p>“权利要求之间有引用链——Claim 3 引用 Claim 2 引用 Claim 1。单独看 Claim 3 不懂它在说什么。我在 Chunk metadata 里记录了 parent_chunk_ids，检索命中子块时自动拉取父块，Agent 拿到完整上下文。”</p>
+</blockquote>
+<p><strong>Q：业务库的 Tool Router 怎么防止 SQL 注入？</strong></p>
+<blockquote>
+<p>“不是把 LLM 输出的 SQL 字符串直接执行。LLM 只提取参数——metric&#x3D;qps, operator&#x3D;&gt;, value&#x3D;1000——然后代码用参数化查询 <code>SELECT * WHERE qps &gt; $1</code>。$1 是占位符，用户输入永远不会被当成 SQL 代码。”</p>
+</blockquote>
+<hr>
+<h2 id="六、本章掌握要点"><a href="#六、本章掌握要点" class="headerlink" title="六、本章掌握要点"></a>六、本章掌握要点</h2><table>
+<thead>
+<tr>
+<th>必须掌握</th>
+<th>加分项</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>✅ DDD 依赖倒置：Integration → Domain ← Infrastructure</td>
+<td>✅ Port&#x2F;Adapter 模式的具体实现</td>
+</tr>
+<tr>
+<td>✅ 四种分块策略的核心差异</td>
+<td>✅ 专利父子块联动的完整流程</td>
+</tr>
+<tr>
+<td>✅ 论文 HyDE &#x2F; 业务 Tool Router 的原理</td>
+<td>✅ 质量门各 KB 阈值差异的原因</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="系列文章导航"><a href="#系列文章导航" class="headerlink" title="系列文章导航"></a>系列文章导航</h2><table>
+<thead>
+<tr>
+<th align="center">篇</th>
+<th>文章</th>
+<th>核心内容</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center"><a href="/2026/07/08/rag/13-%E9%97%AE%E9%A2%98%E5%AE%9A%E4%B9%89%E4%B8%8E%E6%95%B0%E6%8D%AE%E6%BA%90%E5%88%86%E6%9E%90/">13</a></td>
+<td>问题定义</td>
+<td>四类数据源 &#x2F; 策略矩阵</td>
+</tr>
+<tr>
+<td align="center"><strong>14</strong></td>
+<td><strong>DDD 架构（本文）</strong></td>
+<td>六限界上下文 &#x2F; 四种分块+检索 &#x2F; 路由</td>
+</tr>
+<tr>
+<td align="center"><a href="/2026/07/06/rag/15-%E5%A4%9A%E6%A8%A1%E6%80%81%E6%8F%90%E5%8F%96%E4%B8%8E%E6%9C%AC%E5%9C%B0%E6%A8%A1%E5%9E%8B%E9%83%A8%E7%BD%B2/">15</a></td>
+<td>多模态与部署</td>
+<td>图片&#x2F;公式&#x2F;表格 &#x2F; 本地模型</td>
+</tr>
+<tr>
+<td align="center"><a href="/2026/07/05/rag/16-%E7%9B%91%E6%8E%A7%E8%AF%84%E4%BC%B0%E4%B8%8E%E9%9D%A2%E8%AF%95%E4%BA%AE%E7%82%B9/">16</a></td>
+<td>监控与面试</td>
+<td>RAGAS &#x2F; Prometheus &#x2F; 9 大亮点</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>系列总览：<a href="/2026/07/21/rag/00-%E7%B3%BB%E5%88%97%E6%80%BB%E8%A7%88/">RAG 从零到一系列</a></p>
+</blockquote>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>Author: </span><span class="post-copyright-info"><a href="http://example.com">david</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>Link: </span><span class="post-copyright-info"><a href="http://example.com/2026/07/07/rag/14-DDD%E6%9E%B6%E6%9E%84%E4%B8%8E%E5%88%86%E5%9D%97%E6%A3%80%E7%B4%A2%E7%AD%96%E7%95%A5/">http://example.com/2026/07/07/rag/14-DDD%E6%9E%B6%E6%9E%84%E4%B8%8E%E5%88%86%E5%9D%97%E6%A3%80%E7%B4%A2%E7%AD%96%E7%95%A5/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>Copyright Notice: </span><span class="post-copyright-info">All articles on this blog are licensed under <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> unless otherwise stated.</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E9%9D%A2%E8%AF%95/">面试</a><a class="post-meta__tags" href="/tags/AI/">AI</a><a class="post-meta__tags" href="/tags/Chunking/">Chunking</a><a class="post-meta__tags" href="/tags/RAG/">RAG</a><a class="post-meta__tags" href="/tags/%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/">系统设计</a><a class="post-meta__tags" href="/tags/DDD/">DDD</a><a class="post-meta__tags" href="/tags/%E6%A3%80%E7%B4%A2%E7%AD%96%E7%95%A5/">检索策略</a></div><div class="post-share"><div class="social-share" data-image="/img/butterfly-icon.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2026/07/08/rag/13-%E9%97%AE%E9%A2%98%E5%AE%9A%E4%B9%89%E4%B8%8E%E6%95%B0%E6%8D%AE%E6%BA%90%E5%88%86%E6%9E%90/" title="RAG 13：问题定义与数据源分析 — 四类异构数据的知识库设计"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">Previous</div><div class="info-item-2">RAG 13：问题定义与数据源分析 — 四类异构数据的知识库设计</div></div><div class="info-2"><div class="info-item-1">RAG 13：问题定义与数据源分析 前面 01-12 学的是”怎么做 RAG”。13-16 进入生产级系统设计——以 The Boy Assistant 知识库为例，覆盖 4 类异构数据源的完整设计。本文聚焦问题定义和数据源分析。   零、本章速查表   数据源 文本风格 关键挑战 Chunk 策略 检索策略    平台操作文档 口语化、步骤化 截图信息丢失、步骤连贯性 Semantic（标题） Hybrid + Step-Back   算法论文 学术化、公式密集 公式语义丢失、风格不匹配 Section + 公式分离 HyDE + Hybrid   专利文档 法律化、结构化 权利要求引用关系 Field-split + 父子块 Query Structuring   业务数据 结构化、数值多 精确数值查询失效 Row → NL 描述 Tool Router SQL    一、为什么一个通用 KB 不够？1.1 四类数据的本质差异123456789101112131415161718平台操作文档:  &quot;点击左侧菜单 → 选择模型训练 → 上传数据集 → 配置 GPU 资...</div></div></div></a><a class="pagination-related" href="/2026/07/06/rag/15-%E5%A4%9A%E6%A8%A1%E6%80%81%E6%8F%90%E5%8F%96%E4%B8%8E%E6%9C%AC%E5%9C%B0%E6%A8%A1%E5%9E%8B%E9%83%A8%E7%BD%B2/" title="RAG 15：多模态提取与本地模型部署 — 图片/公式/表格 × 零成本方案"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">Next</div><div class="info-item-2">RAG 15：多模态提取与本地模型部署 — 图片/公式/表格 × 零成本方案</div></div><div class="info-2"><div class="info-item-1">RAG 15：多模态提取与本地模型部署 操作文档有截图、论文有公式和图表、专利有附图——非文本内容占了知识库的半壁江山。本文覆盖多模态提取的完整流水线和三个开源模型的本地部署方案，全部免费。   零、本章速查表   模块 关键技术 核心决策    多模态提取 图片→Qwen2-VL 描述 &#x2F; 公式→LaTeX+语义 &#x2F; 表格→LLM 摘要 统一成文本模态再 Embedding   图片去重 MD5 精确 + dHash 感知 两级缓存，去重率 40-60%   级联更新 image_chunk_refs 关联表 图片描述升级 → 自动批量重建相关 chunk   本地模型 BGE-M3 + bge-reranker + Qwen2-VL 全部免费，~12GB VRAM   并发控制 Semaphore + Lazy Loading 防 OOM    一、多模态提取：核心原则 所有非文本内容 → LLM 生成文本描述 → Embedding → 统一成文本模态  12345678910111213原始文档（文字 + 图片 + 公式 + 表格）          ...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>Related Articles</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/2026/07/08/rag/13-%E9%97%AE%E9%A2%98%E5%AE%9A%E4%B9%89%E4%B8%8E%E6%95%B0%E6%8D%AE%E6%BA%90%E5%88%86%E6%9E%90/" title="RAG 13：问题定义与数据源分析 — 四类异构数据的知识库设计"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-07-08</div><div class="info-item-2">RAG 13：问题定义与数据源分析 — 四类异构数据的知识库设计</div></div><div class="info-2"><div class="info-item-1">RAG 13：问题定义与数据源分析 前面 01-12 学的是”怎么做 RAG”。13-16 进入生产级系统设计——以 The Boy Assistant 知识库为例，覆盖 4 类异构数据源的完整设计。本文聚焦问题定义和数据源分析。   零、本章速查表   数据源 文本风格 关键挑战 Chunk 策略 检索策略    平台操作文档 口语化、步骤化 截图信息丢失、步骤连贯性 Semantic（标题） Hybrid + Step-Back   算法论文 学术化、公式密集 公式语义丢失、风格不匹配 Section + 公式分离 HyDE + Hybrid   专利文档 法律化、结构化 权利要求引用关系 Field-split + 父子块 Query Structuring   业务数据 结构化、数值多 精确数值查询失效 Row → NL 描述 Tool Router SQL    一、为什么一个通用 KB 不够？1.1 四类数据的本质差异123456789101112131415161718平台操作文档:  &quot;点击左侧菜单 → 选择模型训练 → 上传数据集 → 配置 GPU 资...</div></div></div></a><a class="pagination-related" href="/2026/07/05/rag/16-%E7%9B%91%E6%8E%A7%E8%AF%84%E4%BC%B0%E4%B8%8E%E9%9D%A2%E8%AF%95%E4%BA%AE%E7%82%B9%E6%B1%87%E6%80%BB/" title="RAG 16：监控评估与面试亮点 — 从 MVP 到生产化的完整闭环"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-07-05</div><div class="info-item-2">RAG 16：监控评估与面试亮点 — 从 MVP 到生产化的完整闭环</div></div><div class="info-2"><div class="info-item-1">RAG 16：监控评估与面试亮点 13-15 讲了怎么设计、怎么实现。本文覆盖最后一环——怎么评估效果、怎么监控运行，以及整个 RAG 系列的面试亮点汇总。这是面试中从 “我用 LangChain 搭过 RAG” 到 “我设计过生产级 RAG 系统” 的临门一脚。   零、本章速查表   模块 做什么 关键工具    离线评估 测策略对不对 RAGAS 四指标 &#x2F; 15 题分层测试集   在线监控 测系统活不活 Prometheus 6 指标 &#x2F; Grafana &#x2F; 4 级告警   链路追踪 每次检索可视化 LangFuse Trace（三段 Span）   面试亮点 9 个差异化设计 见第六节，逐条可讲    一、评估体系：RAGAS1.1 为什么必须有评估没有量化指标就没有优化方向——你改了个参数，不知道效果是变好了还是变差了。 1.2 四个核心指标123456789   检索阶段                     生成阶段┌─────────────┐           ┌─────────────┐│ Context     │   ...</div></div></div></a><a class="pagination-related" href="/2026/07/20/rag/01-%E5%9F%BA%E7%A1%80%E7%AF%87/" title="RAG 01：基础篇 — 从零搭建 RAG，理解三大核心组件"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-07-20</div><div class="info-item-2">RAG 01：基础篇 — 从零搭建 RAG，理解三大核心组件</div></div><div class="info-2"><div class="info-item-1">RAG 01：基础篇 — 从零搭建 RAG，理解三大核心组件 基于 RAG From Scratch Part 1-4。本文覆盖 RAG 系统的 Indexing（索引）、Retrieval（检索）、Generation（生成）三大组件。 核心观点：RAG 的质量不取决于底层 LLM 有多强，而取决于三个工程决策——怎么切（Chunking）、怎么搜（Retrieval）、怎么排（Rerank）。这三个决策做好了，用 GPT-3.5 也能达到 GPT-4 直答的效果。   零、RAG 系统全景图  上图展示了 RAG 系统的完整技术栈，从底层基础设施到上层检索增强生成的全链路。本文聚焦中间的 Indexing → Retrieval → Generation 三大核心组件。其余进阶模块（查询变换、路由、高级索引、CRAG&#x2F;Self-RAG）将在后续文章中逐一展开。  系列文章导航   篇 文章 覆盖内容 面试权重    01 基础篇（本文） Indexing &#x2F; Chunking &#x2F; Embedding &#x2F; 混合检索 &#x2F; Rera...</div></div></div></a><a class="pagination-related" href="/2026/07/06/rag/15-%E5%A4%9A%E6%A8%A1%E6%80%81%E6%8F%90%E5%8F%96%E4%B8%8E%E6%9C%AC%E5%9C%B0%E6%A8%A1%E5%9E%8B%E9%83%A8%E7%BD%B2/" title="RAG 15：多模态提取与本地模型部署 — 图片&#x2F;公式&#x2F;表格 × 零成本方案"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-07-06</div><div class="info-item-2">RAG 15：多模态提取与本地模型部署 — 图片&#x2F;公式&#x2F;表格 × 零成本方案</div></div><div class="info-2"><div class="info-item-1">RAG 15：多模态提取与本地模型部署 操作文档有截图、论文有公式和图表、专利有附图——非文本内容占了知识库的半壁江山。本文覆盖多模态提取的完整流水线和三个开源模型的本地部署方案，全部免费。   零、本章速查表   模块 关键技术 核心决策    多模态提取 图片→Qwen2-VL 描述 &#x2F; 公式→LaTeX+语义 &#x2F; 表格→LLM 摘要 统一成文本模态再 Embedding   图片去重 MD5 精确 + dHash 感知 两级缓存，去重率 40-60%   级联更新 image_chunk_refs 关联表 图片描述升级 → 自动批量重建相关 chunk   本地模型 BGE-M3 + bge-reranker + Qwen2-VL 全部免费，~12GB VRAM   并发控制 Semaphore + Lazy Loading 防 OOM    一、多模态提取：核心原则 所有非文本内容 → LLM 生成文本描述 → Embedding → 统一成文本模态  12345678910111213原始文档（文字 + 图片 + 公式 + 表格）          ...</div></div></div></a><a class="pagination-related" href="/2026/06/08/ai-python/AI-Python-08.3-%E5%A4%9AAgent%E5%8D%8F%E4%BD%9C%E9%9D%A2%E8%AF%95Q&A%E6%89%8B%E5%86%8C/" title="AI-Python-08.4 | 多 Agent 协作系统面试 Q&amp;A 手册"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-06-08</div><div class="info-item-2">AI-Python-08.4 | 多 Agent 协作系统面试 Q&amp;A 手册</div></div><div class="info-2"><div class="info-item-1">前言本文档是对《第 8-9 周多 Agent 协作系统重新设计》的深度面试整理，涵盖架构重构、M0-M8 各模块的技术细节、以及实战中的挑战与解决方案。每一道题都基于真实的项目经验，适合作为技术面试的参考。  一、整体架构重构Q1: 为什么要把 collaboration 模块全部重写？之前的架构有什么问题？难度：⭐⭐⭐⭐⭐（专家级）频率：★★★★★（必问） 回答结构“重写的直接原因是 supervisor_analyzer.py 这个文件已经膨胀到了 700+ 行，一个人承担了意图分类、LLM 分析、Worker 执行等所有职责。这在代码层面表现为：一个函数内部同时在做三件事——先判断用户想干什么，再调用 LLM 做分析，然后根据结果直接执行任务。修改任何一个逻辑都需要在这个文件里改，测试也变得越来越困难。 更深层的问题是模块没有真正串联。虽然项目里已经有了 context_pipeline.py、dag_executor.py、peer_mailbox.py 这些设计良好的模块，但它们没有被接入主流程。supervisor_analyzer.py 的执行路径直接调了 agen...</div></div></div></a><a class="pagination-related" href="/2026/07/21/rag/00-%E7%B3%BB%E5%88%97%E6%80%BB%E8%A7%88/" title="AI Python 学习 — RAG 从零到一系列"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-07-21</div><div class="info-item-2">AI Python 学习 — RAG 从零到一系列</div></div><div class="info-2"><div class="info-item-1">RAG 从零到一系列 基于 LangChain 官方 RAG From Scratch 课程，配套 YouTube 视频。5 篇文章按 5 个阶段组织，覆盖全部 18 个核心技术。从最基础的 Indexing → Retrieval → Generation 开始，逐步深入到查询变换、路由、高级索引、高级检索。   系列全景1234567891011121314151617181920212223242526┌────────────────────────────────────────────────────────────┐│                     RAG 从零到一 18 课                        │├────────────────────────────────────────────────────────────┤│                                                              ││  阶段一：基础 (Part 1-4)       阶段二：查询变换 (Part 5...</div></div></div></a></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/butterfly-icon.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">david</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">151</div></a><a href="/tags/"><div class="headline">Tags</div><div class="length-num">348</div></a><a href="/categories/"><div class="headline">Categories</div><div class="length-num">28</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>Announcement</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>Contents</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#RAG-14%EF%BC%9ADDD-%E6%9E%B6%E6%9E%84%E4%B8%8E%E5%88%86%E5%9D%97%E6%A3%80%E7%B4%A2%E7%AD%96%E7%95%A5"><span class="toc-number">1.</span> <span class="toc-text">RAG 14：DDD 架构与分块检索策略</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%9B%B6%E3%80%81%E6%9C%AC%E7%AB%A0%E9%80%9F%E6%9F%A5%E8%A1%A8"><span class="toc-number">2.</span> <span class="toc-text">零、本章速查表</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81DDD-%E4%BA%94%E5%B1%82%E6%9E%B6%E6%9E%84"><span class="toc-number">3.</span> <span class="toc-text">一、DDD 五层架构</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-%E6%9E%B6%E6%9E%84%E5%85%A8%E6%99%AF"><span class="toc-number">3.1.</span> <span class="toc-text">1.1 架构全景</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-%E4%B8%BA%E4%BB%80%E4%B9%88%E7%94%A8-DDD-%E8%80%8C%E4%B8%8D%E6%98%AF%E4%BC%A0%E7%BB%9F%E7%9A%84-MVC%EF%BC%9F"><span class="toc-number">3.2.</span> <span class="toc-text">1.2 为什么用 DDD 而不是传统的 MVC？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-3-%E6%A0%B8%E5%BF%83-Port-%E6%8E%A5%E5%8F%A3"><span class="toc-number">3.3.</span> <span class="toc-text">1.3 核心 Port 接口</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-4-%E5%9B%9B%E4%B8%AA-KB-Adapter"><span class="toc-number">3.4.</span> <span class="toc-text">1.4 四个 KB Adapter</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E5%9B%9B%E7%A7%8D%E5%88%86%E5%9D%97%E7%AD%96%E7%95%A5"><span class="toc-number">4.</span> <span class="toc-text">二、四种分块策略</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-%E5%AF%B9%E6%AF%94%E6%80%BB%E8%A7%88"><span class="toc-number">4.1.</span> <span class="toc-text">2.1 对比总览</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-%E4%B8%93%E5%88%A9%E7%88%B6%E5%AD%90%E5%9D%97%E8%81%94%E5%8A%A8%EF%BC%88%E6%A0%B8%E5%BF%83%E4%BA%AE%E7%82%B9%EF%BC%89"><span class="toc-number">4.2.</span> <span class="toc-text">2.2 专利父子块联动（核心亮点）</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#2-2-1-%E4%BE%9D%E8%B5%96%E5%85%B3%E7%B3%BB%E6%80%8E%E4%B9%88%E6%8F%90%E5%8F%96%EF%BC%9F%E9%9C%80%E8%A6%81%E6%A8%A1%E5%9E%8B%E5%90%97%EF%BC%9F"><span class="toc-number">4.2.1.</span> <span class="toc-text">2.2.1 依赖关系怎么提取？需要模型吗？</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-2-2-%E4%BB%80%E4%B9%88%E6%97%B6%E5%80%99%E9%9C%80%E8%A6%81%E6%A8%A1%E5%9E%8B%E6%8F%90%E5%8F%96%E5%85%B3%E8%81%94%EF%BC%9F"><span class="toc-number">4.2.2.</span> <span class="toc-text">2.2.2 什么时候需要模型提取关联？</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E5%9B%9B%E7%A7%8D%E6%A3%80%E7%B4%A2%E7%AD%96%E7%95%A5"><span class="toc-number">5.</span> <span class="toc-text">三、四种检索策略</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-%E8%AE%BA%E6%96%87%E5%BA%93%EF%BC%9AHyDE-Hybrid"><span class="toc-number">5.1.</span> <span class="toc-text">3.1 论文库：HyDE + Hybrid</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-%E4%B8%93%E5%88%A9%E5%BA%93%EF%BC%9AQuery-Structuring-Hybrid"><span class="toc-number">5.2.</span> <span class="toc-text">3.2 专利库：Query Structuring + Hybrid</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-%E4%B8%9A%E5%8A%A1%E5%BA%93%EF%BC%9ATool-Router%EF%BC%88%E7%A6%81%E6%AD%A2%E8%A3%B8-SQL%EF%BC%89"><span class="toc-number">5.3.</span> <span class="toc-text">3.3 业务库：Tool Router（禁止裸 SQL）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E8%B7%AF%E7%94%B1%E5%B1%82"><span class="toc-number">6.</span> <span class="toc-text">四、路由层</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-KB-Router-%E6%B5%81%E7%A8%8B"><span class="toc-number">6.1.</span> <span class="toc-text">4.1 KB Router 流程</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-%E8%B7%A8%E5%BA%93%E8%9E%8D%E5%90%88"><span class="toc-number">6.2.</span> <span class="toc-text">4.2 跨库融合</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-3-%E8%B4%A8%E9%87%8F%E9%97%A8%EF%BC%88Quality-Gate%EF%BC%89"><span class="toc-number">6.3.</span> <span class="toc-text">4.3 质量门（Quality Gate）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E9%9D%A2%E8%AF%95%E9%80%9F%E6%9F%A5"><span class="toc-number">7.</span> <span class="toc-text">五、面试速查</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81%E6%9C%AC%E7%AB%A0%E6%8E%8C%E6%8F%A1%E8%A6%81%E7%82%B9"><span class="toc-number">8.</span> <span class="toc-text">六、本章掌握要点</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%B3%BB%E5%88%97%E6%96%87%E7%AB%A0%E5%AF%BC%E8%88%AA"><span class="toc-number">9.</span> <span class="toc-text">系列文章导航</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>Recent Posts</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/21/rag/00-%E7%B3%BB%E5%88%97%E6%80%BB%E8%A7%88/" title="AI Python 学习 — RAG 从零到一系列">AI Python 学习 — RAG 从零到一系列</a><time datetime="2026-07-21T00:00:00.000Z" title="Created 2026-07-21 08:00:00">2026-07-21</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/20/rag/01-%E5%9F%BA%E7%A1%80%E7%AF%87/" title="RAG 01：基础篇 — 从零搭建 RAG，理解三大核心组件">RAG 01：基础篇 — 从零搭建 RAG，理解三大核心组件</a><time datetime="2026-07-20T00:00:00.000Z" title="Created 2026-07-20 08:00:00">2026-07-20</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/19/rag/02-%E6%9F%A5%E8%AF%A2%E5%8F%98%E6%8D%A2%E7%AF%87/" title="RAG 02：查询变换篇 — 把问题变好，检索才能变准">RAG 02：查询变换篇 — 把问题变好，检索才能变准</a><time datetime="2026-07-19T00:00:00.000Z" title="Created 2026-07-19 08:00:00">2026-07-19</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/18/rag/03-%E8%B7%AF%E7%94%B1%E7%AF%87/" title="RAG 03：路由篇 — 不同问题走不同库">RAG 03：路由篇 — 不同问题走不同库</a><time datetime="2026-07-18T00:00:00.000Z" title="Created 2026-07-18 08:00:00">2026-07-18</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/17/rag/04-%E9%AB%98%E7%BA%A7%E7%B4%A2%E5%BC%95%E7%AF%87/" title="RAG 04：高级索引篇 — 用更聪明的方式组织索引">RAG 04：高级索引篇 — 用更聪明的方式组织索引</a><time datetime="2026-07-17T00:00:00.000Z" title="Created 2026-07-17 08:00:00">2026-07-17</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By david</span><span class="framework-info"><span>Framework </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>Theme </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.4.3</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="Reading Mode"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="Toggle Between Light and Dark Mode"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="Toggle Between Single-column and Double-column"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="Settings"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="Table of Contents"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="Back to Top"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><div class="js-pjax"><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (false) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
