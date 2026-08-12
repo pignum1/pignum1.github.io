@@ -1,0 +1,525 @@
+<!DOCTYPE html><html lang="en" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>AI Python 学习 — 10.3 vLLM 与 LoRA：推理加速 + 高效微调 | Hexo</title><meta name="author" content="david"><meta name="copyright" content="david"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="10.3：vLLM 与 LoRA — 推理加速 + 高效微调 大模型落地最后一公里：vLLM 解决”怎么跑得快”，LoRA 解决”怎么训得省”。生产环境中，vLLM 做推理服务，LoRA 做领域适配，两者组合实现”一个基座 + N 个 Adapter”的高效部署。本文覆盖原理、代码、以及面试中最关键的几个问题。   零、本章速查表   技术 解决什么问题 核心机制 关键数字    vLLM LLM">
+<meta property="og:type" content="article">
+<meta property="og:title" content="AI Python 学习 — 10.3 vLLM 与 LoRA：推理加速 + 高效微调">
+<meta property="og:url" content="http://example.com/2026/07/22/ai-python/AI-Python-10.3-vLLM%E4%B8%8ELoRA%E6%8E%A8%E7%90%86%E5%8A%A0%E9%80%9F%E4%B8%8E%E9%AB%98%E6%95%88%E5%BE%AE%E8%B0%83/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="10.3：vLLM 与 LoRA — 推理加速 + 高效微调 大模型落地最后一公里：vLLM 解决”怎么跑得快”，LoRA 解决”怎么训得省”。生产环境中，vLLM 做推理服务，LoRA 做领域适配，两者组合实现”一个基座 + N 个 Adapter”的高效部署。本文覆盖原理、代码、以及面试中最关键的几个问题。   零、本章速查表   技术 解决什么问题 核心机制 关键数字    vLLM LLM">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://example.com/img/butterfly-icon.png">
+<meta property="article:published_time" content="2026-07-22T02:00:00.000Z">
+<meta property="article:modified_time" content="2026-08-03T02:43:58.263Z">
+<meta property="article:author" content="david">
+<meta property="article:tag" content="Python">
+<meta property="article:tag" content="面试">
+<meta property="article:tag" content="AI">
+<meta property="article:tag" content="推理优化">
+<meta property="article:tag" content="vLLM">
+<meta property="article:tag" content="LoRA">
+<meta property="article:tag" content="PagedAttention">
+<meta property="article:tag" content="模型微调">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/img/butterfly-icon.png"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "AI Python 学习 — 10.3 vLLM 与 LoRA：推理加速 + 高效微调",
+  "url": "http://example.com/2026/07/22/ai-python/AI-Python-10.3-vLLM%E4%B8%8ELoRA%E6%8E%A8%E7%90%86%E5%8A%A0%E9%80%9F%E4%B8%8E%E9%AB%98%E6%95%88%E5%BE%AE%E8%B0%83/",
+  "image": "http://example.com/img/butterfly-icon.png",
+  "datePublished": "2026-07-22T02:00:00.000Z",
+  "dateModified": "2026-08-03T02:43:58.263Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "david",
+      "url": "http://example.com"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://example.com/2026/07/22/ai-python/AI-Python-10.3-vLLM%E4%B8%8ELoRA%E6%8E%A8%E7%90%86%E5%8A%A0%E9%80%9F%E4%B8%8E%E9%AB%98%E6%95%88%E5%BE%AE%E8%B0%83/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: 'Copy Successful',
+    error: 'Copy Failed',
+    noSupport: 'Browser Not Supported'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: 'Just now',
+    min: 'minutes ago',
+    hour: 'hours ago',
+    day: 'days ago',
+    month: 'months ago'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid/dist/infinitegrid.min.js',
+    buttonText: 'Load More'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'AI Python 学习 — 10.3 vLLM 与 LoRA：推理加速 + 高效微调',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Hexo</span></a><a class="nav-page-title" href="/"><span class="site-name">AI Python 学习 — 10.3 vLLM 与 LoRA：推理加速 + 高效微调</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  Back to Home</span></span></a></span><div id="menus"></div></nav><div id="post-info"><h1 class="post-title">AI Python 学习 — 10.3 vLLM 与 LoRA：推理加速 + 高效微调</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">Created</span><time class="post-meta-date-created" datetime="2026-07-22T02:00:00.000Z" title="Created 2026-07-22 10:00:00">2026-07-22</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">Updated</span><time class="post-meta-date-updated" datetime="2026-08-03T02:43:58.263Z" title="Updated 2026-08-03 10:43:58">2026-08-03</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/AI%E5%AD%A6%E4%B9%A0/">AI学习</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/AI%E5%AD%A6%E4%B9%A0/%E6%8E%A8%E7%90%86%E4%B8%8E%E9%83%A8%E7%BD%B2/">推理与部署</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">Post Views:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h2 id="10-3：vLLM-与-LoRA-—-推理加速-高效微调"><a href="#10-3：vLLM-与-LoRA-—-推理加速-高效微调" class="headerlink" title="10.3：vLLM 与 LoRA — 推理加速 + 高效微调"></a>10.3：vLLM 与 LoRA — 推理加速 + 高效微调</h2><blockquote>
+<p>大模型落地最后一公里：vLLM 解决”怎么跑得快”，LoRA 解决”怎么训得省”。生产环境中，vLLM 做推理服务，LoRA 做领域适配，两者组合实现”一个基座 + N 个 Adapter”的高效部署。本文覆盖原理、代码、以及面试中最关键的几个问题。</p>
+</blockquote>
+<hr>
+<h2 id="零、本章速查表"><a href="#零、本章速查表" class="headerlink" title="零、本章速查表"></a>零、本章速查表</h2><table>
+<thead>
+<tr>
+<th>技术</th>
+<th>解决什么问题</th>
+<th>核心机制</th>
+<th align="center">关键数字</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>vLLM</strong></td>
+<td>LLM 推理太慢、显存不够</td>
+<td>PagedAttention（类 OS 虚拟内存分页）</td>
+<td align="center">吞吐量提升 <strong>24×</strong></td>
+</tr>
+<tr>
+<td><strong>PagedAttention</strong></td>
+<td>KV Cache 碎片化浪费 60-80% 内存</td>
+<td>固定大小 Block + Block Table + Copy-on-Write</td>
+<td align="center">浪费降至 <strong>~4%</strong></td>
+</tr>
+<tr>
+<td><strong>Continuous Batching</strong></td>
+<td>短序列等长序列跑完才出结果</td>
+<td>逐 token 级别的动态调度</td>
+<td align="center">延迟降低 <strong>10×</strong></td>
+</tr>
+<tr>
+<td><strong>LoRA</strong></td>
+<td>全量微调 70B 模型要 1TB+ 显存</td>
+<td>冻结原权重 + 旁路注入低秩矩阵 A×B</td>
+<td align="center">参数减少 <strong>400×</strong></td>
+</tr>
+<tr>
+<td><strong>QLoRA</strong></td>
+<td>LoRA 还是贵（GPU 显存）</td>
+<td>4-bit 量化基座 + LoRA 微调</td>
+<td align="center">单卡 48GB 微调 65B 模型</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="一、vLLM-解决什么问题——三个浪费场景"><a href="#一、vLLM-解决什么问题——三个浪费场景" class="headerlink" title="一、vLLM 解决什么问题——三个浪费场景"></a>一、vLLM 解决什么问题——三个浪费场景</h2><h3 id="1-1-场景一：KV-Cache-碎片化浪费"><a href="#1-1-场景一：KV-Cache-碎片化浪费" class="headerlink" title="1.1 场景一：KV Cache 碎片化浪费"></a>1.1 场景一：KV Cache 碎片化浪费</h3><p>三个请求来了——A 只需 100 token、B 只需 50 token、C 需要 2000 token。原生方式给每个请求按最大长度（2048）预分配连续显存：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">请求 A 只需 100 token  → 预分配 2048 → [=========_____            ]</span><br><span class="line">请求 B 只需 50 token   → 预分配 2048 → [=_____________            ]</span><br><span class="line">请求 C 需要 2000 token → 预分配 2048 → [=====================     ]</span><br><span class="line"></span><br><span class="line">三个预分配 = 6144 单位，实际只用 100+50+2000 = 2150 单位</span><br><span class="line">浪费 65% 显存。而且显存&quot;看起来满了&quot;，装不下第 4 个请求。</span><br></pre></td></tr></table></figure>
+
+<p><strong>PagedAttention 解法</strong>：把 KV Cache 切成 16 token 一个 Block。不预分配、不要求连续、需要多少给多少。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">显存被切成很多 16-token 小格子：</span><br><span class="line"></span><br><span class="line">A 需要 100 token  → 申请 7 个 Block  → 系统从空闲池里捞 7 个给它</span><br><span class="line">B 需要 50 token   → 申请 4 个 Block  → 再捞 4 个</span><br><span class="line">C 需要 2000 token → 申请 125 个 Block → 再捞 125 个</span><br><span class="line"></span><br><span class="line">A 的 7 个 Block 物理上散落在显存各处，通过 Block Table 记录：</span><br><span class="line">  &quot;A 的第 0 块在物理位置 #3，第 1 块在 #11，第 2 块在 #7...&quot;</span><br><span class="line">  </span><br><span class="line">结果: 显存利用率 35% → 96%</span><br></pre></td></tr></table></figure>
+
+<h3 id="1-2-场景二：相同-System-Prompt-重复存储"><a href="#1-2-场景二：相同-System-Prompt-重复存储" class="headerlink" title="1.2 场景二：相同 System Prompt 重复存储"></a>1.2 场景二：相同 System Prompt 重复存储</h3><p>100 个用户前面都挂着同一个 5000 token System Prompt（”你是一个专业助手…”）。</p>
+<p>为什么 KV Cache 能共享？缓存的是 K 和 V 的<strong>原始值</strong>，不是 Attention 的输出。不同用户的 Q 不同，去匹配同一份 K → 权重不同 → 从同一份 V 提取出的信息不同 → 最终结果自然不同。<strong>K 和 V 只取决于 System Prompt 本身，100 个用户完全一样。</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">原生: 每用户各自存一份 System Prompt 的 KV Cache</span><br><span class="line">      → 100×5000 = 50 万 token 的显存</span><br><span class="line"></span><br><span class="line">vLLM: System Prompt 的 312 个 Block 只存一份（Copy-on-Write 共享）</span><br><span class="line">      每用户增量回复 200 token = 13 Block → 各自分配</span><br><span class="line">      → 1×5000 + 100×200 = 2.5 万 token</span><br><span class="line">      → 省了 20 倍显存</span><br></pre></td></tr></table></figure>
+
+<h3 id="1-3-场景三：短请求被长请求拖死"><a href="#1-3-场景三：短请求被长请求拖死" class="headerlink" title="1.3 场景三：短请求被长请求拖死"></a>1.3 场景三：短请求被长请求拖死</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">Batch: A(20 token)  B(500 token)  C(30 token)</span><br><span class="line"></span><br><span class="line">原生 Static Batching:</span><br><span class="line">  t=0:  [A] [B] [C] 开始</span><br><span class="line">  t=20: [A 完成] → 等！等 B 和 C</span><br><span class="line">  t=30: [C 完成] → 等！等 B</span><br><span class="line">  ...GPU 在 t=30 到 t=500 只算 B 一个请求，A 和 C 的坑位空着</span><br><span class="line"></span><br><span class="line">vLLM Continuous Batching:</span><br><span class="line">  t=0:  [A] [B] [C]</span><br><span class="line">  t=20: [A 完成] → 立即移除! [B] [C] [新请求 D]  ← 插入新请求</span><br><span class="line">  t=30: [C 完成] → 立即移除! [B] [D] [新请求 E]</span><br><span class="line">  每个 decode step 后重新组 batch → GPU 永远满载</span><br></pre></td></tr></table></figure>
+
+<h3 id="1-4-三大问题总结"><a href="#1-4-三大问题总结" class="headerlink" title="1.4 三大问题总结"></a>1.4 三大问题总结</h3><table>
+<thead>
+<tr>
+<th>问题</th>
+<th>根因</th>
+<th>vLLM 解法</th>
+<th align="center">效果</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>碎片化浪费</td>
+<td>固定大小预分配连续显存</td>
+<td>Block 分页 + 按需分配</td>
+<td align="center">利用率 35%→96%</td>
+</tr>
+<tr>
+<td>重复存储</td>
+<td>每请求独立分配</td>
+<td>Copy-on-Write 共享前缀</td>
+<td align="center">省 20× 显存</td>
+</tr>
+<tr>
+<td>长请求拖慢</td>
+<td>等整个 batch 完成</td>
+<td>逐 token 动态调度</td>
+<td align="center">GPU 利用率 &gt;90%</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="二、PagedAttention：三句话讲清"><a href="#二、PagedAttention：三句话讲清" class="headerlink" title="二、PagedAttention：三句话讲清"></a>二、PagedAttention：三句话讲清</h2><h3 id="2-1-核心类比：操作系统虚拟内存"><a href="#2-1-核心类比：操作系统虚拟内存" class="headerlink" title="2.1 核心类比：操作系统虚拟内存"></a>2.1 核心类比：操作系统虚拟内存</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">OS 虚拟内存:</span><br><span class="line">  程序看到的是连续的&quot;逻辑地址&quot;</span><br><span class="line">  OS 在背后: 逻辑地址 → 页表 → 物理内存（可以不连续）</span><br><span class="line">  4KB 一页，需要多少分配多少</span><br><span class="line"></span><br><span class="line">PagedAttention:</span><br><span class="line">  序列看到的是连续的 KV Cache</span><br><span class="line">  vLLM 在背后: 逻辑 Block → Block Table → 物理 Block（可以不连续）</span><br><span class="line">  16 token 一个 Block，需要多少分配多少</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-2-三个核心设计"><a href="#2-2-三个核心设计" class="headerlink" title="2.2 三个核心设计"></a>2.2 三个核心设计</h3><table>
+<thead>
+<tr>
+<th>设计</th>
+<th>做了什么</th>
+<th>类比</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>固定 Block</strong></td>
+<td>KV Cache 切 16 token&#x2F;block</td>
+<td>OS 4KB 页</td>
+</tr>
+<tr>
+<td><strong>Block Table</strong></td>
+<td>逻辑序号 → 物理地址映射</td>
+<td>OS 页表</td>
+</tr>
+<tr>
+<td><strong>Copy-on-Write</strong></td>
+<td>共享前缀物理上只存一份</td>
+<td>OS fork()</td>
+</tr>
+</tbody></table>
+<h3 id="2-3-内存效率"><a href="#2-3-内存效率" class="headerlink" title="2.3 内存效率"></a>2.3 内存效率</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">场景: 100 用户共享 5000 token System Prompt，各生成 200 token 回复</span><br><span class="line"></span><br><span class="line">原生: 100×1.6GB ≈ 160GB → GPU 装不下</span><br><span class="line">vLLM: 共享前缀 + 每用户增量 → ~30GB → 单卡够用</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="三、Continuous-Batching"><a href="#三、Continuous-Batching" class="headerlink" title="三、Continuous Batching"></a>三、Continuous Batching</h2><h3 id="3-1-一句话"><a href="#3-1-一句话" class="headerlink" title="3.1 一句话"></a>3.1 一句话</h3><blockquote>
+<p>不是”一个 batch 跑完再组下一个”，而是<strong>每个 decode step 后重新组装 batch</strong>——完成的立即移除，新的立即插入。</p>
+</blockquote>
+<h3 id="3-2-效果对比"><a href="#3-2-效果对比" class="headerlink" title="3.2 效果对比"></a>3.2 效果对比</h3><table>
+<thead>
+<tr>
+<th></th>
+<th align="center">Static Batching</th>
+<th align="center">Continuous Batching</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>GPU 利用率</td>
+<td align="center">30-50%</td>
+<td align="center"><strong>90%+</strong></td>
+</tr>
+<tr>
+<td>快请求延迟</td>
+<td align="center">被慢请求拖累</td>
+<td align="center"><strong>即时返回</strong></td>
+</tr>
+<tr>
+<td>吞吐量</td>
+<td align="center">1×</td>
+<td align="center"><strong>5-10×</strong></td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="四、LoRA：低秩适应"><a href="#四、LoRA：低秩适应" class="headerlink" title="四、LoRA：低秩适应"></a>四、LoRA：低秩适应</h2><h3 id="4-1-问题：全量微调贵在哪"><a href="#4-1-问题：全量微调贵在哪" class="headerlink" title="4.1 问题：全量微调贵在哪"></a>4.1 问题：全量微调贵在哪</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">微调 Llama-2-70B（全量）:</span><br><span class="line">  参数: 70B × 2 bytes(FP16) = 140GB（仅权重）</span><br><span class="line">  优化器状态: 140GB × 3(Adam) = 420GB</span><br><span class="line">  激活值+梯度: ~100GB</span><br><span class="line">  ─────────────────────</span><br><span class="line">  总计: ~660GB → 至少 8×A100 80GB 🤑</span><br><span class="line"></span><br><span class="line">微调 Llama-2-70B（LoRA）:</span><br><span class="line">  基座权重冻结: 0 优化器状态</span><br><span class="line">  LoRA 参数(r=16): ~40M × 2 bytes = 80MB</span><br><span class="line">  优化器状态: 80MB × 3 = 240MB</span><br><span class="line">  ─────────────────────</span><br><span class="line">  总计（含模型权重）: ~140GB + ~0.3GB ≈ 140GB → 2×A100 够用 ✅</span><br></pre></td></tr></table></figure>
+
+<h3 id="4-2-核心原理"><a href="#4-2-核心原理" class="headerlink" title="4.2 核心原理"></a>4.2 核心原理</h3><p><strong>一句话</strong>：不改原权重 W，在旁边加一个低秩旁路 A×B。W 冻住，只训 A 和 B。</p>
+<p><strong>权威图解</strong>（来源：dvgodoy&#x2F;LLM-visuals，CC-BY）：</p>
+<p><img src="https://raw.githubusercontent.com/dvgodoy/LLM-visuals/main/LoRA/forward.png" alt="LoRA Forward Pass"></p>
+<blockquote>
+<p>上面是冻住的原始权重 W，下面是 LoRA 旁路 A→B。两路输出相加。只有橙色部分需要训练。</p>
+</blockquote>
+<p><img src="https://raw.githubusercontent.com/dvgodoy/LLM-visuals/main/LoRA/lowrank_matrices.png" alt="低秩矩阵分解"></p>
+<blockquote>
+<p>原本 W 是 d×d 的大矩阵（如 4096×4096 &#x3D; 16M 参数）。LoRA 用 A(d×r) 和 B(r×d) 两个小矩阵的乘积近似 ΔW。r 很小（4~16），参数量从 d² 降到 2dr，少了上百倍。</p>
+</blockquote>
+<p><strong>关键设计</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>设计</th>
+<th>做法</th>
+<th>原因</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>A 初始化</strong></td>
+<td>小随机值</td>
+<td>打破对称，让 A 有初始方向</td>
+</tr>
+<tr>
+<td><strong>B 初始化</strong></td>
+<td><strong>全零</strong></td>
+<td>保证 ΔW &#x3D; B×A &#x3D; 0，训练从零开始</td>
+</tr>
+<tr>
+<td><strong>α&#x2F;r 缩放</strong></td>
+<td><code>output = Wx + (α/r) × (xAB)</code></td>
+<td>控制 LoRA 更新幅度，α 通常 &#x3D; r 或 2r</td>
+</tr>
+<tr>
+<td><strong>只在 Q、V 注入</strong></td>
+<td>不改 K 和 FFN</td>
+<td>Q 决定”关注谁”，V 决定”输出什么”，任务相关性最强</td>
+</tr>
+</tbody></table>
+<h3 id="4-3-为什么”低秩”有效？"><a href="#4-3-为什么”低秩”有效？" class="headerlink" title="4.3 为什么”低秩”有效？"></a>4.3 为什么”低秩”有效？</h3><p><strong>低内在维度假设</strong>：模型适配下游任务时，权重的变化 ΔW 集中在一个低维子空间里。实验证明 r&#x3D;8 的 LoRA 就和 r&#x3D;64 的共享大部分关键信息方向，剩下的方向主要是噪声。</p>
+<h3 id="4-4-代码实现"><a href="#4-4-代码实现" class="headerlink" title="4.4 代码实现"></a>4.4 代码实现</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> torch</span><br><span class="line"><span class="keyword">import</span> torch.nn <span class="keyword">as</span> nn</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">LoRALinear</span>(nn.Module):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;给任意 nn.Linear 注入 LoRA 旁路&quot;&quot;&quot;</span></span><br><span class="line">    </span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self, original: nn.Linear, r: <span class="built_in">int</span> = <span class="number">16</span>, alpha: <span class="built_in">float</span> = <span class="number">16</span></span>):</span><br><span class="line">        <span class="built_in">super</span>().__init__()</span><br><span class="line">        <span class="variable language_">self</span>.original = original  <span class="comment"># 冻结的原始权重</span></span><br><span class="line">        d_in, d_out = original.in_features, original.out_features</span><br><span class="line">        </span><br><span class="line">        <span class="comment"># A: 降维 (d_in → r), 随机初始化</span></span><br><span class="line">        <span class="variable language_">self</span>.lora_A = nn.Parameter(torch.randn(r, d_in) * <span class="number">0.01</span>)</span><br><span class="line">        <span class="comment"># B: 升维 (r → d_out), 零初始化（保证 ΔW=0 起步）</span></span><br><span class="line">        <span class="variable language_">self</span>.lora_B = nn.Parameter(torch.zeros(d_out, r))</span><br><span class="line">        </span><br><span class="line">        <span class="variable language_">self</span>.scaling = alpha / r  <span class="comment"># LoRA 缩放因子</span></span><br><span class="line">    </span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">forward</span>(<span class="params">self, x</span>):</span><br><span class="line">        <span class="comment"># 冻结路径 + LoRA 旁路</span></span><br><span class="line">        frozen_out = <span class="variable language_">self</span>.original(x)  <span class="comment"># Wx</span></span><br><span class="line">        lora_out = (x @ <span class="variable language_">self</span>.lora_A.T) @ <span class="variable language_">self</span>.lora_B.T * <span class="variable language_">self</span>.scaling  <span class="comment"># (xA^T)B^T · α/r</span></span><br><span class="line">        <span class="keyword">return</span> frozen_out + lora_out</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># 使用：给 Attention 的 Q、V 注入 LoRA</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">inject_lora</span>(<span class="params">model, r=<span class="number">16</span>, target_modules=[<span class="string">&quot;q_proj&quot;</span>, <span class="string">&quot;v_proj&quot;</span>]</span>):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;只给 Q 和 V 投影注入 LoRA（经典做法）&quot;&quot;&quot;</span></span><br><span class="line">    <span class="keyword">for</span> name, module <span class="keyword">in</span> model.named_modules():</span><br><span class="line">        <span class="keyword">if</span> <span class="built_in">any</span>(t <span class="keyword">in</span> name <span class="keyword">for</span> t <span class="keyword">in</span> target_modules) <span class="keyword">and</span> <span class="built_in">isinstance</span>(module, nn.Linear):</span><br><span class="line">            parent = model</span><br><span class="line">            <span class="keyword">for</span> part <span class="keyword">in</span> name.split(<span class="string">&quot;.&quot;</span>)[:-<span class="number">1</span>]:</span><br><span class="line">                parent = <span class="built_in">getattr</span>(parent, part)</span><br><span class="line">            <span class="built_in">setattr</span>(parent, name.split(<span class="string">&quot;.&quot;</span>)[-<span class="number">1</span>], LoRALinear(module, r=r))</span><br><span class="line">    <span class="keyword">return</span> model</span><br></pre></td></tr></table></figure>
+
+<h3 id="4-5-QLoRA：量化-LoRA"><a href="#4-5-QLoRA：量化-LoRA" class="headerlink" title="4.5 QLoRA：量化 + LoRA"></a>4.5 QLoRA：量化 + LoRA</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">QLoRA = 4-bit 量化基座模型 + LoRA 微调</span><br><span class="line"></span><br><span class="line">正常 LoRA:</span><br><span class="line">  模型权重 FP16 → 140GB 显存  ← 推理没问题，但训还要装优化器</span><br><span class="line"></span><br><span class="line">QLoRA:</span><br><span class="line">  模型权重 NF4(4-bit) → 35GB 显存  ← 省 4×</span><br><span class="line">  LoRA 参数 BF16 → 0.3GB</span><br><span class="line">  ─────────────────</span><br><span class="line">  总: ~36GB → 单张 A100 48GB 能微调 65B 模型！</span><br></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th></th>
+<th align="center">全量微调</th>
+<th align="center">LoRA</th>
+<th align="center">QLoRA</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>微调 7B 模型</strong></td>
+<td align="center">4×A100</td>
+<td align="center">1×A100</td>
+<td align="center">1×RTX 3090</td>
+</tr>
+<tr>
+<td><strong>微调 70B 模型</strong></td>
+<td align="center">8×A100</td>
+<td align="center">2×A100</td>
+<td align="center">1×A100 80GB</td>
+</tr>
+<tr>
+<td><strong>推理速度</strong></td>
+<td align="center">基准</td>
+<td align="center">无损失（merge 后）</td>
+<td align="center">无损失（merge 后）</td>
+</tr>
+<tr>
+<td><strong>精度损失</strong></td>
+<td align="center">—</td>
+<td align="center">&lt; 1%</td>
+<td align="center">&lt; 2%</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="五、vLLM-LoRA：生产部署的黄金组合"><a href="#五、vLLM-LoRA：生产部署的黄金组合" class="headerlink" title="五、vLLM + LoRA：生产部署的黄金组合"></a>五、vLLM + LoRA：生产部署的黄金组合</h2><h3 id="5-1-一图胜千言"><a href="#5-1-一图胜千言" class="headerlink" title="5.1 一图胜千言"></a>5.1 一图胜千言</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">┌─────────────────────────────────────────────┐</span><br><span class="line">│                vLLM Server                    │</span><br><span class="line">│                                               │</span><br><span class="line">│   基座模型 (Llama-3-8B) — 只加载一次            │</span><br><span class="line">│   ┌─────────────────────────────────────┐    │</span><br><span class="line">│   │  Layer 1  Layer 2  ...  Layer 32    │    │</span><br><span class="line">│   └─────────────────────────────────────┘    │</span><br><span class="line">│                                               │</span><br><span class="line">│   LoRA Adapters（按需加载）                    │</span><br><span class="line">│   ┌──────┐ ┌──────┐ ┌──────┐ ┌──────┐      │</span><br><span class="line">│   │客服   │ │代码   │ │翻译   │ │法律   │      │</span><br><span class="line">│   │A₁·B₁ │ │A₂·B₂ │ │A₃·B₃ │ │A₄·B₄ │      │</span><br><span class="line">│   └──┬───┘ └──┬───┘ └──┬───┘ └──┬───┘      │</span><br><span class="line">│      │        │        │        │             │</span><br><span class="line">│   ───┴────────┴────────┴────────┴───          │</span><br><span class="line">│          Punica Batched GEMM                  │</span><br><span class="line">│   （不同 LoRA 的请求可以打包到同一个 batch）      │</span><br><span class="line">└─────────────────────────────────────────────┘</span><br></pre></td></tr></table></figure>
+
+<h3 id="5-2-启动命令"><a href="#5-2-启动命令" class="headerlink" title="5.2 启动命令"></a>5.2 启动命令</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 一个 vLLM 实例，同时服务 4 个 LoRA adapter</span></span><br><span class="line">vllm serve meta-llama/Llama-3.1-8B-Instruct \</span><br><span class="line">  --enable-lora \</span><br><span class="line">  --max-loras 4 \</span><br><span class="line">  --max-lora-rank 64 \</span><br><span class="line">  --lora-modules \</span><br><span class="line">    customer-service=/models/lora/cs-adapter \</span><br><span class="line">    code-assistant=/models/lora/code-adapter \</span><br><span class="line">    translator=/models/lora/trans-adapter \</span><br><span class="line">    legal=/models/lora/legal-adapter</span><br></pre></td></tr></table></figure>
+
+<h3 id="5-3-调用方式"><a href="#5-3-调用方式" class="headerlink" title="5.3 调用方式"></a>5.3 调用方式</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 不同请求带上不同的 LoRA adapter</span></span><br><span class="line"><span class="keyword">import</span> openai</span><br><span class="line"></span><br><span class="line">client = openai.OpenAI(base_url=<span class="string">&quot;http://localhost:8000/v1&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 客服场景 → 用客服 LoRA</span></span><br><span class="line">response = client.completions.create(</span><br><span class="line">    model=<span class="string">&quot;customer-service&quot;</span>,</span><br><span class="line">    prompt=<span class="string">&quot;用户说：我的订单一直没发货...&quot;</span>,</span><br><span class="line">    max_tokens=<span class="number">256</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 代码场景 → 用代码 LoRA，同一个 vLLM 实例！</span></span><br><span class="line">response = client.completions.create(</span><br><span class="line">    model=<span class="string">&quot;code-assistant&quot;</span>,</span><br><span class="line">    prompt=<span class="string">&quot;写一个 Python 并发请求的函数&quot;</span>,</span><br><span class="line">    max_tokens=<span class="number">256</span></span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+
+<h3 id="5-4-关键能力：Heterogeneous-LoRA-Batching"><a href="#5-4-关键能力：Heterogeneous-LoRA-Batching" class="headerlink" title="5.4 关键能力：Heterogeneous LoRA Batching"></a>5.4 关键能力：Heterogeneous LoRA Batching</h3><p>vLLM 支持<strong>同一个 batch 里混合不同 LoRA adapter 的请求</strong>——通过 Punica 优化的 GEMM 内核：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">Batch 里混跑 3 个 adapter:</span><br><span class="line">  ┌──────┬──────┬──────┬──────┐</span><br><span class="line">  │ 客服  │ 客服  │ 代码  │ 翻译  │  ← 4 个请求，3 种 LoRA</span><br><span class="line">  └──────┴──────┴──────┴──────┘</span><br><span class="line">              ↓</span><br><span class="line">  vLLM scheduler 自动分组 → 共享基座计算，分别走各自的 LoRA 旁路</span><br><span class="line">              ↓</span><br><span class="line">  吞吐量 ≈ 纯基座推理的 85-90%（比部署 3 个独立 vLLM 实例节省 3× 显存）</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="六、面试速查"><a href="#六、面试速查" class="headerlink" title="六、面试速查"></a>六、面试速查</h2><blockquote>
+<p><strong>面试频率评估</strong>：vLLM + LoRA 是 <strong>2025-2026 年 AI Infra &#x2F; MLE 岗的中高频题</strong>。PagedAttention 和 LoRA 原理是面试官最爱追着问的——不是”你知道名字就行”，而是要能讲清楚”为什么这么设计”。属于<strong>80 分 → 95 分的关键差距题</strong>。</p>
+</blockquote>
+<p><strong>Q1：PagedAttention 为什么能提升吞吐量？和操作系统有什么关系？（高频）</strong></p>
+<blockquote>
+<p>“核心原因是 KV Cache 内存利用率从 20-40% 提升到 ~96%。传统方法给每个序列预分配最大长度的连续显存，大部分是空的。PagedAttention 把 KV Cache 切成固定大小的 Block，通过 Block Table 做逻辑到物理的映射——和 OS 虚拟内存分页一模一样。再加上 Copy-on-Write 共享前缀（如 System Prompt），进一步节省显存。省下来的显存可以放更多请求 → 更大的 Batch → 更高吞吐。”</p>
+</blockquote>
+<p><strong>Q2：Continuous Batching 和 Static Batching 有什么区别？（高频）</strong></p>
+<blockquote>
+<p>“Static Batching 等整个 batch 所有请求都跑完才释放，一个慢请求拖累一整个 batch。Continuous Batching 每个 decode step 后重新组装 batch——跑完的立即移除，新的立即加入。GPU 永远满载，平均延迟降 10 倍。”</p>
+</blockquote>
+<p><strong>Q3：LoRA 为什么只微调 Q 和 V 的投影矩阵？</strong></p>
+<blockquote>
+<p>“实验结论：只注入 Q、V 效果最好。Q 决定’关注什么位置’，V 决定’关注到之后输出什么内容’——这是 Attention 中任务相关性最强的两个矩阵。K 主要负责匹配，通用性更强，不需要改。FFN 层的参数太多且对通用知识影响大，改了容易灾难性遗忘。”</p>
+</blockquote>
+<p><strong>Q4：LoRA 的 rank 怎么选？（非常高频）</strong></p>
+<blockquote>
+<p>“r&#x3D;8 是经典默认值，r&#x3D;16 更稳。r 太小（&lt;4）表达能力不足，太大（&gt;64）收益递减且可能过拟合。实际调参：先用 r&#x3D;8 快速验证，效果好就不动；不好再试 r&#x3D;16 或 r&#x3D;32。另外不同层可以用不同 rank——浅层通用特征用低 rank，深层任务特征用高 rank。”</p>
+</blockquote>
+<p><strong>Q5：vLLM + LoRA 部署有什么要注意的？</strong></p>
+<blockquote>
+<p>“1）<code>--enable-lora</code> 和 <code>--max-loras</code> 必须配置，max-loras 要 ≥ 实际并发使用的 adapter 数。2）LoRA adapter 的大小和 rank 有关，rank&#x3D;64 的 adapter 约几十 MB 到几百 MB。3）异构 LoRA batching 有 Punica GEMM 内核优化，吞吐量接近纯基座推理的 85-90%。4）如果用到 4-bit QLoRA 基座，adapter 必须在启动时指定，不支持运行时热切换。”</p>
+</blockquote>
+<p><strong>Q6：LoRA 怎么合并回原模型？推理有额外延迟吗？</strong></p>
+<blockquote>
+<p>“LoRA 的一个关键优势是<strong>推理时零额外延迟</strong>。因为 ΔW &#x3D; B·A 是低秩的，可以直接计算 B·A → 加到原始 W 上 → 得到一个和原来一样大的矩阵。合并后推理速度和原模型完全一样。vLLM 不做物理合并（为了支持多个 adpater 共享基座），但通过 Punica 内核让 LoRA 旁路的计算开销可以忽略不计。”</p>
+</blockquote>
+<hr>
+<h2 id="七、本章掌握要点"><a href="#七、本章掌握要点" class="headerlink" title="七、本章掌握要点"></a>七、本章掌握要点</h2><table>
+<thead>
+<tr>
+<th>必须掌握</th>
+<th>加分项</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>✅ PagedAttention 三个设计：Block &#x2F; Block Table &#x2F; CoW</td>
+<td>✅ vLLM Scheduler 调度策略（FCFS + 抢占）</td>
+</tr>
+<tr>
+<td>✅ Continuous Batching vs Static Batching 的区别</td>
+<td>✅ Punica GEMM 为什么能高效混合 LoRA</td>
+</tr>
+<tr>
+<td>✅ LoRA 原理：W’ &#x3D; W + B·A（冻结+低秩旁路）</td>
+<td>✅ QLoRA 的 NF4 量化原理</td>
+</tr>
+<tr>
+<td>✅ LoRA rank 选 r&#x3D;8~16 的原则和原因</td>
+<td>✅ LoRA 合并回原模型的数学推导</td>
+</tr>
+<tr>
+<td>✅ vLLM + LoRA 的部署架构（一个基座 + N 个 adapter）</td>
+<td>✅ 异构 LoRA batching 的吞吐量数据</td>
+</tr>
+<tr>
+<td>✅ 为什么只给 Q、V 注入 LoRA</td>
+<td>✅ La-LoRA &#x2F; GeLoRA 等自适应 rank 变体</td>
+</tr>
+</tbody></table>
+<hr>
+<blockquote>
+<p>📖 延伸阅读：</p>
+<ul>
+<li><a href="/2026/07/22/ai-python/AI-Python-10.1-Prompt%E5%B7%A5%E7%A8%8B%E6%A0%B8%E5%BF%83%E6%8A%80%E6%B3%95/">10.1 Prompt 工程核心技法</a> — CoT &#x2F; Few-Shot &#x2F; 结构化输出</li>
+<li><a href="/2026/07/22/ai-python/AI-Python-10.2-MCP%E5%8D%8F%E8%AE%AE%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E8%B7%B5/">10.2 MCP 协议原理与实践</a> — MCP 架构与工具集成</li>
+<li><a href="/2026/04/05/ai-python/AI-Python-05.1-PyTorch%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0%E5%9F%BA%E7%A1%80/">05.1 PyTorch 深度学习基础</a> — LoRA 实现的 PyTorch 基础</li>
+<li><a href="/2026/04/05/ai-python/AI-Python-05.3-%E6%8E%A8%E7%90%86%E4%BC%98%E5%8C%96%E4%B8%8E%E9%87%8F%E5%8C%96/">05.3 推理优化与量化</a> — QLoRA 量化原理深入</li>
+<li><a target="_blank" rel="noopener" href="https://docs.vllm.ai/">vLLM 官方文档</a> — PagedAttention 源码级详解</li>
+<li><a target="_blank" rel="noopener" href="https://arxiv.org/abs/2106.09685">LoRA 论文</a> — Microsoft 原始论文</li>
+</ul>
+</blockquote>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>Author: </span><span class="post-copyright-info"><a href="http://example.com">david</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>Link: </span><span class="post-copyright-info"><a href="http://example.com/2026/07/22/ai-python/AI-Python-10.3-vLLM%E4%B8%8ELoRA%E6%8E%A8%E7%90%86%E5%8A%A0%E9%80%9F%E4%B8%8E%E9%AB%98%E6%95%88%E5%BE%AE%E8%B0%83/">http://example.com/2026/07/22/ai-python/AI-Python-10.3-vLLM%E4%B8%8ELoRA%E6%8E%A8%E7%90%86%E5%8A%A0%E9%80%9F%E4%B8%8E%E9%AB%98%E6%95%88%E5%BE%AE%E8%B0%83/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>Copyright Notice: </span><span class="post-copyright-info">All articles on this blog are licensed under <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> unless otherwise stated.</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Python/">Python</a><a class="post-meta__tags" href="/tags/%E9%9D%A2%E8%AF%95/">面试</a><a class="post-meta__tags" href="/tags/AI/">AI</a><a class="post-meta__tags" href="/tags/%E6%8E%A8%E7%90%86%E4%BC%98%E5%8C%96/">推理优化</a><a class="post-meta__tags" href="/tags/vLLM/">vLLM</a><a class="post-meta__tags" href="/tags/LoRA/">LoRA</a><a class="post-meta__tags" href="/tags/PagedAttention/">PagedAttention</a><a class="post-meta__tags" href="/tags/%E6%A8%A1%E5%9E%8B%E5%BE%AE%E8%B0%83/">模型微调</a></div><div class="post-share"><div class="social-share" data-image="/img/butterfly-icon.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2026/07/22/ai-python/AI-Python-10.4-%E6%A8%A1%E5%9E%8B%E8%AF%84%E6%B5%8B%E4%B8%8EAI%E5%AE%89%E5%85%A8/" title="AI Python 学习 — 10.4 模型评测与 AI 安全（RAGAS / LLM-as-Judge / Prompt 注入 / Jailbreak）"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">Previous</div><div class="info-item-2">AI Python 学习 — 10.4 模型评测与 AI 安全（RAGAS / LLM-as-Judge / Prompt 注入 / Jailbreak）</div></div><div class="info-2"><div class="info-item-1">10.4：模型评测与 AI 安全 “怎么知道模型好不好？”和”怎么防止被攻击？”是 LLM 落地的两个必答题。本文快速覆盖评测体系（RAGAS &#x2F; LLM-as-Judge &#x2F; 基准数据集）和安全防线（Prompt 注入 &#x2F; Jailbreak &#x2F; RLHF 对齐），面试够用，不再深入展开。   零、本章速查表   概念 做什么 一句话    RAGAS RAG 系统四维评测 搜得准不准？生得对不对？   LLM-as-Judge 拿一个大模型当裁判给另一个打分 “GPT-4 给 GPT-3.5 的作文打分”   Benchmark 标准化评测数据集 MMLU &#x2F; HumanEval &#x2F; GSM8K   Prompt Injection 攻击者通过 Prompt 篡改系统行为 “Ignore all previous instructions…”   Jailbreak 突破 LLM 安全限制 诱导模型输出违规内容   RLHF 用人类偏好训练模型对齐 ChatGPT 能”听话”的关键    一、模型评测1.1 三个评测...</div></div></div></a><a class="pagination-related" href="/2026/07/22/ai-python/AI-Python-10.2-MCP%E5%8D%8F%E8%AE%AE%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E8%B7%B5/" title="AI Python 学习 — 10.2 MCP 协议原理与实践（Model Context Protocol）"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">Next</div><div class="info-item-2">AI Python 学习 — 10.2 MCP 协议原理与实践（Model Context Protocol）</div></div><div class="info-2"><div class="info-item-1">10.2：MCP 协议原理与实践 MCP（Model Context Protocol）是 Anthropic 于 2024 年 11 月发布的开放协议。一句话定义：大模型的”USB-C 接口”——统一了 LLM 与外部工具、数据源的连接方式。本文覆盖协议原理、四层架构、三大原语、与 Function Calling 的本质区别，以及 The Boy Assistant 知识库的 MCP 实战。   零、本章速查表   概念 做什么 一句话    MCP 协议 统一 LLM 与外部工具的连接标准 “AI 界的 USB-C：一套协议连接所有工具”   Resources 暴露数据给 LLM 读 “文件、数据库记录、API 响应——只读”   Tools 暴露动作给 LLM 执行 “搜索、计算、发邮件——可执行”   Prompts 可复用的提示词模板 “预定义的对话模板，Server 提供”   Transport 通信层 stdio（本地进程）&#x2F; HTTP+SSE（远程服务）   JSON-RPC 协议消息格式 请求&#x2F;响应&#x2F;通知，MCP 的底层协议 ...</div></div></div></a></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/butterfly-icon.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">david</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">169</div></a><a href="/tags/"><div class="headline">Tags</div><div class="length-num">397</div></a><a href="/categories/"><div class="headline">Categories</div><div class="length-num">33</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>Announcement</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>Contents</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#10-3%EF%BC%9AvLLM-%E4%B8%8E-LoRA-%E2%80%94-%E6%8E%A8%E7%90%86%E5%8A%A0%E9%80%9F-%E9%AB%98%E6%95%88%E5%BE%AE%E8%B0%83"><span class="toc-number">1.</span> <span class="toc-text">10.3：vLLM 与 LoRA — 推理加速 + 高效微调</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%9B%B6%E3%80%81%E6%9C%AC%E7%AB%A0%E9%80%9F%E6%9F%A5%E8%A1%A8"><span class="toc-number">2.</span> <span class="toc-text">零、本章速查表</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81vLLM-%E8%A7%A3%E5%86%B3%E4%BB%80%E4%B9%88%E9%97%AE%E9%A2%98%E2%80%94%E2%80%94%E4%B8%89%E4%B8%AA%E6%B5%AA%E8%B4%B9%E5%9C%BA%E6%99%AF"><span class="toc-number">3.</span> <span class="toc-text">一、vLLM 解决什么问题——三个浪费场景</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-%E5%9C%BA%E6%99%AF%E4%B8%80%EF%BC%9AKV-Cache-%E7%A2%8E%E7%89%87%E5%8C%96%E6%B5%AA%E8%B4%B9"><span class="toc-number">3.1.</span> <span class="toc-text">1.1 场景一：KV Cache 碎片化浪费</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-%E5%9C%BA%E6%99%AF%E4%BA%8C%EF%BC%9A%E7%9B%B8%E5%90%8C-System-Prompt-%E9%87%8D%E5%A4%8D%E5%AD%98%E5%82%A8"><span class="toc-number">3.2.</span> <span class="toc-text">1.2 场景二：相同 System Prompt 重复存储</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-3-%E5%9C%BA%E6%99%AF%E4%B8%89%EF%BC%9A%E7%9F%AD%E8%AF%B7%E6%B1%82%E8%A2%AB%E9%95%BF%E8%AF%B7%E6%B1%82%E6%8B%96%E6%AD%BB"><span class="toc-number">3.3.</span> <span class="toc-text">1.3 场景三：短请求被长请求拖死</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-4-%E4%B8%89%E5%A4%A7%E9%97%AE%E9%A2%98%E6%80%BB%E7%BB%93"><span class="toc-number">3.4.</span> <span class="toc-text">1.4 三大问题总结</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81PagedAttention%EF%BC%9A%E4%B8%89%E5%8F%A5%E8%AF%9D%E8%AE%B2%E6%B8%85"><span class="toc-number">4.</span> <span class="toc-text">二、PagedAttention：三句话讲清</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-%E6%A0%B8%E5%BF%83%E7%B1%BB%E6%AF%94%EF%BC%9A%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E8%99%9A%E6%8B%9F%E5%86%85%E5%AD%98"><span class="toc-number">4.1.</span> <span class="toc-text">2.1 核心类比：操作系统虚拟内存</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-%E4%B8%89%E4%B8%AA%E6%A0%B8%E5%BF%83%E8%AE%BE%E8%AE%A1"><span class="toc-number">4.2.</span> <span class="toc-text">2.2 三个核心设计</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-%E5%86%85%E5%AD%98%E6%95%88%E7%8E%87"><span class="toc-number">4.3.</span> <span class="toc-text">2.3 内存效率</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81Continuous-Batching"><span class="toc-number">5.</span> <span class="toc-text">三、Continuous Batching</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-%E4%B8%80%E5%8F%A5%E8%AF%9D"><span class="toc-number">5.1.</span> <span class="toc-text">3.1 一句话</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-%E6%95%88%E6%9E%9C%E5%AF%B9%E6%AF%94"><span class="toc-number">5.2.</span> <span class="toc-text">3.2 效果对比</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81LoRA%EF%BC%9A%E4%BD%8E%E7%A7%A9%E9%80%82%E5%BA%94"><span class="toc-number">6.</span> <span class="toc-text">四、LoRA：低秩适应</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-%E9%97%AE%E9%A2%98%EF%BC%9A%E5%85%A8%E9%87%8F%E5%BE%AE%E8%B0%83%E8%B4%B5%E5%9C%A8%E5%93%AA"><span class="toc-number">6.1.</span> <span class="toc-text">4.1 问题：全量微调贵在哪</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-%E6%A0%B8%E5%BF%83%E5%8E%9F%E7%90%86"><span class="toc-number">6.2.</span> <span class="toc-text">4.2 核心原理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-3-%E4%B8%BA%E4%BB%80%E4%B9%88%E2%80%9D%E4%BD%8E%E7%A7%A9%E2%80%9D%E6%9C%89%E6%95%88%EF%BC%9F"><span class="toc-number">6.3.</span> <span class="toc-text">4.3 为什么”低秩”有效？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-4-%E4%BB%A3%E7%A0%81%E5%AE%9E%E7%8E%B0"><span class="toc-number">6.4.</span> <span class="toc-text">4.4 代码实现</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-5-QLoRA%EF%BC%9A%E9%87%8F%E5%8C%96-LoRA"><span class="toc-number">6.5.</span> <span class="toc-text">4.5 QLoRA：量化 + LoRA</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81vLLM-LoRA%EF%BC%9A%E7%94%9F%E4%BA%A7%E9%83%A8%E7%BD%B2%E7%9A%84%E9%BB%84%E9%87%91%E7%BB%84%E5%90%88"><span class="toc-number">7.</span> <span class="toc-text">五、vLLM + LoRA：生产部署的黄金组合</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-%E4%B8%80%E5%9B%BE%E8%83%9C%E5%8D%83%E8%A8%80"><span class="toc-number">7.1.</span> <span class="toc-text">5.1 一图胜千言</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-%E5%90%AF%E5%8A%A8%E5%91%BD%E4%BB%A4"><span class="toc-number">7.2.</span> <span class="toc-text">5.2 启动命令</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-3-%E8%B0%83%E7%94%A8%E6%96%B9%E5%BC%8F"><span class="toc-number">7.3.</span> <span class="toc-text">5.3 调用方式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-4-%E5%85%B3%E9%94%AE%E8%83%BD%E5%8A%9B%EF%BC%9AHeterogeneous-LoRA-Batching"><span class="toc-number">7.4.</span> <span class="toc-text">5.4 关键能力：Heterogeneous LoRA Batching</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81%E9%9D%A2%E8%AF%95%E9%80%9F%E6%9F%A5"><span class="toc-number">8.</span> <span class="toc-text">六、面试速查</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%83%E3%80%81%E6%9C%AC%E7%AB%A0%E6%8E%8C%E6%8F%A1%E8%A6%81%E7%82%B9"><span class="toc-number">9.</span> <span class="toc-text">七、本章掌握要点</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>Recent Posts</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/10/ai-python/AI-Python-12.8-%E9%9D%A2%E8%AF%95QA%E6%89%8B%E5%86%8C08-%E6%A8%A1%E5%9E%8B%E8%AF%84%E4%BC%B0%E4%B8%8EAI%E5%AE%89%E5%85%A8/" title="AI Python 学习 — 面试 QA 手册 08：模型评估与 AI 安全">AI Python 学习 — 面试 QA 手册 08：模型评估与 AI 安全</a><time datetime="2026-08-10T00:20:00.000Z" title="Created 2026-08-10 08:20:00">2026-08-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/10/ai-python/AI-Python-12.7-%E9%9D%A2%E8%AF%95QA%E6%89%8B%E5%86%8C07-%E5%A4%9A%E6%A8%A1%E6%80%81/" title="AI Python 学习 — 面试 QA 手册 07：多模态">AI Python 学习 — 面试 QA 手册 07：多模态</a><time datetime="2026-08-10T00:10:00.000Z" title="Created 2026-08-10 08:10:00">2026-08-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/10/ai-python/AI-Python-12.6-%E9%9D%A2%E8%AF%95QA%E6%89%8B%E5%86%8C06-Agent/" title="AI Python 学习 — 面试 QA 手册 06：Agent">AI Python 学习 — 面试 QA 手册 06：Agent</a><time datetime="2026-08-10T00:00:00.000Z" title="Created 2026-08-10 08:00:00">2026-08-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/07/ai-python/AI-Python-12.5-%E9%9D%A2%E8%AF%95QA%E6%89%8B%E5%86%8C05-%E6%8E%A8%E7%90%86%E4%BC%98%E5%8C%96%E4%B8%8E%E9%83%A8%E7%BD%B2/" title="AI Python 学习 — 面试 QA 手册 05：推理优化与部署">AI Python 学习 — 面试 QA 手册 05：推理优化与部署</a><time datetime="2026-08-07T00:10:00.000Z" title="Created 2026-08-07 08:10:00">2026-08-07</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/07/ai-python/AI-Python-12.4-%E9%9D%A2%E8%AF%95QA%E6%89%8B%E5%86%8C04-RAG/" title="AI Python 学习 — 面试 QA 手册 04：RAG 检索增强生成">AI Python 学习 — 面试 QA 手册 04：RAG 检索增强生成</a><time datetime="2026-08-07T00:00:00.000Z" title="Created 2026-08-07 08:00:00">2026-08-07</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By david</span><span class="framework-info"><span>Framework </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>Theme </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.4.3</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="Reading Mode"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="Toggle Between Light and Dark Mode"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="Toggle Between Single-column and Double-column"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="Settings"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="Table of Contents"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="Back to Top"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><div class="js-pjax"><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (false) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>

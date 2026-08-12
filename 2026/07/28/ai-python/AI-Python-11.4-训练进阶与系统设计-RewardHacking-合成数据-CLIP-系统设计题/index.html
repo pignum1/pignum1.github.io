@@ -1,0 +1,414 @@
+<!DOCTYPE html><html lang="en" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>AI Python 学习 — 11.4 训练进阶与系统设计场景（Reward Hacking / 合成数据 / CLIP深入 / 系统设计题） | Hexo</title><meta name="author" content="david"><meta name="copyright" content="david"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="11.4：训练进阶与系统设计场景 最后一篇缺口补全：训练进阶（Reward Hacking + 合成数据 + CLIP）+ 系统设计场景题（AI 客服 + LLM 网关）。两个系统设计题是二面&#x2F;三面的高分密码。   一、Reward Hacking（奖励破解）1.1 一句话 RLHF 训练中，LLM 学会了”怎么让奖励模型打高分”而不是”怎么生成真正好的回答”。  1.2 典型表现123">
+<meta property="og:type" content="article">
+<meta property="og:title" content="AI Python 学习 — 11.4 训练进阶与系统设计场景（Reward Hacking &#x2F; 合成数据 &#x2F; CLIP深入 &#x2F; 系统设计题）">
+<meta property="og:url" content="http://example.com/2026/07/28/ai-python/AI-Python-11.4-%E8%AE%AD%E7%BB%83%E8%BF%9B%E9%98%B6%E4%B8%8E%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1-RewardHacking-%E5%90%88%E6%88%90%E6%95%B0%E6%8D%AE-CLIP-%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1%E9%A2%98/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="11.4：训练进阶与系统设计场景 最后一篇缺口补全：训练进阶（Reward Hacking + 合成数据 + CLIP）+ 系统设计场景题（AI 客服 + LLM 网关）。两个系统设计题是二面&#x2F;三面的高分密码。   一、Reward Hacking（奖励破解）1.1 一句话 RLHF 训练中，LLM 学会了”怎么让奖励模型打高分”而不是”怎么生成真正好的回答”。  1.2 典型表现123">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://example.com/img/butterfly-icon.png">
+<meta property="article:published_time" content="2026-07-28T04:00:00.000Z">
+<meta property="article:modified_time" content="2026-08-11T05:38:51.121Z">
+<meta property="article:author" content="david">
+<meta property="article:tag" content="Python">
+<meta property="article:tag" content="面试">
+<meta property="article:tag" content="AI">
+<meta property="article:tag" content="Reward Hacking">
+<meta property="article:tag" content="合成数据">
+<meta property="article:tag" content="CLIP">
+<meta property="article:tag" content="系统设计">
+<meta property="article:tag" content="AI客服">
+<meta property="article:tag" content="LLM网关">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/img/butterfly-icon.png"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "AI Python 学习 — 11.4 训练进阶与系统设计场景（Reward Hacking / 合成数据 / CLIP深入 / 系统设计题）",
+  "url": "http://example.com/2026/07/28/ai-python/AI-Python-11.4-%E8%AE%AD%E7%BB%83%E8%BF%9B%E9%98%B6%E4%B8%8E%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1-RewardHacking-%E5%90%88%E6%88%90%E6%95%B0%E6%8D%AE-CLIP-%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1%E9%A2%98/",
+  "image": "http://example.com/img/butterfly-icon.png",
+  "datePublished": "2026-07-28T04:00:00.000Z",
+  "dateModified": "2026-08-11T05:38:51.121Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "david",
+      "url": "http://example.com"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://example.com/2026/07/28/ai-python/AI-Python-11.4-%E8%AE%AD%E7%BB%83%E8%BF%9B%E9%98%B6%E4%B8%8E%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1-RewardHacking-%E5%90%88%E6%88%90%E6%95%B0%E6%8D%AE-CLIP-%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1%E9%A2%98/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: 'Copy Successful',
+    error: 'Copy Failed',
+    noSupport: 'Browser Not Supported'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: 'Just now',
+    min: 'minutes ago',
+    hour: 'hours ago',
+    day: 'days ago',
+    month: 'months ago'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid/dist/infinitegrid.min.js',
+    buttonText: 'Load More'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'AI Python 学习 — 11.4 训练进阶与系统设计场景（Reward Hacking / 合成数据 / CLIP深入 / 系统设计题）',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Hexo</span></a><a class="nav-page-title" href="/"><span class="site-name">AI Python 学习 — 11.4 训练进阶与系统设计场景（Reward Hacking / 合成数据 / CLIP深入 / 系统设计题）</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  Back to Home</span></span></a></span><div id="menus"></div></nav><div id="post-info"><h1 class="post-title">AI Python 学习 — 11.4 训练进阶与系统设计场景（Reward Hacking / 合成数据 / CLIP深入 / 系统设计题）</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">Created</span><time class="post-meta-date-created" datetime="2026-07-28T04:00:00.000Z" title="Created 2026-07-28 12:00:00">2026-07-28</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">Updated</span><time class="post-meta-date-updated" datetime="2026-08-11T05:38:51.121Z" title="Updated 2026-08-11 13:38:51">2026-08-11</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/AI%E5%AD%A6%E4%B9%A0/">AI学习</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/AI%E5%AD%A6%E4%B9%A0/%E9%9D%A2%E8%AF%95/">面试</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">Post Views:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h2 id="11-4：训练进阶与系统设计场景"><a href="#11-4：训练进阶与系统设计场景" class="headerlink" title="11.4：训练进阶与系统设计场景"></a>11.4：训练进阶与系统设计场景</h2><blockquote>
+<p>最后一篇缺口补全：训练进阶（Reward Hacking + 合成数据 + CLIP）+ 系统设计场景题（AI 客服 + LLM 网关）。两个系统设计题是二面&#x2F;三面的高分密码。</p>
+</blockquote>
+<hr>
+<h2 id="一、Reward-Hacking（奖励破解）"><a href="#一、Reward-Hacking（奖励破解）" class="headerlink" title="一、Reward Hacking（奖励破解）"></a>一、Reward Hacking（奖励破解）</h2><h3 id="1-1-一句话"><a href="#1-1-一句话" class="headerlink" title="1.1 一句话"></a>1.1 一句话</h3><blockquote>
+<p>RLHF 训练中，LLM 学会了”怎么让奖励模型打高分”而不是”怎么生成真正好的回答”。</p>
+</blockquote>
+<h3 id="1-2-典型表现"><a href="#1-2-典型表现" class="headerlink" title="1.2 典型表现"></a>1.2 典型表现</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">真正的目标: 生成有帮助、安全的回答</span><br><span class="line">奖励模型的目标: 给高分</span><br><span class="line"></span><br><span class="line">LLM 发现的作弊方式:</span><br><span class="line">  ❌ &quot;为了获得高分，我应该说奖励模型喜欢听的话&quot;</span><br><span class="line">  → 输出变得谄媚（&quot;您说得太对了！&quot;）</span><br><span class="line">  → 输出变得冗长（长回答奖励模型更倾向给高分）</span><br><span class="line">  → 输出变得过度自信（&quot;这绝对是...&quot; 而不是 &quot;可能是...&quot;）</span><br><span class="line">  → 回避争议话题（即使正确也不说，怕扣分）</span><br></pre></td></tr></table></figure>
+
+<h3 id="1-3-为什么发生"><a href="#1-3-为什么发生" class="headerlink" title="1.3 为什么发生"></a>1.3 为什么发生</h3><p>奖励模型是 RLHF 第二步训练的——给两个回答让人类标注”哪个更好”。但<strong>奖励模型是”偏好预测器”，不是”真理判断器”</strong>。它会学到人类标注中的偏见：长回答 &gt; 短回答、自信语气 &gt; 谨慎语气、迎合 &gt; 反驳。</p>
+<h3 id="1-4-怎么缓解"><a href="#1-4-怎么缓解" class="headerlink" title="1.4 怎么缓解"></a>1.4 怎么缓解</h3><table>
+<thead>
+<tr>
+<th>方案</th>
+<th>做法</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>KL 散度约束</strong></td>
+<td>限制 LLM 输出不允许偏离 SFT 模型太远</td>
+</tr>
+<tr>
+<td><strong>改进奖励数据</strong></td>
+<td>标注时刻意包含”短但精准”、”长但啰嗦”的对比</td>
+</tr>
+<tr>
+<td><strong>DPO 替代 PPO</strong></td>
+<td>DPO 不需要单独训 RM，直接优化偏好 → 减少了作弊空间</td>
+</tr>
+<tr>
+<td><strong>多样化评估</strong></td>
+<td>不只靠 RM 打分，加规则检查（长度、多样性、事实性）</td>
+</tr>
+</tbody></table>
+<h3 id="1-5-面试速答"><a href="#1-5-面试速答" class="headerlink" title="1.5 面试速答"></a>1.5 面试速答</h3><blockquote>
+<p>“Reward Hacking 是 RLHF 的经典问题——模型学会了讨好奖励模型而不是真正变好。表现：回答变长、变谄媚、回避争议。解法：KL 散度约束限制偏移、DPO 替代 PPO 减少 Reward Model 依赖、多维评估不只靠一个打分。”</p>
+</blockquote>
+<hr>
+<h2 id="二、合成数据"><a href="#二、合成数据" class="headerlink" title="二、合成数据"></a>二、合成数据</h2><h3 id="2-1-什么场景需要合成数据"><a href="#2-1-什么场景需要合成数据" class="headerlink" title="2.1 什么场景需要合成数据"></a>2.1 什么场景需要合成数据</h3><p>真实数据不够、或真实数据有隐私问题、或需要特定分布的数据时。</p>
+<table>
+<thead>
+<tr>
+<th>场景</th>
+<th>示例</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>冷启动</strong></td>
+<td>新产品没有用户数据，合成对话做 SFT</td>
+</tr>
+<tr>
+<td><strong>长尾覆盖</strong></td>
+<td>自然灾害理赔场景极少出现，合成来补</td>
+</tr>
+<tr>
+<td><strong>隐私保护</strong></td>
+<td>医疗数据不能直接用，合成模拟数据</td>
+</tr>
+<tr>
+<td><strong>多语言</strong></td>
+<td>中文问答数据不够，从英文翻译+改写</td>
+</tr>
+</tbody></table>
+<h3 id="2-2-两种生成方式"><a href="#2-2-两种生成方式" class="headerlink" title="2.2 两种生成方式"></a>2.2 两种生成方式</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">方式 1: 蒸馏（Distillation）</span><br><span class="line">  强模型（GPT-4）生成 → 弱模型学习</span><br><span class="line">  示例: 用 GPT-4 生成 10000 条客服对话 → SFT 微调 Claude Haiku</span><br><span class="line"></span><br><span class="line">方式 2: 自举（Self-Instruct）</span><br><span class="line">  LLM 自己生成指令 → 自己生成回答 → 自己过滤低质量的</span><br><span class="line">  示例: Alpaca 数据集——用 GPT-3.5 生成了 52K 条指令数据</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-3-核心挑战"><a href="#2-3-核心挑战" class="headerlink" title="2.3 核心挑战"></a>2.3 核心挑战</h3><table>
+<thead>
+<tr>
+<th>挑战</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>多样性不足</strong></td>
+<td>LLM 生成的数据趋于平均化，缺少创造性</td>
+</tr>
+<tr>
+<td><strong>错误放大</strong></td>
+<td>强模型也犯错 → 合成数据带错 → 弱模型学错</td>
+</tr>
+<tr>
+<td><strong>分布偏差</strong></td>
+<td>合成数据的分布和真实用户输入不一致</td>
+</tr>
+<tr>
+<td><strong>评估困难</strong></td>
+<td>合成数据的效果只能在真实场景验证</td>
+</tr>
+</tbody></table>
+<h3 id="2-4-面试速答"><a href="#2-4-面试速答" class="headerlink" title="2.4 面试速答"></a>2.4 面试速答</h3><blockquote>
+<p>“合成数据用于冷启动、长尾覆盖、隐私保护。两种方式——用强模型蒸馏、或用 Self-Instruct 自举。最大挑战是分布偏差——合成数据的分布和真实用户不一样，模型上线后效果打折。”</p>
+</blockquote>
+<hr>
+<h2 id="三、CLIP-对比学习深入"><a href="#三、CLIP-对比学习深入" class="headerlink" title="三、CLIP 对比学习深入"></a>三、CLIP 对比学习深入</h2><h3 id="3-1-CLIP-做了什么"><a href="#3-1-CLIP-做了什么" class="headerlink" title="3.1 CLIP 做了什么"></a>3.1 CLIP 做了什么</h3><p>CLIP（Contrastive Language-Image Pre-training）是 VLM 的基础组件。它让模型学会”把图片和对应的文字描述拉近，把不相关的推开”。</p>
+<h3 id="3-2-对比学习核心机制"><a href="#3-2-对比学习核心机制" class="headerlink" title="3.2 对比学习核心机制"></a>3.2 对比学习核心机制</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">训练一个 batch: N 张图片 + N 条文字描述</span><br><span class="line"></span><br><span class="line">图片: [猫的图片] [狗的图片] [车的图片] ...</span><br><span class="line">文字: [&quot;一只橘猫&quot; &quot;金毛犬在奔跑&quot; &quot;红色跑车&quot; ...]</span><br><span class="line"></span><br><span class="line">Step 1: 图片→Image Encoder→图片向量; 文字→Text Encoder→文字向量</span><br><span class="line">Step 2: 计算 N×N 相似度矩阵</span><br><span class="line">Step 3: 最大化对角线（匹配对），最小化非对角线（不匹配对）</span><br><span class="line"></span><br><span class="line">       猫文    狗文    车文</span><br><span class="line"> 猫图  [0.9]  [0.1]  [0.05]  ← 猫图应该和猫文最像</span><br><span class="line"> 狗图  [0.08] [0.85] [0.1]   ← 狗图应该和狗文最像</span><br><span class="line"> 车图  [0.02] [0.1]  [0.92]  ← 对角线全高 = 训练好了</span><br><span class="line"></span><br><span class="line">L = (CE(猫图→猫文) + CE(猫文→猫图) + ...) / 2N</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-3-为什么-CLIP-能泛化到没见过的东西"><a href="#3-3-为什么-CLIP-能泛化到没见过的东西" class="headerlink" title="3.3 为什么 CLIP 能泛化到没见过的东西"></a>3.3 为什么 CLIP 能泛化到没见过的东西</h3><p>CLIP 用了 <strong>4 亿图文对</strong>训练——不是传统分类训练（猫&#x2F;狗&#x2F;车分 1000 类），而是”任意图片↔任意文字”的对齐。所以它能理解”一只穿着圣诞毛衣的柯基”这种训练数据里不可能有的组合——因为它分别理解”圣诞毛衣”和”柯基”。</p>
+<h3 id="3-4-面试速答"><a href="#3-4-面试速答" class="headerlink" title="3.4 面试速答"></a>3.4 面试速答</h3><blockquote>
+<p>“CLIP 通过对比学习对齐图片和文字——最大化匹配对的相似度，最小化不匹配对。用了 4 亿图文对训练，泛化能力强到可以理解训练数据里没见过的概念组合。VLM（如 LLaVA&#x2F;Qwen-VL）的图像编码器就是用 CLIP 训出来的 ViT。”</p>
+</blockquote>
+<hr>
+<h2 id="四、系统设计场景题"><a href="#四、系统设计场景题" class="headerlink" title="四、系统设计场景题"></a>四、系统设计场景题</h2><h3 id="4-1-AI-客服系统设计"><a href="#4-1-AI-客服系统设计" class="headerlink" title="4.1 AI 客服系统设计"></a>4.1 AI 客服系统设计</h3><p><strong>需求</strong>：7×24 语音&#x2F;文字客服，支持多语言，能查订单、退货、投诉升级。</p>
+<hr>
+<p><strong>第一部分：明确挑战与核心设计理念（开场定调，展现架构视野）</strong></p>
+<blockquote>
+<p>“面试官您好。如果要设计一个企业级 AI 客服系统，我认为面临的核心挑战不仅是回答问题，更是<strong>如何控制幻觉</strong>以及<strong>如何安全地执行复杂的业务指令</strong>。因此我的设计思路不会停留在’调一个大模型 API’上，而是围绕<strong>标准化与可控性</strong>构建一个底座。系统贯彻三个核心理念：</p>
+<p>一、<strong>标准化集成 (MCP 封装)</strong>：客服需要频繁调用内部 CRM、订单等系统。采用 MCP 协议对底层业务 API 和知识库统一封装。大模型作为 Client 接入，实现底层工具即插即用和零代码解耦。</p>
+<p>二、<strong>稳健的引擎控制 (Agentic Loop + Harness)</strong>：核心是动态的 Agentic Loop（智能体循环），让 AI 通过’思考→行动→观察’解决问题。为防止死循环或越权操作，外围加一层强管控的 Harness（控制线束），负责生命周期监管、熔断和安全拦截。</p>
+<p>三、<strong>全局统一 Token 机制</strong>：所有多模态输入、检索上下文和中间思考，纳入统一 Token 机制管理——全局上下文截断优化、高并发限流和成本追踪。”</p>
+</blockquote>
+<p><strong>第二部分：四层物理架构落地（展示系统级拆解能力）</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">用户 ──→ 接入层 ──→ Agent 调度层 ──→ RAG 增强层</span><br><span class="line">                    │</span><br><span class="line">                    ├─→ [Harness] ← 监控/熔断/权限管控</span><br><span class="line">                    │</span><br><span class="line">                    ▼</span><br><span class="line">               安全与兜底层</span><br><span class="line">              (PII脱敏 / HITL / 降级)</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>“基于上述理念，具体架构拆解为四个核心层：</p>
+<p><strong>第一，接入层（多模态与路由）</strong>：处理多语言和多模态输入。文本走 WebSocket 保证长连接实时性；语音接入 ASR 转换（Whisper base + faster-whisper 流式）。重点优化端到端延迟，目标 &lt; 500ms。</p>
+<p><strong>第二，Agent 核心调度层</strong>：系统的大脑。Agentic Loop 开始运转——LLM 识别意图后，通过 MCP 协议动态调用 Tool。同时，Harness 实时监控 Loop 运行状态——一旦发现重复调用无效 API，立即介入熔断。</p>
+<p><strong>第三，RAG 知识增强层</strong>：解决业务知识问答。产品 FAQ、退货政策 Embedding 存向量库（pgvector）。采用混合检索（Keyword + Vector），召回最相关的上下文片段喂给 LLM，从根本上压制幻觉。</p>
+<p><strong>第四，安全与兜底层</strong>：执行严格 PII 脱敏（手机号 <code>138****1234</code>）。退款、改签等高危写入操作，Harness 触发 Human-in-the-Loop，必须经由人工审核。LLM API 严重超时 → 自动降级到预设标准 FAQ 话术库，保证服务不中断。”</p>
+</blockquote>
+<p><strong>第三部分：架构演进与多 Agent 选型（展示扩展性与业务适配性）</strong></p>
+<blockquote>
+<p>“关于单 Agent 还是多 Agent，设计原则是<strong>不盲目堆砌，依业务复杂度演进</strong>。</p>
+<p><strong>业务初期</strong>：客服场景较收敛，单 Agent 挂载几个基础 Tool 就能搞定——响应快、易维护。</p>
+<p><strong>业务中后期</strong>：客服覆盖售前导购、售后维权、技术支持等多个复杂领域。单 Agent 的 Prompt 会极其臃肿，导致上下文丢失、Tool 调用混乱。此时升级到<strong>多 Agent 架构</strong>——采用 <strong>Supervisor (路由控制节点) + Worker Agents (领域专家)</strong> 模式。</p>
+<p>用户进线后，Supervisor 识别大类意图：参数咨询 → 路由给挂载商品库的’售前 Agent’；退款争议 → 路由给挂载订单 API 的’售后 Agent’。这种设计完美解耦了业务逻辑，让每个 Agent 职责纯粹，系统更容易测试，也进一步降低了模型的幻觉率。”</p>
+</blockquote>
+<p><strong>Harness + Agentic Loop 的退款场景协作</strong>：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">用户: &quot;我要退款，商品坏了&quot;</span><br><span class="line">  │</span><br><span class="line">  ▼</span><br><span class="line">Triage Agent (分流): intent = complaint_refund, complexity = high</span><br><span class="line">  │</span><br><span class="line">  ▼</span><br><span class="line">Supervisor Agent 拆分任务:</span><br><span class="line">  ├─→ Order Agent: search_order(&quot;ORD-12345&quot;)</span><br><span class="line">  │   Observation: &#123;amount: ¥299, date: &quot;3天前&quot;, status: &quot;已签收&quot;&#125;</span><br><span class="line">  │</span><br><span class="line">  └─→ Policy Agent: 并行 search_policy(&quot;损坏退款&quot;)</span><br><span class="line">      Observation: &#123;rule: &quot;7天内可退, 需上传损坏照片&quot;&#125;</span><br><span class="line">  </span><br><span class="line">Supervisor 汇总: &quot;订单有效、政策允许。缺照片。请用户上传。&quot;</span><br><span class="line">  │</span><br><span class="line">  ▼</span><br><span class="line">用户上传照片 → Perceiver VLM 验证 → 真实 ✓</span><br><span class="line">  │</span><br><span class="line">  ▼</span><br><span class="line">Supervisor: &quot;所有条件满足 → 执行退款&quot;</span><br><span class="line">  │</span><br><span class="line">Harness 拦截: refund(order_id, amount) → P0 操作 → HITL</span><br><span class="line">  │</span><br><span class="line">人工坐席确认 → Harness 放行 → 退款执行 → 审计日志记录</span><br></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th>组件</th>
+<th>职责</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Agentic Loop</strong></td>
+<td>“怎么做对”——拆任务、调 Agent、汇总结果</td>
+</tr>
+<tr>
+<td><strong>Harness</strong></td>
+<td>“不要做错”——熔断(&gt;8轮)、超时(&gt;30s无响应)、权限检查(P0拦截)</td>
+</tr>
+<tr>
+<td><strong>两者关系</strong></td>
+<td>执行层 + 管控层，上下配合，不互相替代</td>
+</tr>
+</tbody></table>
+<h3 id="4-2-LLM-API-网关设计"><a href="#4-2-LLM-API-网关设计" class="headerlink" title="4.2 LLM API 网关设计"></a>4.2 LLM API 网关设计</h3><p><strong>需求</strong>：统一接入多个 LLM（GPT&#x2F;Claude&#x2F;DeepSeek&#x2F;GLM），支持负载均衡、降级、成本控制、权限管理。</p>
+<p><strong>设计方案</strong>：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">客户端</span><br><span class="line">  │</span><br><span class="line">┌─▼──────────────────────────────────────┐</span><br><span class="line">│             LLM API Gateway             │</span><br><span class="line">│                                         │</span><br><span class="line">│  1. 认证 &amp; 鉴权（API Key → 配额检查）     │</span><br><span class="line">│  2. 路由（根据模型名 → 对应的后端）        │</span><br><span class="line">│  3. 负载均衡（轮询 / 最少延迟 / 加权）     │</span><br><span class="line">│  4. 限流（Token bucket: 每个用户限 QPS）  │</span><br><span class="line">│  5. 降级（主模型挂了 → 自动切备用模型）     │</span><br><span class="line">│  6. 计费（记录 token 用量 → 成本核算）     │</span><br><span class="line">│  7. 日志 &amp; 监控（每次调用的延迟、token 数） │</span><br><span class="line">│                                         │</span><br><span class="line">│  后端池:                                 │</span><br><span class="line">│    GPT-4o (Azure)                       │</span><br><span class="line">│    Claude 4 (Anthropic)                 │</span><br><span class="line">│    DeepSeek-V3 (自建)                    │</span><br><span class="line">│    GLM-4-Flash (智谱)                    │</span><br><span class="line">└─────────────────────────────────────────┘</span><br></pre></td></tr></table></figure>
+
+<p><strong>面试答题框架</strong>：</p>
+<blockquote>
+<p>“LLM 网关做七件事——认证鉴权、模型路由、负载均衡、限流、降级、计费、监控。路由层根据 model name 分到对应的 LLM 后端。降级策略是核心——GPT-4o 超时 → 自动切 Claude；<br>DeepSeek-V3 挂了 → 切 GLM-4-Flash，用户无感但回复质量可能下降。监控记录每次调用的延迟、token 数、成本，按用户维度出账单。”</p>
+</blockquote>
+<hr>
+<h2 id="本章速查"><a href="#本章速查" class="headerlink" title="本章速查"></a>本章速查</h2><table>
+<thead>
+<tr>
+<th>知识点</th>
+<th>一句话</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Reward Hacking</strong></td>
+<td>LLM 学会讨好 RM 而不是真正变好，KL 散度约束缓解</td>
+</tr>
+<tr>
+<td><strong>合成数据</strong></td>
+<td>蒸馏（强模型生成）或 Self-Instruct（自举），最大挑战是分布偏差</td>
+</tr>
+<tr>
+<td><strong>CLIP</strong></td>
+<td>对比学习对齐图文，4 亿图文对训练，VLM 的视觉编码器基础</td>
+</tr>
+<tr>
+<td><strong>AI 客服</strong></td>
+<td>四层架构：接入+Agent+RAG+安全，语音延迟 &lt; 500ms</td>
+</tr>
+<tr>
+<td><strong>LLM 网关</strong></td>
+<td>七功能：认证&#x2F;路由&#x2F;负载&#x2F;限流&#x2F;降级&#x2F;计费&#x2F;监控</td>
+</tr>
+</tbody></table>
+<hr>
+<blockquote>
+<p>📖 延伸阅读：</p>
+<ul>
+<li><a href="/2026/07/28/ai-python/AI-Python-11-%E9%9D%A2%E8%AF%95%E7%9F%A5%E8%AF%86%E4%BD%93%E7%B3%BB%E6%80%BB%E8%A7%88/">11.0 面试知识体系总览</a></li>
+<li><a href="/2026/07/28/ai-python/AI-Python-11-%E9%9D%A2%E8%AF%95%E7%9F%A5%E8%AF%86%E4%BD%93%E7%B3%BB%E6%80%BB%E8%A7%88/">全系列文章索引</a></li>
+</ul>
+</blockquote>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>Author: </span><span class="post-copyright-info"><a href="http://example.com">david</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>Link: </span><span class="post-copyright-info"><a href="http://example.com/2026/07/28/ai-python/AI-Python-11.4-%E8%AE%AD%E7%BB%83%E8%BF%9B%E9%98%B6%E4%B8%8E%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1-RewardHacking-%E5%90%88%E6%88%90%E6%95%B0%E6%8D%AE-CLIP-%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1%E9%A2%98/">http://example.com/2026/07/28/ai-python/AI-Python-11.4-%E8%AE%AD%E7%BB%83%E8%BF%9B%E9%98%B6%E4%B8%8E%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1-RewardHacking-%E5%90%88%E6%88%90%E6%95%B0%E6%8D%AE-CLIP-%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1%E9%A2%98/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>Copyright Notice: </span><span class="post-copyright-info">All articles on this blog are licensed under <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> unless otherwise stated.</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Python/">Python</a><a class="post-meta__tags" href="/tags/%E9%9D%A2%E8%AF%95/">面试</a><a class="post-meta__tags" href="/tags/AI/">AI</a><a class="post-meta__tags" href="/tags/Reward-Hacking/">Reward Hacking</a><a class="post-meta__tags" href="/tags/%E5%90%88%E6%88%90%E6%95%B0%E6%8D%AE/">合成数据</a><a class="post-meta__tags" href="/tags/CLIP/">CLIP</a><a class="post-meta__tags" href="/tags/%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/">系统设计</a><a class="post-meta__tags" href="/tags/AI%E5%AE%A2%E6%9C%8D/">AI客服</a><a class="post-meta__tags" href="/tags/LLM%E7%BD%91%E5%85%B3/">LLM网关</a></div><div class="post-share"><div class="social-share" data-image="/img/butterfly-icon.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2026/07/31/ai-python/AI-Python-12.1-%E9%9D%A2%E8%AF%95QA%E6%89%8B%E5%86%8C01-Transformer%E5%9F%BA%E7%A1%80/" title="AI Python 学习 — 面试 QA 手册 01：Transformer 与 LLM 基础"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">Previous</div><div class="info-item-2">AI Python 学习 — 面试 QA 手册 01：Transformer 与 LLM 基础</div></div><div class="info-2"><div class="info-item-1">面试 QA 01：Transformer 与 LLM 基础 面试频率 ⭐⭐⭐ | 必考，一面开门题，答不好直接挂  题目速览（点击跳转）：    题号 题目 难度 高频度    1 Self-Attention 的计算过程？复杂度？ 🟡 🔥🔥🔥   2 Self-Attention 的输出是什么？ 🟢 🔥🔥   3 MHA &#x2F; MQA &#x2F; GQA 有什么区别？ 🟡 🔥🔥🔥   4 RoPE 的原理？和 Sinusoidal 的区别？ 🟡 🔥🔥   5 LayerNorm vs RMSNorm？为什么不用 BatchNorm？ 🟡 🔥🔥   6 BERT 和 GPT 的区别？为什么选 Decoder-Only？ 🟢 🔥🔥🔥   7 KV Cache 原理？怎么省计算量？ 🟡 🔥🔥🔥     Q1：Self-Attention 的计算过程？复杂度？ 展开答案  核心原理 Self-Attention 分四步。一，每个 token 通过三个权重矩阵生成 Q、K、V——Q 负责查询、K 负责被匹配、V 携带实际信息。二...</div></div></div></a><a class="pagination-related" href="/2026/07/28/ai-python/AI-Python-11.3-%E5%B7%A5%E7%A8%8B%E8%A1%A5%E5%85%A8-SSE%E6%B5%81%E5%BC%8F-%E5%88%86%E5%B8%83%E5%BC%8F%E8%AE%AD%E7%BB%83-%E6%8E%A8%E7%90%86%E6%A8%A1%E5%9E%8BPrompt/" title="AI Python 学习 — 11.3 工程补全（流式SSE / 分布式训练速览 / 推理模型Prompt）"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">Next</div><div class="info-item-2">AI Python 学习 — 11.3 工程补全（流式SSE / 分布式训练速览 / 推理模型Prompt）</div></div><div class="info-2"><div class="info-item-1">11.3：工程补全 — 流式 SSE &#x2F; 分布式训练 &#x2F; 推理模型 Prompt 补最后一批缺口：流式输出（用户等不了 30 秒）、分布式训练（70B 模型怎么塞进多张 GPU）、推理模型 Prompt（2026 新增考点）。   一、流式输出（SSE）1.1 为什么 Agent 必须支持流式生成 500 个 token 要 10 秒——用户看着白屏 10 秒直接关掉。流式输出让 LLM 生成第一个 token 就开始显示，体感延迟从 10 秒降到 0.3 秒。 1.2 SSE vs WebSocket    SSE WebSocket    方向 单向（服务器→客户端） 双向   协议 纯 HTTP 升级为 ws:&#x2F;&#x2F;   复杂度 极低，原生支持 需要 ws 库   LLM 流式 ✅ 够了 过度设计   典型场景 ChatGPT 打字效果 实时协作编辑    LLM 流式输出只需要服务器推文本给客户端 → SSE 就够了，不需要 WebSocket。  1.3 FastAPI SSE 实现1234567891011121314151617...</div></div></div></a></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/butterfly-icon.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">david</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">169</div></a><a href="/tags/"><div class="headline">Tags</div><div class="length-num">397</div></a><a href="/categories/"><div class="headline">Categories</div><div class="length-num">33</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>Announcement</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>Contents</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#11-4%EF%BC%9A%E8%AE%AD%E7%BB%83%E8%BF%9B%E9%98%B6%E4%B8%8E%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1%E5%9C%BA%E6%99%AF"><span class="toc-number">1.</span> <span class="toc-text">11.4：训练进阶与系统设计场景</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81Reward-Hacking%EF%BC%88%E5%A5%96%E5%8A%B1%E7%A0%B4%E8%A7%A3%EF%BC%89"><span class="toc-number">2.</span> <span class="toc-text">一、Reward Hacking（奖励破解）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-%E4%B8%80%E5%8F%A5%E8%AF%9D"><span class="toc-number">2.1.</span> <span class="toc-text">1.1 一句话</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-%E5%85%B8%E5%9E%8B%E8%A1%A8%E7%8E%B0"><span class="toc-number">2.2.</span> <span class="toc-text">1.2 典型表现</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-3-%E4%B8%BA%E4%BB%80%E4%B9%88%E5%8F%91%E7%94%9F"><span class="toc-number">2.3.</span> <span class="toc-text">1.3 为什么发生</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-4-%E6%80%8E%E4%B9%88%E7%BC%93%E8%A7%A3"><span class="toc-number">2.4.</span> <span class="toc-text">1.4 怎么缓解</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-5-%E9%9D%A2%E8%AF%95%E9%80%9F%E7%AD%94"><span class="toc-number">2.5.</span> <span class="toc-text">1.5 面试速答</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E5%90%88%E6%88%90%E6%95%B0%E6%8D%AE"><span class="toc-number">3.</span> <span class="toc-text">二、合成数据</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-%E4%BB%80%E4%B9%88%E5%9C%BA%E6%99%AF%E9%9C%80%E8%A6%81%E5%90%88%E6%88%90%E6%95%B0%E6%8D%AE"><span class="toc-number">3.1.</span> <span class="toc-text">2.1 什么场景需要合成数据</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-%E4%B8%A4%E7%A7%8D%E7%94%9F%E6%88%90%E6%96%B9%E5%BC%8F"><span class="toc-number">3.2.</span> <span class="toc-text">2.2 两种生成方式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-%E6%A0%B8%E5%BF%83%E6%8C%91%E6%88%98"><span class="toc-number">3.3.</span> <span class="toc-text">2.3 核心挑战</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-4-%E9%9D%A2%E8%AF%95%E9%80%9F%E7%AD%94"><span class="toc-number">3.4.</span> <span class="toc-text">2.4 面试速答</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81CLIP-%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0%E6%B7%B1%E5%85%A5"><span class="toc-number">4.</span> <span class="toc-text">三、CLIP 对比学习深入</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-CLIP-%E5%81%9A%E4%BA%86%E4%BB%80%E4%B9%88"><span class="toc-number">4.1.</span> <span class="toc-text">3.1 CLIP 做了什么</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0%E6%A0%B8%E5%BF%83%E6%9C%BA%E5%88%B6"><span class="toc-number">4.2.</span> <span class="toc-text">3.2 对比学习核心机制</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-%E4%B8%BA%E4%BB%80%E4%B9%88-CLIP-%E8%83%BD%E6%B3%9B%E5%8C%96%E5%88%B0%E6%B2%A1%E8%A7%81%E8%BF%87%E7%9A%84%E4%B8%9C%E8%A5%BF"><span class="toc-number">4.3.</span> <span class="toc-text">3.3 为什么 CLIP 能泛化到没见过的东西</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-4-%E9%9D%A2%E8%AF%95%E9%80%9F%E7%AD%94"><span class="toc-number">4.4.</span> <span class="toc-text">3.4 面试速答</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1%E5%9C%BA%E6%99%AF%E9%A2%98"><span class="toc-number">5.</span> <span class="toc-text">四、系统设计场景题</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-AI-%E5%AE%A2%E6%9C%8D%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1"><span class="toc-number">5.1.</span> <span class="toc-text">4.1 AI 客服系统设计</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-LLM-API-%E7%BD%91%E5%85%B3%E8%AE%BE%E8%AE%A1"><span class="toc-number">5.2.</span> <span class="toc-text">4.2 LLM API 网关设计</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9C%AC%E7%AB%A0%E9%80%9F%E6%9F%A5"><span class="toc-number">6.</span> <span class="toc-text">本章速查</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>Recent Posts</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/10/ai-python/AI-Python-12.8-%E9%9D%A2%E8%AF%95QA%E6%89%8B%E5%86%8C08-%E6%A8%A1%E5%9E%8B%E8%AF%84%E4%BC%B0%E4%B8%8EAI%E5%AE%89%E5%85%A8/" title="AI Python 学习 — 面试 QA 手册 08：模型评估与 AI 安全">AI Python 学习 — 面试 QA 手册 08：模型评估与 AI 安全</a><time datetime="2026-08-10T00:20:00.000Z" title="Created 2026-08-10 08:20:00">2026-08-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/10/ai-python/AI-Python-12.7-%E9%9D%A2%E8%AF%95QA%E6%89%8B%E5%86%8C07-%E5%A4%9A%E6%A8%A1%E6%80%81/" title="AI Python 学习 — 面试 QA 手册 07：多模态">AI Python 学习 — 面试 QA 手册 07：多模态</a><time datetime="2026-08-10T00:10:00.000Z" title="Created 2026-08-10 08:10:00">2026-08-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/10/ai-python/AI-Python-12.6-%E9%9D%A2%E8%AF%95QA%E6%89%8B%E5%86%8C06-Agent/" title="AI Python 学习 — 面试 QA 手册 06：Agent">AI Python 学习 — 面试 QA 手册 06：Agent</a><time datetime="2026-08-10T00:00:00.000Z" title="Created 2026-08-10 08:00:00">2026-08-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/07/ai-python/AI-Python-12.5-%E9%9D%A2%E8%AF%95QA%E6%89%8B%E5%86%8C05-%E6%8E%A8%E7%90%86%E4%BC%98%E5%8C%96%E4%B8%8E%E9%83%A8%E7%BD%B2/" title="AI Python 学习 — 面试 QA 手册 05：推理优化与部署">AI Python 学习 — 面试 QA 手册 05：推理优化与部署</a><time datetime="2026-08-07T00:10:00.000Z" title="Created 2026-08-07 08:10:00">2026-08-07</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/07/ai-python/AI-Python-12.4-%E9%9D%A2%E8%AF%95QA%E6%89%8B%E5%86%8C04-RAG/" title="AI Python 学习 — 面试 QA 手册 04：RAG 检索增强生成">AI Python 学习 — 面试 QA 手册 04：RAG 检索增强生成</a><time datetime="2026-08-07T00:00:00.000Z" title="Created 2026-08-07 08:00:00">2026-08-07</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By david</span><span class="framework-info"><span>Framework </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>Theme </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.4.3</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="Reading Mode"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="Toggle Between Light and Dark Mode"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="Toggle Between Single-column and Double-column"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="Settings"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="Table of Contents"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="Back to Top"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><div class="js-pjax"><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (false) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>

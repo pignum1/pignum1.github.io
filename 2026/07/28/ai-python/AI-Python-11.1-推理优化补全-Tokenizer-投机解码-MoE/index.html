@@ -1,0 +1,405 @@
+<!DOCTYPE html><html lang="en" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>AI Python 学习 — 11.1 推理优化补全（Tokenizer / 投机解码 / MoE） | Hexo</title><meta name="author" content="david"><meta name="copyright" content="david"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="11.1：推理优化补全 — Tokenizer &#x2F; 投机解码 &#x2F; MoE 11.0 面试体系中标记的三个 P0 缺口，一篇补完。三个主题都是高频面试题：Tokenizer 是 LLM 的入口、投机解码是推理加速的前沿方案、MoE 是 GPT-4&#x2F;DeepSeek-V3 的核心架构。   一、Tokenizer：LLM 的第一个环节1.1 为什么重要Tokenizer（">
+<meta property="og:type" content="article">
+<meta property="og:title" content="AI Python 学习 — 11.1 推理优化补全（Tokenizer &#x2F; 投机解码 &#x2F; MoE）">
+<meta property="og:url" content="http://example.com/2026/07/28/ai-python/AI-Python-11.1-%E6%8E%A8%E7%90%86%E4%BC%98%E5%8C%96%E8%A1%A5%E5%85%A8-Tokenizer-%E6%8A%95%E6%9C%BA%E8%A7%A3%E7%A0%81-MoE/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="11.1：推理优化补全 — Tokenizer &#x2F; 投机解码 &#x2F; MoE 11.0 面试体系中标记的三个 P0 缺口，一篇补完。三个主题都是高频面试题：Tokenizer 是 LLM 的入口、投机解码是推理加速的前沿方案、MoE 是 GPT-4&#x2F;DeepSeek-V3 的核心架构。   一、Tokenizer：LLM 的第一个环节1.1 为什么重要Tokenizer（">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://example.com/img/butterfly-icon.png">
+<meta property="article:published_time" content="2026-07-28T01:00:00.000Z">
+<meta property="article:modified_time" content="2026-07-30T08:41:32.425Z">
+<meta property="article:author" content="david">
+<meta property="article:tag" content="Python">
+<meta property="article:tag" content="面试">
+<meta property="article:tag" content="AI">
+<meta property="article:tag" content="推理优化">
+<meta property="article:tag" content="Tokenizer">
+<meta property="article:tag" content="Speculative Decoding">
+<meta property="article:tag" content="MoE">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/img/butterfly-icon.png"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "AI Python 学习 — 11.1 推理优化补全（Tokenizer / 投机解码 / MoE）",
+  "url": "http://example.com/2026/07/28/ai-python/AI-Python-11.1-%E6%8E%A8%E7%90%86%E4%BC%98%E5%8C%96%E8%A1%A5%E5%85%A8-Tokenizer-%E6%8A%95%E6%9C%BA%E8%A7%A3%E7%A0%81-MoE/",
+  "image": "http://example.com/img/butterfly-icon.png",
+  "datePublished": "2026-07-28T01:00:00.000Z",
+  "dateModified": "2026-07-30T08:41:32.425Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "david",
+      "url": "http://example.com"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://example.com/2026/07/28/ai-python/AI-Python-11.1-%E6%8E%A8%E7%90%86%E4%BC%98%E5%8C%96%E8%A1%A5%E5%85%A8-Tokenizer-%E6%8A%95%E6%9C%BA%E8%A7%A3%E7%A0%81-MoE/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: 'Copy Successful',
+    error: 'Copy Failed',
+    noSupport: 'Browser Not Supported'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: 'Just now',
+    min: 'minutes ago',
+    hour: 'hours ago',
+    day: 'days ago',
+    month: 'months ago'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid/dist/infinitegrid.min.js',
+    buttonText: 'Load More'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'AI Python 学习 — 11.1 推理优化补全（Tokenizer / 投机解码 / MoE）',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Hexo</span></a><a class="nav-page-title" href="/"><span class="site-name">AI Python 学习 — 11.1 推理优化补全（Tokenizer / 投机解码 / MoE）</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  Back to Home</span></span></a></span><div id="menus"></div></nav><div id="post-info"><h1 class="post-title">AI Python 学习 — 11.1 推理优化补全（Tokenizer / 投机解码 / MoE）</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">Created</span><time class="post-meta-date-created" datetime="2026-07-28T01:00:00.000Z" title="Created 2026-07-28 09:00:00">2026-07-28</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">Updated</span><time class="post-meta-date-updated" datetime="2026-07-30T08:41:32.425Z" title="Updated 2026-07-30 16:41:32">2026-07-30</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/AI%E5%AD%A6%E4%B9%A0/">AI学习</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/AI%E5%AD%A6%E4%B9%A0/%E6%8E%A8%E7%90%86%E4%B8%8E%E9%83%A8%E7%BD%B2/">推理与部署</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">Post Views:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h2 id="11-1：推理优化补全-—-Tokenizer-投机解码-MoE"><a href="#11-1：推理优化补全-—-Tokenizer-投机解码-MoE" class="headerlink" title="11.1：推理优化补全 — Tokenizer &#x2F; 投机解码 &#x2F; MoE"></a>11.1：推理优化补全 — Tokenizer &#x2F; 投机解码 &#x2F; MoE</h2><blockquote>
+<p>11.0 面试体系中标记的三个 P0 缺口，一篇补完。三个主题都是高频面试题：Tokenizer 是 LLM 的入口、投机解码是推理加速的前沿方案、MoE 是 GPT-4&#x2F;DeepSeek-V3 的核心架构。</p>
+</blockquote>
+<hr>
+<h2 id="一、Tokenizer：LLM-的第一个环节"><a href="#一、Tokenizer：LLM-的第一个环节" class="headerlink" title="一、Tokenizer：LLM 的第一个环节"></a>一、Tokenizer：LLM 的第一个环节</h2><h3 id="1-1-为什么重要"><a href="#1-1-为什么重要" class="headerlink" title="1.1 为什么重要"></a>1.1 为什么重要</h3><p>Tokenizer（分词器）决定了 LLM 看到的世界。”我喜欢吃苹果” → LLM 看到的不是汉字，是 token ID：<code>[123, 456, 789, 234]</code>。</p>
+<p>面试常问：”为什么同一个句子，不同模型的 token 数不一样？”——因为每个模型有自己的 Tokenizer。</p>
+<h3 id="1-2-BPE（Byte-Pair-Encoding）—-GPT-系列用的"><a href="#1-2-BPE（Byte-Pair-Encoding）—-GPT-系列用的" class="headerlink" title="1.2 BPE（Byte Pair Encoding）— GPT 系列用的"></a>1.2 BPE（Byte Pair Encoding）— GPT 系列用的</h3><p><strong>核心思路</strong>：从字符级别开始，反复合并最高频的相邻 token 对，直到达到目标词表大小。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">初始词表: &#123;&#x27;我&#x27;, &#x27;喜&#x27;, &#x27;欢&#x27;, &#x27;吃&#x27;, &#x27;苹&#x27;, &#x27;果&#x27;, ...&#125;  ← 每个字符一个 token</span><br><span class="line"></span><br><span class="line">Step 1: 统计所有相邻对，&quot;喜欢&quot;出现 1000 次 → 合并 &quot;喜&quot;+&quot;欢&quot; = &quot;喜欢&quot;</span><br><span class="line">Step 2: 统计，&quot;苹果&quot;出现 800 次 → 合并 &quot;苹&quot;+&quot;果&quot; = &quot;苹果&quot;</span><br><span class="line">Step 3: 统计，&quot;我喜欢&quot; 出现 600 次 → 合并 &quot;我&quot;+&quot;喜欢&quot; = &quot;我喜欢&quot;</span><br><span class="line">...一直合并到词表大小达到目标（如 50K）</span><br><span class="line"></span><br><span class="line">最终词表: &#123;&#x27;我&#x27;, &#x27;喜欢&#x27;, &#x27;吃&#x27;, &#x27;苹果&#x27;, &#x27;我喜欢&#x27;, &#x27;苹果&#x27;, ...&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>为什么 BPE 好用</strong>：</p>
+<ul>
+<li>不在词表里的词可以拆成子词：<code>&quot;Transformer&quot;</code> 不在词表 → 拆成 <code>&quot;Transform&quot;</code> + <code>&quot;er&quot;</code></li>
+<li>中文同样适用：<code>&quot;深度强化学习&quot;</code> → <code>&quot;深度&quot;</code> + <code>&quot;强化&quot;</code> + <code>&quot;学习&quot;</code></li>
+<li>不会像字符级分词那样 token 太多，也不会像词级分词那样 OOV（Out of Vocabulary）</li>
+</ul>
+<h3 id="1-3-WordPiece-—-BERT-用的"><a href="#1-3-WordPiece-—-BERT-用的" class="headerlink" title="1.3 WordPiece — BERT 用的"></a>1.3 WordPiece — BERT 用的</h3><p>和 BPE 类似，但<strong>合并标准不同</strong>。BPE 选最高频的对，WordPiece 选<strong>能使训练语料似然度提升最大</strong>的对。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">BPE:    合并 &quot;喜欢&quot;，因为它出现次数最多</span><br><span class="line">WordPiece: 合并 &quot;喜欢&quot;，因为合并后整个语料的概率最大</span><br><span class="line"></span><br><span class="line">实际效果差异不大，BPE 更简单、更常用。</span><br></pre></td></tr></table></figure>
+
+<h3 id="1-4-SentencePiece-—-LLaMA-GLM-用的"><a href="#1-4-SentencePiece-—-LLaMA-GLM-用的" class="headerlink" title="1.4 SentencePiece — LLaMA &#x2F; GLM 用的"></a>1.4 SentencePiece — LLaMA &#x2F; GLM 用的</h3><p>BPE 和 WordPiece 都假设文本已经被空格分隔了（英文自然有空格）。<strong>SentencePiece 不依赖空格</strong>——它把输入当成原始字节流，直接在字节级别做 BPE。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">英文 &quot;Hello world&quot; → BPE 按空格切 → [&quot;Hello&quot;, &quot;world&quot;]</span><br><span class="line">中文 &quot;我喜欢吃苹果&quot; → BPE 没空格可切 → 退化到字符级</span><br><span class="line"></span><br><span class="line">SentencePiece: 不分语言，统一按字节流处理 → 中英日韩都一致</span><br></pre></td></tr></table></figure>
+
+<p><strong>LLaMA 模型用 SentencePiece + BPE 就是这个原因</strong>——训练语料是多语言的，不能依赖英文的空格规则。</p>
+<h3 id="1-5-三个对比速查"><a href="#1-5-三个对比速查" class="headerlink" title="1.5 三个对比速查"></a>1.5 三个对比速查</h3><table>
+<thead>
+<tr>
+<th></th>
+<th align="center">BPE</th>
+<th align="center">WordPiece</th>
+<th align="center">SentencePiece</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>代表模型</strong></td>
+<td align="center">GPT 系列</td>
+<td align="center">BERT</td>
+<td align="center">LLaMA &#x2F; GLM &#x2F; T5</td>
+</tr>
+<tr>
+<td><strong>合并标准</strong></td>
+<td align="center">最高频</td>
+<td align="center">最大似然</td>
+<td align="center">最高频（字节级 BPE）</td>
+</tr>
+<tr>
+<td><strong>空格依赖</strong></td>
+<td align="center">是（英文）</td>
+<td align="center">是（英文）</td>
+<td align="center"><strong>否（字节流）</strong></td>
+</tr>
+<tr>
+<td><strong>中文友好</strong></td>
+<td align="center">一般</td>
+<td align="center">一般</td>
+<td align="center"><strong>好</strong></td>
+</tr>
+</tbody></table>
+<h3 id="1-6-面试速答"><a href="#1-6-面试速答" class="headerlink" title="1.6 面试速答"></a>1.6 面试速答</h3><blockquote>
+<p>“Tokenizer 把文字转成 token ID 序列。主流方案三种：BPE（GPT 系列，合并高频对）、WordPiece（BERT，按似然度合并）、SentencePiece（LLaMA，字节级 BPE，不依赖空格，多语言友好）。中文模型推荐 SentencePiece 或 BPE+较大中文词表。”</p>
+</blockquote>
+<hr>
+<h2 id="二、投机解码（Speculative-Decoding）"><a href="#二、投机解码（Speculative-Decoding）" class="headerlink" title="二、投机解码（Speculative Decoding）"></a>二、投机解码（Speculative Decoding）</h2><h3 id="2-1-问题：自回归推理为什么慢"><a href="#2-1-问题：自回归推理为什么慢" class="headerlink" title="2.1 问题：自回归推理为什么慢"></a>2.1 问题：自回归推理为什么慢</h3><p>LLM 生成一个 token 要读完之前所有 token → 每个 decode step 串行。生成 100 个 token &#x3D; 100 次串行前向传播。GPU 大部分时间在等——每次只算一个 token，GPU 利用率极低。</p>
+<h3 id="2-2-核心思想：用小模型”猜”，大模型”验”"><a href="#2-2-核心思想：用小模型”猜”，大模型”验”" class="headerlink" title="2.2 核心思想：用小模型”猜”，大模型”验”"></a>2.2 核心思想：用小模型”猜”，大模型”验”</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">传统自回归（慢）:</span><br><span class="line">  大模型 → token_1</span><br><span class="line">  大模型 → token_2    ← 每次调大模型，100 个 token 要调 100 次</span><br><span class="line">  大模型 → token_3</span><br><span class="line">  ...</span><br><span class="line"></span><br><span class="line">投机解码（快）:</span><br><span class="line">  小模型（草稿模型）→ draft_1, draft_2, draft_3, draft_4  ← 一次猜 4 个</span><br><span class="line">  大模型一次验证这 4 个 draft ← 一次前向传播检查 4 个</span><br><span class="line">    → draft_1 对了 → 接受</span><br><span class="line">    → draft_2 对了 → 接受</span><br><span class="line">    → draft_3 错了 → 拒绝，大模型自己生成一个</span><br><span class="line">    → 接下来从头继续（小模型再从 draft_3 被拒的位置继续猜）</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-3-为什么加速？"><a href="#2-3-为什么加速？" class="headerlink" title="2.3 为什么加速？"></a>2.3 为什么加速？</h3><p>关键：<strong>大模型验证时是一次前向传播同时检查 4 个 draft token</strong>。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">传统: 100 token × 1 次大模型调用 = 100 次</span><br><span class="line">投机: 小模型猜 100 token（几乎免费）+ 大模型只调 25 次（每次验证 4 个）</span><br><span class="line">      → 大模型调用次数减少 4× → 总延迟降低 2-3×</span><br></pre></td></tr></table></figure>
+
+<p><strong>草稿模型只负责猜方向，大模型负责确认——方向对了直接过，方向错了大模型纠正。</strong></p>
+<h3 id="2-4-关键约束：草稿模型怎么选"><a href="#2-4-关键约束：草稿模型怎么选" class="headerlink" title="2.4 关键约束：草稿模型怎么选"></a>2.4 关键约束：草稿模型怎么选</h3><table>
+<thead>
+<tr>
+<th>要求</th>
+<th>原因</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>输出分布和大模型越接近越好</strong></td>
+<td>猜得准，接受率高（&gt;80%）</td>
+</tr>
+<tr>
+<td><strong>比大模型小很多</strong></td>
+<td>猜的成本可以忽略</td>
+</tr>
+<tr>
+<td><strong>同一个 Tokenizer</strong></td>
+<td>否则 token ID 对不上</td>
+</tr>
+</tbody></table>
+<p><strong>常用方案</strong>：大模型是 70B → 草稿用同一家族的小模型 7B。Llama-3.1-70B 的投机解码通常用 Llama-3.1-8B 当草稿。</p>
+<h3 id="2-5-面试速答"><a href="#2-5-面试速答" class="headerlink" title="2.5 面试速答"></a>2.5 面试速答</h3><blockquote>
+<p>“投机解码用小模型一次猜多个 token，大模型一次验证。大模型的调用次数从 100 次降到 25 次，总延迟降低 2-3 倍。草稿模型要和大模型输出分布接近，通常选同一家族的小模型。接受率是关键指标，&gt;80% 才有效果。”</p>
+</blockquote>
+<hr>
+<h2 id="三、MoE-混合专家模型"><a href="#三、MoE-混合专家模型" class="headerlink" title="三、MoE 混合专家模型"></a>三、MoE 混合专家模型</h2><h3 id="3-1-问题：大模型所有参数每次都用，浪费"><a href="#3-1-问题：大模型所有参数每次都用，浪费" class="headerlink" title="3.1 问题：大模型所有参数每次都用，浪费"></a>3.1 问题：大模型所有参数每次都用，浪费</h3><p>标准 Transformer 的 FFN 层：无论输入是什么，全部参数跑一遍。模型越大越浪费——“写诗”和”算数学”用了同一组 FFN 参数。</p>
+<h3 id="3-2-MoE-核心思想：每个-FFN-拆成-N-个专家，每次只激活-Top-K-个"><a href="#3-2-MoE-核心思想：每个-FFN-拆成-N-个专家，每次只激活-Top-K-个" class="headerlink" title="3.2 MoE 核心思想：每个 FFN 拆成 N 个专家，每次只激活 Top-K 个"></a>3.2 MoE 核心思想：每个 FFN 拆成 N 个专家，每次只激活 Top-K 个</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">标准 Transformer FFN:</span><br><span class="line">  输入 → FFN (全部参数) → 输出</span><br><span class="line">  不管什么输入，700B 参数全部跑一遍</span><br><span class="line"></span><br><span class="line">MoE FFN:</span><br><span class="line">  输入 → Router（门控网络，很小）</span><br><span class="line">         ↓</span><br><span class="line">    专家 1  专家 2  专家 3  ... 专家 N     ← 8 个专家，每个 1/8 大</span><br><span class="line">         ↓</span><br><span class="line">    Router 打分，选 Top-2 专家</span><br><span class="line">         ↓</span><br><span class="line">    专家 1 输出 × 0.7 + 专家 3 输出 × 0.3  → 最终输出</span><br><span class="line"></span><br><span class="line">  输入虽然来自 700B 参数的大模型，但实际只激活了 2 个专家 → 每次计算量 ~ 1/4</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-3-为什么有效"><a href="#3-3-为什么有效" class="headerlink" title="3.3 为什么有效"></a>3.3 为什么有效</h3><p><strong>专家会自动分工</strong>——训练过程中 Router 学会把不同类型的 token 路由到不同的专家。比如：</p>
+<ul>
+<li>专家 1 擅长处理数学符号</li>
+<li>专家 3 擅长处理中文成语</li>
+<li>专家 5 擅长处理代码语法</li>
+</ul>
+<p>看你的输入 token 是什么，自动激活相关的专家。</p>
+<h3 id="3-4-MoE-的实际模型"><a href="#3-4-MoE-的实际模型" class="headerlink" title="3.4 MoE 的实际模型"></a>3.4 MoE 的实际模型</h3><table>
+<thead>
+<tr>
+<th>模型</th>
+<th align="center">总参数</th>
+<th align="center">每次激活</th>
+<th align="center">专家数</th>
+<th>怎么知道的</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Mixtral 8×7B</strong></td>
+<td align="center">47B</td>
+<td align="center">13B</td>
+<td align="center">8</td>
+<td>名字里的 8×7B</td>
+</tr>
+<tr>
+<td><strong>DeepSeek-V2&#x2F;V3</strong></td>
+<td align="center">671B</td>
+<td align="center">37B</td>
+<td align="center">很多</td>
+<td>论文公开</td>
+</tr>
+<tr>
+<td><strong>GPT-4</strong></td>
+<td align="center">据传 1.8T</td>
+<td align="center">据传 280B</td>
+<td align="center">据传 8-16</td>
+<td>OpenAI 没说</td>
+</tr>
+</tbody></table>
+<p><strong>关键数字</strong>：DeepSeek-V3 总参数 671B，每次推理只激活 37B——省了 ~18× 的计算量。</p>
+<h3 id="3-5-MoE-的两个工程挑战"><a href="#3-5-MoE-的两个工程挑战" class="headerlink" title="3.5 MoE 的两个工程挑战"></a>3.5 MoE 的两个工程挑战</h3><p><strong>1. 负载均衡</strong>：训练时 Router 可能”偏好”某几个专家，导致这些专家过载、其他专家闲着。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">问题: Router 把所有 token 都发给专家 3 和 5</span><br><span class="line">解决: 加一个负载均衡 loss → 惩罚路由集中 → Router 学会均匀分配</span><br></pre></td></tr></table></figure>
+
+<p><strong>2. 推理显存</strong>：虽然只激活 2 个专家，但<strong>所有专家的参数都要装在显存里</strong>（因为不知道下一个 token Router 会选谁）。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">DeepSeek-V3: 671B 参数全加载 → 需要多张 H100</span><br><span class="line">但每次推理只算 37B → 速度快、显存宽裕</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-6-面试速答"><a href="#3-6-面试速答" class="headerlink" title="3.6 面试速答"></a>3.6 面试速答</h3><blockquote>
+<p>“MoE 把标准 FFN 拆成 N 个专家网络，每次只激活 Top-K 个。DeepSeek-V3 671B 总参数只激活 37B。核心挑战是负载均衡——训练时给路由 loss 加惩罚防止专家偏斜。推理时需要所有专家留在显存里，所以对显存总量要求高但对计算量要求低。”</p>
+</blockquote>
+<hr>
+<h2 id="本章速查"><a href="#本章速查" class="headerlink" title="本章速查"></a>本章速查</h2><table>
+<thead>
+<tr>
+<th>知识点</th>
+<th>一句话</th>
+<th>面试点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>BPE</strong></td>
+<td>合并最高频 token 对</td>
+<td>GPT 系列用的，中文不友好</td>
+</tr>
+<tr>
+<td><strong>WordPiece</strong></td>
+<td>合并使似然度最大的对</td>
+<td>BERT 用的</td>
+</tr>
+<tr>
+<td><strong>SentencePiece</strong></td>
+<td>字节级 BPE，不依赖空格</td>
+<td>LLaMA 用的，多语言好</td>
+</tr>
+<tr>
+<td><strong>投机解码</strong></td>
+<td>小模型猜 + 大模型验</td>
+<td>2-3× 延迟降低，草稿模型要同 tokenizer</td>
+</tr>
+<tr>
+<td><strong>MoE</strong></td>
+<td>FFN 拆 N 个专家，只激活 Top-K</td>
+<td>DeepSeek 671B→37B，负载均衡是关键</td>
+</tr>
+</tbody></table>
+<hr>
+<blockquote>
+<p>📖 延伸阅读：</p>
+<ul>
+<li><a href="/2026/07/28/ai-python/AI-Python-11-%E9%9D%A2%E8%AF%95%E7%9F%A5%E8%AF%86%E4%BD%93%E7%B3%BB%E6%80%BB%E8%A7%88/">11.0 面试知识体系总览</a></li>
+<li><a href="/2026/07/22/ai-python/AI-Python-10.3-vLLM%E4%B8%8ELoRA%E6%8E%A8%E7%90%86%E5%8A%A0%E9%80%9F%E4%B8%8E%E9%AB%98%E6%95%88%E5%BE%AE%E8%B0%83/">10.3 vLLM + LoRA</a></li>
+<li><a href="/2026/04/05/ai-python/AI-Python-05.3-%E6%8E%A8%E7%90%86%E4%BC%98%E5%8C%96%E4%B8%8E%E9%87%8F%E5%8C%96/">05.3 推理优化与量化</a></li>
+</ul>
+</blockquote>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>Author: </span><span class="post-copyright-info"><a href="http://example.com">david</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>Link: </span><span class="post-copyright-info"><a href="http://example.com/2026/07/28/ai-python/AI-Python-11.1-%E6%8E%A8%E7%90%86%E4%BC%98%E5%8C%96%E8%A1%A5%E5%85%A8-Tokenizer-%E6%8A%95%E6%9C%BA%E8%A7%A3%E7%A0%81-MoE/">http://example.com/2026/07/28/ai-python/AI-Python-11.1-%E6%8E%A8%E7%90%86%E4%BC%98%E5%8C%96%E8%A1%A5%E5%85%A8-Tokenizer-%E6%8A%95%E6%9C%BA%E8%A7%A3%E7%A0%81-MoE/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>Copyright Notice: </span><span class="post-copyright-info">All articles on this blog are licensed under <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> unless otherwise stated.</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Python/">Python</a><a class="post-meta__tags" href="/tags/%E9%9D%A2%E8%AF%95/">面试</a><a class="post-meta__tags" href="/tags/AI/">AI</a><a class="post-meta__tags" href="/tags/%E6%8E%A8%E7%90%86%E4%BC%98%E5%8C%96/">推理优化</a><a class="post-meta__tags" href="/tags/Tokenizer/">Tokenizer</a><a class="post-meta__tags" href="/tags/Speculative-Decoding/">Speculative Decoding</a><a class="post-meta__tags" href="/tags/MoE/">MoE</a></div><div class="post-share"><div class="social-share" data-image="/img/butterfly-icon.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2026/07/28/ai-python/AI-Python-11.2-%E8%AF%84%E4%BC%B0%E4%B8%8EAgent%E8%BF%9B%E9%98%B6%E8%A1%A5%E5%85%A8-BLEU-HITL/" title="AI Python 学习 — 11.2 评估与Agent进阶补全（BLEU/ROUGE / PPL / Human-in-the-Loop）"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">Previous</div><div class="info-item-2">AI Python 学习 — 11.2 评估与Agent进阶补全（BLEU/ROUGE / PPL / Human-in-the-Loop）</div></div><div class="info-2"><div class="info-item-1">11.2：评估与 Agent 进阶补全 — BLEU &#x2F; ROUGE &#x2F; PPL &#x2F; Human-in-the-Loop 补两个缺口：传统评估指标（面试被问”BLEU 为什么不适用于 LLM”时要有答案）+ Human-in-the-Loop（Agent 的最后一层安全网）。   一、传统指标（BLEU &#x2F; ROUGE &#x2F; PPL）1.1 为什么面试要问这个面试官问”BLEU 有什么局限”不是考你背公式——是看你能不能区分传统 NLP 时代和 LLM 时代的评测思维。只会说”我用 GPT-4 打分”不够，要能说出”为什么不用 BLEU”。 1.2 BLEU（机器翻译评测）公式核心：n-gram 精确匹配率 × 长度惩罚因子。 12345678参考答案: &quot;The cat sat on the mat.&quot;模型输出: &quot;The cat sat on mat.&quot;BLEU 的计算:  unigram 匹配: the ✓, cat ✓, sat ✓, on ✓, the ✓(重复的the), mat ...</div></div></div></a><a class="pagination-related" href="/2026/07/28/ai-python/AI-Python-11-%E9%9D%A2%E8%AF%95%E7%9F%A5%E8%AF%86%E4%BD%93%E7%B3%BB%E6%80%BB%E8%A7%88/" title="AI Python 学习 — 11.0 面试知识体系总览（12 大类 × 完整 QA 索引）"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">Next</div><div class="info-item-2">AI Python 学习 — 11.0 面试知识体系总览（12 大类 × 完整 QA 索引）</div></div><div class="info-2"><div class="info-item-1">11.0：面试知识体系总览 基于 4 个主流 GitHub 面试仓库交叉验证（yuyouyu32&#x2F;llm-interview、guocong-bincai&#x2F;ai-interview-guide v3.127&#x2F;385题、Datawhale hello-agents 2025秋招面经、wdndev&#x2F;llm_interview_note），整理出 12 大类面试知识树。每个节点标注学习状态和学习链接。   使用方式12341. 按分类找到要复习的知识点2. ✅ = 已学，点击链接回顾文章3. ❌ = 缺口，优先补 P0 再补 P1/P24. 每篇学完后自己模拟回答一遍核心面试题   一、Transformer 与 LLM 基础 ⭐⭐⭐ 必考。 一面开门题，答不好直接挂。  1.1 已覆盖   知识点 状态 学习链接    Self-Attention 原理（Q&#x2F;K&#x2F;V、缩放、Softmax） ✅ [05.2 Transformer]   MHA &#x2F; MQA &#x2F; GQA 区别 ✅ [05.2 Transfor...</div></div></div></a></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/butterfly-icon.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">david</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">169</div></a><a href="/tags/"><div class="headline">Tags</div><div class="length-num">397</div></a><a href="/categories/"><div class="headline">Categories</div><div class="length-num">33</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>Announcement</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>Contents</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#11-1%EF%BC%9A%E6%8E%A8%E7%90%86%E4%BC%98%E5%8C%96%E8%A1%A5%E5%85%A8-%E2%80%94-Tokenizer-%E6%8A%95%E6%9C%BA%E8%A7%A3%E7%A0%81-MoE"><span class="toc-number">1.</span> <span class="toc-text">11.1：推理优化补全 — Tokenizer &#x2F; 投机解码 &#x2F; MoE</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81Tokenizer%EF%BC%9ALLM-%E7%9A%84%E7%AC%AC%E4%B8%80%E4%B8%AA%E7%8E%AF%E8%8A%82"><span class="toc-number">2.</span> <span class="toc-text">一、Tokenizer：LLM 的第一个环节</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-%E4%B8%BA%E4%BB%80%E4%B9%88%E9%87%8D%E8%A6%81"><span class="toc-number">2.1.</span> <span class="toc-text">1.1 为什么重要</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-BPE%EF%BC%88Byte-Pair-Encoding%EF%BC%89%E2%80%94-GPT-%E7%B3%BB%E5%88%97%E7%94%A8%E7%9A%84"><span class="toc-number">2.2.</span> <span class="toc-text">1.2 BPE（Byte Pair Encoding）— GPT 系列用的</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-3-WordPiece-%E2%80%94-BERT-%E7%94%A8%E7%9A%84"><span class="toc-number">2.3.</span> <span class="toc-text">1.3 WordPiece — BERT 用的</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-4-SentencePiece-%E2%80%94-LLaMA-GLM-%E7%94%A8%E7%9A%84"><span class="toc-number">2.4.</span> <span class="toc-text">1.4 SentencePiece — LLaMA &#x2F; GLM 用的</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-5-%E4%B8%89%E4%B8%AA%E5%AF%B9%E6%AF%94%E9%80%9F%E6%9F%A5"><span class="toc-number">2.5.</span> <span class="toc-text">1.5 三个对比速查</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-6-%E9%9D%A2%E8%AF%95%E9%80%9F%E7%AD%94"><span class="toc-number">2.6.</span> <span class="toc-text">1.6 面试速答</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E6%8A%95%E6%9C%BA%E8%A7%A3%E7%A0%81%EF%BC%88Speculative-Decoding%EF%BC%89"><span class="toc-number">3.</span> <span class="toc-text">二、投机解码（Speculative Decoding）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-%E9%97%AE%E9%A2%98%EF%BC%9A%E8%87%AA%E5%9B%9E%E5%BD%92%E6%8E%A8%E7%90%86%E4%B8%BA%E4%BB%80%E4%B9%88%E6%85%A2"><span class="toc-number">3.1.</span> <span class="toc-text">2.1 问题：自回归推理为什么慢</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-%E6%A0%B8%E5%BF%83%E6%80%9D%E6%83%B3%EF%BC%9A%E7%94%A8%E5%B0%8F%E6%A8%A1%E5%9E%8B%E2%80%9D%E7%8C%9C%E2%80%9D%EF%BC%8C%E5%A4%A7%E6%A8%A1%E5%9E%8B%E2%80%9D%E9%AA%8C%E2%80%9D"><span class="toc-number">3.2.</span> <span class="toc-text">2.2 核心思想：用小模型”猜”，大模型”验”</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-%E4%B8%BA%E4%BB%80%E4%B9%88%E5%8A%A0%E9%80%9F%EF%BC%9F"><span class="toc-number">3.3.</span> <span class="toc-text">2.3 为什么加速？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-4-%E5%85%B3%E9%94%AE%E7%BA%A6%E6%9D%9F%EF%BC%9A%E8%8D%89%E7%A8%BF%E6%A8%A1%E5%9E%8B%E6%80%8E%E4%B9%88%E9%80%89"><span class="toc-number">3.4.</span> <span class="toc-text">2.4 关键约束：草稿模型怎么选</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-5-%E9%9D%A2%E8%AF%95%E9%80%9F%E7%AD%94"><span class="toc-number">3.5.</span> <span class="toc-text">2.5 面试速答</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81MoE-%E6%B7%B7%E5%90%88%E4%B8%93%E5%AE%B6%E6%A8%A1%E5%9E%8B"><span class="toc-number">4.</span> <span class="toc-text">三、MoE 混合专家模型</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-%E9%97%AE%E9%A2%98%EF%BC%9A%E5%A4%A7%E6%A8%A1%E5%9E%8B%E6%89%80%E6%9C%89%E5%8F%82%E6%95%B0%E6%AF%8F%E6%AC%A1%E9%83%BD%E7%94%A8%EF%BC%8C%E6%B5%AA%E8%B4%B9"><span class="toc-number">4.1.</span> <span class="toc-text">3.1 问题：大模型所有参数每次都用，浪费</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-MoE-%E6%A0%B8%E5%BF%83%E6%80%9D%E6%83%B3%EF%BC%9A%E6%AF%8F%E4%B8%AA-FFN-%E6%8B%86%E6%88%90-N-%E4%B8%AA%E4%B8%93%E5%AE%B6%EF%BC%8C%E6%AF%8F%E6%AC%A1%E5%8F%AA%E6%BF%80%E6%B4%BB-Top-K-%E4%B8%AA"><span class="toc-number">4.2.</span> <span class="toc-text">3.2 MoE 核心思想：每个 FFN 拆成 N 个专家，每次只激活 Top-K 个</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-%E4%B8%BA%E4%BB%80%E4%B9%88%E6%9C%89%E6%95%88"><span class="toc-number">4.3.</span> <span class="toc-text">3.3 为什么有效</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-4-MoE-%E7%9A%84%E5%AE%9E%E9%99%85%E6%A8%A1%E5%9E%8B"><span class="toc-number">4.4.</span> <span class="toc-text">3.4 MoE 的实际模型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-5-MoE-%E7%9A%84%E4%B8%A4%E4%B8%AA%E5%B7%A5%E7%A8%8B%E6%8C%91%E6%88%98"><span class="toc-number">4.5.</span> <span class="toc-text">3.5 MoE 的两个工程挑战</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-6-%E9%9D%A2%E8%AF%95%E9%80%9F%E7%AD%94"><span class="toc-number">4.6.</span> <span class="toc-text">3.6 面试速答</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9C%AC%E7%AB%A0%E9%80%9F%E6%9F%A5"><span class="toc-number">5.</span> <span class="toc-text">本章速查</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>Recent Posts</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/10/ai-python/AI-Python-12.8-%E9%9D%A2%E8%AF%95QA%E6%89%8B%E5%86%8C08-%E6%A8%A1%E5%9E%8B%E8%AF%84%E4%BC%B0%E4%B8%8EAI%E5%AE%89%E5%85%A8/" title="AI Python 学习 — 面试 QA 手册 08：模型评估与 AI 安全">AI Python 学习 — 面试 QA 手册 08：模型评估与 AI 安全</a><time datetime="2026-08-10T00:20:00.000Z" title="Created 2026-08-10 08:20:00">2026-08-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/10/ai-python/AI-Python-12.7-%E9%9D%A2%E8%AF%95QA%E6%89%8B%E5%86%8C07-%E5%A4%9A%E6%A8%A1%E6%80%81/" title="AI Python 学习 — 面试 QA 手册 07：多模态">AI Python 学习 — 面试 QA 手册 07：多模态</a><time datetime="2026-08-10T00:10:00.000Z" title="Created 2026-08-10 08:10:00">2026-08-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/10/ai-python/AI-Python-12.6-%E9%9D%A2%E8%AF%95QA%E6%89%8B%E5%86%8C06-Agent/" title="AI Python 学习 — 面试 QA 手册 06：Agent">AI Python 学习 — 面试 QA 手册 06：Agent</a><time datetime="2026-08-10T00:00:00.000Z" title="Created 2026-08-10 08:00:00">2026-08-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/07/ai-python/AI-Python-12.5-%E9%9D%A2%E8%AF%95QA%E6%89%8B%E5%86%8C05-%E6%8E%A8%E7%90%86%E4%BC%98%E5%8C%96%E4%B8%8E%E9%83%A8%E7%BD%B2/" title="AI Python 学习 — 面试 QA 手册 05：推理优化与部署">AI Python 学习 — 面试 QA 手册 05：推理优化与部署</a><time datetime="2026-08-07T00:10:00.000Z" title="Created 2026-08-07 08:10:00">2026-08-07</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/07/ai-python/AI-Python-12.4-%E9%9D%A2%E8%AF%95QA%E6%89%8B%E5%86%8C04-RAG/" title="AI Python 学习 — 面试 QA 手册 04：RAG 检索增强生成">AI Python 学习 — 面试 QA 手册 04：RAG 检索增强生成</a><time datetime="2026-08-07T00:00:00.000Z" title="Created 2026-08-07 08:00:00">2026-08-07</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By david</span><span class="framework-info"><span>Framework </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>Theme </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.4.3</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="Reading Mode"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="Toggle Between Light and Dark Mode"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="Toggle Between Single-column and Double-column"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="Settings"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="Table of Contents"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="Back to Top"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><div class="js-pjax"><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (false) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>

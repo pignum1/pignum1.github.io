@@ -1,0 +1,629 @@
+<!DOCTYPE html><html lang="en" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>AI Python 学习 — 10.1 Prompt 工程核心技法（CoT / Few-Shot / 结构化输出） | Hexo</title><meta name="author" content="david"><meta name="copyright" content="david"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="10.1：Prompt 工程核心技法 Prompt Engineering 不是”写一句提示词”——是让 LLM 按你的预期输出结果的系统工程。本文覆盖面试最常问的三种技法：CoT 思维链、Few-Shot 少样本、结构化输出。   零、本章速查表   技法 做什么 核心机制 成本 一句话    CoT 思维链 让 LLM 分步推理，不直接给答案 在 Prompt 中要求 “Let’s think">
+<meta property="og:type" content="article">
+<meta property="og:title" content="AI Python 学习 — 10.1 Prompt 工程核心技法（CoT &#x2F; Few-Shot &#x2F; 结构化输出）">
+<meta property="og:url" content="http://example.com/2026/07/22/ai-python/AI-Python-10.1-Prompt%E5%B7%A5%E7%A8%8B%E6%A0%B8%E5%BF%83%E6%8A%80%E6%B3%95/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="10.1：Prompt 工程核心技法 Prompt Engineering 不是”写一句提示词”——是让 LLM 按你的预期输出结果的系统工程。本文覆盖面试最常问的三种技法：CoT 思维链、Few-Shot 少样本、结构化输出。   零、本章速查表   技法 做什么 核心机制 成本 一句话    CoT 思维链 让 LLM 分步推理，不直接给答案 在 Prompt 中要求 “Let’s think">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://example.com/img/butterfly-icon.png">
+<meta property="article:published_time" content="2026-07-22T00:00:00.000Z">
+<meta property="article:modified_time" content="2026-07-30T08:41:32.418Z">
+<meta property="article:author" content="david">
+<meta property="article:tag" content="Python">
+<meta property="article:tag" content="面试">
+<meta property="article:tag" content="AI">
+<meta property="article:tag" content="Prompt">
+<meta property="article:tag" content="CoT">
+<meta property="article:tag" content="Few-Shot">
+<meta property="article:tag" content="结构化输出">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/img/butterfly-icon.png"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "AI Python 学习 — 10.1 Prompt 工程核心技法（CoT / Few-Shot / 结构化输出）",
+  "url": "http://example.com/2026/07/22/ai-python/AI-Python-10.1-Prompt%E5%B7%A5%E7%A8%8B%E6%A0%B8%E5%BF%83%E6%8A%80%E6%B3%95/",
+  "image": "http://example.com/img/butterfly-icon.png",
+  "datePublished": "2026-07-22T00:00:00.000Z",
+  "dateModified": "2026-07-30T08:41:32.418Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "david",
+      "url": "http://example.com"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://example.com/2026/07/22/ai-python/AI-Python-10.1-Prompt%E5%B7%A5%E7%A8%8B%E6%A0%B8%E5%BF%83%E6%8A%80%E6%B3%95/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: 'Copy Successful',
+    error: 'Copy Failed',
+    noSupport: 'Browser Not Supported'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: 'Just now',
+    min: 'minutes ago',
+    hour: 'hours ago',
+    day: 'days ago',
+    month: 'months ago'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid/dist/infinitegrid.min.js',
+    buttonText: 'Load More'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'AI Python 学习 — 10.1 Prompt 工程核心技法（CoT / Few-Shot / 结构化输出）',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Hexo</span></a><a class="nav-page-title" href="/"><span class="site-name">AI Python 学习 — 10.1 Prompt 工程核心技法（CoT / Few-Shot / 结构化输出）</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  Back to Home</span></span></a></span><div id="menus"></div></nav><div id="post-info"><h1 class="post-title">AI Python 学习 — 10.1 Prompt 工程核心技法（CoT / Few-Shot / 结构化输出）</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">Created</span><time class="post-meta-date-created" datetime="2026-07-22T00:00:00.000Z" title="Created 2026-07-22 08:00:00">2026-07-22</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">Updated</span><time class="post-meta-date-updated" datetime="2026-07-30T08:41:32.418Z" title="Updated 2026-07-30 16:41:32">2026-07-30</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/AI%E5%AD%A6%E4%B9%A0/">AI学习</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/AI%E5%AD%A6%E4%B9%A0/Agent/">Agent</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">Post Views:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h2 id="10-1：Prompt-工程核心技法"><a href="#10-1：Prompt-工程核心技法" class="headerlink" title="10.1：Prompt 工程核心技法"></a>10.1：Prompt 工程核心技法</h2><blockquote>
+<p>Prompt Engineering 不是”写一句提示词”——是让 LLM 按你的预期输出结果的系统工程。本文覆盖面试最常问的三种技法：<strong>CoT 思维链</strong>、<strong>Few-Shot 少样本</strong>、<strong>结构化输出</strong>。</p>
+</blockquote>
+<hr>
+<h2 id="零、本章速查表"><a href="#零、本章速查表" class="headerlink" title="零、本章速查表"></a>零、本章速查表</h2><table>
+<thead>
+<tr>
+<th>技法</th>
+<th>做什么</th>
+<th>核心机制</th>
+<th align="center">成本</th>
+<th>一句话</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>CoT 思维链</strong></td>
+<td>让 LLM 分步推理，不直接给答案</td>
+<td>在 Prompt 中要求 “Let’s think step by step”</td>
+<td align="center">Token 消耗 +50-100%</td>
+<td>“把大问题拆成小步骤，一步步推出答案”</td>
+</tr>
+<tr>
+<td><strong>Few-Shot</strong></td>
+<td>给 LLM 看几个例子，照着格式输出</td>
+<td>在 Prompt 里嵌入 2-5 个示例</td>
+<td align="center">Token 消耗 +示例长度</td>
+<td>“给你几个范例，照着这个格式来”</td>
+</tr>
+<tr>
+<td><strong>结构化输出</strong></td>
+<td>强制 LLM 输出 JSON&#x2F;Pydantic，不跑偏</td>
+<td>Function Calling &#x2F; with_structured_output</td>
+<td align="center">零额外成本</td>
+<td>“不是建议输出 JSON，是强制只能输出 JSON”</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="一、CoT-思维链（Chain-of-Thought）"><a href="#一、CoT-思维链（Chain-of-Thought）" class="headerlink" title="一、CoT 思维链（Chain-of-Thought）"></a>一、CoT 思维链（Chain-of-Thought）</h2><h3 id="1-1-一句话"><a href="#1-1-一句话" class="headerlink" title="1.1 一句话"></a>1.1 一句话</h3><blockquote>
+<p>不让 LLM 直接给答案，让它<strong>把推理过程写出来</strong>，然后从推理过程中提取答案。</p>
+</blockquote>
+<h3 id="1-2-为什么有效"><a href="#1-2-为什么有效" class="headerlink" title="1.2 为什么有效"></a>1.2 为什么有效</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">❌ 直接回答：</span><br><span class="line">   &quot;15 × 37 + 258 - 96 ÷ 3 = ?&quot;</span><br><span class="line">   → LLM: &quot;答案是 781&quot;  ← 可能对也可能错，你不知道它怎么算的</span><br><span class="line"></span><br><span class="line">✅ CoT 思维链：</span><br><span class="line">   &quot;15 × 37 + 258 - 96 ÷ 3 = ? 让我们一步步计算。&quot;</span><br><span class="line">   → LLM:</span><br><span class="line">      &quot;步骤1: 15 × 37 = 555</span><br><span class="line">       步骤2: 96 ÷ 3 = 32</span><br><span class="line">       步骤3: 555 + 258 = 813</span><br><span class="line">       步骤4: 813 - 32 = 781</span><br><span class="line">       答案: 781&quot;</span><br><span class="line">   → 每一步都可验证，出错了能定位到哪步算错的</span><br></pre></td></tr></table></figure>
+
+<h3 id="1-3-两种实现方式"><a href="#1-3-两种实现方式" class="headerlink" title="1.3 两种实现方式"></a>1.3 两种实现方式</h3><p><strong>Zero-Shot CoT</strong>：加一句魔法咒语就行</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 不需要例子，一句话搞定</span></span><br><span class="line">prompt = <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">&#123;question&#125;</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">Let&#x27;s think step by step.</span></span><br><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="comment"># 中文版：</span></span><br><span class="line">prompt = <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">&#123;question&#125;</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">让我们一步一步思考。</span></span><br><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>Few-Shot CoT</strong>：给几个推理范例</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">prompt = <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">请按以下示例的格式，先写出推理过程，再给出答案。</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">示例1:</span></span><br><span class="line"><span class="string">问题: 小明有 5 个苹果，吃掉 2 个，又买了 3 个，现在有几个？</span></span><br><span class="line"><span class="string">推理: 初始 5 个 → 吃掉 2 个剩 3 个 → 又买 3 个 → 3+3=6 个</span></span><br><span class="line"><span class="string">答案: 6 个</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">示例2:</span></span><br><span class="line"><span class="string">问题: 一个长方形的长是 8，宽是 3，面积是多少？</span></span><br><span class="line"><span class="string">推理: 长方形面积 = 长 × 宽 = 8 × 3 = 24</span></span><br><span class="line"><span class="string">答案: 24</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">现在回答:</span></span><br><span class="line"><span class="string">问题: &#123;question&#125;</span></span><br><span class="line"><span class="string">推理:&quot;&quot;&quot;</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="1-4-什么时候用、什么时候不用"><a href="#1-4-什么时候用、什么时候不用" class="headerlink" title="1.4 什么时候用、什么时候不用"></a>1.4 什么时候用、什么时候不用</h3><table>
+<thead>
+<tr>
+<th>该用 CoT</th>
+<th>不该用 CoT</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>数学推理、逻辑推理</td>
+<td>简单事实问答（”法国的首都是什么？”）</td>
+</tr>
+<tr>
+<td>多步问题求解</td>
+<td>翻译、摘要</td>
+</tr>
+<tr>
+<td>需要验证中间结果</td>
+<td>创意写作</td>
+</tr>
+</tbody></table>
+<p><strong>原则</strong>：问题需要多步推理才用 CoT，简单问题加 CoT 浪费 Token。</p>
+<h3 id="1-5-和-Agent-的关系"><a href="#1-5-和-Agent-的关系" class="headerlink" title="1.5 和 Agent 的关系"></a>1.5 和 Agent 的关系</h3><p>CoT 是 ReAct Agent 的推理基础：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">ReAct = CoT（推理） + Action（调用工具）</span><br><span class="line"></span><br><span class="line">Thought: 我需要查询今天的天气    ← CoT 推理</span><br><span class="line">Action: search_weather(&quot;北京&quot;)    ← 调用工具</span><br><span class="line">Observation: 今天北京 25°C</span><br><span class="line">Thought: 用户还问了适合穿什么     ← CoT 推理</span><br><span class="line">Answer: 建议穿短袖...</span><br></pre></td></tr></table></figure>
+
+<h3 id="1-6-CoT-之外的推理模式全景"><a href="#1-6-CoT-之外的推理模式全景" class="headerlink" title="1.6 CoT 之外的推理模式全景"></a>1.6 CoT 之外的推理模式全景</h3><p>CoT 是最基础的，但不是唯一解。复杂度和可靠性逐级递增：</p>
+<table>
+<thead>
+<tr>
+<th>模式</th>
+<th>核心思路</th>
+<th align="center">复杂度</th>
+<th>适合</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>CoT</strong></td>
+<td>一条链推理到底</td>
+<td align="center">⭐</td>
+<td>数学&#x2F;逻辑</td>
+</tr>
+<tr>
+<td><strong>Self-Consistency</strong></td>
+<td>CoT 跑 N 次，多数投票</td>
+<td align="center">⭐⭐</td>
+<td>CoT 不稳定时</td>
+</tr>
+<tr>
+<td><strong>ToT</strong></td>
+<td>每步探索多条路径，剪枝</td>
+<td align="center">⭐⭐⭐⭐</td>
+<td>需要回溯</td>
+</tr>
+<tr>
+<td><strong>GoT</strong></td>
+<td>思想可合并、拆分、聚合</td>
+<td align="center">⭐⭐⭐⭐⭐</td>
+<td>大纲&#x2F;架构</td>
+</tr>
+<tr>
+<td><strong>ReAct</strong></td>
+<td>推理 + 调工具交替</td>
+<td align="center">⭐⭐⭐</td>
+<td>Agent 标配</td>
+</tr>
+<tr>
+<td><strong>Reflection</strong></td>
+<td>自我评价，不行重来</td>
+<td align="center">⭐⭐⭐</td>
+<td>代码&#x2F;写作</td>
+</tr>
+</tbody></table>
+<h4 id="Self-Consistency：多跑几次，投票决定"><a href="#Self-Consistency：多跑几次，投票决定" class="headerlink" title="Self-Consistency：多跑几次，投票决定"></a>Self-Consistency：多跑几次，投票决定</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">同一个问题，CoT 跑 3 次（temperature &gt; 0）：</span><br><span class="line"></span><br><span class="line">第一次:  &quot;15×37=555, 555+258=813, 96÷3=32, 813-32=781&quot;</span><br><span class="line">第二次:  &quot;15×37=555, 555+258=813, 96÷3=32, 813-32=781&quot;  ← 相同</span><br><span class="line">第三次:  &quot;96÷3=32, 15×37=555, 813-32=781&quot;              ← 相同</span><br><span class="line"></span><br><span class="line">三个答案都是 781 → 高置信度 ✅</span><br><span class="line"></span><br><span class="line">如果三次结果不一致 → 取出现次数最多的，或者降低置信度</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># Self-Consistency 实现</span></span><br><span class="line">answers = []</span><br><span class="line"><span class="keyword">for</span> _ <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">5</span>):</span><br><span class="line">    <span class="comment"># temperature=0.7 保证每次输出有差异</span></span><br><span class="line">    result = llm.invoke(prompt, temperature=<span class="number">0.7</span>)</span><br><span class="line">    answers.append(extract_final_answer(result))</span><br><span class="line"></span><br><span class="line"><span class="comment"># 多数投票</span></span><br><span class="line">final_answer = <span class="built_in">max</span>(<span class="built_in">set</span>(answers), key=answers.count)</span><br><span class="line">confidence = answers.count(final_answer) / <span class="built_in">len</span>(answers)</span><br></pre></td></tr></table></figure>
+
+<h4 id="ToT（Tree-of-Thoughts）：每步分叉，剪枝前进"><a href="#ToT（Tree-of-Thoughts）：每步分叉，剪枝前进" class="headerlink" title="ToT（Tree of Thoughts）：每步分叉，剪枝前进"></a>ToT（Tree of Thoughts）：每步分叉，剪枝前进</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">问题: &quot;用 4, 6, 8, 12 通过四则运算得到 24&quot;</span><br><span class="line"></span><br><span class="line">CoT: 一条路走到底</span><br><span class="line">  4×6=24 → 24-8=16 → 16+12=28 ← 不对，但已经走完了，来不及回头</span><br><span class="line"></span><br><span class="line">ToT: 每步多路探索</span><br><span class="line">  第一层: 4×6=24 │ 4+6=10 │ 12÷4=3 │ 8+12=20</span><br><span class="line">           ↓          ↓        ↓        ↓</span><br><span class="line">  第二层: 24需要... 10需要... 3需要... 20需要...</span><br><span class="line">           ✗          ✗        ✓=8×3    ✓=20+4</span><br><span class="line">                                 ↑ 剪枝    ↑ 成立！</span><br><span class="line">  </span><br><span class="line">  每一步评估 3-5 个候选，不好的直接剪掉，不浪费算力</span><br></pre></td></tr></table></figure>
+
+<h4 id="GoT（Graph-of-Thoughts）：思想可以合并"><a href="#GoT（Graph-of-Thoughts）：思想可以合并" class="headerlink" title="GoT（Graph of Thoughts）：思想可以合并"></a>GoT（Graph of Thoughts）：思想可以合并</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">ToT 是树——分叉后老死不相往来。GoT 是图——分叉后的思想可以合并。</span><br><span class="line"></span><br><span class="line">写技术文章大纲:</span><br><span class="line"></span><br><span class="line">  线程安全 ---→ 锁机制 ----</span><br><span class="line">                           ↓</span><br><span class="line">  内存模型 ---→ volatile ----→ 合并：并发编程最佳实践</span><br><span class="line">                           ↑</span><br><span class="line">  线程池  ---→ 调优方法 ----</span><br><span class="line"></span><br><span class="line">不是独立的三条线，而是三线汇聚成一个综合结论</span><br></pre></td></tr></table></figure>
+
+<h4 id="ReAct：推理-行动交替"><a href="#ReAct：推理-行动交替" class="headerlink" title="ReAct：推理 + 行动交替"></a>ReAct：推理 + 行动交替</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">用户: &quot;北京今天适合户外运动吗？&quot;</span><br><span class="line"></span><br><span class="line">Thought: 我需要知道北京今天的天气         ← CoT 推理</span><br><span class="line">Action: search_weather(&quot;北京&quot;)            ← 调工具</span><br><span class="line">Observation: 晴，25°C，微风</span><br><span class="line"></span><br><span class="line">Thought: 天气不错，但还需要看空气质量      ← CoT 推理</span><br><span class="line">Action: search_aqi(&quot;北京&quot;)               ← 调工具</span><br><span class="line">Observation: AQI 42，优</span><br><span class="line"></span><br><span class="line">Thought: 天气好且空气好 → 适合            ← CoT 推理</span><br><span class="line">Answer: 适合户外运动 ✅</span><br></pre></td></tr></table></figure>
+
+<p>ReAct &#x3D; Agent 的标准工作模式，LangChain 的 <code>create_react_agent</code> 底层就是这个。</p>
+<h4 id="Reflection：自己给自己打分"><a href="#Reflection：自己给自己打分" class="headerlink" title="Reflection：自己给自己打分"></a>Reflection：自己给自己打分</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">第一步: 生成初稿</span><br><span class="line">  LLM 写了一段代码 → 有 bug</span><br><span class="line"></span><br><span class="line">第二步: 自我评价</span><br><span class="line">  &quot;这段代码的边界条件处理了吗？异常处理完整吗？&quot;</span><br><span class="line">  → LLM 自己发现问题: &quot;没有处理空列表的情况&quot;</span><br><span class="line"></span><br><span class="line">第三步: 修正</span><br><span class="line">  LLM 根据评价重新生成 → 加上 try-except 和空列表检查</span><br><span class="line"></span><br><span class="line">循环直到自己满意，或达到最大轮次</span><br></pre></td></tr></table></figure>
+
+<h4 id="一张表决定用哪个"><a href="#一张表决定用哪个" class="headerlink" title="一张表决定用哪个"></a>一张表决定用哪个</h4><table>
+<thead>
+<tr>
+<th>你的问题</th>
+<th align="center">选哪个</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>简单数学&#x2F;逻辑推理</td>
+<td align="center">CoT</td>
+</tr>
+<tr>
+<td>需要高可靠性、容错</td>
+<td align="center">Self-Consistency</td>
+</tr>
+<tr>
+<td>多步探索、需要回溯</td>
+<td align="center">ToT</td>
+</tr>
+<tr>
+<td>多线汇聚、综合结论</td>
+<td align="center">GoT</td>
+</tr>
+<tr>
+<td>需要查外部信息</td>
+<td align="center"><strong>ReAct（Agent 标配）</strong></td>
+</tr>
+<tr>
+<td>需要高质量输出、自动迭代</td>
+<td align="center">Reflection</td>
+</tr>
+</tbody></table>
+<h3 id="1-7-市场上-Agent-的执行模式"><a href="#1-7-市场上-Agent-的执行模式" class="headerlink" title="1.7 市场上 Agent 的执行模式"></a>1.7 市场上 Agent 的执行模式</h3><p><strong>主流答案：ReAct + 变体。</strong> 几乎所有生产级 Agent 的底层都是 ReAct，只是每家有自己的改进：</p>
+<table>
+<thead>
+<tr>
+<th>框架&#x2F;产品</th>
+<th align="center">执行模式</th>
+<th>特点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>LangChain Agent</strong></td>
+<td align="center">ReAct</td>
+<td>标准版，思考→行动→观察 循环</td>
+</tr>
+<tr>
+<td><strong>LangGraph</strong></td>
+<td align="center">ReAct + 图编排</td>
+<td>ReAct 循环画成有向图，可加条件分支、并行、循环</td>
+</tr>
+<tr>
+<td><strong>OpenAI Assistant</strong></td>
+<td align="center">ReAct + 内置工具</td>
+<td>你只定义工具，OpenAI 内部自动做 ReAct</td>
+</tr>
+<tr>
+<td><strong>Claude Agent (MCP)</strong></td>
+<td align="center">ReAct + MCP 工具</td>
+<td>思考→调 MCP Server→拿到结果→继续思考</td>
+</tr>
+<tr>
+<td><strong>AutoGPT</strong></td>
+<td align="center">ReAct + 长链规划</td>
+<td>先规划子任务列表，每个子任务跑 ReAct</td>
+</tr>
+<tr>
+<td><strong>Manus</strong></td>
+<td align="center">Plan-then-Execute</td>
+<td>先出完整计划 → 用户确认 → 逐步执行</td>
+</tr>
+<tr>
+<td><strong>SWE-Agent &#x2F; Devin</strong></td>
+<td align="center">ReAct + 代码编辑</td>
+<td>思考→读文件→写代码→运行→看报错→修正</td>
+</tr>
+</tbody></table>
+<p><strong>为什么都是 ReAct？</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">Agent 的工作本质就是：</span><br><span class="line">  &quot;想一步 → 做一步 → 看结果 → 再想下一步&quot;</span><br><span class="line"></span><br><span class="line">ReAct 天然就是这个循环:</span><br><span class="line">  Thought → Action → Observation → Thought → Action → ...</span><br><span class="line"></span><br><span class="line">其他模式是在这个基础上做加法:</span><br><span class="line">  ToT   = ReAct 每一步探索多条路（成本太高，很少直接用）</span><br><span class="line">  Reflection = ReAct 多了自我评价步骤</span><br><span class="line">  Plan-Execute = ReAct 的 Thought 阶段拉长成完整计划</span><br></pre></td></tr></table></figure>
+
+<p><strong>实际业务中的选择</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>场景</th>
+<th align="center">选什么</th>
+<th>原因</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>客服机器人</td>
+<td align="center">ReAct</td>
+<td>一问一答，不需要复杂规划</td>
+</tr>
+<tr>
+<td>代码助手</td>
+<td align="center">ReAct + Reflection</td>
+<td>写完检查一遍，多轮迭代</td>
+</tr>
+<tr>
+<td>数据分析 Agent</td>
+<td align="center">ReAct + Plan</td>
+<td>先看有哪些表→写SQL→看结果→调整</td>
+</tr>
+<tr>
+<td>自动化工作流</td>
+<td align="center">LangGraph（ReAct 图化）</td>
+<td>流程固定，节点+条件边</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>市面上没有 Agent 直接用裸 CoT 或裸 ToT。<strong>ReAct 是绝对主流</strong>，Plan-Execute 是变体，LangGraph 是工程化封装。面试时就说 “我们的 Agent 基于 ReAct 模式，用 LangGraph 做图化编排”。</p>
+</blockquote>
+<hr>
+<h2 id="二、Few-Shot-少样本学习"><a href="#二、Few-Shot-少样本学习" class="headerlink" title="二、Few-Shot 少样本学习"></a>二、Few-Shot 少样本学习</h2><h3 id="2-1-一句话"><a href="#2-1-一句话" class="headerlink" title="2.1 一句话"></a>2.1 一句话</h3><blockquote>
+<p>给 LLM 看 2-5 个范例，让它按同样格式输出。不是微调模型，只是把例子写在 Prompt 里。</p>
+</blockquote>
+<h3 id="2-2-为什么有效"><a href="#2-2-为什么有效" class="headerlink" title="2.2 为什么有效"></a>2.2 为什么有效</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">❌ Zero-Shot（不给例子）：</span><br><span class="line">   &quot;把以下句子分类为正面、负面或中性：&#123;text&#125;&quot;</span><br><span class="line">   → LLM: &quot;这句是正面的。&quot;  ← 格式不统一，有时返回 &quot;Positive&quot;，有时返回 &quot;正面&quot;</span><br><span class="line"></span><br><span class="line">✅ Few-Shot（给例子）：</span><br><span class="line">   &quot;&quot;&quot;</span><br><span class="line">   分类任务：判断用户评论的情感倾向。</span><br><span class="line">   </span><br><span class="line">   示例1: &quot;这个产品太好用了！&quot; → 正面</span><br><span class="line">   示例2: &quot;发货太慢，包装也破了&quot; → 负面</span><br><span class="line">   示例3: &quot;收到了，还没用&quot; → 中性</span><br><span class="line">   </span><br><span class="line">   现在分类: &quot;&#123;text&#125;&quot; → &quot;&quot;&quot;</span><br><span class="line">   </span><br><span class="line">   → LLM 输出 &quot;正面&quot;  ← 格式一致、标签相同</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-3-示例怎么选"><a href="#2-3-示例怎么选" class="headerlink" title="2.3 示例怎么选"></a>2.3 示例怎么选</h3><table>
+<thead>
+<tr>
+<th>原则</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>覆盖边界</strong></td>
+<td>正面、负面、中性各放一个，不要让 LLM 只见过一种</td>
+</tr>
+<tr>
+<td><strong>从简单到复杂</strong></td>
+<td>先给简单的例子，再给复杂的</td>
+</tr>
+<tr>
+<td><strong>和目标格式一致</strong></td>
+<td>你期望输出什么格式，例子就用什么格式</td>
+</tr>
+<tr>
+<td><strong>2-5 个够用</strong></td>
+<td>太多了反而让 LLM 困惑，且浪费 Token</td>
+</tr>
+</tbody></table>
+<h3 id="2-4-代码实现"><a href="#2-4-代码实现" class="headerlink" title="2.4 代码实现"></a>2.4 代码实现</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> langchain.prompts <span class="keyword">import</span> FewShotChatMessagePromptTemplate</span><br><span class="line"></span><br><span class="line">examples = [</span><br><span class="line">    &#123;<span class="string">&quot;input&quot;</span>: <span class="string">&quot;订单号 ORD-12345 的状态是什么？&quot;</span>, </span><br><span class="line">     <span class="string">&quot;output&quot;</span>: <span class="string">&#x27;&#123;&quot;intent&quot;: &quot;order_query&quot;, &quot;order_id&quot;: &quot;ORD-12345&quot;&#125;&#x27;</span>&#125;,</span><br><span class="line">    &#123;<span class="string">&quot;input&quot;</span>: <span class="string">&quot;帮我查一下物流 ORD-67890&quot;</span>, </span><br><span class="line">     <span class="string">&quot;output&quot;</span>: <span class="string">&#x27;&#123;&quot;intent&quot;: &quot;logistics_query&quot;, &quot;order_id&quot;: &quot;ORD-67890&quot;&#125;&#x27;</span>&#125;,</span><br><span class="line">    &#123;<span class="string">&quot;input&quot;</span>: <span class="string">&quot;我要退货，订单号 ORD-11111&quot;</span>, </span><br><span class="line">     <span class="string">&quot;output&quot;</span>: <span class="string">&#x27;&#123;&quot;intent&quot;: &quot;refund_request&quot;, &quot;order_id&quot;: &quot;ORD-11111&quot;&#125;&#x27;</span>&#125;,</span><br><span class="line">]</span><br><span class="line"></span><br><span class="line"><span class="comment"># 把示例拼成 Few-Shot Prompt</span></span><br><span class="line">example_prompt = ChatPromptTemplate.from_messages([</span><br><span class="line">    (<span class="string">&quot;human&quot;</span>, <span class="string">&quot;&#123;input&#125;&quot;</span>),</span><br><span class="line">    (<span class="string">&quot;ai&quot;</span>, <span class="string">&quot;&#123;output&#125;&quot;</span>),</span><br><span class="line">])</span><br><span class="line"></span><br><span class="line">few_shot_prompt = FewShotChatMessagePromptTemplate(</span><br><span class="line">    examples=examples,</span><br><span class="line">    example_prompt=example_prompt,</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="三、结构化输出"><a href="#三、结构化输出" class="headerlink" title="三、结构化输出"></a>三、结构化输出</h2><h3 id="3-1-一句话"><a href="#3-1-一句话" class="headerlink" title="3.1 一句话"></a>3.1 一句话</h3><blockquote>
+<p>让 LLM 的输出<strong>可以被代码可靠地解析</strong>——不一定是 JSON，但一定是机器可读的结构。</p>
+</blockquote>
+<h3 id="3-2-四种方式"><a href="#3-2-四种方式" class="headerlink" title="3.2 四种方式"></a>3.2 四种方式</h3><table>
+<thead>
+<tr>
+<th>方式</th>
+<th>原理</th>
+<th align="center">可靠性</th>
+<th>适用场景</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Prompt 描述</td>
+<td>“请输出 JSON 格式”</td>
+<td align="center">⚠️ 低</td>
+<td>快速验证、一次性脚本</td>
+</tr>
+<tr>
+<td>JSON Mode (API 参数)</td>
+<td><code>response_format=&#123;&quot;type&quot;: &quot;json_object&quot;&#125;</code></td>
+<td align="center">中</td>
+<td>OpenAI API</td>
+</tr>
+<tr>
+<td><strong>Function Calling</strong></td>
+<td>协议层 Schema 约束</td>
+<td align="center"><strong>高</strong></td>
+<td>GPT-4 &#x2F; DeepSeek &#x2F; GLM 等支持 FC 的模型</td>
+</tr>
+<tr>
+<td><strong>Prompt + 后处理</strong></td>
+<td>明确格式标记 + 代码解析兜底</td>
+<td align="center"><strong>中高</strong></td>
+<td>不依赖模型能力，<strong>任何 LLM 都适用</strong></td>
+</tr>
+</tbody></table>
+<h3 id="3-3-Function-Calling-方式（协议层硬约束）"><a href="#3-3-Function-Calling-方式（协议层硬约束）" class="headerlink" title="3.3 Function Calling 方式（协议层硬约束）"></a>3.3 Function Calling 方式（协议层硬约束）</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># ✅ Function Calling —— LLM 只能按 Schema 输出</span></span><br><span class="line"><span class="keyword">from</span> langchain_openai <span class="keyword">import</span> ChatOpenAI</span><br><span class="line"><span class="keyword">from</span> pydantic <span class="keyword">import</span> BaseModel, Field</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Person</span>(<span class="title class_ inherited__">BaseModel</span>):</span><br><span class="line">    name: <span class="built_in">str</span> = Field(description=<span class="string">&quot;姓名&quot;</span>)</span><br><span class="line">    age: <span class="built_in">int</span> = Field(description=<span class="string">&quot;年龄&quot;</span>)</span><br><span class="line"></span><br><span class="line">llm = ChatOpenAI(model=<span class="string">&quot;gpt-4o&quot;</span>, temperature=<span class="number">0</span>)</span><br><span class="line">structured_llm = llm.with_structured_output(Person)</span><br><span class="line"></span><br><span class="line">result = structured_llm.invoke(<span class="string">&quot;张三今年25岁&quot;</span>)</span><br><span class="line"><span class="comment"># → Person(name=&quot;张三&quot;, age=25)  ← 直接拿到 Pydantic 对象</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>优点</strong>：最可靠，模型在 token 级别被 Schema 约束。<br><strong>缺点</strong>：模型必须支持 Function Calling（开源小模型、本地多模态模型不支持）。</p>
+<h3 id="3-4-Prompt-后处理方式（The-Boy-Assistant-的实际做法）"><a href="#3-4-Prompt-后处理方式（The-Boy-Assistant-的实际做法）" class="headerlink" title="3.4 Prompt + 后处理方式（The Boy Assistant 的实际做法）"></a>3.4 Prompt + 后处理方式（The Boy Assistant 的实际做法）</h3><p>The Boy Assistant 没有依赖 Function Calling，而是用 <strong>Prompt 明确格式 + 代码解析兜底</strong>：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># The Boy Assistant 实际使用的结构化输出方式</span></span><br><span class="line"><span class="comment"># 思路：在 System Prompt 中约定输出格式 → 代码提取</span></span><br><span class="line"></span><br><span class="line">SYSTEM_PROMPT = <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">你是 The Boy Assistant，一个知识库检索助手。</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">## 输出格式要求</span></span><br><span class="line"><span class="string">当你需要判断用户意图时，请严格按以下格式输出：</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">&lt;decision&gt;</span></span><br><span class="line"><span class="string">kb_type: papers|patents|docs|business</span></span><br><span class="line"><span class="string">confidence: 0.0-1.0</span></span><br><span class="line"><span class="string">&lt;/decision&gt;</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">不要输出任何其他内容，只输出上述格式。</span></span><br><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Step 1: LLM 按约定格式输出</span></span><br><span class="line">response = llm.invoke(<span class="string">f&quot;<span class="subst">&#123;SYSTEM_PROMPT&#125;</span>\n\n用户问题: <span class="subst">&#123;query&#125;</span>&quot;</span>)</span><br><span class="line"><span class="comment"># → &quot;&lt;decision&gt;\nkb_type: papers\nconfidence: 0.92\n&lt;/decision&gt;&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Step 2: 代码正则提取 + 校验</span></span><br><span class="line"><span class="keyword">import</span> re</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">parse_decision</span>(<span class="params">response: <span class="built_in">str</span></span>) -&gt; <span class="built_in">dict</span>:</span><br><span class="line">    <span class="string">&quot;&quot;&quot;从 LLM 输出中提取结构化数据&quot;&quot;&quot;</span></span><br><span class="line">    <span class="keyword">match</span> = re.search(<span class="string">r&#x27;&lt;decision&gt;(.*?)&lt;/decision&gt;&#x27;</span>, response, re.DOTALL)</span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">not</span> <span class="keyword">match</span>:</span><br><span class="line">        <span class="keyword">raise</span> ValueError(<span class="string">f&quot;输出格式错误: <span class="subst">&#123;response[:<span class="number">100</span>]&#125;</span>...&quot;</span>)</span><br><span class="line">    </span><br><span class="line">    content = <span class="keyword">match</span>.group(<span class="number">1</span>).strip()</span><br><span class="line">    result = &#123;&#125;</span><br><span class="line">    <span class="keyword">for</span> line <span class="keyword">in</span> content.split(<span class="string">&#x27;\n&#x27;</span>):</span><br><span class="line">        <span class="keyword">if</span> <span class="string">&#x27;:&#x27;</span> <span class="keyword">in</span> line:</span><br><span class="line">            key, val = line.split(<span class="string">&#x27;:&#x27;</span>, <span class="number">1</span>)</span><br><span class="line">            result[key.strip()] = val.strip()</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 校验</span></span><br><span class="line">    <span class="keyword">assert</span> result.get(<span class="string">&#x27;kb_type&#x27;</span>) <span class="keyword">in</span> [<span class="string">&#x27;papers&#x27;</span>, <span class="string">&#x27;patents&#x27;</span>, <span class="string">&#x27;docs&#x27;</span>, <span class="string">&#x27;business&#x27;</span>]</span><br><span class="line">    <span class="keyword">assert</span> <span class="number">0</span> &lt;= <span class="built_in">float</span>(result.get(<span class="string">&#x27;confidence&#x27;</span>, -<span class="number">1</span>)) &lt;= <span class="number">1</span></span><br><span class="line">    </span><br><span class="line">    <span class="keyword">return</span> result</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-5-两种方式的对比"><a href="#3-5-两种方式的对比" class="headerlink" title="3.5 两种方式的对比"></a>3.5 两种方式的对比</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">Function Calling 方式:</span><br><span class="line">  LLM API 收到 Schema → 只输出 Schema 定义的结构 → Pydantic 对象</span><br><span class="line">  优点: 最可靠，不会跑偏</span><br><span class="line">  缺点: 依赖模型能力，不是所有模型都支持</span><br><span class="line"></span><br><span class="line">Prompt + 后处理方式:</span><br><span class="line">  Prompt 约定格式 → LLM 输出标记文本 → 正则提取 → 校验</span><br><span class="line">  优点: 不挑模型，任何 LLM 都能用</span><br><span class="line">  缺点: 需要写解析代码，极端情况 LLM 可能不按格式输出</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-6-为什么-The-Boy-选择-Prompt-后处理而不是-Function-Calling？"><a href="#3-6-为什么-The-Boy-选择-Prompt-后处理而不是-Function-Calling？" class="headerlink" title="3.6 为什么 The Boy 选择 Prompt 后处理而不是 Function Calling？"></a>3.6 为什么 The Boy 选择 Prompt 后处理而不是 Function Calling？</h3><table>
+<thead>
+<tr>
+<th>原因</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>LangGraph 架构</strong></td>
+<td>The Boy 用 LangGraph 做图编排，每个节点处理结构化 State（TypedDict），节点内部就是普通 LLM 调用 → 后处理提取结果 → 更新 State</td>
+</tr>
+<tr>
+<td><strong>模型无关</strong></td>
+<td>不绑定特定模型 API，换模型不用改代码</td>
+</tr>
+<tr>
+<td><strong>本地模型</strong></td>
+<td>BGE-M3、Qwen2-VL 等本地模型不支持 Function Calling，Prompt 方式是唯一选择</td>
+</tr>
+<tr>
+<td><strong>多层兜底</strong></td>
+<td>正则提取失败 → 降到更宽松的解析 → 再失败 → 让 LLM 重新生成</td>
+</tr>
+</tbody></table>
+<h3 id="3-7-实际使用的三个场景"><a href="#3-7-实际使用的三个场景" class="headerlink" title="3.7 实际使用的三个场景"></a>3.7 实际使用的三个场景</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># The Boy Assistant 中结构化输出的三个场景：</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 场景1: KB Router —— Prompt 约定格式</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">KBRouter</span>:</span><br><span class="line">    <span class="keyword">async</span> <span class="keyword">def</span> <span class="title function_">route</span>(<span class="params">self, query: <span class="built_in">str</span></span>) -&gt; RouteDecision:</span><br><span class="line">        response = <span class="keyword">await</span> <span class="variable language_">self</span>.llm.generate(<span class="string">f&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">        判断以下问题应该路由到哪个知识库:</span></span><br><span class="line"><span class="string">        </span></span><br><span class="line"><span class="string">        可选 KB: papers（论文）, patents（专利）, docs（文档）, business（业务数据）</span></span><br><span class="line"><span class="string">        </span></span><br><span class="line"><span class="string">        输出格式:</span></span><br><span class="line"><span class="string">        &lt;decision&gt;</span></span><br><span class="line"><span class="string">        kb_type: &lt;类型&gt;</span></span><br><span class="line"><span class="string">        confidence: &lt;0.0-1.0&gt;</span></span><br><span class="line"><span class="string">        &lt;/decision&gt;</span></span><br><span class="line"><span class="string">        </span></span><br><span class="line"><span class="string">        问题: <span class="subst">&#123;query&#125;</span></span></span><br><span class="line"><span class="string">        &quot;&quot;&quot;</span>)</span><br><span class="line">        <span class="keyword">return</span> <span class="variable language_">self</span>._parse_decision(response)  <span class="comment"># 正则提取 + 校验</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 场景2: Query Structuring —— Prompt + 后处理</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">QueryStructurer</span>:</span><br><span class="line">    <span class="keyword">async</span> <span class="keyword">def</span> <span class="title function_">extract_filters</span>(<span class="params">self, query: <span class="built_in">str</span></span>) -&gt; PatentFilter:</span><br><span class="line">        response = <span class="keyword">await</span> <span class="variable language_">self</span>.llm.generate(<span class="string">f&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">        从以下问题中提取检索条件:</span></span><br><span class="line"><span class="string">        </span></span><br><span class="line"><span class="string">        输出格式:</span></span><br><span class="line"><span class="string">        &lt;filter&gt;</span></span><br><span class="line"><span class="string">        content: &lt;检索内容&gt;</span></span><br><span class="line"><span class="string">        filing_year: &lt;年份，没有则为 null&gt;</span></span><br><span class="line"><span class="string">        applicant: &lt;申请人，没有则为 null&gt;</span></span><br><span class="line"><span class="string">        &lt;/filter&gt;</span></span><br><span class="line"><span class="string">        </span></span><br><span class="line"><span class="string">        问题: <span class="subst">&#123;query&#125;</span></span></span><br><span class="line"><span class="string">        &quot;&quot;&quot;</span>)</span><br><span class="line">        <span class="keyword">return</span> <span class="variable language_">self</span>._parse_filter(response)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 场景3: Tool Router —— 同模式</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">ToolRouter</span>:</span><br><span class="line">    <span class="keyword">async</span> <span class="keyword">def</span> <span class="title function_">extract_params</span>(<span class="params">self, query: <span class="built_in">str</span></span>) -&gt; QueryParams:</span><br><span class="line">        response = <span class="keyword">await</span> <span class="variable language_">self</span>.llm.generate(<span class="string">f&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">        从问题中提取 SQL 查询参数...</span></span><br><span class="line"><span class="string">        输出格式: &lt;params&gt;metric: ... operator: ... value: ...&lt;/params&gt;</span></span><br><span class="line"><span class="string">        &quot;&quot;&quot;</span>)</span><br><span class="line">        <span class="keyword">return</span> <span class="variable language_">self</span>._parse_params(response)</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-8-该选哪个？"><a href="#3-8-该选哪个？" class="headerlink" title="3.8 该选哪个？"></a>3.8 该选哪个？</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">你的模型支持 Function Calling？</span><br><span class="line">  ├── 是 → 用 Function Calling，最省心</span><br><span class="line">  │       （GPT-4、DeepSeek、GLM、Qwen2.5-72B 都支持）</span><br><span class="line">  │</span><br><span class="line">  └── 否 → 用 Prompt + 后处理</span><br><span class="line">          （本地模型、开源小模型、多模态模型）</span><br><span class="line">          关键：格式标记要唯一（不用 markdown ```json，用自定义 tag）</span><br><span class="line">                后处理要有 fallback（解析失败 → 重试 → 降级）</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>两种方式不是互斥的。生产系统中，Function Calling 优先，Prompt 后处理做 fallback——“硬约束优先，软约束兜底”。</p>
+</blockquote>
+<hr>
+<h2 id="四、三法组合使用"><a href="#四、三法组合使用" class="headerlink" title="四、三法组合使用"></a>四、三法组合使用</h2><p>实际系统中很少只用一种：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">用户: &quot;帮我查一下这周的 GPU 使用率异常情况&quot;</span><br><span class="line"></span><br><span class="line">Step 1: Few-Shot 分类</span><br><span class="line">  → LLM 判断: intent = &quot;metric_query&quot;</span><br><span class="line"></span><br><span class="line">Step 2: 结构化输出</span><br><span class="line">  → 提取参数: &#123;&quot;metric&quot;: &quot;gpu_util&quot;, &quot;time_range&quot;: &quot;this_week&quot;, &quot;filter&quot;: &quot;anomaly&quot;&#125;</span><br><span class="line"></span><br><span class="line">Step 3: CoT 推理</span><br><span class="line">  → &quot;先查本周 GPU 数据 → 找出超过阈值的时间点 → 关联对应任务 → 分析原因&quot;</span><br><span class="line">  → 调用 Tool Router → 返回分析报告</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="五、面试速查"><a href="#五、面试速查" class="headerlink" title="五、面试速查"></a>五、面试速查</h2><p><strong>Q1：CoT 和 Few-Shot 有什么区别？</strong></p>
+<blockquote>
+<p>“CoT 是教 LLM <strong>怎么想</strong>（展示推理过程），Few-Shot 是教 LLM <strong>输出长什么样</strong>（给格式范例）。两者常组合——Few-Shot 里给 CoT 范例。”</p>
+</blockquote>
+<p><strong>Q2：结构化输出一定要用 Function Calling 吗？</strong></p>
+<blockquote>
+<p>“不一定。两种主流方案——Function Calling 是协议层硬约束，最可靠，但依赖模型支持；Prompt + 后处理是软约束，用自定义标记（如 <code>&lt;decision&gt;</code>）约定格式，代码正则提取后校验。The Boy Assistant 用的是后者，因为 LangGraph 架构下节点本身就是结构化 State，而且本地模型（BGE-M3、Qwen2-VL）不支持 Function Calling。原则：Function Calling 优先，Prompt 后处理兜底，两种不是互斥的。”</p>
+</blockquote>
+<p><strong>Q3：Few-Shot 给几个例子合适？</strong></p>
+<blockquote>
+<p>“2-5 个。太少覆盖不全，太多浪费 Token 且可能让 LLM 困惑。关键是例子的<strong>质量</strong>（覆盖边界 case）而不是数量。”</p>
+</blockquote>
+<p><strong>Q4：CoT 的代价是什么？</strong></p>
+<blockquote>
+<p>“Token 消耗增加 50-100%，延迟增加。简单事实问答不要用 CoT。判断标准：问题需要多步推理才加 CoT，否则就是浪费。”</p>
+</blockquote>
+<hr>
+<h2 id="六、本章掌握要点"><a href="#六、本章掌握要点" class="headerlink" title="六、本章掌握要点"></a>六、本章掌握要点</h2><table>
+<thead>
+<tr>
+<th>必须掌握</th>
+<th>加分项</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>✅ CoT 的核心思路和 “Let’s think step by step”</td>
+<td>✅ Zero-Shot CoT vs Few-Shot CoT 的区别</td>
+</tr>
+<tr>
+<td>✅ Few-Shot 示例选取原则（覆盖边界）</td>
+<td>✅ 和微调的本质区别（改 prompt vs 改权重）</td>
+</tr>
+<tr>
+<td>✅ Function Calling 协议层约束 vs Prompt 后处理的取舍</td>
+<td>✅ CoT 是 ReAct Agent 的推理基础</td>
+</tr>
+<tr>
+<td>✅ 四种结构化输出方式的可靠性对比</td>
+<td>✅ Few-Shot 示例数量和 Token 预算的权衡</td>
+</tr>
+<tr>
+<td>✅ 为什么 The Boy 用 Prompt 后处理而不是 Function Calling</td>
+<td>✅ 自定义标记 + 正则提取 + 校验兜底的实现</td>
+</tr>
+</tbody></table>
+<hr>
+<blockquote>
+<p>📖 延伸阅读：</p>
+<ul>
+<li><a href="/2026/04/20/ai-python/AI-Python-06.5-Tool%E4%B8%8EAgent/">06.5 Tool 与 Agent</a> — Function Calling 原理与 Agent 中的结构化输出应用</li>
+<li><a href="/2026/07/07/rag/14-DDD%E6%9E%B6%E6%9E%84%E4%B8%8E%E5%88%86%E5%9D%97%E6%A3%80%E7%B4%A2%E7%AD%96%E7%95%A5/">RAG 14 DDD 架构</a> — 结构化输出在 KB Router &#x2F; Query Structuring &#x2F; Tool Router 中的落地</li>
+</ul>
+</blockquote>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>Author: </span><span class="post-copyright-info"><a href="http://example.com">david</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>Link: </span><span class="post-copyright-info"><a href="http://example.com/2026/07/22/ai-python/AI-Python-10.1-Prompt%E5%B7%A5%E7%A8%8B%E6%A0%B8%E5%BF%83%E6%8A%80%E6%B3%95/">http://example.com/2026/07/22/ai-python/AI-Python-10.1-Prompt%E5%B7%A5%E7%A8%8B%E6%A0%B8%E5%BF%83%E6%8A%80%E6%B3%95/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>Copyright Notice: </span><span class="post-copyright-info">All articles on this blog are licensed under <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> unless otherwise stated.</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Python/">Python</a><a class="post-meta__tags" href="/tags/%E9%9D%A2%E8%AF%95/">面试</a><a class="post-meta__tags" href="/tags/AI/">AI</a><a class="post-meta__tags" href="/tags/Prompt/">Prompt</a><a class="post-meta__tags" href="/tags/CoT/">CoT</a><a class="post-meta__tags" href="/tags/Few-Shot/">Few-Shot</a><a class="post-meta__tags" href="/tags/%E7%BB%93%E6%9E%84%E5%8C%96%E8%BE%93%E5%87%BA/">结构化输出</a></div><div class="post-share"><div class="social-share" data-image="/img/butterfly-icon.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2026/07/22/ai-python/AI-Python-10.2-MCP%E5%8D%8F%E8%AE%AE%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E8%B7%B5/" title="AI Python 学习 — 10.2 MCP 协议原理与实践（Model Context Protocol）"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">Previous</div><div class="info-item-2">AI Python 学习 — 10.2 MCP 协议原理与实践（Model Context Protocol）</div></div><div class="info-2"><div class="info-item-1">10.2：MCP 协议原理与实践 MCP（Model Context Protocol）是 Anthropic 于 2024 年 11 月发布的开放协议。一句话定义：大模型的”USB-C 接口”——统一了 LLM 与外部工具、数据源的连接方式。本文覆盖协议原理、四层架构、三大原语、与 Function Calling 的本质区别，以及 The Boy Assistant 知识库的 MCP 实战。   零、本章速查表   概念 做什么 一句话    MCP 协议 统一 LLM 与外部工具的连接标准 “AI 界的 USB-C：一套协议连接所有工具”   Resources 暴露数据给 LLM 读 “文件、数据库记录、API 响应——只读”   Tools 暴露动作给 LLM 执行 “搜索、计算、发邮件——可执行”   Prompts 可复用的提示词模板 “预定义的对话模板，Server 提供”   Transport 通信层 stdio（本地进程）&#x2F; HTTP+SSE（远程服务）   JSON-RPC 协议消息格式 请求&#x2F;响应&#x2F;通知，MCP 的底层协议 ...</div></div></div></a><a class="pagination-related" href="/2026/07/21/rag/00-%E7%B3%BB%E5%88%97%E6%80%BB%E8%A7%88/" title="AI Python 学习 — RAG 从零到一系列"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">Next</div><div class="info-item-2">AI Python 学习 — RAG 从零到一系列</div></div><div class="info-2"><div class="info-item-1">RAG 从零到一系列 基于 LangChain 官方 RAG From Scratch 课程，配套 YouTube 视频。5 篇文章按 5 个阶段组织，覆盖全部 18 个核心技术。从最基础的 Indexing → Retrieval → Generation 开始，逐步深入到查询变换、路由、高级索引、高级检索。   系列全景1234567891011121314151617181920212223242526┌────────────────────────────────────────────────────────────┐│                     RAG 从零到一 18 课                        │├────────────────────────────────────────────────────────────┤│                                                              ││  阶段一：基础 (Part 1-4)       阶段二：查询变换 (Part 5...</div></div></div></a></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/butterfly-icon.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">david</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">169</div></a><a href="/tags/"><div class="headline">Tags</div><div class="length-num">397</div></a><a href="/categories/"><div class="headline">Categories</div><div class="length-num">33</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>Announcement</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>Contents</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#10-1%EF%BC%9APrompt-%E5%B7%A5%E7%A8%8B%E6%A0%B8%E5%BF%83%E6%8A%80%E6%B3%95"><span class="toc-number">1.</span> <span class="toc-text">10.1：Prompt 工程核心技法</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%9B%B6%E3%80%81%E6%9C%AC%E7%AB%A0%E9%80%9F%E6%9F%A5%E8%A1%A8"><span class="toc-number">2.</span> <span class="toc-text">零、本章速查表</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81CoT-%E6%80%9D%E7%BB%B4%E9%93%BE%EF%BC%88Chain-of-Thought%EF%BC%89"><span class="toc-number">3.</span> <span class="toc-text">一、CoT 思维链（Chain-of-Thought）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-%E4%B8%80%E5%8F%A5%E8%AF%9D"><span class="toc-number">3.1.</span> <span class="toc-text">1.1 一句话</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-%E4%B8%BA%E4%BB%80%E4%B9%88%E6%9C%89%E6%95%88"><span class="toc-number">3.2.</span> <span class="toc-text">1.2 为什么有效</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-3-%E4%B8%A4%E7%A7%8D%E5%AE%9E%E7%8E%B0%E6%96%B9%E5%BC%8F"><span class="toc-number">3.3.</span> <span class="toc-text">1.3 两种实现方式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-4-%E4%BB%80%E4%B9%88%E6%97%B6%E5%80%99%E7%94%A8%E3%80%81%E4%BB%80%E4%B9%88%E6%97%B6%E5%80%99%E4%B8%8D%E7%94%A8"><span class="toc-number">3.4.</span> <span class="toc-text">1.4 什么时候用、什么时候不用</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-5-%E5%92%8C-Agent-%E7%9A%84%E5%85%B3%E7%B3%BB"><span class="toc-number">3.5.</span> <span class="toc-text">1.5 和 Agent 的关系</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-6-CoT-%E4%B9%8B%E5%A4%96%E7%9A%84%E6%8E%A8%E7%90%86%E6%A8%A1%E5%BC%8F%E5%85%A8%E6%99%AF"><span class="toc-number">3.6.</span> <span class="toc-text">1.6 CoT 之外的推理模式全景</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Self-Consistency%EF%BC%9A%E5%A4%9A%E8%B7%91%E5%87%A0%E6%AC%A1%EF%BC%8C%E6%8A%95%E7%A5%A8%E5%86%B3%E5%AE%9A"><span class="toc-number">3.6.1.</span> <span class="toc-text">Self-Consistency：多跑几次，投票决定</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#ToT%EF%BC%88Tree-of-Thoughts%EF%BC%89%EF%BC%9A%E6%AF%8F%E6%AD%A5%E5%88%86%E5%8F%89%EF%BC%8C%E5%89%AA%E6%9E%9D%E5%89%8D%E8%BF%9B"><span class="toc-number">3.6.2.</span> <span class="toc-text">ToT（Tree of Thoughts）：每步分叉，剪枝前进</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#GoT%EF%BC%88Graph-of-Thoughts%EF%BC%89%EF%BC%9A%E6%80%9D%E6%83%B3%E5%8F%AF%E4%BB%A5%E5%90%88%E5%B9%B6"><span class="toc-number">3.6.3.</span> <span class="toc-text">GoT（Graph of Thoughts）：思想可以合并</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#ReAct%EF%BC%9A%E6%8E%A8%E7%90%86-%E8%A1%8C%E5%8A%A8%E4%BA%A4%E6%9B%BF"><span class="toc-number">3.6.4.</span> <span class="toc-text">ReAct：推理 + 行动交替</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Reflection%EF%BC%9A%E8%87%AA%E5%B7%B1%E7%BB%99%E8%87%AA%E5%B7%B1%E6%89%93%E5%88%86"><span class="toc-number">3.6.5.</span> <span class="toc-text">Reflection：自己给自己打分</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%B8%80%E5%BC%A0%E8%A1%A8%E5%86%B3%E5%AE%9A%E7%94%A8%E5%93%AA%E4%B8%AA"><span class="toc-number">3.6.6.</span> <span class="toc-text">一张表决定用哪个</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-7-%E5%B8%82%E5%9C%BA%E4%B8%8A-Agent-%E7%9A%84%E6%89%A7%E8%A1%8C%E6%A8%A1%E5%BC%8F"><span class="toc-number">3.7.</span> <span class="toc-text">1.7 市场上 Agent 的执行模式</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81Few-Shot-%E5%B0%91%E6%A0%B7%E6%9C%AC%E5%AD%A6%E4%B9%A0"><span class="toc-number">4.</span> <span class="toc-text">二、Few-Shot 少样本学习</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-%E4%B8%80%E5%8F%A5%E8%AF%9D"><span class="toc-number">4.1.</span> <span class="toc-text">2.1 一句话</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-%E4%B8%BA%E4%BB%80%E4%B9%88%E6%9C%89%E6%95%88"><span class="toc-number">4.2.</span> <span class="toc-text">2.2 为什么有效</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-%E7%A4%BA%E4%BE%8B%E6%80%8E%E4%B9%88%E9%80%89"><span class="toc-number">4.3.</span> <span class="toc-text">2.3 示例怎么选</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-4-%E4%BB%A3%E7%A0%81%E5%AE%9E%E7%8E%B0"><span class="toc-number">4.4.</span> <span class="toc-text">2.4 代码实现</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E7%BB%93%E6%9E%84%E5%8C%96%E8%BE%93%E5%87%BA"><span class="toc-number">5.</span> <span class="toc-text">三、结构化输出</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-%E4%B8%80%E5%8F%A5%E8%AF%9D"><span class="toc-number">5.1.</span> <span class="toc-text">3.1 一句话</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-%E5%9B%9B%E7%A7%8D%E6%96%B9%E5%BC%8F"><span class="toc-number">5.2.</span> <span class="toc-text">3.2 四种方式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-Function-Calling-%E6%96%B9%E5%BC%8F%EF%BC%88%E5%8D%8F%E8%AE%AE%E5%B1%82%E7%A1%AC%E7%BA%A6%E6%9D%9F%EF%BC%89"><span class="toc-number">5.3.</span> <span class="toc-text">3.3 Function Calling 方式（协议层硬约束）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-4-Prompt-%E5%90%8E%E5%A4%84%E7%90%86%E6%96%B9%E5%BC%8F%EF%BC%88The-Boy-Assistant-%E7%9A%84%E5%AE%9E%E9%99%85%E5%81%9A%E6%B3%95%EF%BC%89"><span class="toc-number">5.4.</span> <span class="toc-text">3.4 Prompt + 后处理方式（The Boy Assistant 的实际做法）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-5-%E4%B8%A4%E7%A7%8D%E6%96%B9%E5%BC%8F%E7%9A%84%E5%AF%B9%E6%AF%94"><span class="toc-number">5.5.</span> <span class="toc-text">3.5 两种方式的对比</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-6-%E4%B8%BA%E4%BB%80%E4%B9%88-The-Boy-%E9%80%89%E6%8B%A9-Prompt-%E5%90%8E%E5%A4%84%E7%90%86%E8%80%8C%E4%B8%8D%E6%98%AF-Function-Calling%EF%BC%9F"><span class="toc-number">5.6.</span> <span class="toc-text">3.6 为什么 The Boy 选择 Prompt 后处理而不是 Function Calling？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-7-%E5%AE%9E%E9%99%85%E4%BD%BF%E7%94%A8%E7%9A%84%E4%B8%89%E4%B8%AA%E5%9C%BA%E6%99%AF"><span class="toc-number">5.7.</span> <span class="toc-text">3.7 实际使用的三个场景</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-8-%E8%AF%A5%E9%80%89%E5%93%AA%E4%B8%AA%EF%BC%9F"><span class="toc-number">5.8.</span> <span class="toc-text">3.8 该选哪个？</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E4%B8%89%E6%B3%95%E7%BB%84%E5%90%88%E4%BD%BF%E7%94%A8"><span class="toc-number">6.</span> <span class="toc-text">四、三法组合使用</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E9%9D%A2%E8%AF%95%E9%80%9F%E6%9F%A5"><span class="toc-number">7.</span> <span class="toc-text">五、面试速查</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81%E6%9C%AC%E7%AB%A0%E6%8E%8C%E6%8F%A1%E8%A6%81%E7%82%B9"><span class="toc-number">8.</span> <span class="toc-text">六、本章掌握要点</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>Recent Posts</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/10/ai-python/AI-Python-12.8-%E9%9D%A2%E8%AF%95QA%E6%89%8B%E5%86%8C08-%E6%A8%A1%E5%9E%8B%E8%AF%84%E4%BC%B0%E4%B8%8EAI%E5%AE%89%E5%85%A8/" title="AI Python 学习 — 面试 QA 手册 08：模型评估与 AI 安全">AI Python 学习 — 面试 QA 手册 08：模型评估与 AI 安全</a><time datetime="2026-08-10T00:20:00.000Z" title="Created 2026-08-10 08:20:00">2026-08-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/10/ai-python/AI-Python-12.7-%E9%9D%A2%E8%AF%95QA%E6%89%8B%E5%86%8C07-%E5%A4%9A%E6%A8%A1%E6%80%81/" title="AI Python 学习 — 面试 QA 手册 07：多模态">AI Python 学习 — 面试 QA 手册 07：多模态</a><time datetime="2026-08-10T00:10:00.000Z" title="Created 2026-08-10 08:10:00">2026-08-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/10/ai-python/AI-Python-12.6-%E9%9D%A2%E8%AF%95QA%E6%89%8B%E5%86%8C06-Agent/" title="AI Python 学习 — 面试 QA 手册 06：Agent">AI Python 学习 — 面试 QA 手册 06：Agent</a><time datetime="2026-08-10T00:00:00.000Z" title="Created 2026-08-10 08:00:00">2026-08-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/07/ai-python/AI-Python-12.5-%E9%9D%A2%E8%AF%95QA%E6%89%8B%E5%86%8C05-%E6%8E%A8%E7%90%86%E4%BC%98%E5%8C%96%E4%B8%8E%E9%83%A8%E7%BD%B2/" title="AI Python 学习 — 面试 QA 手册 05：推理优化与部署">AI Python 学习 — 面试 QA 手册 05：推理优化与部署</a><time datetime="2026-08-07T00:10:00.000Z" title="Created 2026-08-07 08:10:00">2026-08-07</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/07/ai-python/AI-Python-12.4-%E9%9D%A2%E8%AF%95QA%E6%89%8B%E5%86%8C04-RAG/" title="AI Python 学习 — 面试 QA 手册 04：RAG 检索增强生成">AI Python 学习 — 面试 QA 手册 04：RAG 检索增强生成</a><time datetime="2026-08-07T00:00:00.000Z" title="Created 2026-08-07 08:00:00">2026-08-07</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By david</span><span class="framework-info"><span>Framework </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>Theme </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.4.3</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="Reading Mode"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="Toggle Between Light and Dark Mode"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="Toggle Between Single-column and Double-column"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="Settings"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="Table of Contents"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="Back to Top"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><div class="js-pjax"><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (false) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
