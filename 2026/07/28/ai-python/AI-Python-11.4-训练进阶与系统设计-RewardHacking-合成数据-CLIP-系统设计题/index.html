@@ -7,7 +7,7 @@
 <meta property="og:locale" content="en_US">
 <meta property="og:image" content="http://example.com/img/butterfly-icon.png">
 <meta property="article:published_time" content="2026-07-28T04:00:00.000Z">
-<meta property="article:modified_time" content="2026-08-12T06:06:14.150Z">
+<meta property="article:modified_time" content="2026-08-13T08:12:52.163Z">
 <meta property="article:author" content="david">
 <meta property="article:tag" content="Python">
 <meta property="article:tag" content="面试">
@@ -26,7 +26,7 @@
   "url": "http://example.com/2026/07/28/ai-python/AI-Python-11.4-%E8%AE%AD%E7%BB%83%E8%BF%9B%E9%98%B6%E4%B8%8E%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1-RewardHacking-%E5%90%88%E6%88%90%E6%95%B0%E6%8D%AE-CLIP-%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1%E9%A2%98/",
   "image": "http://example.com/img/butterfly-icon.png",
   "datePublished": "2026-07-28T04:00:00.000Z",
-  "dateModified": "2026-08-12T06:06:14.150Z",
+  "dateModified": "2026-08-13T08:12:52.163Z",
   "author": [
     {
       "@type": "Person",
@@ -167,7 +167,7 @@
   isHighlightShrink: false,
   isToc: true,
   pageType: 'post'
-}</script><meta name="generator" content="Hexo 7.3.0"></head><body><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Hexo</span></a><a class="nav-page-title" href="/"><span class="site-name">AI Python 学习 — 11.4 训练进阶与系统设计场景（Reward Hacking / 合成数据 / CLIP深入 / 系统设计题）</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  Back to Home</span></span></a></span><div id="menus"></div></nav><div id="post-info"><h1 class="post-title">AI Python 学习 — 11.4 训练进阶与系统设计场景（Reward Hacking / 合成数据 / CLIP深入 / 系统设计题）</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">Created</span><time class="post-meta-date-created" datetime="2026-07-28T04:00:00.000Z" title="Created 2026-07-28 12:00:00">2026-07-28</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">Updated</span><time class="post-meta-date-updated" datetime="2026-08-12T06:06:14.150Z" title="Updated 2026-08-12 14:06:14">2026-08-12</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/AI%E5%AD%A6%E4%B9%A0/">AI学习</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/AI%E5%AD%A6%E4%B9%A0/%E9%9D%A2%E8%AF%95/">面试</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">Post Views:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h2 id="11-4：训练进阶与系统设计场景"><a href="#11-4：训练进阶与系统设计场景" class="headerlink" title="11.4：训练进阶与系统设计场景"></a>11.4：训练进阶与系统设计场景</h2><blockquote>
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Hexo</span></a><a class="nav-page-title" href="/"><span class="site-name">AI Python 学习 — 11.4 训练进阶与系统设计场景（Reward Hacking / 合成数据 / CLIP深入 / 系统设计题）</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  Back to Home</span></span></a></span><div id="menus"></div></nav><div id="post-info"><h1 class="post-title">AI Python 学习 — 11.4 训练进阶与系统设计场景（Reward Hacking / 合成数据 / CLIP深入 / 系统设计题）</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">Created</span><time class="post-meta-date-created" datetime="2026-07-28T04:00:00.000Z" title="Created 2026-07-28 12:00:00">2026-07-28</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">Updated</span><time class="post-meta-date-updated" datetime="2026-08-13T08:12:52.163Z" title="Updated 2026-08-13 16:12:52">2026-08-13</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/AI%E5%AD%A6%E4%B9%A0/">AI学习</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/AI%E5%AD%A6%E4%B9%A0/%E9%9D%A2%E8%AF%95/">面试</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">Post Views:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h2 id="11-4：训练进阶与系统设计场景"><a href="#11-4：训练进阶与系统设计场景" class="headerlink" title="11.4：训练进阶与系统设计场景"></a>11.4：训练进阶与系统设计场景</h2><blockquote>
 <p>最后一篇缺口补全：训练进阶（Reward Hacking + 合成数据 + CLIP）+ 系统设计场景题（AI 客服 + LLM 网关）。两个系统设计题是二面&#x2F;三面的高分密码。</p>
 </blockquote>
 <hr>
@@ -678,12 +678,51 @@
 <p>状态流转由事件驱动（Event-Driven）。不是手写嵌套 while——业界标准用**图计算（Graph-based）**方式：每一步是图上的一个节点，状态流转是节点间的连线。Harness 按图的路径执行，状态流转清晰可追溯。</p>
 <hr>
 <h3 id="4-2-LLM-API-网关设计"><a href="#4-2-LLM-API-网关设计" class="headerlink" title="4.2 LLM API 网关设计"></a>4.2 LLM API 网关设计</h3><p><strong>需求</strong>：统一接入多个 LLM（GPT&#x2F;Claude&#x2F;DeepSeek&#x2F;GLM），支持负载均衡、降级、成本控制、权限管理。</p>
-<p><strong>设计方案</strong>：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">客户端</span><br><span class="line">  │</span><br><span class="line">┌─▼──────────────────────────────────────┐</span><br><span class="line">│             LLM API Gateway             │</span><br><span class="line">│                                         │</span><br><span class="line">│  1. 认证 &amp; 鉴权（API Key → 配额检查）     │</span><br><span class="line">│  2. 路由（根据模型名 → 对应的后端）        │</span><br><span class="line">│  3. 负载均衡（轮询 / 最少延迟 / 加权）     │</span><br><span class="line">│  4. 限流（Token bucket: 每个用户限 QPS）  │</span><br><span class="line">│  5. 降级（主模型挂了 → 自动切备用模型）     │</span><br><span class="line">│  6. 计费（记录 token 用量 → 成本核算）     │</span><br><span class="line">│  7. 日志 &amp; 监控（每次调用的延迟、token 数） │</span><br><span class="line">│                                         │</span><br><span class="line">│  后端池:                                 │</span><br><span class="line">│    GPT-4o (Azure)                       │</span><br><span class="line">│    Claude 4 (Anthropic)                 │</span><br><span class="line">│    DeepSeek-V3 (自建)                    │</span><br><span class="line">│    GLM-4-Flash (智谱)                    │</span><br><span class="line">└─────────────────────────────────────────┘</span><br></pre></td></tr></table></figure>
-
-<p><strong>面试答题框架</strong>：</p>
+<hr>
+<p><strong>第一层：API Schema 统一与流式抹平</strong></p>
+<p>不同厂商的请求&#x2F;响应协议差异巨大，网关统一映射为一套标准 Schema（通常以 OpenAI API 为行业标准）。</p>
+<table>
+<thead>
+<tr>
+<th>差异点</th>
+<th>网关处理</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>请求&#x2F;响应体</td>
+<td>Claude 的 Messages API、OpenAI 的 Completions API、GLM 的特定参数 → 统一映射</td>
+</tr>
+<tr>
+<td>流式传输</td>
+<td>统一 SSE 事件流格式，抹平不同模型 Chunk 结构差异</td>
+</tr>
+<tr>
+<td>思考过程字段</td>
+<td>DeepSeek-R1 等 reasoning 模型的 <code>reasoning_content</code> → 统一解析标准化输出</td>
+</tr>
+</tbody></table>
+<p><strong>第二层：智能路由与无感切换</strong></p>
+<ul>
+<li><strong>故障转移 + 熔断降级</strong>：主模型 5xx &#x2F; 429 &#x2F; 超时 → 自动重试路由到备用模型。业务端对底层报错和重试零感知。</li>
+<li><strong>策略路由</strong>：按成本（简单任务走低价模型，复杂任务走高成本模型）、按延迟&#x2F;负载（动态评估各 Provider 的 TTFT 分发流量）。</li>
+<li><strong>AB 测试与灰度</strong>：按比例切流量给新模型。</li>
+</ul>
+<p><strong>第三层：模型差异抹平与能力补齐</strong></p>
+<ul>
+<li><strong>Token 规范与上下文裁剪</strong>：不同模型的 Tokenizer（tiktoken&#x2F;SentencePiece）和 Context Window 极限不同 → 统一 Token 估算与截断保护。</li>
+<li><strong>Function Calling &#x2F; 结构化输出适配</strong>：原生支持 Tool Call 的模型做格式转换；不支持 Tool Call 的模型，网关层通过 Prompt 注入 + JSON Schema 解析模拟实现 Tool Call 能力。</li>
+</ul>
+<p><strong>第四层：企业级统一治理与观测</strong></p>
+<ul>
+<li><strong>鉴权与多租户</strong>：统一颁发内部 API Key，隔离各业务线的权限与额度。</li>
+<li><strong>用量与成本管控</strong>：实时统计 Request &#x2F; Token 消费量，设置 TPM（Tokens Per Minute）和 RPM 限流。</li>
+<li><strong>全链路可观测</strong>：监控 TTFT（首字延迟）、TPOT（生成延迟）、成功率、各 Provider 成本。</li>
+<li><strong>内容安全与脱敏</strong>：请求入参 PII 脱敏，响应出参合规词过滤。</li>
+</ul>
+<hr>
+<p><strong>面试答题框架（四层版）</strong>：</p>
 <blockquote>
-<p>“LLM 网关做七件事——认证鉴权、模型路由、负载均衡、限流、降级、计费、监控。路由层根据 model name 分到对应的 LLM 后端。降级策略是核心——GPT-4o 超时 → 自动切 Claude；<br>DeepSeek-V3 挂了 → 切 GLM-4-Flash，用户无感但回复质量可能下降。监控记录每次调用的延迟、token 数、成本，按用户维度出账单。”</p>
+<p>“LLM 网关四层设计。一，<strong>Schema 统一</strong>——不同厂商 API 协议、SSE chunk、思考字段全部映射成一套标准。二，<strong>智能路由</strong>——故障熔断降级 + 策略路由（成本&#x2F;延迟&#x2F;AB灰度）。三，<strong>能力补齐</strong>——Token 估算截断 + 不支持 Tool Call 的模型用 Prompt 注入模拟。四，<strong>治理观测</strong>——多租户鉴权、TPM&#x2F;RPM 限流、TTFT&#x2F;TPOT 监控、PII 脱敏。核心价值是让业务方对底层模型差异零感知。”</p>
 </blockquote>
 <hr>
 <h2 id="本章速查"><a href="#本章速查" class="headerlink" title="本章速查"></a>本章速查</h2><table>
@@ -711,7 +750,7 @@
 </tr>
 <tr>
 <td><strong>LLM 网关</strong></td>
-<td>七功能：认证&#x2F;路由&#x2F;负载&#x2F;限流&#x2F;降级&#x2F;计费&#x2F;监控</td>
+<td>四层：Schema统一+智能路由+能力补齐+治理观测</td>
 </tr>
 </tbody></table>
 <hr>
