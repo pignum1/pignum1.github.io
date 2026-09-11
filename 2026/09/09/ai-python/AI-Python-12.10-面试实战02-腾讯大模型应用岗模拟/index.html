@@ -1,0 +1,741 @@
+<!DOCTYPE html><html lang="en" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>AI Python 学习 — 面试实战 02：腾讯 大模型应用岗 模拟（开场 + 选型 + Agent 架构 + RAG 评测优化） | Hexo</title><meta name="author" content="david"><meta name="copyright" content="david"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="面试实战 02：腾讯 大模型应用岗 模拟 基于 The Boy（对外口径：算法考核智能分析系统）项目准备的腾讯大模型应用岗复盘。腾讯面更偏成本工程、稳定性、可控可复现、评测方法论、内容安全。所有题目带推荐话术，持续补充。 ⚠️ 诚实口径（背诵前先读）：① 模型表述 &#x3D; “DeepSeek 主力、模型适配层预留 Claude 等切换”，不要把 Claude 讲成线上在跑；② Harness">
+<meta property="og:type" content="article">
+<meta property="og:title" content="AI Python 学习 — 面试实战 02：腾讯 大模型应用岗 模拟（开场 + 选型 + Agent 架构 + RAG 评测优化）">
+<meta property="og:url" content="http://example.com/2026/09/09/ai-python/AI-Python-12.10-%E9%9D%A2%E8%AF%95%E5%AE%9E%E6%88%9802-%E8%85%BE%E8%AE%AF%E5%A4%A7%E6%A8%A1%E5%9E%8B%E5%BA%94%E7%94%A8%E5%B2%97%E6%A8%A1%E6%8B%9F/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="面试实战 02：腾讯 大模型应用岗 模拟 基于 The Boy（对外口径：算法考核智能分析系统）项目准备的腾讯大模型应用岗复盘。腾讯面更偏成本工程、稳定性、可控可复现、评测方法论、内容安全。所有题目带推荐话术，持续补充。 ⚠️ 诚实口径（背诵前先读）：① 模型表述 &#x3D; “DeepSeek 主力、模型适配层预留 Claude 等切换”，不要把 Claude 讲成线上在跑；② Harness">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://example.com/img/butterfly-icon.png">
+<meta property="article:published_time" content="2026-09-09T02:00:00.000Z">
+<meta property="article:modified_time" content="2026-09-11T03:20:53.754Z">
+<meta property="article:author" content="david">
+<meta property="article:tag" content="面试">
+<meta property="article:tag" content="AI">
+<meta property="article:tag" content="Agent">
+<meta property="article:tag" content="ReAct">
+<meta property="article:tag" content="面经">
+<meta property="article:tag" content="腾讯">
+<meta property="article:tag" content="大模型应用">
+<meta property="article:tag" content="框架选型">
+<meta property="article:tag" content="Plan-and-Execute">
+<meta property="article:tag" content="MemGPT">
+<meta property="article:tag" content="评测">
+<meta property="article:tag" content="多轮对话">
+<meta property="article:tag" content="评测集">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/img/butterfly-icon.png"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "AI Python 学习 — 面试实战 02：腾讯 大模型应用岗 模拟（开场 + 选型 + Agent 架构 + RAG 评测优化）",
+  "url": "http://example.com/2026/09/09/ai-python/AI-Python-12.10-%E9%9D%A2%E8%AF%95%E5%AE%9E%E6%88%9802-%E8%85%BE%E8%AE%AF%E5%A4%A7%E6%A8%A1%E5%9E%8B%E5%BA%94%E7%94%A8%E5%B2%97%E6%A8%A1%E6%8B%9F/",
+  "image": "http://example.com/img/butterfly-icon.png",
+  "datePublished": "2026-09-09T02:00:00.000Z",
+  "dateModified": "2026-09-11T03:20:53.754Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "david",
+      "url": "http://example.com"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://example.com/2026/09/09/ai-python/AI-Python-12.10-%E9%9D%A2%E8%AF%95%E5%AE%9E%E6%88%9802-%E8%85%BE%E8%AE%AF%E5%A4%A7%E6%A8%A1%E5%9E%8B%E5%BA%94%E7%94%A8%E5%B2%97%E6%A8%A1%E6%8B%9F/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: 'Copy Successful',
+    error: 'Copy Failed',
+    noSupport: 'Browser Not Supported'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: 'Just now',
+    min: 'minutes ago',
+    hour: 'hours ago',
+    day: 'days ago',
+    month: 'months ago'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid/dist/infinitegrid.min.js',
+    buttonText: 'Load More'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'AI Python 学习 — 面试实战 02：腾讯 大模型应用岗 模拟（开场 + 选型 + Agent 架构 + RAG 评测优化）',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Hexo</span></a><a class="nav-page-title" href="/"><span class="site-name">AI Python 学习 — 面试实战 02：腾讯 大模型应用岗 模拟（开场 + 选型 + Agent 架构 + RAG 评测优化）</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  Back to Home</span></span></a></span><div id="menus"></div></nav><div id="post-info"><h1 class="post-title">AI Python 学习 — 面试实战 02：腾讯 大模型应用岗 模拟（开场 + 选型 + Agent 架构 + RAG 评测优化）</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">Created</span><time class="post-meta-date-created" datetime="2026-09-09T02:00:00.000Z" title="Created 2026-09-09 10:00:00">2026-09-09</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">Updated</span><time class="post-meta-date-updated" datetime="2026-09-11T03:20:53.754Z" title="Updated 2026-09-11 11:20:53">2026-09-11</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/AI%E5%AD%A6%E4%B9%A0/">AI学习</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/AI%E5%AD%A6%E4%B9%A0/%E9%9D%A2%E8%AF%95/">面试</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">Post Views:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h2 id="面试实战-02：腾讯-大模型应用岗-模拟"><a href="#面试实战-02：腾讯-大模型应用岗-模拟" class="headerlink" title="面试实战 02：腾讯 大模型应用岗 模拟"></a>面试实战 02：腾讯 大模型应用岗 模拟</h2><blockquote>
+<p>基于 The Boy（对外口径：算法考核智能分析系统）项目准备的腾讯大模型应用岗复盘。腾讯面更偏<strong>成本工程、稳定性、可控可复现、评测方法论、内容安全</strong>。所有题目带推荐话术，持续补充。</p>
+<p>⚠️ 诚实口径（背诵前先读）：① 模型表述 &#x3D; “DeepSeek 主力、模型适配层预留 Claude 等切换”，<strong>不要把 Claude 讲成线上在跑</strong>；② Harness 架构方向是你们定的、落地锚在 LangGraph（已学），叙述别夸大成大规模投产。</p>
+</blockquote>
+<hr>
+<h2 id="项目背景（开场必讲-亮点）"><a href="#项目背景（开场必讲-亮点）" class="headerlink" title="项目背景（开场必讲 + 亮点）"></a>项目背景（开场必讲 + 亮点）</h2><blockquote>
+<p>“我做的是一个<strong>算法考核域的智能分析系统</strong>——输入考核相关的数据、规则文档和过程记录，输出<strong>带引用的考核问答 ＋ 可复现的指标分析报告</strong>。解决三个痛点：知识散落在大量文档、考核指标口径不统一、报告靠人工整理费时易错。</p>
+<p>架构是<strong>多模态 RAG + 多 Agent 应用</strong>：本地部署 BGE-M3 &#x2F; Reranker &#x2F; Qwen2-VL，推理用 DeepSeek API（适配层预留切换）。三个设计判断是它的含金量——<br><strong>① 不做开放式通用 Agent，做’确定性工作流 + 局部 Agent 决策’</strong>：链路固化——文档解析→切分→混合召回→Rerank→原文扩展→指标计算→报告生成。模型只负责问题理解&#x2F;任务拆分&#x2F;工具选择&#x2F;非结构化分析&#x2F;报告生成；<strong>指标计算、权限校验、数据查询全走确定性代码</strong>——考核数字交给模型算会同一份数据出不一致结果，报告就不可复现、不可审计。<br><strong>② 检索质量当产品核心做</strong>：按数据形态分四套分块策略（文档按标题语义切、含引用链的用父子块、业务表转 Row-to-NL），混合召回 + Cross-Encoder Rerank + 质量门阈值拒答。<br><strong>③ 全链路可观测可审计</strong>：回答强制引用溯源，召回 Chunk&#x2F;Rerank&#x2F;Token 全进 trace，线上任何回答都能回放。”</p>
+</blockquote>
+<p><strong>亮点表（主动亮 + 留钩子）</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>亮点</th>
+<th>一句话讲法</th>
+<th>留的钩子</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>确定性指标 vs 模型自由发挥</td>
+<td>考核数字不进模型计算，数值走代码&#x2F;SQL</td>
+<td>“文本里的数字怎么抽？”</td>
+</tr>
+<tr>
+<td>检索质量分层工程</td>
+<td>四类数据四套分块+混合+Rerank+质量门</td>
+<td>“质量门阈值怎么定？”</td>
+</tr>
+<tr>
+<td>多模态不静默丢数据</td>
+<td>图片 OCR+VLM、表格三形态</td>
+<td>“丢了怎么发现？”</td>
+</tr>
+<tr>
+<td>模型无关+成本私有化</td>
+<td>适配层可插拔，不被绑定</td>
+<td>“换模型改动面多大？”</td>
+</tr>
+</tbody></table>
+<hr>
+<p><strong>题目速览</strong>（点击跳转）：</p>
+<table>
+<thead>
+<tr>
+<th align="center">题号</th>
+<th>题目</th>
+<th>方向</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">1</td>
+<td><a href="#q1">Agent 项目基于什么框架？怎么选型？</a></td>
+<td>架构选型</td>
+</tr>
+<tr>
+<td align="center">2</td>
+<td><a href="#q2">考虑过 Claude Code 驱动吗？Agent 架构有哪些？</a></td>
+<td>架构认知</td>
+</tr>
+<tr>
+<td align="center">3</td>
+<td><a href="#q3">Plan-and-Execute 和 ReAct 区别？</a></td>
+<td>Agent 架构</td>
+</tr>
+<tr>
+<td align="center">4</td>
+<td><a href="#q4">说 Plan-Execute 更优，怎么评测比较？</a></td>
+<td>评测方法</td>
+</tr>
+<tr>
+<td align="center">5</td>
+<td><a href="#q5">怎么界定单轮 vs 多轮？多轮怎么 bench？</a></td>
+<td>对话评测</td>
+</tr>
+<tr>
+<td align="center">6</td>
+<td><a href="#q6">评测集一条记录包含哪些内容？</a></td>
+<td>评测集</td>
+</tr>
+<tr>
+<td align="center">7</td>
+<td><a href="#q7">评测周期长，怎么快速迭代 Agent？</a></td>
+<td>迭代方法</td>
+</tr>
+<tr>
+<td align="center">8</td>
+<td><a href="#q8">RAG 怎么优化？怎么做数据飞轮？</a></td>
+<td>RAG 优化</td>
+</tr>
+<tr>
+<td align="center">9</td>
+<td><a href="#q9">怎么评价 rewriter 好坏？</a></td>
+<td>查询变换</td>
+</tr>
+<tr>
+<td align="center">10</td>
+<td><a href="#q10">调整 top_k 后怎么打分、建指标？</a></td>
+<td>检索调参</td>
+</tr>
+<tr>
+<td align="center">11</td>
+<td><a href="#q11">指标一升一降怎么办？rerank 调整怎么评整体？</a></td>
+<td>指标决策</td>
+</tr>
+<tr>
+<td align="center">12</td>
+<td><a href="#q12">标准答案个数不同怎么平衡？</a></td>
+<td>评测公平</td>
+</tr>
+<tr>
+<td align="center">13</td>
+<td><a href="#q13">最终 top_n 取 3 还是 5 怎么判断？</a></td>
+<td>检索调参</td>
+</tr>
+<tr>
+<td align="center">14</td>
+<td><a href="#q14">RAG 召回用什么指标评测？</a></td>
+<td>检索评测</td>
+</tr>
+<tr>
+<td align="center">15</td>
+<td><a href="#q15">RAG 过程中的幻觉怎么解决？</a></td>
+<td>幻觉控制</td>
+</tr>
+<tr>
+<td align="center">16</td>
+<td><a href="#q16">怎么减少 transform 生成时的幻觉？</a></td>
+<td>查询变换</td>
+</tr>
+</tbody></table>
+<hr>
+<p><a id="q1"></a></p>
+<h2 id="Q1：Agent-项目基于什么框架开发的？如何选型？"><a href="#Q1：Agent-项目基于什么框架开发的？如何选型？" class="headerlink" title="Q1：Agent 项目基于什么框架开发的？如何选型？"></a>Q1：Agent 项目基于什么框架开发的？如何选型？</h2><details>
+<summary><b>展开答案</b></summary>
+
+<blockquote>
+<p>“选型题我不背框架列表，我先说这个项目对 Agent 基座的三条硬要求，再拿要求去筛，最后讲组合——结论是推出来的。</p>
+<p><strong>第一步：硬要求 3 条</strong>——① 多 Agent + 动态路由（Supervisor 按意图分给不同 Worker）→ 要<strong>可编程控制流</strong>，不是固定剧本；② 中间必须能打断（HITL 审批、用户改需求抢占中断）→ 要<strong>暂停&#x2F;恢复&#x2F;状态持久化</strong>；③ <strong>推理与执行解耦</strong>——模型只出 tool_call，执行权必须在应用层（白名单&#x2F;Schema&#x2F;权限拦截），框架不能把我锁死在黑盒。</p>
+<p><strong>第二步：排除法筛</strong>——<strong>Coze&#x2F;Dify</strong>：低代码平台，控制流&#x2F;状态机&#x2F;拦截全被封装，深度定制受限 → 排除；<strong>LangChain Agent</strong>：ReAct 黑盒、流程固定不可干预，违反③ → 排除；<strong>CrewAI&#x2F;AutoGen</strong>：角色编排友好，但 AutoGen 默认 Agent 间自然语言对话——我们<strong>明确禁止 Agent 直接对话</strong>（死循环、Token 爆炸），和我的架构前提冲突 → 排除；剩下 <strong>LangGraph</strong>：节点+边、条件边、Checkpointer、interrupt_before&#x2F;after——<strong>正好是我那 3 条硬要求的原生原语</strong> → 选它当编排基座。</p>
+<p><strong>第三步：分层组合，不是单选</strong>——LangGraph &#x3D; 图编排底座（流程&#x2F;状态持久化&#x2F;HITL 恢复）；自研 Harness &#x3D; 控制层（拦截&#x2F;鉴权&#x2F;风控&#x2F;四状态机&#x2F;抢占取消，LangGraph 不直接给，写在应用层）；MCP &#x3D; 工具连接（模型无关）。我自己还用 DeepSeek API 搭过对话式 Harness 实验、接触过 Claude 相关 Agent 方案——对比收获是：<strong>消费级智能体单任务好用，生产级底座要可观测、可回滚、可审计</strong>。</p>
+<p>补充选型六维（如果被问’一般怎么评’）：任务复杂度 &#x2F; 模型兼容性 &#x2F; 工具调用能力 &#x2F; 工作流与状态管理 &#x2F; 可观测性 &#x2F; 部署成本。<strong>结论：先列需求，用’可编程控制 &#x2F; 可中断恢复 &#x2F; 执行解耦’排除，落成 LangGraph + Harness + MCP——选型不是选最好的框架，是选一组刚好满足约束的分层组合。</strong>“</p>
+</blockquote>
+</details>
+
+<hr>
+<p><a id="q2"></a></p>
+<h2 id="Q2：考虑过-Claude-Code-驱动的-Agent-架构吗？你了解的-Agent-架构有哪些？"><a href="#Q2：考虑过-Claude-Code-驱动的-Agent-架构吗？你了解的-Agent-架构有哪些？" class="headerlink" title="Q2：考虑过 Claude Code 驱动的 Agent 架构吗？你了解的 Agent 架构有哪些？"></a>Q2：考虑过 Claude Code 驱动的 Agent 架构吗？你了解的 Agent 架构有哪些？</h2><details>
+<summary><b>展开答案</b></summary>
+
+<blockquote>
+<p>“考虑过，而且它印证了我一个设计判断，但要分清两个场景。<strong>Claude Code 的本质</strong>是编码型 Agent：主循环’读上下文→规划→调工具(读写文件&#x2F;Bash&#x2F;搜索)→观察→循环’，配 subagents 并行、hooks 拦截、每步工具执行权限确认——擅长<strong>操作型&#x2F;编码型</strong>任务。<strong>为什么不当产品底座</strong>：我们的业务是读密集型（问答+报告），要可控流程、引用溯源、结果可复现；Claude Code 的强项（自由执行）恰是风险点——权限面大、执行不可预测、难审计，跟’指标数字必须代码算’冲突。所以：<strong>开发期用它提效，生产运行时是’确定性工作流+局部 Agent 决策’</strong>。它给我的启发：权限确认、subagent 隔离、hook 拦截——本质和我们的 HITL 审批、Worker 工具集隔离、Harness 中间件拦截是同一思路，反过来验证了控制层设计方向。</p>
+<p><strong>Agent 架构全景</strong>（按’控制在哪’分）：</p>
+<table>
+<thead>
+<tr>
+<th>架构族</th>
+<th>代表</th>
+<th>特点</th>
+<th>我们用没</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>单 Agent 循环</td>
+<td>ReAct &#x2F; FC loop</td>
+<td>自主想→调→看→再想</td>
+<td>底层思想 ✓</td>
+</tr>
+<tr>
+<td>图编排&#x2F;状态机</td>
+<td>LangGraph</td>
+<td>可编程控制流、可打断恢复</td>
+<td>✓ 底座</td>
+</tr>
+<tr>
+<td>确定性工作流</td>
+<td>自研 Pipeline</td>
+<td>流程固化可测，模型局部决策</td>
+<td>✓ 主流程</td>
+</tr>
+<tr>
+<td>多 Agent 协作</td>
+<td>Supervisor-Worker&#x2F;Debate&#x2F;Swarm</td>
+<td>中心调度&#x2F;竞合&#x2F;handoff</td>
+<td>✓ Supervisor</td>
+</tr>
+<tr>
+<td>记忆增强</td>
+<td>MemGPT&#x2F;Letta</td>
+<td>上下文分层、虚拟内存</td>
+<td>✓ 借鉴三层记忆</td>
+</tr>
+<tr>
+<td>自省式检索</td>
+<td>Self-RAG &#x2F; CRAG</td>
+<td>模型反思该不该检索、好不好</td>
+<td>思路借鉴</td>
+</tr>
+<tr>
+<td>编码&#x2F;操作型</td>
+<td>Claude Code &#x2F; CUA</td>
+<td>改代码、操作环境</td>
+<td>✗ 不适合读密集</td>
+</tr>
+<tr>
+<td>协议+控制层</td>
+<td>MCP + Harness</td>
+<td>模型无关连接、执行权在己</td>
+<td>✓</td>
+</tr>
+</tbody></table>
+<p><strong>没有哪个架构通吃，我选混合</strong>：自由探索给 ReAct，复杂产品用图编排，稳定链路走确定性工作流，模型自由度按环节收放——The Boy &#x3D; 图编排 + 确定性工作流 + Supervisor-Worker + Harness 控制层的混合。”</p>
+</blockquote>
+</details>
+
+<hr>
+<p><a id="q3"></a></p>
+<h2 id="Q3：Plan-and-Execute-和-ReAct-的区别？"><a href="#Q3：Plan-and-Execute-和-ReAct-的区别？" class="headerlink" title="Q3：Plan-and-Execute 和 ReAct 的区别？"></a>Q3：Plan-and-Execute 和 ReAct 的区别？</h2><details>
+<summary><b>展开答案</b></summary>
+
+<blockquote>
+<p>“本质是<strong>边想边做 vs 先想清楚再做</strong>。</p>
+<p>ReAct 是 Thought→Action→Observation 紧耦合循环，每步根据上一步观察决定下一步——灵活、能随时转向，但<strong>没有全局视野</strong>，复杂长任务容易走偏、每步都烧推理 token、还可能卡循环。</p>
+<p>Plan-and-Execute 拆两段：Planner 一次性产出完整步骤清单（先不执行），Executor 按清单逐步执行，<strong>失败或信息不足就触发 Replan</strong>——结构清晰、token 省（长任务明显）、计划可先给人审批（HITL 友好）、可复现；代价是初始计划可能脱离执行中发现的现实，所以 Replan 要设计好且设上限防死循环（呼应 Q13）。</p>
+<p><strong>选型</strong>：开放探索型（要先查信息才能定下一步）→ ReAct；步骤可预期、长、要可控可审 → Plan-and-Execute；生产常用<strong>混合</strong>——外骨架计划&#x2F;工作流、内部局部 ReAct。The Boy &#x3D; 确定性主流程（计划&#x2F;工作流层）＋ 局部 Agent 决策（ReAct 层），和’确定性工作流+局部决策’主线一致。</p>
+<p>LangGraph 落地：planner 节点 → executor 循环节点 → 条件边（done→收尾 &#x2F; error 或信息不足→replan，限次数）。</p>
+<p>常被追问’Plan 会不会脱离现实’：答’会，所以 executor 失败或前置信息变化时强制 Replan 且设上限——这也是我生产倾向把主流程固化成确定性工作流、而不是每次全靠 LLM 出计划的原因’。”</p>
+</blockquote>
+</details>
+
+<hr>
+<p><a id="q4"></a></p>
+<h2 id="Q4：你说-Plan-Execute-更优？怎么评测比较两个架构？"><a href="#Q4：你说-Plan-Execute-更优？怎么评测比较两个架构？" class="headerlink" title="Q4：你说 Plan-Execute 更优？怎么评测比较两个架构？"></a>Q4：你说 Plan-Execute 更优？怎么评测比较两个架构？</h2><details>
+<summary><b>展开答案</b></summary>
+
+<blockquote>
+<p>“我不直接下结论，而是设计<strong>对照实验</strong>。四点——<br><strong>①控制变量</strong>：同模型&#x2F;同工具&#x2F;同 context 预算，只变策略，每任务跑 N 次取统计（ReAct 方差大，单次定不了胜负）。<br><strong>②分层任务集</strong>：两类策略优势区间不同，混在一起比没意义。按会拉开差距的维度分层：开放探索型 &#x2F; 固定流程型 &#x2F; 长任务(&gt;5步) &#x2F; 中途变化型，每类 30-50 条带 ground truth。<br><strong>③多维指标（四轴）</strong>：质量（完成率&#x2F;正确率）、效率（步数&#x2F;无效重试&#x2F;卡循环率）、成本（token）、鲁棒性（N 次成功率方差&#x2F;可复现率）；另加可控性（计划可审计比例、HITL 命中）。<br><strong>④分开判定</strong>：终态用结构化字段校验（结果有 schema），中间过程质量单独评——避免’最后答对但过程乱’和’过程对但答案格式错’混在一起；LLM-as-Judge 只做辅助。</p>
+<p>跑完大概率得到的是<strong>分类型结论</strong>：固定流程&#x2F;长任务 Plan-Execute 完成率高+成本低+方差小；开放探索 ReAct 更灵活。<strong>所以生产结论是按任务类型路由，而不是全量替换</strong>——这也是’确定性工作流+局部决策’的评测依据。<strong>收口：评测的价值不是证明我选得对，是把’哪个架构在哪类任务赢’变成可复现的数据，指导路由。</strong>“</p>
+</blockquote>
+</details>
+
+<hr>
+<p><a id="q5"></a></p>
+<h2 id="Q5：怎么界定单轮-vs-多轮？多轮对话怎么做-Benchmark？"><a href="#Q5：怎么界定单轮-vs-多轮？多轮对话怎么做-Benchmark？" class="headerlink" title="Q5：怎么界定单轮 vs 多轮？多轮对话怎么做 Benchmark？"></a>Q5：怎么界定单轮 vs 多轮？多轮对话怎么做 Benchmark？</h2><details>
+<summary><b>展开答案</b></summary>
+
+<blockquote>
+<p>“界定不看 Agent 内部调几次模型&#x2F;工具——一次请求触发十次工具调用，仍是<strong>单轮对话+多步执行</strong>。只看：<strong>完成任务是否依赖多次用户交互，以及后续请求是否依赖前面产生的状态</strong>。</p>
+<p>满足任一即多轮：信息不足要追问 &#x2F; 指令依赖前文（’把刚才第二项展开’）&#x2F; 后续操作依赖前一轮结果（’查数据→用数据出图’）&#x2F; 用户纠正（’不是一组是二组’）&#x2F; 对结果持续迭代 &#x2F; 跨会话记忆 &#x2F; 高风险步骤等人审批。</p>
+<p><strong>工程判定标准</strong>：把历史删掉，当前请求还能不能完整正确执行？能→单轮；出现目标&#x2F;参数&#x2F;指代&#x2F;状态&#x2F;约束缺失→多轮。<strong>多轮的本质不是消息数量多，而是存在跨轮次的状态依赖。</strong></p>
+<p><strong>多轮 bench</strong>：每条 Case 是完整对话轨迹（JSON），标每轮输入、预期意图、应继承&#x2F;覆盖&#x2F;遗忘的信息、预期工具调用、预期终态。按六类能力建场景——<strong>信息补全</strong>（该追问追问、别猜、别重复问）、<strong>指代消解</strong>、<strong>状态继承</strong>（只改周期、部门自动继承）、<strong>状态覆盖纠正</strong>（旧值不能串回来）、<strong>长距离记忆</strong>（第1轮定的约束第10轮还遵守）、<strong>权限冲突</strong>（后指令不能越权）。</p>
+<p>指标分<strong>三层</strong>（同一个最终答案可能来自错误过程——查错部门恰好算出相同数字，只评结果会误判）：对话层（理解&#x2F;追问&#x2F;继承）、轨迹层（工具&#x2F;参数&#x2F;顺序）、结果层（答案&#x2F;数据&#x2F;引用）。核心指标：任务成功率、Turn&#x2F;Slot&#x2F;State&#x2F;Tool Accuracy、该追问时是否追问、Context Retention、Forgetting（纠正后停用旧值）、安全违规率、Token&#x2F;延迟。可加权综合分，但<strong>高风险场景安全违规是硬门槛——越权&#x2F;错误发布直接记 0</strong>。</p>
+<p>运行方式：<strong>固定脚本</strong>（稳定回归）+ <strong>User Simulator</strong>（另一模型按规则扮演用户，不主动替 Agent 完成任务）探索 + <strong>人工抽检</strong>。判定上<strong>任务结果和工具参数用代码判定</strong>（state_before&#x2F;after 快照比对），表达质量才用 LLM-as-Judge——防’模型给模型放水’。</p>
+<p>收口金句：<strong>单轮 Benchmark 评估’一个输入→一个结果’；多轮 Benchmark 评估’状态如何被携带、更新、纠正，最终完成任务’。</strong>“</p>
+</blockquote>
+</details>
+
+<hr>
+<p><a id="q6"></a></p>
+<h2 id="Q6：评测集的一条记录怎么设计？包含哪些内容？"><a href="#Q6：评测集的一条记录怎么设计？包含哪些内容？" class="headerlink" title="Q6：评测集的一条记录怎么设计？包含哪些内容？"></a>Q6：评测集的一条记录怎么设计？包含哪些内容？</h2><details>
+<summary><b>展开答案</b></summary>
+
+<blockquote>
+<p>“评测集要<strong>可自动化、可分环节归因、可版本化</strong>。落地用 <strong>JSONL，一行一条 Case + schema_version</strong>。一条记录分四块：</p>
+<p><strong>① 元信息</strong>：case_id、类型标签（单轮&#x2F;多轮&#x2F;拒答、领域、难度、是否含图表）、来源（真实日志回放&#x2F;人工合成&#x2F;线上 bad case）、gold 版本、加入时间。</p>
+<p><strong>② 输入</strong>：query 原文；多轮带 turns&#x2F;initial_state；RAG 带关联知识库定位；可选关联文件。</p>
+<p><strong>③ Ground truth（关键：分环节标，别只标答案）</strong>——</p>
+<ul>
+<li>期望答案（多个可接受答法或关键点列表）</li>
+<li>期望检索：ground truth chunk_id 列表（算 Recall 用）</li>
+<li>期望引用出处（标 Citation）</li>
+<li>期望动作&#x2F;工具与参数（Agent 类）</li>
+<li>期望状态变化（多轮，含应覆盖&#x2F;应继承&#x2F;应遗忘）</li>
+<li>拒答标记（这题该不该答）</li>
+</ul>
+<p><strong>④ 判定配置</strong>：判据类型（结构化字段校验&#x2F;规则&#x2F;LLM-judge rubric）、评分维度、可接受差异、禁止行为、通过阈值。</p>
+<p>运行后<strong>追加结果字段</strong>（不覆盖）：实际输出、实际检索 chunk、工具 trace_id、分项得分、通过&#x2F;失败原因——天然形成 bad case 沉淀与回归集。</p>
+<p><strong>为什么分环节标 GT</strong>：只标答案没法归因——Recall 低是检索层问题、引用错是生成层问题（呼应 Q29’召回≠进 Prompt≠引用’，和 Q7 RAGAS 分层评测）。示例记录：</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span> <span class="attr">&quot;schema_version&quot;</span><span class="punctuation">:</span><span class="string">&quot;2.0&quot;</span><span class="punctuation">,</span> <span class="attr">&quot;case_id&quot;</span><span class="punctuation">:</span><span class="string">&quot;rag_001&quot;</span><span class="punctuation">,</span> <span class="attr">&quot;type&quot;</span><span class="punctuation">:</span><span class="string">&quot;rag_qa&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;tags&quot;</span><span class="punctuation">:</span><span class="punctuation">&#123;</span><span class="attr">&quot;domain&quot;</span><span class="punctuation">:</span><span class="string">&quot;算法考核&quot;</span><span class="punctuation">,</span><span class="attr">&quot;hard&quot;</span><span class="punctuation">:</span><span class="string">&quot;medium&quot;</span><span class="punctuation">,</span><span class="attr">&quot;multi_turn&quot;</span><span class="punctuation">:</span><span class="literal"><span class="keyword">false</span></span><span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;input&quot;</span><span class="punctuation">:</span><span class="punctuation">&#123;</span><span class="attr">&quot;query&quot;</span><span class="punctuation">:</span><span class="string">&quot;算法贡献度怎么计算&quot;</span><span class="punctuation">,</span><span class="attr">&quot;kb&quot;</span><span class="punctuation">:</span><span class="string">&quot;algorithm_assessment_v8&quot;</span><span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;ground_truth&quot;</span><span class="punctuation">:</span><span class="punctuation">&#123;</span></span><br><span class="line">    <span class="attr">&quot;answer_points&quot;</span><span class="punctuation">:</span><span class="punctuation">[</span><span class="string">&quot;贡献度=代码贡献+任务交付+质量指标&quot;</span><span class="punctuation">]</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;chunk_ids&quot;</span><span class="punctuation">:</span><span class="punctuation">[</span><span class="string">&quot;chunk_07&quot;</span><span class="punctuation">,</span><span class="string">&quot;chunk_12&quot;</span><span class="punctuation">]</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;citations&quot;</span><span class="punctuation">:</span><span class="punctuation">[</span><span class="punctuation">&#123;</span><span class="attr">&quot;chunk_id&quot;</span><span class="punctuation">:</span><span class="string">&quot;chunk_07&quot;</span><span class="punctuation">,</span><span class="attr">&quot;doc&quot;</span><span class="punctuation">:</span><span class="string">&quot;贡献度分析规则&quot;</span><span class="punctuation">,</span><span class="attr">&quot;page&quot;</span><span class="punctuation">:</span><span class="number">8</span><span class="punctuation">&#125;</span><span class="punctuation">]</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;should_refuse&quot;</span><span class="punctuation">:</span><span class="literal"><span class="keyword">false</span></span> <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;judge&quot;</span><span class="punctuation">:</span><span class="punctuation">&#123;</span><span class="attr">&quot;method&quot;</span><span class="punctuation">:</span><span class="string">&quot;code_field_checks+llm_judge&quot;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;rubric&quot;</span><span class="punctuation">:</span><span class="punctuation">&#123;</span><span class="attr">&quot;faithfulness&quot;</span><span class="punctuation">:</span><span class="string">&quot;每个结论都能在给定chunk找到依据&quot;</span><span class="punctuation">,</span><span class="attr">&quot;relevancy&quot;</span><span class="punctuation">:</span><span class="string">&quot;切题&quot;</span><span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;forbidden&quot;</span><span class="punctuation">:</span><span class="punctuation">[</span><span class="string">&quot;编造权重版本&quot;</span><span class="punctuation">]</span><span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;result&quot;</span><span class="punctuation">:</span><span class="punctuation">&#123;</span><span class="attr">&quot;actual_chunk_ids&quot;</span><span class="punctuation">:</span><span class="punctuation">[</span><span class="punctuation">]</span><span class="punctuation">,</span><span class="attr">&quot;actual_answer&quot;</span><span class="punctuation">:</span><span class="string">&quot;&quot;</span><span class="punctuation">,</span><span class="attr">&quot;trace_id&quot;</span><span class="punctuation">:</span><span class="string">&quot;&quot;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;scores&quot;</span><span class="punctuation">:</span><span class="punctuation">&#123;</span><span class="attr">&quot;recall&quot;</span><span class="punctuation">:</span><span class="number">0</span><span class="punctuation">,</span><span class="attr">&quot;faithfulness&quot;</span><span class="punctuation">:</span><span class="literal"><span class="keyword">null</span></span><span class="punctuation">&#125;</span><span class="punctuation">,</span><span class="attr">&quot;pass&quot;</span><span class="punctuation">:</span><span class="literal"><span class="keyword">null</span></span><span class="punctuation">&#125;</span> <span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+<p>收口：<strong>一条评测记录 &#x3D; 元信息 + 输入 + 分环节 GT（答案&#x2F;检索&#x2F;引用&#x2F;动作&#x2F;状态）+ 判定配置 + 运行结果；GT 分环节标才能归因，JSONL+版本才能自动化和沉淀。</strong>“</p>
+</blockquote>
+</details>
+
+<hr>
+<p><a id="q7"></a></p>
+<h2 id="Q7：评测周期长，怎么快速迭代-Agent？"><a href="#Q7：评测周期长，怎么快速迭代-Agent？" class="headerlink" title="Q7：评测周期长，怎么快速迭代 Agent？"></a>Q7：评测周期长，怎么快速迭代 Agent？</h2><details>
+<summary><b>展开答案</b></summary>
+
+<blockquote>
+<p>“评测周期长，核心不是把评测变快，而是<strong>把’验证’从’评测’里拆成快慢两级</strong>。每次改动走<strong>快环</strong>：单 case 用 trace 回放定位根因 → 失败聚类按模式批量修（先打最大簇）→ 改完跑 <strong>diff 子集 + fast smoke</strong>（判定用代码比对，分钟级）；<strong>全量离线评测只在攒够一批、准备上线时跑一次</strong>（慢环，决定上线）。让快环成立的三个前提要提前铺：①判定能代码化就不靠 LLM-judge（Q6 预置期望字段&#x2F;状态）；②case 带标签能做 diff 子集回归；③记录带 trace_id 能回放定位（Q29）。</p>
+<p>记忆骨架四桶：<strong>少量测试 &#x2F; 链路追踪 &#x2F; 场景分类 &#x2F; 异常回放修复</strong>。完整生命周期 trace 必须跨四阶段记全：检索（query 前后&#x2F;召回 chunk+score）→ 重排（前后序与分数）→ 组装（进 Prompt 的上下文&#x2F;截断）→ 生成（prompt&#x2F;输出&#x2F;token），Agent 再加工具参数与 state 前后（呼应 Q29&#x2F;Q5）。</p>
+<p>追问’像不像 LoRA’：<strong>思路像</strong>（局部低成本适配——LoRA 冻主体只训低秩增量，我们冻全量只回归受影响子集），<strong>机制不像</strong>（LoRA 是训练侧参数级，我们是评测侧数据子集回归，更接近软件测试的增量回归&#x2F;diff testing）——类比点到思路层即可，别往训练细节套。</p>
+<p>收口：<strong>快环防回归、慢环定上线；bad case 是迭代燃料不是废料——评测慢，迭代节奏不能跟着慢。</strong>“</p>
+</blockquote>
+</details>
+
+<hr>
+<p><a id="q8"></a></p>
+<h2 id="Q8：RAG-怎么优化？分析效果、形成数据闭环让数据飞轮持续优化？"><a href="#Q8：RAG-怎么优化？分析效果、形成数据闭环让数据飞轮持续优化？" class="headerlink" title="Q8：RAG 怎么优化？分析效果、形成数据闭环让数据飞轮持续优化？"></a>Q8：RAG 怎么优化？分析效果、形成数据闭环让数据飞轮持续优化？</h2><details>
+<summary><b>展开答案</b></summary>
+
+<blockquote>
+<p>“优化不是一次调参，是让’每一次反馈都变成资产、反哺下一次迭代’。分两半——<strong>怎么分析</strong> ＋ <strong>怎么闭环</strong>。</p>
+<p><strong>分析（分层归因）</strong>：RAG 拆检索层&#x2F;生成层，RAGAS 四指标各管一头——Context Precision（信号 vs 噪声）、Context Recall（漏没漏）管检索层；Faithfulness（编没编）、Answer Relevancy（切不切题）管生成层。指标掉了先定位层：Precision 低→加 Reranker&#x2F;降 k&#x2F;提阈值（缩）；Recall 低→混合检索&#x2F;增大 k&#x2F;多路（扩）；Faithfulness 低→强 Prompt&#x2F;自检；Relevancy 低→Query 改写。<strong>但指标只说哪层坏、说不出哪个 chunk 错</strong>——归因靠 trace：坏例回放’召回≠进 Prompt≠引用’三层，钉到具体环节（Q29）。</p>
+<p><strong>闭环&#x2F;飞轮五步</strong>：①<strong>观测</strong>——离线 RAGAS ＋ 在线 Judge 抽样 ＋ 用户显式（赞&#x2F;踩&#x2F;追问）＋ 隐式（放弃&#x2F;重问&#x2F;拒答率），点踩率是起点信号；②<strong>归因</strong>——trace 回放 ＋ 失败聚类（检索漏&#x2F;重排错&#x2F;幻觉&#x2F;拒答错&#x2F;格式），先打最大簇；③<strong>沉淀</strong>——坏例自动带完整 trace 进黄金回归集（Q6，分环节 GT），bad case 是资产；④<strong>改进</strong>——按根因批量修（检索策略&#x2F;分块&#x2F;prompt&#x2F;路由&#x2F;阈值），每次走快环 diff 子集（Q7）；⑤<strong>回归上线</strong>——全量离线通过才上线，上线继续观测。</p>
+<p><strong>数据四路收集（追问点）</strong>：①<strong>确定性规则信号</strong>——质量门拒答后仍追问、低分却答了、超时重试，零成本无偏；②<strong>用户显式＋隐式反馈</strong>（埋点行为规则）；③<strong>Judge 只做抽样初筛</strong>（5-10%＋触发式），不当真相，判完进’待确认池’；④<strong>人工终审</strong>确认才入黄金集。每条带置信度标签（规则待审→judge 疑似→人工确认）。<strong>Judge 偏误若直接当 ground truth，会把飞轮带歪。</strong></p>
+<p>收口：<strong>RAGAS 分层诊断定位到层 → trace 归因钉到环节 → 坏例系统化沉淀进黄金集 → 按根因批量修 → 全量回归后上线；飞轮的燃料是 bad case 的系统化采集，有效性看黄金集在变厚、修复不复发、核心指标随版本不退化。</strong>“</p>
+</blockquote>
+</details>
+
+<hr>
+<p><a id="q9"></a></p>
+<h2 id="Q9：怎么评价你的-rewriter-是好的还是坏的？"><a href="#Q9：怎么评价你的-rewriter-是好的还是坏的？" class="headerlink" title="Q9：怎么评价你的 rewriter 是好的还是坏的？"></a>Q9：怎么评价你的 rewriter 是好的还是坏的？</h2><details>
+<summary><b>展开答案</b></summary>
+
+<blockquote>
+<p>“评 rewriter 不看’改得像不像人话’——它唯一的目的是让下游检索更好，<strong>好不好 &#x3D; 相对’不改写’的净增益</strong>。</p>
+<p><strong>① 端到端（主判据，慢环最终裁定）</strong>：同一 golden set，<strong>原 query 直接检索 vs 改写后检索</strong>对照，比 Recall@k &#x2F; 最终答案正确率 &#x2F; RAGAS CP&#x2F;CR——<strong>永远和’不改写’做 baseline，看相对增益不是绝对分</strong>（否则’改得漂亮但检索没变好’会被误判成好）。<br><strong>② 代理指标（快环诊断）</strong>：Recall 增益（有没有用）、保真度 fidelity（有没有偏题）、指代消解率、改写稳定性（不可复现＝坏）、成本。<strong>两类性质不同</strong>——Recall 增益答’有没有用’；保真度&#x2F;稳定&#x2F;成本答’值不值、有没有带偏’，判据 &#x3D; <strong>净增益 &#x3D; 增益 − 约束代价</strong>。<br><strong>③ GT 用’应命中的 chunk’而不是’期望改写文本’</strong>——合法改写不唯一，判命中比判文本相似稳。<br><strong>④ 失败分类</strong>：过度改写（加戏偏题）&#x2F; 改写不足（指代没解）&#x2F; 不稳定。<br><strong>⑤ 按需改写</strong>——query 本来就清晰就不改，省一次 LLM 调用、也防引入错误。</p>
+<p>收口：<strong>先证明有净增益，再用约束指标防带偏，最后让清晰的 query 别被白改。</strong>“</p>
+</blockquote>
+</details>
+
+<hr>
+<p><a id="q10"></a></p>
+<h2 id="Q10：调整了-top-k-之后，怎么打分、怎么构建评测指标？"><a href="#Q10：调整了-top-k-之后，怎么打分、怎么构建评测指标？" class="headerlink" title="Q10：调整了 top_k 之后，怎么打分、怎么构建评测指标？"></a>Q10：调整了 top_k 之后，怎么打分、怎么构建评测指标？</h2><details>
+<summary><b>展开答案</b></summary>
+
+<blockquote>
+<p>“top_k 不是优化目标，是 <strong>Recall ↔ Precision 的旋钮</strong>。打分要分三层，别单点看：</p>
+<table>
+<thead>
+<tr>
+<th>层</th>
+<th>指标</th>
+<th>关心什么</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>① 召回层（只看检索器）</td>
+<td><strong>Recall@k &#x2F; Precision@k</strong></td>
+<td>该进的进了没；信号 vs 噪声</td>
+</tr>
+<tr>
+<td>② 链路层（有 Reranker 时）</td>
+<td><strong>候选池 Recall</strong> ＋ rerank 后 top-N 精度</td>
+<td>top_k 是喂 reranker 的<strong>候选池大小</strong>——怕’对的被漏在池外’，池内排序交给 reranker</td>
+</tr>
+<tr>
+<td>③ 生成层&#x2F;端到端</td>
+<td>答案正确率、<strong>Faithfulness</strong>、延迟、token</td>
+<td>k 太大→噪声多→faithfulness 掉；k 太小→漏→编造</td>
+</tr>
+</tbody></table>
+<p><strong>打分方法 &#x3D; 扫曲线不是测一次</strong>：固定其他变量，k 扫 {3,5,10,20,50}，同一 golden set 每个 k 跑一遍，画 <strong>Recall@k&#x2F;Precision@k&#x2F;nDCG@k 曲线</strong> ＋ 各 k 的 e2e 矩阵表，<strong>选 k &#x3D; 拐点</strong>（Recall 增长变缓处）且落在延迟预算内。</p>
+<p><strong>两个关键</strong>：①<strong>k 与阈值&#x2F;Reranker 联调</strong>——k 调大噪声同步增，必须配套提质量门阈值或靠 reranker 挡，否则只是把脏上下文喂给模型；②golden set 固定且带分环节 GT（Q6），trace 能看出漏在召回层&#x2F;被 rerank 挤掉&#x2F;被阈值挡了（Q29）。</p>
+<p>收口：<strong>top_k 打分看三层曲线的拐点，不是单点调参。</strong>“</p>
+</blockquote>
+</details>
+
+<hr>
+<p><a id="q11"></a></p>
+<h2 id="Q11：指标一个升一个降怎么办？rerank-调整后怎么评整体效果？"><a href="#Q11：指标一个升一个降怎么办？rerank-调整后怎么评整体效果？" class="headerlink" title="Q11：指标一个升一个降怎么办？rerank 调整后怎么评整体效果？"></a>Q11：指标一个升一个降怎么办？rerank 调整后怎么评整体效果？</h2><details>
+<summary><b>展开答案</b></summary>
+
+<blockquote>
+<p>“分成两半：<strong>指标互损怎么决策</strong> ＋ <strong>rerank 调整怎么评整体效果</strong>。</p>
+<p><strong>一、互损四步决策</strong><br>① <strong>先分是真权衡还是 bug</strong>——Recall↔Precision 此消彼长是结构性权衡（正常）；八竿子打不着的指标也降＝引入的新问题，先当 bug 查；<br>② <strong>定红线</strong>——任务正确率&#x2F;Faithfulness&#x2F;安全违规<strong>不许降</strong>（硬指标，越界直接否决）；CP&#x2F;CR&#x2F;Recall&#x2F;Precision 是过程指标，可互损；<br>③ <strong>先找帕累托改进</strong>——rerank 调紧让 Precision 升、Recall 降，就<strong>扩大候选池 k 把 Recall 补回来</strong>（先扩召回再精排），两头不亏就不用取舍；<br>④ 真无法两全才<strong>业务加权综合分</strong>显式取舍，且看显著性（多次、方差、别被 judge 噪声骗）。</p>
+<p><strong>二、rerank 评价（关注点按重要性排）</strong><br>① <strong>候选池守恒</strong>（池里没有的 rerank 救不了，先确认 k 没缩）；② <strong>核心 chunk 有没有被剔除</strong>（淘汰对不对——召回损失来源）；③ <strong>排序变化</strong>（nDCG@N &#x2F; Precision@N 是否变好）；④ <strong>端到端</strong>（答案正确率&#x2F;Faithfulness）＋ <strong>延迟</strong>（rerank 开销）。<br><strong>判据三条同时成立才算调整成功</strong>：端到端变好 ＋ 延迟达标 ＋ <strong>候选池 Recall 不降</strong>。</p>
+<p>收口：<strong>过程指标看阈值、核心指标看趋势、红线指标一票否决；rerank 先看有没有挤掉对的，再看排得好不好。</strong>“</p>
+</blockquote>
+</details>
+
+<hr>
+<p><a id="q12"></a></p>
+<h2 id="Q12：query-对应的标准答案个数不一样，怎么平衡它对结果的影响？"><a href="#Q12：query-对应的标准答案个数不一样，怎么平衡它对结果的影响？" class="headerlink" title="Q12：query 对应的标准答案个数不一样，怎么平衡它对结果的影响？"></a>Q12：query 对应的标准答案个数不一样，怎么平衡它对结果的影响？</h2><details>
+<summary><b>展开答案</b></summary>
+
+<blockquote>
+<p>“答案个数不一致会系统性污染分数——<strong>单解题假阴性</strong>（合法变体被判错）、<strong>多解题假阳性</strong>（候选多、命中率高）。原则：<strong>别让’答案条数’成为打分变量，把’答案集合’转成’判定条件’或’集合指标’</strong>。</p>
+<p><strong>按题型定 GT 形态</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>题型</th>
+<th>GT 形态</th>
+<th>指标</th>
+<th>为什么不怕个数多</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>唯一解（数值&#x2F;字段）</td>
+<td>精确值</td>
+<td>字段精确比对</td>
+<td>无多解问题</td>
+</tr>
+<tr>
+<td>检索类</td>
+<td><strong>gold chunk 集合</strong></td>
+<td><strong>Recall@k &#x2F; nDCG</strong></td>
+<td>集合指标是比例，自动归一</td>
+</tr>
+<tr>
+<td>多解生成</td>
+<td><strong>checklist 关键点</strong></td>
+<td>覆盖率（命中数&#x2F;总数）</td>
+<td>0-1 比例，不是命中条数</td>
+</tr>
+<tr>
+<td>开放语义</td>
+<td>多个 gold 任一</td>
+<td>判’等价于任一 gold’（<strong>取 max 不累加</strong>）</td>
+<td>不因条数虚高</td>
+</tr>
+<tr>
+<td>开放主观</td>
+<td>rubric</td>
+<td>LLM-judge</td>
+<td>按维度打分</td>
+</tr>
+</tbody></table>
+<p><strong>checklist 是什么</strong>：把’标准答案文本’换成’<strong>必答要点集合</strong>‘——定 required（必答点）&#x2F; bonus（加分点）&#x2F; forbidden（禁止项），得分 &#x3D; 命中必答点数 ÷ 必答点总数（0-1 覆盖率）；每个点二值判定（数值&#x2F;术语用代码规则，语义用 judge）。<strong>天然归一，答案几条、怎么措辞都不影响。</strong></p>
+<p><strong>聚合防偏</strong>：per-query 先归一成 0-1，再对 query <strong>宏平均</strong>（每题权重相同）——<strong>绝不按答案条数加权</strong>。<strong>分层报告</strong>：case 标判定类型（唯一解&#x2F;多解&#x2F;开放）＋ 难度，分层报告，别混一个总分。</p>
+<p>收口：<strong>让指标回答’答对了没’，而不是’命中了几条参考答案’——精确值→字段、检索→集合比例、多解→要点覆盖率，全部归一成 0-1。</strong>“</p>
+</blockquote>
+</details>
+
+<hr>
+<p><a id="q13"></a></p>
+<h2 id="Q13：最终取的-top-3-还是-top-5，怎么判断？"><a href="#Q13：最终取的-top-3-还是-top-5，怎么判断？" class="headerlink" title="Q13：最终取的 top 3 还是 top 5，怎么判断？"></a>Q13：最终取的 top 3 还是 top 5，怎么判断？</h2><details>
+<summary><b>展开答案</b></summary>
+
+<blockquote>
+<p>“先分清<strong>两个 k</strong>：<strong>召回 k</strong>（候选池，20-50，Recall 驱动，宁多勿漏）与<strong>最终 top_n</strong>（rerank 后进 Prompt 的条数，3-5，Precision＋预算驱动）。这题问的是后者，四个判据：<br>① <strong>离线 sweep 找拐点</strong>——同一 golden set 扫 {1,2,3,5,8,10}，看答案正确率&#x2F;Faithfulness&#x2F;nDCG@N，通常 3-5 是平台区；② <strong>两个反向力</strong>——n 小会漏（正确率降、幻觉升）、n 大会带噪让 Faithfulness <strong>先升后降</strong>，最优在交叉点；③ <strong>任务类型定 n</strong>——单点事实问答 top1-3、多跳&#x2F;对比&#x2F;汇总 top5-8、报告生成按章节分别检索各取 n；④ <strong>上下文预算</strong>（token&#x2F;延迟&#x2F;成本内取收益最大）。</p>
+<p><strong>关键补充：top_n 是上限，不是配额</strong>——低于<strong>分数阈值</strong>的不进（宁少勿凑）；<strong>去重 &#x2F; MMR 保多样性</strong>（别让 5 个名额全被同一段占满）；<strong>按父块聚合</strong>（命中同父块的子块合并计，父子块场景）。</p>
+<p><strong>怎么验证 3 还是 5 更好</strong>：A&#x2F;B 对照 ＋ 看 <strong>trace 引用率</strong>——进 Prompt 的 5 个里只有 2 个被回答引用，说明 n 虚高可缩；引用率高说明 n 不够。</p>
+<p>收口：<strong>top_n 看 sweep 曲线拐点、看反向力交叉，是上限非配额，用引用率验证。</strong>“</p>
+</blockquote>
+</details>
+
+<hr>
+<p><a id="q14"></a></p>
+<h2 id="Q14：具体评测-RAG-召回，应该用什么指标？"><a href="#Q14：具体评测-RAG-召回，应该用什么指标？" class="headerlink" title="Q14：具体评测 RAG 召回，应该用什么指标？"></a>Q14：具体评测 RAG 召回，应该用什么指标？</h2><details>
+<summary><b>展开答案</b></summary>
+
+<blockquote>
+<p>“看<strong>有没有标注</strong>分两类。<strong>有标注用经典 IR</strong>：召回阶段头号指标 <strong>Recall@k</strong>（该召回的里实际进 top-k 的比例，漏没漏——漏了 Reranker 救不回）、辅看 <strong>Hit Rate@k</strong>；精排阶段看 <strong>nDCG@k &#x2F; Precision@k &#x2F; MRR</strong>（排序质量）；综合用 MAP。<strong>无标注用 RAGAS</strong>：Context Precision（信号 vs 噪声）、Context Recall（漏没漏）——LLM 判，适合线上持续监控。</p>
+<p><strong>四个要点</strong>：① <strong>召回以 Recall 优先</strong>——漏掉的救不回，Precision 交给 rerank 阶段管；② 报告必须写清 @k 是<strong>召回 k 还是最终 top_n</strong>，否则数字没意义；③ <strong>GT &#x3D; gold chunk 集合</strong>（可能多个），集合指标天然归一、不怕答案个数（Q12）；④ <strong>分层报告</strong>（按 KB 类型&#x2F;难度&#x2F;题型分开，别混总分）。</p>
+<p><strong>GT（gold chunk）从哪来</strong>：人工标注 &#x2F; <strong>从参考答案反推引用章节</strong> &#x2F; LLM 合成——存进 Q6 记录的 <code>ground_truth.chunk_ids</code> 字段。</p>
+<p>收口：<strong>召回看 Recall@k 漏没漏，精排看 nDCG 排得好不好，无标注用 RAGAS 的 CP&#x2F;CR。</strong>“</p>
+</blockquote>
+</details>
+
+<hr>
+<p><a id="q15"></a></p>
+<h2 id="Q15：RAG-过程中出现的幻觉怎么解决？"><a href="#Q15：RAG-过程中出现的幻觉怎么解决？" class="headerlink" title="Q15：RAG 过程中出现的幻觉怎么解决？"></a>Q15：RAG 过程中出现的幻觉怎么解决？</h2><details>
+<summary><b>展开答案</b></summary>
+
+<blockquote>
+<p>“别默认幻觉是生成问题——<strong>按 RAG 链路分层归因，哪层出的治哪层</strong>。</p>
+<table>
+<thead>
+<tr>
+<th>层</th>
+<th>幻觉怎么来</th>
+<th>解法</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>① 检索层</td>
+<td>没检索到对证据（漏）→ 编；噪声 → 被带偏；过时&#x2F;错误文档 → 忠实编错</td>
+<td>混合检索＋Reranker；<strong>质量门阈值拒答</strong>；切块优化；增量更新；来源可信度分级</td>
+</tr>
+<tr>
+<td>② 组装层</td>
+<td>chunk 截断&#x2F;表头丢、父子块被拆 → 信息不完整 → 脑补；矛盾 chunk → 混淆</td>
+<td>父子块保上下文；去重&#x2F;一致性；按相关性排序；标来源</td>
+</tr>
+<tr>
+<td>③ 生成层</td>
+<td>Prompt 没约束 → 自由发挥；上下文与模型记忆冲突 → 偏向记忆</td>
+<td><strong>强约束 Prompt</strong>（只依据文档、没有就说不知道）＋<strong>引用溯源</strong>（标 chunk id）</td>
+</tr>
+<tr>
+<td>④ 校验层</td>
+<td>生成完没人核</td>
+<td><strong>Self-RAG 自检</strong>（关键事实回文档找依据，找不到重生成）；<strong>Grounding 校验</strong>（第二 LLM&#x2F;NLI 判有无依据）；一致性采样</td>
+</tr>
+</tbody></table>
+<p><strong>关键分清两种幻觉</strong>：<strong>忠实性幻觉</strong>（上下文里没有、模型自己编）→ 治生成；<strong>上下文错误幻觉</strong>（上下文本身错&#x2F;过时&#x2F;被注入、模型’忠实’照错说）→ <strong>必须治检索质量＋来源可信度，光治生成没用</strong>（这就是’检索错上下文也会幻觉’）。</p>
+<p><strong>兜底三板斧</strong>：① <strong>拒答优先</strong>——质量门没过就说’检索内容不足’，最好的解幻觉是不让它答；② <strong>引用溯源</strong>（Q29）；③ <strong>RAGAS Faithfulness 监控闭环</strong>（Q8）。</p>
+<p>收口：<strong>先定位幻觉出在’没给对证据 &#x2F; 给了错证据 &#x2F; 给了对证据还编’哪一种，再对症下药。</strong>“</p>
+</blockquote>
+</details>
+
+<hr>
+<p><a id="q16"></a></p>
+<h2 id="Q16：怎么减少-transform-生成过程中产生的幻觉？"><a href="#Q16：怎么减少-transform-生成过程中产生的幻觉？" class="headerlink" title="Q16：怎么减少 transform 生成过程中产生的幻觉？"></a>Q16：怎么减少 transform 生成过程中产生的幻觉？</h2><details>
+<summary><b>展开答案</b></summary>
+
+<blockquote>
+<p>“transform 是中间生成步骤，它自己会编，形态有四：<strong>加戏&#x2F;过度改写</strong>（原文没提的部门自己补）、<strong>指代解错</strong>（’它’解成错对象）、<strong>数值&#x2F;专名走样</strong>（V8 权重被改错）、<strong>丢约束</strong>（时间&#x2F;部门限定丢了）。</p>
+<p>治它七招（按性价比排）：<br>① <strong>约束 Prompt</strong>——最小必要修改，只补指代&#x2F;去口语，<strong>禁止</strong>新增概念、禁改数值&#x2F;专名&#x2F;约束、禁整段重述（negative prompting）；<br>② <strong>diff 式改写</strong>——只输出’改了什么’而不是整句重写，<strong>输出空间越小幻觉面越小</strong>；<br>③ <strong>保真校验＋回退</strong>——数字&#x2F;专名&#x2F;约束规则校验（最硬）＋ 语义等价小模型判，<strong>不过就回退到原 query</strong>（宁可没改，不可改歪）；<br>④ <strong>能规则别 LLM</strong>——术语归一&#x2F;缩写展开&#x2F;纠错走词典表，直接消灭这类幻觉面；<br>⑤ <strong>低温＋短输出</strong>（temp&#x3D;0、限长、结构化 JSON）；<br>⑥ <strong>多路一致性</strong>（多次&#x2F;双模型不一致 → 可疑回退）；<br>⑦ <strong>检索侧冗余兜底</strong>——改写 query 和<strong>原 query 并行召回做 RRF 融合</strong>，即使改写引入噪声，原文仍保底召回正确结果（RAG-Fusion 思路）——<strong>用检索侧的冗余兜住生成侧的幻觉</strong>。</p>
+<p>收口：<strong>transform 幻觉不靠’让它改得更好’，靠’约束最小改动 ＋ 校验回退 ＋ 原文并行兜底’。</strong>“</p>
+</blockquote>
+</details>
+
+<hr>
+<h2 id="附：方法论题的记忆骨架（学习方法）"><a href="#附：方法论题的记忆骨架（学习方法）" class="headerlink" title="附：方法论题的记忆骨架（学习方法）"></a>附：方法论题的记忆骨架（学习方法）</h2><blockquote>
+<p>方法论题（选型&#x2F;评测&#x2F;迭代&#x2F;闭环）<strong>别死记全篇</strong>——背”骨架 + 概念锚点”，细节面试临场发散。</p>
+<ul>
+<li><strong>跨题通用骨架</strong>：少量测试 &#x2F; 链路追踪 &#x2F; 场景分类 &#x2F; 异常回放修复（Q4 比较架构、Q5 多轮 bench、Q7 快速迭代、Q8 数据飞轮都用同一张骨架，换开头一句即可）。</li>
+<li><strong>必须精确的概念锚点</strong>（背错就露馅）：ReAct＝Thought→Action→Observation；LoRA＝W&#x3D;W₀+BA（冻主体只训 B·A）；MemGPT＝Core&#x2F;Recall&#x2F;Archival 三层；Plan-Execute＝Planner→Executor→Replan（限次）；判定单多轮＝删掉历史能否独立执行；Claude Code＝编码型（工具+权限确认+subagent），不适合读密集型产品底座。</li>
+</ul>
+</blockquote>
+<hr>
+<blockquote>
+<p>📖 说明：本文件持续补充腾讯面题。模型与项目表述请按开头”诚实口径”对账后再背。</p>
+</blockquote>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>Author: </span><span class="post-copyright-info"><a href="http://example.com">david</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>Link: </span><span class="post-copyright-info"><a href="http://example.com/2026/09/09/ai-python/AI-Python-12.10-%E9%9D%A2%E8%AF%95%E5%AE%9E%E6%88%9802-%E8%85%BE%E8%AE%AF%E5%A4%A7%E6%A8%A1%E5%9E%8B%E5%BA%94%E7%94%A8%E5%B2%97%E6%A8%A1%E6%8B%9F/">http://example.com/2026/09/09/ai-python/AI-Python-12.10-%E9%9D%A2%E8%AF%95%E5%AE%9E%E6%88%9802-%E8%85%BE%E8%AE%AF%E5%A4%A7%E6%A8%A1%E5%9E%8B%E5%BA%94%E7%94%A8%E5%B2%97%E6%A8%A1%E6%8B%9F/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>Copyright Notice: </span><span class="post-copyright-info">All articles on this blog are licensed under <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> unless otherwise stated.</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E9%9D%A2%E8%AF%95/">面试</a><a class="post-meta__tags" href="/tags/AI/">AI</a><a class="post-meta__tags" href="/tags/Agent/">Agent</a><a class="post-meta__tags" href="/tags/ReAct/">ReAct</a><a class="post-meta__tags" href="/tags/%E9%9D%A2%E7%BB%8F/">面经</a><a class="post-meta__tags" href="/tags/%E8%85%BE%E8%AE%AF/">腾讯</a><a class="post-meta__tags" href="/tags/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E5%BA%94%E7%94%A8/">大模型应用</a><a class="post-meta__tags" href="/tags/%E6%A1%86%E6%9E%B6%E9%80%89%E5%9E%8B/">框架选型</a><a class="post-meta__tags" href="/tags/Plan-and-Execute/">Plan-and-Execute</a><a class="post-meta__tags" href="/tags/MemGPT/">MemGPT</a><a class="post-meta__tags" href="/tags/%E8%AF%84%E6%B5%8B/">评测</a><a class="post-meta__tags" href="/tags/%E5%A4%9A%E8%BD%AE%E5%AF%B9%E8%AF%9D/">多轮对话</a><a class="post-meta__tags" href="/tags/%E8%AF%84%E6%B5%8B%E9%9B%86/">评测集</a></div><div class="post-share"><div class="social-share" data-image="/img/butterfly-icon.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related full-width" href="/2026/09/04/ai-python/AI-Python-12.9-%E9%9D%A2%E8%AF%95%E5%AE%9E%E6%88%9801-%E5%AD%97%E8%8A%82Agent%E5%B2%97%E6%A8%A1%E6%8B%9F/" title="AI Python 学习 — 面试实战 01：字节 Agent 岗模拟（完整复盘 · 持续补充）"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">Next</div><div class="info-item-2">AI Python 学习 — 面试实战 01：字节 Agent 岗模拟（完整复盘 · 持续补充）</div></div><div class="info-2"><div class="info-item-1">面试实战 01：字节 Agent 岗模拟 基于 The Boy Assistant 项目的完整模拟面试复盘。从项目介绍、技术选型、RAG 链路、Agent 工程、安全、监控到开放题，全部带标准回答。真实面试被追问到的新题会持续补进末尾（Q19 起）。面试前逐题过一遍。   项目背景（开场必讲）The Boy Assistant 用了 4 个模型：BGE-M3（Embedding，本地 2.2GB）、bge-reranker-v2-m3（Reranker，本地 1.5GB）、Qwen2-VL-2B（多模态，本地 4GB）、DeepSeek API（LLM，唯一外部依赖）。  题目速览：    题号 题目 方向    1 项目中用了几个模型？ 项目介绍   2 为什么 Embedding 用 BGE-M3？ 模型选型   3 知识库怎么分块？ RAG 入库   4 混合检索具体怎么做？ RAG 检索   5 为什么还要 Reranker？ RAG 检索   6 怎么保证不幻觉？ 生成质量   7 RAG 效果怎么评估？ 评测体系   8 为什么 DeepSeek 不是 GPT-4o？...</div></div></div></a></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/butterfly-icon.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">david</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">171</div></a><a href="/tags/"><div class="headline">Tags</div><div class="length-num">406</div></a><a href="/categories/"><div class="headline">Categories</div><div class="length-num">33</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>Announcement</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>Contents</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%9D%A2%E8%AF%95%E5%AE%9E%E6%88%98-02%EF%BC%9A%E8%85%BE%E8%AE%AF-%E5%A4%A7%E6%A8%A1%E5%9E%8B%E5%BA%94%E7%94%A8%E5%B2%97-%E6%A8%A1%E6%8B%9F"><span class="toc-number">1.</span> <span class="toc-text">面试实战 02：腾讯 大模型应用岗 模拟</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%A1%B9%E7%9B%AE%E8%83%8C%E6%99%AF%EF%BC%88%E5%BC%80%E5%9C%BA%E5%BF%85%E8%AE%B2-%E4%BA%AE%E7%82%B9%EF%BC%89"><span class="toc-number">2.</span> <span class="toc-text">项目背景（开场必讲 + 亮点）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Q1%EF%BC%9AAgent-%E9%A1%B9%E7%9B%AE%E5%9F%BA%E4%BA%8E%E4%BB%80%E4%B9%88%E6%A1%86%E6%9E%B6%E5%BC%80%E5%8F%91%E7%9A%84%EF%BC%9F%E5%A6%82%E4%BD%95%E9%80%89%E5%9E%8B%EF%BC%9F"><span class="toc-number">3.</span> <span class="toc-text">Q1：Agent 项目基于什么框架开发的？如何选型？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Q2%EF%BC%9A%E8%80%83%E8%99%91%E8%BF%87-Claude-Code-%E9%A9%B1%E5%8A%A8%E7%9A%84-Agent-%E6%9E%B6%E6%9E%84%E5%90%97%EF%BC%9F%E4%BD%A0%E4%BA%86%E8%A7%A3%E7%9A%84-Agent-%E6%9E%B6%E6%9E%84%E6%9C%89%E5%93%AA%E4%BA%9B%EF%BC%9F"><span class="toc-number">4.</span> <span class="toc-text">Q2：考虑过 Claude Code 驱动的 Agent 架构吗？你了解的 Agent 架构有哪些？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Q3%EF%BC%9APlan-and-Execute-%E5%92%8C-ReAct-%E7%9A%84%E5%8C%BA%E5%88%AB%EF%BC%9F"><span class="toc-number">5.</span> <span class="toc-text">Q3：Plan-and-Execute 和 ReAct 的区别？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Q4%EF%BC%9A%E4%BD%A0%E8%AF%B4-Plan-Execute-%E6%9B%B4%E4%BC%98%EF%BC%9F%E6%80%8E%E4%B9%88%E8%AF%84%E6%B5%8B%E6%AF%94%E8%BE%83%E4%B8%A4%E4%B8%AA%E6%9E%B6%E6%9E%84%EF%BC%9F"><span class="toc-number">6.</span> <span class="toc-text">Q4：你说 Plan-Execute 更优？怎么评测比较两个架构？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Q5%EF%BC%9A%E6%80%8E%E4%B9%88%E7%95%8C%E5%AE%9A%E5%8D%95%E8%BD%AE-vs-%E5%A4%9A%E8%BD%AE%EF%BC%9F%E5%A4%9A%E8%BD%AE%E5%AF%B9%E8%AF%9D%E6%80%8E%E4%B9%88%E5%81%9A-Benchmark%EF%BC%9F"><span class="toc-number">7.</span> <span class="toc-text">Q5：怎么界定单轮 vs 多轮？多轮对话怎么做 Benchmark？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Q6%EF%BC%9A%E8%AF%84%E6%B5%8B%E9%9B%86%E7%9A%84%E4%B8%80%E6%9D%A1%E8%AE%B0%E5%BD%95%E6%80%8E%E4%B9%88%E8%AE%BE%E8%AE%A1%EF%BC%9F%E5%8C%85%E5%90%AB%E5%93%AA%E4%BA%9B%E5%86%85%E5%AE%B9%EF%BC%9F"><span class="toc-number">8.</span> <span class="toc-text">Q6：评测集的一条记录怎么设计？包含哪些内容？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Q7%EF%BC%9A%E8%AF%84%E6%B5%8B%E5%91%A8%E6%9C%9F%E9%95%BF%EF%BC%8C%E6%80%8E%E4%B9%88%E5%BF%AB%E9%80%9F%E8%BF%AD%E4%BB%A3-Agent%EF%BC%9F"><span class="toc-number">9.</span> <span class="toc-text">Q7：评测周期长，怎么快速迭代 Agent？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Q8%EF%BC%9ARAG-%E6%80%8E%E4%B9%88%E4%BC%98%E5%8C%96%EF%BC%9F%E5%88%86%E6%9E%90%E6%95%88%E6%9E%9C%E3%80%81%E5%BD%A2%E6%88%90%E6%95%B0%E6%8D%AE%E9%97%AD%E7%8E%AF%E8%AE%A9%E6%95%B0%E6%8D%AE%E9%A3%9E%E8%BD%AE%E6%8C%81%E7%BB%AD%E4%BC%98%E5%8C%96%EF%BC%9F"><span class="toc-number">10.</span> <span class="toc-text">Q8：RAG 怎么优化？分析效果、形成数据闭环让数据飞轮持续优化？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Q9%EF%BC%9A%E6%80%8E%E4%B9%88%E8%AF%84%E4%BB%B7%E4%BD%A0%E7%9A%84-rewriter-%E6%98%AF%E5%A5%BD%E7%9A%84%E8%BF%98%E6%98%AF%E5%9D%8F%E7%9A%84%EF%BC%9F"><span class="toc-number">11.</span> <span class="toc-text">Q9：怎么评价你的 rewriter 是好的还是坏的？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Q10%EF%BC%9A%E8%B0%83%E6%95%B4%E4%BA%86-top-k-%E4%B9%8B%E5%90%8E%EF%BC%8C%E6%80%8E%E4%B9%88%E6%89%93%E5%88%86%E3%80%81%E6%80%8E%E4%B9%88%E6%9E%84%E5%BB%BA%E8%AF%84%E6%B5%8B%E6%8C%87%E6%A0%87%EF%BC%9F"><span class="toc-number">12.</span> <span class="toc-text">Q10：调整了 top_k 之后，怎么打分、怎么构建评测指标？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Q11%EF%BC%9A%E6%8C%87%E6%A0%87%E4%B8%80%E4%B8%AA%E5%8D%87%E4%B8%80%E4%B8%AA%E9%99%8D%E6%80%8E%E4%B9%88%E5%8A%9E%EF%BC%9Frerank-%E8%B0%83%E6%95%B4%E5%90%8E%E6%80%8E%E4%B9%88%E8%AF%84%E6%95%B4%E4%BD%93%E6%95%88%E6%9E%9C%EF%BC%9F"><span class="toc-number">13.</span> <span class="toc-text">Q11：指标一个升一个降怎么办？rerank 调整后怎么评整体效果？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Q12%EF%BC%9Aquery-%E5%AF%B9%E5%BA%94%E7%9A%84%E6%A0%87%E5%87%86%E7%AD%94%E6%A1%88%E4%B8%AA%E6%95%B0%E4%B8%8D%E4%B8%80%E6%A0%B7%EF%BC%8C%E6%80%8E%E4%B9%88%E5%B9%B3%E8%A1%A1%E5%AE%83%E5%AF%B9%E7%BB%93%E6%9E%9C%E7%9A%84%E5%BD%B1%E5%93%8D%EF%BC%9F"><span class="toc-number">14.</span> <span class="toc-text">Q12：query 对应的标准答案个数不一样，怎么平衡它对结果的影响？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Q13%EF%BC%9A%E6%9C%80%E7%BB%88%E5%8F%96%E7%9A%84-top-3-%E8%BF%98%E6%98%AF-top-5%EF%BC%8C%E6%80%8E%E4%B9%88%E5%88%A4%E6%96%AD%EF%BC%9F"><span class="toc-number">15.</span> <span class="toc-text">Q13：最终取的 top 3 还是 top 5，怎么判断？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Q14%EF%BC%9A%E5%85%B7%E4%BD%93%E8%AF%84%E6%B5%8B-RAG-%E5%8F%AC%E5%9B%9E%EF%BC%8C%E5%BA%94%E8%AF%A5%E7%94%A8%E4%BB%80%E4%B9%88%E6%8C%87%E6%A0%87%EF%BC%9F"><span class="toc-number">16.</span> <span class="toc-text">Q14：具体评测 RAG 召回，应该用什么指标？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Q15%EF%BC%9ARAG-%E8%BF%87%E7%A8%8B%E4%B8%AD%E5%87%BA%E7%8E%B0%E7%9A%84%E5%B9%BB%E8%A7%89%E6%80%8E%E4%B9%88%E8%A7%A3%E5%86%B3%EF%BC%9F"><span class="toc-number">17.</span> <span class="toc-text">Q15：RAG 过程中出现的幻觉怎么解决？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Q16%EF%BC%9A%E6%80%8E%E4%B9%88%E5%87%8F%E5%B0%91-transform-%E7%94%9F%E6%88%90%E8%BF%87%E7%A8%8B%E4%B8%AD%E4%BA%A7%E7%94%9F%E7%9A%84%E5%B9%BB%E8%A7%89%EF%BC%9F"><span class="toc-number">18.</span> <span class="toc-text">Q16：怎么减少 transform 生成过程中产生的幻觉？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%99%84%EF%BC%9A%E6%96%B9%E6%B3%95%E8%AE%BA%E9%A2%98%E7%9A%84%E8%AE%B0%E5%BF%86%E9%AA%A8%E6%9E%B6%EF%BC%88%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95%EF%BC%89"><span class="toc-number">19.</span> <span class="toc-text">附：方法论题的记忆骨架（学习方法）</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>Recent Posts</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/09/09/ai-python/AI-Python-12.10-%E9%9D%A2%E8%AF%95%E5%AE%9E%E6%88%9802-%E8%85%BE%E8%AE%AF%E5%A4%A7%E6%A8%A1%E5%9E%8B%E5%BA%94%E7%94%A8%E5%B2%97%E6%A8%A1%E6%8B%9F/" title="AI Python 学习 — 面试实战 02：腾讯 大模型应用岗 模拟（开场 + 选型 + Agent 架构 + RAG 评测优化）">AI Python 学习 — 面试实战 02：腾讯 大模型应用岗 模拟（开场 + 选型 + Agent 架构 + RAG 评测优化）</a><time datetime="2026-09-09T02:00:00.000Z" title="Created 2026-09-09 10:00:00">2026-09-09</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/09/04/ai-python/AI-Python-12.9-%E9%9D%A2%E8%AF%95%E5%AE%9E%E6%88%9801-%E5%AD%97%E8%8A%82Agent%E5%B2%97%E6%A8%A1%E6%8B%9F/" title="AI Python 学习 — 面试实战 01：字节 Agent 岗模拟（完整复盘 · 持续补充）">AI Python 学习 — 面试实战 01：字节 Agent 岗模拟（完整复盘 · 持续补充）</a><time datetime="2026-09-04T01:30:00.000Z" title="Created 2026-09-04 09:30:00">2026-09-04</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/10/ai-python/AI-Python-12.8-%E9%9D%A2%E8%AF%95QA%E6%89%8B%E5%86%8C08-%E6%A8%A1%E5%9E%8B%E8%AF%84%E4%BC%B0%E4%B8%8EAI%E5%AE%89%E5%85%A8/" title="AI Python 学习 — 面试 QA 手册 08：模型评估与 AI 安全">AI Python 学习 — 面试 QA 手册 08：模型评估与 AI 安全</a><time datetime="2026-08-10T00:20:00.000Z" title="Created 2026-08-10 08:20:00">2026-08-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/10/ai-python/AI-Python-12.7-%E9%9D%A2%E8%AF%95QA%E6%89%8B%E5%86%8C07-%E5%A4%9A%E6%A8%A1%E6%80%81/" title="AI Python 学习 — 面试 QA 手册 07：多模态">AI Python 学习 — 面试 QA 手册 07：多模态</a><time datetime="2026-08-10T00:10:00.000Z" title="Created 2026-08-10 08:10:00">2026-08-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/10/ai-python/AI-Python-12.6-%E9%9D%A2%E8%AF%95QA%E6%89%8B%E5%86%8C06-Agent/" title="AI Python 学习 — 面试 QA 手册 06：Agent">AI Python 学习 — 面试 QA 手册 06：Agent</a><time datetime="2026-08-10T00:00:00.000Z" title="Created 2026-08-10 08:00:00">2026-08-10</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By david</span><span class="framework-info"><span>Framework </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>Theme </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.4.3</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="Reading Mode"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="Toggle Between Light and Dark Mode"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="Toggle Between Single-column and Double-column"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="Settings"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="Table of Contents"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="Back to Top"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><div class="js-pjax"><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (false) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
